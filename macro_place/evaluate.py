@@ -8,12 +8,15 @@ Usage:
     uv run evaluate submissions/examples/greedy_row_placer.py
     uv run evaluate submissions/examples/greedy_row_placer.py --all
     uv run evaluate submissions/examples/greedy_row_placer.py -b ibm03
+    uv run evaluate submissions/examples/greedy_row_placer.py --fast --json
 """
 
 import argparse
 import importlib.util
+import json
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 from macro_place.loader import load_benchmark, load_benchmark_from_dir
@@ -94,6 +97,13 @@ REPLACE_BASELINES = {
     "ibm17": 1.6446,
     "ibm18": 1.7722,
 }
+
+# ── Fast validation subset ─────────────────────────────────────────────────
+# Selected for diversity: ibm01 (small, low baseline), ibm04 (medium),
+# ibm09 (lowest baselines), ibm13 (mid-range, 382 macros).
+# Covers the range of difficulty while keeping iteration under 15s.
+
+FAST_BENCHMARKS = ["ibm01", "ibm04", "ibm09", "ibm13"]
 
 # ── Placer loading ───────────────────────────────────────────────────────────
 
@@ -242,6 +252,75 @@ def _print_summary_table(results):
     print()
 
 
+# ── Structured output ──────────────────────────────────────────────────────
+
+
+def _build_json_output(results, placer_name: str, placer_path: str, mode: str) -> dict:
+    """Build a structured dict from evaluation results."""
+    benchmarks = []
+    for r in results:
+        benchmarks.append({
+            "name": r["name"],
+            "proxy_cost": float(r["proxy_cost"]),
+            "wirelength": float(r["wirelength"]),
+            "density": float(r["density"]),
+            "congestion": float(r["congestion"]),
+            "overlap_count": int(r["overlaps"]),
+            "runtime_seconds": round(float(r["runtime"]), 4),
+            "sa_baseline": float(r["sa_baseline"]) if r["sa_baseline"] is not None else None,
+            "replace_baseline": float(r["replace_baseline"]) if r["replace_baseline"] is not None else None,
+        })
+
+    avg_proxy = float(sum(float(r["proxy_cost"]) for r in results) / len(results))
+    total_overlaps = int(sum(int(r["overlaps"]) for r in results))
+    total_runtime = float(sum(float(r["runtime"]) for r in results))
+
+    return {
+        "placer_name": placer_name,
+        "placer_path": placer_path,
+        "mode": mode,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "benchmarks": benchmarks,
+        "avg_proxy_cost": round(avg_proxy, 6),
+        "total_overlaps": total_overlaps,
+        "total_runtime_seconds": round(total_runtime, 4),
+        "qualified": total_overlaps == 0,
+    }
+
+
+def _write_json_result(data: dict, results_dir: Path):
+    """Write structured results to results/<placer>_<timestamp>.json."""
+    results_dir.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    name = data["placer_name"]
+    out_path = results_dir / f"{name}_{ts}.json"
+    out_path.write_text(json.dumps(data, indent=2) + "\n")
+    print(f"Results written to {out_path}")
+    return out_path
+
+
+def _append_experiment_log(data: dict, log_path: Path):
+    """Append a single-line JSON record to the experiment log."""
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    entry = {
+        "hypothesis": data.get("hypothesis", ""),
+        "variant_name": data["placer_name"],
+        "placer_path": data["placer_path"],
+        "mode": data["mode"],
+        "avg_proxy_cost": data["avg_proxy_cost"],
+        "total_overlaps": data["total_overlaps"],
+        "qualified": data["qualified"],
+        "per_benchmark": {b["name"]: b["proxy_cost"] for b in data["benchmarks"]},
+        "runtime_seconds": data["total_runtime_seconds"],
+        "timestamp": data["timestamp"],
+        "status": "exploring",
+        "notes": "",
+    }
+    with open(log_path, "a") as f:
+        f.write(json.dumps(entry) + "\n")
+    print(f"Logged to {log_path}")
+
+
 # ── CLI entry point ──────────────────────────────────────────────────────────
 
 
@@ -273,6 +352,22 @@ def main():
         help="Run on NG45 commercial designs (ariane133, ariane136, mempool_tile, nvdla).",
     )
     parser.add_argument(
+        "--fast",
+        action="store_true",
+        help="Run on fast validation subset (4 predictive IBM benchmarks).",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Write structured JSON results to results/ and append to experiment log.",
+    )
+    parser.add_argument(
+        "--hypothesis",
+        type=str,
+        default="",
+        help="Hypothesis name for experiment log tagging (e.g. 'sdf_density').",
+    )
+    parser.add_argument(
         "--vis",
         action="store_true",
         help="Visualize each placement after evaluation (saves to vis/<benchmark>.png).",
@@ -294,10 +389,16 @@ def main():
     # ── determine which benchmarks to run ────────────────────────────────
     if args.ng45:
         benchmarks_to_run = list(NG45_BENCHMARKS.keys())
+        mode = "ng45"
     elif args.all:
         benchmarks_to_run = BENCHMARKS
+        mode = "all"
+    elif args.fast:
+        benchmarks_to_run = FAST_BENCHMARKS
+        mode = "fast"
     else:
         benchmarks_to_run = [args.benchmark or "ibm01"]
+        mode = "single"
 
     # ── run ──────────────────────────────────────────────────────────────
     print("=" * 80)
@@ -331,6 +432,15 @@ def main():
 
     if len(results) > 1:
         _print_summary_table(results)
+
+    # ── structured output ───────────────────────────────────────────────
+    if args.json:
+        data = _build_json_output(results, placer_name, str(placer_path), mode)
+        if args.hypothesis:
+            data["hypothesis"] = args.hypothesis
+        results_dir = Path("results")
+        _write_json_result(data, results_dir)
+        _append_experiment_log(data, results_dir / "experiment_log.jsonl")
 
 
 if __name__ == "__main__":
