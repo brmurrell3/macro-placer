@@ -1,0 +1,59 @@
+# Hypothesis kill/validation criteria
+# Claude uses these thresholds to autonomously decide: iterate, kill, or surface to human.
+#
+# Workflow:
+#   1. Run --fast subset → check fast_gate
+#   2. If pass: run --all → check graduate/champion
+#   3. If no improvement after max_stale_variants: kill hypothesis
+#
+# Thresholds:
+#   graduate: avg_proxy_cost < 1.50 on --all → surface to human for review
+#   champion: avg_proxy_cost < 1.46 on --all → surface immediately + test NG45
+
+global:
+  graduate_threshold: 1.50    # avg proxy cost on --all to surface for human review
+  champion_threshold: 1.46    # avg proxy cost on --all to flag as beating RePlAce
+  fast_benchmarks: [ibm01, ibm04, ibm09, ibm13]
+
+hypotheses:
+  optimal_transport:
+    name: "Optimal Transport Density Spreading"
+    fast_gate: 2.50           # max avg proxy on fast subset to continue variant
+    max_stale_variants: 5     # kill if best hasn't improved >2% after N variants
+    min_improvement_pct: 2.0  # minimum % improvement to count as progress
+    notes: "GeomLoss Sinkhorn. Watch for O(M^2) blowup."
+
+  sdf_density:
+    name: "SDF-Based Soft Rasterization"
+    fast_gate: 2.20
+    max_stale_variants: 4
+    min_improvement_pct: 2.0
+    notes: "Pure PyTorch. Verify gradient correctness first (rel error < 1e-4)."
+
+  diffusion:
+    name: "Diffusion Generative Model"
+    fast_gate: 3.00           # generous — generative models start rough
+    max_stale_variants: 3
+    min_improvement_pct: 5.0  # needs bigger jumps to justify compute
+    notes: "Energy-guided Langevin first (non-learned). If < random, kill."
+
+  variational:
+    name: "Variational / Least-Action"
+    fast_gate: 2.80
+    max_stale_variants: 4
+    min_improvement_pct: 2.0
+    notes: "JKO scheme. Accept 2x compute cost if trajectory is smooth."
+
+  neural_ode:
+    name: "Neural ODE Adjoint Schedule"
+    fast_gate: 2.50
+    max_stale_variants: 4
+    min_improvement_pct: 2.0
+    notes: "torchdiffeq. Verify non-zero gradients first."
+
+  cbo:
+    name: "Consensus-Based Optimization"
+    fast_gate: 2.50
+    max_stale_variants: 5
+    min_improvement_pct: 2.0
+    notes: "Pure PyTorch swarm. 100 particles, 5000 iters on ibm01 as smoke test."
