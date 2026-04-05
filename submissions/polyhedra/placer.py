@@ -19,6 +19,7 @@ import time
 import numpy as np
 import torch
 import highspy
+from collections import defaultdict
 
 from macro_place.benchmark import Benchmark
 
@@ -665,34 +666,503 @@ class NeighborGenerator:
 
         return candidates
 
+    def propose_cluster_flips(self, duals: dict, assignment: dict,
+                              macro_to_nets: dict, n_proposals: int = 20,
+                              rng: np.random.Generator = None) -> list:
+        """
+        Propose multi-pair cluster flips using two strategies:
+
+        1. Net-correlated flips: flip pairs that share high-fanout nets
+        2. Row/column block swaps: reverse ordering of spatial neighbors
+
+        Returns list of clusters, where each cluster is [(pair, new_dir), ...].
+        """
+        if rng is None:
+            rng = np.random.default_rng()
+
+        # Get high-dual pairs
+        dual_pairs = [(pair, abs(d)) for pair, d in duals.items() if abs(d) > 1e-10]
+        if not dual_pairs:
+            return []
+        dual_pairs.sort(key=lambda x: -x[1])
+
+        clusters = []
+
+        # Strategy 1: Net-correlated flips
+        # Find pairs sharing nets with the highest-dual pair
+        if macro_to_nets:
+            for seed_pair, seed_mag in dual_pairs[:min(10, len(dual_pairs))]:
+                si, sk = seed_pair
+                # Find all nets containing si or sk
+                si_nets = set(macro_to_nets.get(si, []))
+                sk_nets = set(macro_to_nets.get(sk, []))
+                shared_nets = si_nets | sk_nets
+
+                # Find other high-dual pairs that share nets with the seed
+                cluster = [(seed_pair, rng.choice([d for d in range(4)
+                            if d != assignment[seed_pair]]))]
+
+                for other_pair, other_mag in dual_pairs:
+                    if other_pair == seed_pair:
+                        continue
+                    oi, ok = other_pair
+                    oi_nets = set(macro_to_nets.get(oi, []))
+                    ok_nets = set(macro_to_nets.get(ok, []))
+                    if (oi_nets | ok_nets) & shared_nets:
+                        new_dir = rng.choice([d for d in range(4)
+                                              if d != assignment[other_pair]])
+                        cluster.append((other_pair, new_dir))
+                        if len(cluster) >= 4:
+                            break
+
+                if len(cluster) >= 2:
+                    clusters.append(cluster)
+
+        # Strategy 2: Macro-centered flips
+        # For a high-dual pair (i,k), flip all pairs involving macro i
+        for seed_pair, seed_mag in dual_pairs[:min(5, len(dual_pairs))]:
+            si, sk = seed_pair
+            for target_macro in [si, sk]:
+                cluster = []
+                for (pi, pk), d_val in duals.items():
+                    if abs(d_val) < 1e-10:
+                        continue
+                    if pi == target_macro or pk == target_macro:
+                        new_dir = rng.choice([d for d in range(4)
+                                              if d != assignment[(pi, pk)]])
+                        cluster.append(((pi, pk), new_dir))
+                        if len(cluster) >= 5:
+                            break
+                if 2 <= len(cluster) <= 5:
+                    clusters.append(cluster)
+
+        # Deduplicate and limit
+        seen = set()
+        unique_clusters = []
+        for c in clusters:
+            key = tuple(sorted((p, d) for p, d in c))
+            if key not in seen:
+                seen.add(key)
+                unique_clusters.append(c)
+            if len(unique_clusters) >= n_proposals:
+                break
+
+        return unique_clusters
+
 
 # ---------------------------------------------------------------------------
-# Module 4: Navigator
+# Module 4: Grid Surrogate (fast proxy cost estimator)
+# ---------------------------------------------------------------------------
+
+class GridSurrogate:
+    """
+    Fast incremental proxy cost estimator using grid-based density,
+    RUDY congestion, and HPWL wirelength.
+
+    Designed to filter candidate flips (~0.1ms per eval) before expensive
+    full proxy cost verification (~1s per eval).
+    """
+
+    def __init__(self, benchmark, plc):
+        self.bm = benchmark
+        self.n = benchmark.num_macros
+        self.n_hard = benchmark.num_hard_macros
+        self.canvas_w = benchmark.canvas_width
+        self.canvas_h = benchmark.canvas_height
+
+        # Match PlacementCost grid
+        self.grid_rows = plc.grid_row
+        self.grid_cols = plc.grid_col
+        self.n_cells = self.grid_rows * self.grid_cols
+        self.cell_w = self.canvas_w / self.grid_cols
+        self.cell_h = self.canvas_h / self.grid_rows
+
+        # Routing capacity per cell
+        self.grid_v_cap = max(self.cell_w * benchmark.vroutes_per_micron, 1e-6)
+        self.grid_h_cap = max(self.cell_h * benchmark.hroutes_per_micron, 1e-6)
+
+        # Macro sizes
+        self.sizes = benchmark.macro_sizes.numpy()
+
+        # Build net/pin structure
+        self._build_net_structure(plc)
+
+        # State arrays
+        self.density_grid = np.zeros(self.n_cells)
+        self.v_cong = np.zeros(self.n_cells)
+        self.h_cong = np.zeros(self.n_cells)
+        self.net_hpwl = np.zeros(len(self.nets))
+        self.total_hpwl = 0.0
+        self.base_hpwl = 0.0  # HPWL from nets with no macros (constant)
+
+        # Per-macro density cell contributions: macro_idx -> [(cell_idx, area_frac), ...]
+        self.macro_density_cells = {}
+
+        # Current positions
+        self.positions = None
+
+        # WL normalization
+        self.total_net_count = len(plc.nets)
+        self.wl_norm = max((self.canvas_w + self.canvas_h) * self.total_net_count, 1e-6)
+
+    def _build_net_structure(self, plc):
+        """Build net/pin connectivity for HPWL and congestion computation."""
+        name_to_idx = {name: i for i, name in enumerate(self.bm.macro_names)}
+
+        # Build pin_name -> info mapping
+        pin_info = {}
+        for mod in plc.modules_w_pins:
+            mod_type = mod.get_type()
+            if mod_type == 'MACRO_PIN':
+                macro_name = mod.get_macro_name()
+                if macro_name in name_to_idx:
+                    macro_idx = name_to_idx[macro_name]
+                    xo, yo = mod.get_offset()
+                    pin_info[mod.get_name()] = ('macro', macro_idx, float(xo), float(yo))
+            elif mod_type == 'PORT':
+                x, y = mod.get_pos()
+                pin_info[mod.get_name()] = ('port', float(x), float(y))
+
+        # Build nets: each net is (macro_pins, fixed_pins)
+        # macro_pins: list of (macro_idx, x_offset, y_offset)
+        # fixed_pins: list of (x, y)
+        self.nets = []
+        self.macro_to_nets = defaultdict(list)
+
+        for net_name, pin_names in plc.nets.items():
+            macro_pins = []
+            fixed_pins = []
+
+            for pn in pin_names:
+                if pn in pin_info:
+                    info = pin_info[pn]
+                    if info[0] == 'macro':
+                        macro_pins.append((info[1], info[2], info[3]))
+                    else:
+                        fixed_pins.append((info[1], info[2]))
+
+            if len(macro_pins) + len(fixed_pins) < 2:
+                continue
+
+            net_idx = len(self.nets)
+            self.nets.append((macro_pins, fixed_pins))
+
+            # Track which nets each macro belongs to
+            seen = set()
+            for (mi, _, _) in macro_pins:
+                if mi not in seen:
+                    self.macro_to_nets[mi].append(net_idx)
+                    seen.add(mi)
+
+    def init_from_placement(self, positions):
+        """Full computation of all surrogate components from a placement."""
+        self.positions = positions.copy()
+
+        # 1. Density grid
+        self.density_grid[:] = 0.0
+        self.macro_density_cells.clear()
+        cell_area = self.cell_w * self.cell_h
+
+        for i in range(self.n):
+            cells = self._compute_macro_cells(i, positions[i])
+            self.macro_density_cells[i] = cells
+            for cell_idx, area in cells:
+                self.density_grid[cell_idx] += area / cell_area
+
+        # 2. HPWL per net
+        self.total_hpwl = 0.0
+        for j, (macro_pins, fixed_pins) in enumerate(self.nets):
+            hpwl = self._compute_net_hpwl(j, positions)
+            self.net_hpwl[j] = hpwl
+            self.total_hpwl += hpwl
+
+        # 3. RUDY congestion
+        self.v_cong[:] = 0.0
+        self.h_cong[:] = 0.0
+        for j, (macro_pins, fixed_pins) in enumerate(self.nets):
+            self._add_net_congestion(j, positions, 1.0)
+
+    def _compute_macro_cells(self, macro_idx, pos):
+        """Compute grid cells overlapped by macro and overlap areas."""
+        x, y = pos[0], pos[1]
+        w, h = self.sizes[macro_idx]
+
+        x_lo = max(0.0, x - w / 2)
+        x_hi = min(self.canvas_w, x + w / 2)
+        y_lo = max(0.0, y - h / 2)
+        y_hi = min(self.canvas_h, y + h / 2)
+
+        c_lo = max(0, int(x_lo / self.cell_w))
+        c_hi = min(self.grid_cols - 1, int(x_hi / self.cell_w))
+        r_lo = max(0, int(y_lo / self.cell_h))
+        r_hi = min(self.grid_rows - 1, int(y_hi / self.cell_h))
+
+        cells = []
+        for r in range(r_lo, r_hi + 1):
+            for c in range(c_lo, c_hi + 1):
+                # Overlap area between macro and cell
+                ox = max(0.0, min(x_hi, (c + 1) * self.cell_w) - max(x_lo, c * self.cell_w))
+                oy = max(0.0, min(y_hi, (r + 1) * self.cell_h) - max(y_lo, r * self.cell_h))
+                area = ox * oy
+                if area > 1e-12:
+                    cell_idx = r * self.grid_cols + c
+                    cells.append((cell_idx, area))
+        return cells
+
+    def _compute_net_hpwl(self, net_idx, positions):
+        """Compute HPWL for a single net."""
+        macro_pins, fixed_pins = self.nets[net_idx]
+
+        xs = []
+        ys = []
+        for (mi, xo, yo) in macro_pins:
+            xs.append(positions[mi, 0] + xo)
+            ys.append(positions[mi, 1] + yo)
+        for (fx, fy) in fixed_pins:
+            xs.append(fx)
+            ys.append(fy)
+
+        if len(xs) < 2:
+            return 0.0
+
+        return (max(xs) - min(xs)) + (max(ys) - min(ys))
+
+    def _add_net_congestion(self, net_idx, positions, sign):
+        """Add (sign=+1) or remove (sign=-1) RUDY congestion for a net."""
+        macro_pins, fixed_pins = self.nets[net_idx]
+
+        # Compute net bounding box
+        xs = []
+        ys = []
+        for (mi, xo, yo) in macro_pins:
+            xs.append(positions[mi, 0] + xo)
+            ys.append(positions[mi, 1] + yo)
+        for (fx, fy) in fixed_pins:
+            xs.append(fx)
+            ys.append(fy)
+
+        if len(xs) < 2:
+            return
+
+        x_min, x_max = min(xs), max(xs)
+        y_min, y_max = min(ys), max(ys)
+
+        # Grid cells covered by bbox
+        c_lo = max(0, min(self.grid_cols - 1, int(x_min / self.cell_w)))
+        c_hi = max(0, min(self.grid_cols - 1, int(x_max / self.cell_w)))
+        r_lo = max(0, min(self.grid_rows - 1, int(y_min / self.cell_h)))
+        r_hi = max(0, min(self.grid_rows - 1, int(y_max / self.cell_h)))
+
+        n_cols = max(1, c_hi - c_lo + 1)
+        n_rows = max(1, r_hi - r_lo + 1)
+
+        # RUDY: distribute demand uniformly over bbox cells
+        h_demand = sign / (n_cols * self.grid_h_cap)
+        v_demand = sign / (n_rows * self.grid_v_cap)
+
+        for r in range(r_lo, r_hi + 1):
+            for c in range(c_lo, c_hi + 1):
+                cell_idx = r * self.grid_cols + c
+                self.h_cong[cell_idx] += h_demand
+                self.v_cong[cell_idx] += v_demand
+
+    def get_density_cost(self):
+        """Compute density cost matching PlacementCost formula."""
+        # Top 10% of grid cells, multiplied by 0.5
+        vals = self.density_grid.copy()
+        n_top = max(1, int(self.n_cells * 0.1))
+        top_vals = np.partition(vals, -n_top)[-n_top:]
+        return 0.5 * np.mean(top_vals)
+
+    def get_congestion_cost(self):
+        """Compute congestion cost matching PlacementCost formula (ABU 5%)."""
+        combined = np.concatenate([self.v_cong, self.h_cong])
+        n_top = max(1, int(len(combined) * 0.05))
+        top_vals = np.partition(combined, -n_top)[-n_top:]
+        return np.mean(top_vals)
+
+    def get_wirelength_cost(self):
+        """Compute normalized wirelength cost."""
+        return self.total_hpwl / self.wl_norm
+
+    def get_proxy_cost(self):
+        """Compute composite proxy cost estimate."""
+        return (self.get_wirelength_cost()
+                + 0.5 * self.get_density_cost()
+                + 0.5 * self.get_congestion_cost())
+
+    def evaluate_move(self, moved_macros, new_positions):
+        """
+        Estimate proxy cost after moving specified macros, without committing.
+
+        Args:
+            moved_macros: list of macro indices that moved
+            new_positions: [n, 2] full position array with new positions
+
+        Returns:
+            estimated proxy cost
+        """
+        cell_area = self.cell_w * self.cell_h
+
+        # Save state for rollback
+        old_density_deltas = []  # (cell_idx, delta) pairs
+        old_cong_deltas_h = []
+        old_cong_deltas_v = []
+        old_net_hpwls = {}
+
+        # 1. Update density: remove old, add new
+        for mi in moved_macros:
+            # Remove old cells
+            if mi in self.macro_density_cells:
+                for cell_idx, area in self.macro_density_cells[mi]:
+                    delta = -area / cell_area
+                    self.density_grid[cell_idx] += delta
+                    old_density_deltas.append((cell_idx, -delta))
+
+            # Add new cells
+            new_cells = self._compute_macro_cells(mi, new_positions[mi])
+            for cell_idx, area in new_cells:
+                delta = area / cell_area
+                self.density_grid[cell_idx] += delta
+                old_density_deltas.append((cell_idx, -delta))
+
+        # 2. Update congestion and HPWL for affected nets
+        affected_nets = set()
+        for mi in moved_macros:
+            for nj in self.macro_to_nets.get(mi, []):
+                affected_nets.add(nj)
+
+        hpwl_delta = 0.0
+        for nj in affected_nets:
+            old_hpwl = self.net_hpwl[nj]
+            old_net_hpwls[nj] = old_hpwl
+
+            # Remove old congestion
+            self._add_net_congestion(nj, self.positions, -1.0)
+            # Add new congestion
+            self._add_net_congestion(nj, new_positions, 1.0)
+
+            # Compute new HPWL
+            new_hpwl = self._compute_net_hpwl(nj, new_positions)
+            hpwl_delta += new_hpwl - old_hpwl
+            self.net_hpwl[nj] = new_hpwl
+
+        # Save modified state
+        old_total_hpwl = self.total_hpwl
+        self.total_hpwl += hpwl_delta
+
+        # Compute proxy cost
+        proxy = self.get_proxy_cost()
+
+        # Rollback all changes
+        self.total_hpwl = old_total_hpwl
+        for nj, old_h in old_net_hpwls.items():
+            # Reverse congestion changes
+            self._add_net_congestion(nj, new_positions, -1.0)
+            self._add_net_congestion(nj, self.positions, 1.0)
+            self.net_hpwl[nj] = old_h
+
+        for cell_idx, delta in old_density_deltas:
+            self.density_grid[cell_idx] += delta
+
+        return proxy
+
+    def commit_move(self, moved_macros, new_positions):
+        """Commit a move: update all internal state to reflect new positions."""
+        cell_area = self.cell_w * self.cell_h
+
+        # Update density
+        for mi in moved_macros:
+            if mi in self.macro_density_cells:
+                for cell_idx, area in self.macro_density_cells[mi]:
+                    self.density_grid[cell_idx] -= area / cell_area
+
+            new_cells = self._compute_macro_cells(mi, new_positions[mi])
+            self.macro_density_cells[mi] = new_cells
+            for cell_idx, area in new_cells:
+                self.density_grid[cell_idx] += area / cell_area
+
+        # Update congestion and HPWL for affected nets
+        affected_nets = set()
+        for mi in moved_macros:
+            for nj in self.macro_to_nets.get(mi, []):
+                affected_nets.add(nj)
+
+        for nj in affected_nets:
+            self._add_net_congestion(nj, self.positions, -1.0)
+            self._add_net_congestion(nj, new_positions, 1.0)
+            new_hpwl = self._compute_net_hpwl(nj, new_positions)
+            self.total_hpwl += new_hpwl - self.net_hpwl[nj]
+            self.net_hpwl[nj] = new_hpwl
+
+        # Update positions
+        for mi in moved_macros:
+            self.positions[mi] = new_positions[mi].copy()
+
+
+# ---------------------------------------------------------------------------
+# Module 5: Navigator
 # ---------------------------------------------------------------------------
 
 class Navigator:
     """
     Search loop: propose flips, evaluate via proxy cost, accept/reject.
 
-    Uses min-displacement LP to find nearest feasible positions after a flip,
-    then evaluates full proxy cost to decide acceptance.
+    Uses GridSurrogate for fast candidate filtering (filter-then-verify):
+    1. Evaluate all candidates with surrogate (~0.1ms each)
+    2. Rank by surrogate proxy estimate
+    3. Verify top-k with real compute_proxy_cost (~1s each)
 
     Dual variables from HPWL LP guide which pairs to flip.
     """
 
     def __init__(self, lp_solver: LPSolver, neighbor_gen: NeighborGenerator,
-                 benchmark: Benchmark, plc):
+                 benchmark: Benchmark, plc, surrogate: GridSurrogate = None):
         self.lp = lp_solver
         self.ng = neighbor_gen
         self.benchmark = benchmark
         self.plc = plc
+        self.surrogate = surrogate
         self.rng = np.random.default_rng(42)
+        self._macro_to_pairs = None  # lazy-built index for fast cascade
+
+    def _get_macro_to_pairs(self, assignment):
+        """Build macro -> list of pairs index for fast cascade checking."""
+        if self._macro_to_pairs is not None:
+            return self._macro_to_pairs
+        m2p = defaultdict(list)
+        for (a, b) in assignment:
+            m2p[a].append((a, b))
+            m2p[b].append((a, b))
+        self._macro_to_pairs = m2p
+        return m2p
 
     def _eval_proxy(self, positions: np.ndarray) -> dict:
         """Evaluate full proxy cost."""
         from macro_place.objective import compute_proxy_cost
         placement = torch.tensor(positions, dtype=torch.float32)
         return compute_proxy_cost(placement, self.benchmark, self.plc)
+
+    def _check_overlaps_fast(self, positions: np.ndarray) -> bool:
+        """Fast vectorized overlap check for all hard macro pairs.
+        Returns True if ANY overlap exists."""
+        n_hard = self.benchmark.num_hard_macros
+        pos = positions[:n_hard]
+        sz = self.benchmark.macro_sizes.numpy()[:n_hard]
+
+        x = pos[:, 0]
+        y = pos[:, 1]
+        w = sz[:, 0]
+        h = sz[:, 1]
+
+        dx = np.abs(x[:, None] - x[None, :])
+        dy = np.abs(y[:, None] - y[None, :])
+        min_dx = (w[:, None] + w[None, :]) / 2
+        min_dy = (h[:, None] + h[None, :]) / 2
+
+        overlap = (dx < min_dx - 1e-3) & (dy < min_dy - 1e-3)
+        np.fill_diagonal(overlap, False)
+        return np.any(overlap)
 
     def _project_flip(self, positions: np.ndarray, pair: tuple,
                        new_dir: int, assignment: dict) -> np.ndarray:
@@ -781,14 +1251,22 @@ class Navigator:
             pos[idx, 1] = np.clip(pos[idx, 1], hh, ch - hh)
 
         # Cascade: fix violations created by moving i and k
-        # Check all pairs involving i or k
+        # Only check pairs involving moved macros (using index for speed)
         moved = {i, k}
         n_hard = self.benchmark.num_hard_macros
-        for cascade_round in range(3):
+        m2p = self._get_macro_to_pairs(assignment)
+        for cascade_round in range(10):
             violations = 0
-            for (a, b), d in assignment.items():
-                if a not in moved and b not in moved:
-                    continue
+            checked = set()
+            for m in list(moved):
+                for pair_key in m2p.get(m, []):
+                    if pair_key in checked:
+                        continue
+                    checked.add(pair_key)
+                    a, b = pair_key
+                    d = assignment.get(pair_key)
+                    if d is None:
+                        continue
                 wa, ha = float(sizes[a, 0]), float(sizes[a, 1])
                 wb, hb = float(sizes[b, 0]), float(sizes[b, 1])
                 mov_a = a < n_hard and not self.benchmark.macro_fixed[a]
@@ -805,7 +1283,7 @@ class Navigator:
                 else:
                     continue
 
-                if gap < -0.001:
+                if gap < -1e-6:
                     violations += 1
                     fix = -gap
                     if d in (L, R):
@@ -860,36 +1338,109 @@ class Navigator:
             if violations == 0:
                 break
 
+        # Post-cascade: direct overlap repair for ALL hard macro pairs near moved set
+        # The assignment-based cascade only checks pairs in the topology, but overlaps
+        # can occur between any two hard macros after position adjustments
+        for repair_round in range(10):
+            any_overlap = False
+            for a in list(moved):
+                for b in range(n_hard):
+                    if b == a:
+                        continue
+                    # Direct rectangle overlap check
+                    wa, ha = float(sizes[a, 0]), float(sizes[a, 1])
+                    wb, hb = float(sizes[b, 0]), float(sizes[b, 1])
+                    dx = abs(pos[a, 0] - pos[b, 0])
+                    dy = abs(pos[a, 1] - pos[b, 1])
+                    min_dx = (wa + wb) / 2 + eps
+                    min_dy = (ha + hb) / 2 + eps
+                    if dx < min_dx and dy < min_dy:
+                        # Overlap! Push apart in direction of smallest violation
+                        mov_a = a < n_hard and not self.benchmark.macro_fixed[a]
+                        mov_b = b < n_hard and not self.benchmark.macro_fixed[b]
+                        viol_x = min_dx - dx
+                        viol_y = min_dy - dy
+                        if viol_x < viol_y:
+                            # Push apart in x
+                            sign = 1.0 if pos[a, 0] < pos[b, 0] else -1.0
+                            if mov_a and mov_b:
+                                pos[a, 0] -= sign * viol_x / 2
+                                pos[b, 0] += sign * viol_x / 2
+                            elif mov_a:
+                                pos[a, 0] -= sign * viol_x
+                            elif mov_b:
+                                pos[b, 0] += sign * viol_x
+                        else:
+                            # Push apart in y
+                            sign = 1.0 if pos[a, 1] < pos[b, 1] else -1.0
+                            if mov_a and mov_b:
+                                pos[a, 1] -= sign * viol_y / 2
+                                pos[b, 1] += sign * viol_y / 2
+                            elif mov_a:
+                                pos[a, 1] -= sign * viol_y
+                            elif mov_b:
+                                pos[b, 1] += sign * viol_y
+                        any_overlap = True
+                        moved.add(a)
+                        moved.add(b)
+
+            if not any_overlap:
+                break
+
+            # Re-clamp after repair
+            for idx in moved:
+                hw = sizes[idx, 0] / 2
+                hh = sizes[idx, 1] / 2
+                pos[idx, 0] = np.clip(pos[idx, 0], hw, cw - hw)
+                pos[idx, 1] = np.clip(pos[idx, 1], hh, ch - hh)
+
         return pos
 
     def greedy_descent(self, assignment: dict, initial_result: dict,
                        ref_positions: np.ndarray,
                        max_iters: int = 500, time_budget: float = 300.0,
-                       verbose: bool = True) -> dict:
+                       top_k_verify: int = 5, verbose: bool = True,
+                       lp_resolve_cap: int = 20) -> dict:
         """
-        Greedy descent on proxy cost using fast constraint projection.
+        Greedy descent on proxy cost with surrogate-powered filtering.
 
-        For each candidate flip:
-        1. Project macros to satisfy new constraint (O(1) per flip)
-        2. Evaluate full proxy cost
-        3. Accept if proxy cost improves
+        For each iteration:
+        1. Generate candidates from duals (top 150 pairs × 3 directions = 450)
+        2. Project each candidate (fast constraint projection, ~microseconds)
+        3. Evaluate all feasible projections with surrogate (~0.1ms each)
+        4. Verify top-k by surrogate with real proxy cost (~1s each)
+        5. Accept best improvement
         """
         t0 = time.time()
 
         best_assignment = dict(assignment)
         best_positions = ref_positions.copy()
-        best_proxy = self._eval_proxy(ref_positions)["proxy_cost"]
         current_assignment = dict(assignment)
         current_positions = ref_positions.copy()
 
         hpwl_result = initial_result
 
+        # Initialize surrogate — sole arbiter (no compute_proxy_cost in loop)
+        if self.surrogate is not None:
+            self.surrogate.init_from_placement(current_positions)
+            best_proxy = self.surrogate.get_proxy_cost()
+            if verbose:
+                print(f"  Surrogate init: proxy={best_proxy:.4f} "
+                      f"(wl={self.surrogate.get_wirelength_cost():.4f}, "
+                      f"den={self.surrogate.get_density_cost():.4f}, "
+                      f"cong={self.surrogate.get_congestion_cost():.4f})")
+        else:
+            best_proxy = self._eval_proxy(ref_positions)["proxy_cost"]
+
         improvements = 0
-        evaluations = 0
+        full_evals = 0
+        surrogate_evals = 0
         stale_iters = 0
+        lp_resolves = 0
 
         if verbose:
-            print(f"  Starting navigation: proxy={best_proxy:.4f}")
+            print(f"  Starting navigation: proxy={best_proxy:.4f}, "
+                  f"surrogate={'ON' if self.surrogate else 'OFF'}")
 
         for iteration in range(max_iters):
             elapsed = time.time() - t0
@@ -898,84 +1449,214 @@ class Navigator:
                     print(f"  Time budget exhausted at iter {iteration}")
                 break
 
-            if stale_iters > 50:
+            if stale_iters > 100:
                 if verbose:
                     print(f"  Stale for {stale_iters} iters, stopping")
                 break
 
             # Get candidates from HPWL dual variables
             candidates = self.ng.rank_candidates(
-                hpwl_result["duals"], current_assignment, top_k=50
+                hpwl_result["duals"], current_assignment, top_k=150
             )
 
             if not candidates:
                 break
 
-            improved_this_iter = False
+            # Also add cluster move candidates
+            m2n = self.surrogate.macro_to_nets if self.surrogate else {}
+            cluster_candidates = self.ng.propose_cluster_flips(
+                hpwl_result["duals"], current_assignment,
+                m2n, n_proposals=20, rng=self.rng
+            )
 
+            # Phase 1: Project all candidates and evaluate with surrogate
+            projected = []  # (surrogate_proxy, new_pos, pair, new_dir, old_dir, is_cluster)
+
+            # Single-pair candidates
             for pair, new_dir, dual_mag in candidates:
                 if time.time() - t0 > time_budget:
                     break
-
                 old_dir = current_assignment[pair]
-
-                # Fast projection
+                current_assignment[pair] = new_dir
                 new_pos = self._project_flip(
                     current_positions, pair, new_dir, current_assignment
+                )
+                current_assignment[pair] = old_dir
+
+                if new_pos is None:
+                    continue
+
+                if self.surrogate is not None:
+                    # Identify moved macros
+                    i, k = pair
+                    moved = []
+                    if not np.allclose(new_pos[i], current_positions[i]):
+                        moved.append(i)
+                    if not np.allclose(new_pos[k], current_positions[k]):
+                        moved.append(k)
+                    # Also check cascade-moved macros
+                    for m in range(self.benchmark.num_hard_macros):
+                        if m != i and m != k and not np.allclose(new_pos[m], current_positions[m]):
+                            moved.append(m)
+
+                    surr_proxy = self.surrogate.evaluate_move(moved, new_pos)
+                    surrogate_evals += 1
+                else:
+                    surr_proxy = dual_mag  # Fall back to dual magnitude ranking
+
+                projected.append((surr_proxy, new_pos, pair, new_dir, old_dir, False))
+
+            # Cluster candidates (multi-pair flips)
+            for cluster in cluster_candidates:
+                new_pos, new_assign = self._project_cluster_flip(
+                    current_positions, cluster, current_assignment
                 )
                 if new_pos is None:
                     continue
 
-                # Update assignment for cascade check
-                current_assignment[pair] = new_dir
-                evaluations += 1
+                if self.surrogate is not None:
+                    moved = []
+                    for m in range(self.benchmark.num_hard_macros):
+                        if not np.allclose(new_pos[m], current_positions[m]):
+                            moved.append(m)
+                    if moved:
+                        surr_proxy = self.surrogate.evaluate_move(moved, new_pos)
+                        surrogate_evals += 1
+                    else:
+                        continue
+                else:
+                    surr_proxy = 0.0
 
-                costs = self._eval_proxy(new_pos)
+                projected.append((surr_proxy, new_pos, cluster, None, None, True))
 
-                if costs["overlap_count"] == 0 and costs["proxy_cost"] < best_proxy:
-                    improvement = best_proxy - costs["proxy_cost"]
-                    best_proxy = costs["proxy_cost"]
-                    best_assignment = dict(current_assignment)
+            if not projected:
+                stale_iters += 1
+                continue
+
+            # Phase 2: Sort by surrogate estimate, verify top-k with real proxy
+            if self.surrogate is not None:
+                projected.sort(key=lambda x: x[0])  # Lower surrogate proxy = better
+                verify_list = projected[:top_k_verify]
+            else:
+                # Without surrogate, just try top candidates by dual magnitude
+                verify_list = projected[:top_k_verify]
+
+            improved_this_iter = False
+
+            for surr_proxy, new_pos, pair_or_cluster, new_dir, old_dir, is_cluster in verify_list:
+                if time.time() - t0 > time_budget:
+                    break
+
+                # Fast vectorized overlap check (no compute_proxy_cost)
+                if self._check_overlaps_fast(new_pos):
+                    continue
+
+                full_evals += 1
+
+                if surr_proxy < best_proxy:
+                    improvement = best_proxy - surr_proxy
+                    best_proxy = surr_proxy
+
+                    if is_cluster:
+                        # Apply all pair flips in cluster
+                        for (p, d) in pair_or_cluster:
+                            current_assignment[p] = d
+                    else:
+                        current_assignment[pair_or_cluster] = new_dir
+
                     best_positions = new_pos.copy()
                     current_positions = new_pos.copy()
+
+                    # Re-extract assignment from actual positions to stay consistent
+                    # (cascade projection may have moved macros whose pairwise
+                    # relations no longer match the manually-updated assignment)
+                    sizes = self.benchmark.macro_sizes.numpy()
+                    movable_hard = np.arange(self.benchmark.num_hard_macros)[
+                        ~self.benchmark.macro_fixed[:self.benchmark.num_hard_macros].numpy()
+                    ]
+                    current_assignment = extract_assignment_vectorized(
+                        current_positions, sizes, movable_hard
+                    )
+                    self._macro_to_pairs = None  # invalidate cache
+                    best_assignment = dict(current_assignment)
+
+                    # Update surrogate state
+                    if self.surrogate is not None:
+                        self.surrogate.init_from_placement(current_positions)
+
                     improvements += 1
                     improved_this_iter = True
                     stale_iters = 0
 
                     if verbose:
                         elapsed = time.time() - t0
+                        if is_cluster:
+                            desc = f"cluster({len(pair_or_cluster)} pairs)"
+                        else:
+                            desc = (f"pair={pair_or_cluster}, "
+                                    f"{DIR_NAMES[old_dir]}->{DIR_NAMES[new_dir]}")
                         print(f"  iter {iteration}: proxy={best_proxy:.4f} "
-                              f"(delta={-improvement:.4f}, "
-                              f"pair={pair}, {DIR_NAMES[old_dir]}->{DIR_NAMES[new_dir]}, "
-                              f"{elapsed:.1f}s)")
+                              f"(delta={-improvement:.4f}, {desc}, "
+                              f"surr={surr_proxy:.4f}, {elapsed:.1f}s)")
 
-                    # Refresh duals periodically
-                    if improvements % 10 == 0:
+                    # Refresh duals periodically (capped)
+                    remaining = time_budget - (time.time() - t0)
+                    if improvements % 5 == 0 and lp_resolves < lp_resolve_cap and remaining > 20:
                         hpwl_result = self.lp.solve(
-                            current_assignment, time_limit=30.0
+                            current_assignment, time_limit=min(15.0, remaining - 10)
                         )
+                        lp_resolves += 1
                     break
-                else:
-                    current_assignment[pair] = old_dir
 
             if not improved_this_iter:
                 stale_iters += 1
 
+                # Refresh duals more aggressively when stale (capped)
+                remaining = time_budget - (time.time() - t0)
+                if stale_iters % 20 == 0 and lp_resolves < lp_resolve_cap and remaining > 20:
+                    hpwl_result = self.lp.solve(
+                        current_assignment, time_limit=min(15.0, remaining - 10)
+                    )
+                    lp_resolves += 1
+
         if verbose:
             elapsed = time.time() - t0
-            init_proxy = self._eval_proxy(ref_positions)["proxy_cost"]
-            print(f"  Navigation done: {evaluations} evals, "
-                  f"{improvements} improvements, {elapsed:.1f}s")
-            print(f"  Proxy: {init_proxy:.4f} -> {best_proxy:.4f} "
-                  f"({(best_proxy - init_proxy) / init_proxy * 100:+.2f}%)")
+            print(f"  Navigation done: {full_evals} accepted, "
+                  f"{surrogate_evals} surrogate evals, "
+                  f"{improvements} improvements, {lp_resolves} LP resolves, "
+                  f"{elapsed:.1f}s")
 
         return {
             "assignment": best_assignment,
             "positions": best_positions,
             "proxy_cost": best_proxy,
             "improvements": improvements,
-            "evaluations": evaluations,
+            "evaluations": full_evals,
+            "surrogate_evals": surrogate_evals,
         }
+
+    def _project_cluster_flip(self, positions, cluster, assignment):
+        """
+        Apply multiple pair flips via sequential constraint projection.
+
+        Args:
+            cluster: list of (pair, new_direction) tuples
+            assignment: current assignment dict
+
+        Returns:
+            (new_positions, new_assignment) or (None, None) if infeasible
+        """
+        pos = positions.copy()
+        new_assign = dict(assignment)
+
+        for pair, new_dir in cluster:
+            new_assign[pair] = new_dir
+            projected = self._project_flip(pos, pair, new_dir, new_assign)
+            if projected is None:
+                return None, None
+            pos = projected
+
+        return pos, new_assign
 
 
 # ---------------------------------------------------------------------------
@@ -1155,7 +1836,7 @@ class PolyhedraNavigationPlacer:
     """
 
     def __init__(self, navigate: bool = True, refine: bool = False,
-                 nav_iters: int = 100, nav_time: float = 30.0,
+                 nav_iters: int = 500, nav_time: float = 300.0,
                  density_steps: int = 80, verbose: bool = True):
         self.navigate = navigate
         self.refine = refine
@@ -1265,7 +1946,8 @@ class PolyhedraNavigationPlacer:
                   f"{time.time() - t0:.2f}s")
 
         t0 = time.time()
-        result = lp.solve(assignment, time_limit=60.0)
+        lp_time_limit = max(10.0, 40.0 - (time.time() - t_start))
+        result = lp.solve(assignment, time_limit=lp_time_limit)
         if self.verbose:
             print(f"  LP solve: status={result['status']}, "
                   f"HPWL={result['hpwl']:.2f}, {result['solve_time']:.2f}s")
@@ -1278,24 +1960,38 @@ class PolyhedraNavigationPlacer:
         # Use initial positions (not LP positions) — they have much better density
         positions = init_pos
 
-        # Step 4: Navigate (if enabled)
+        # Step 4: Build surrogate for fast candidate filtering
+        t0 = time.time()
+        surrogate = GridSurrogate(benchmark, plc)
+        if self.verbose:
+            print(f"  Surrogate built ({len(surrogate.nets)} nets), {time.time() - t0:.2f}s")
+
+        # Step 5: Navigate (if enabled)
         if self.navigate and n_pairs > 0 and result["positions"] is not None:
             t0 = time.time()
             ng = NeighborGenerator(alpha=1.0)
-            nav = Navigator(lp, ng, benchmark, plc)
+            nav = Navigator(lp, ng, benchmark, plc, surrogate=surrogate)
+
+            # Adaptive nav time budget: guarantee total place() < 55s
+            elapsed_so_far = time.time() - t_start
+            nav_time = min(40, max(15, 50 - elapsed_so_far))
+            if self.verbose:
+                print(f"  Nav budget: {nav_time:.1f}s (elapsed {elapsed_so_far:.1f}s)")
 
             nav_result = nav.greedy_descent(
                 assignment, result,
                 ref_positions=init_pos,
                 max_iters=self.nav_iters,
-                time_budget=self.nav_time,
+                time_budget=nav_time,
+                top_k_verify=1,
                 verbose=self.verbose,
+                lp_resolve_cap=3,
             )
 
-            assignment = nav_result["assignment"]
             positions = nav_result["positions"]
             if self.verbose:
-                print(f"  Navigation total: {time.time() - t0:.1f}s")
+                print(f"  Navigation total: {time.time() - t0:.1f}s, "
+                      f"{nav_result.get('surrogate_evals', 0)} surrogate evals")
 
         if self.verbose:
             print(f"  Total time: {time.time() - t_start:.1f}s")
