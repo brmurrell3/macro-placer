@@ -42,7 +42,7 @@ uv run evaluate <placer.py> -b ibm01
    - **avg < 1.50 (graduate)** → STOP. Surface to human for review.
    - **avg < 1.46 (champion)** → STOP immediately. This beats RePlAce.
 5. If best score hasn't improved >2% after N variants → kill hypothesis
-6. Update `docs/hypothesis-status.md` after every significant result
+6. Update `docs/experiment-log.md` after every significant result
 
 ## Key files
 
@@ -50,8 +50,10 @@ uv run evaluate <placer.py> -b ibm01
 |------|---------|
 | `hypotheses.yaml` | Per-hypothesis kill/graduate thresholds |
 | `results/experiment_log.jsonl` | Append-only log of all runs (read at session start) |
-| `docs/hypothesis-status.md` | Human-readable status dashboard |
-| `docs/novel-solutions.md` | The 6 hypotheses with theory and kill criteria |
+| `docs/roadmap.md` | Phased action plan with verifiable goals and kill gates |
+| `docs/experiment-log.md` | Full experiment history and per-benchmark results |
+| `docs/strategy.md` | Approach theory, architecture, contingencies |
+| `docs/profiling-plan.md` | Measurement methodology for profiling work |
 | `macro_place/evaluate.py` | Evaluation harness (don't modify unless infra work) |
 | `macro_place/objective.py` | Proxy cost computation |
 | `macro_place/benchmark.py` | Benchmark dataclass (PyTorch tensors) |
@@ -60,9 +62,10 @@ uv run evaluate <placer.py> -b ibm01
 ## At session start
 
 1. Read `results/experiment_log.jsonl` to know what's been tried
-2. Read `docs/hypothesis-status.md` for current state of each hypothesis
-3. Check `hypotheses.yaml` for thresholds
-4. Ask what to work on, or continue the most promising alive hypothesis
+2. Read `docs/roadmap.md` for current phase and next actions
+3. Read `docs/experiment-log.md` for latest results
+4. Check `hypotheses.yaml` for thresholds
+5. Ask what to work on, or continue the most promising alive hypothesis
 
 ## Writing a placer
 

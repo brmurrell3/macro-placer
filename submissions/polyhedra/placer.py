@@ -215,7 +215,8 @@ class LPSolver:
         return net_macros
 
     def solve(self, assignment: dict, warm_start: bool = False,
-              time_limit: float = 60.0) -> dict:
+              time_limit: float = 60.0, ref_positions: np.ndarray = None,
+              sparse_margin: float = 0.0) -> dict:
         """
         Solve the HPWL LP for the given assignment.
 
@@ -223,6 +224,8 @@ class LPSolver:
             assignment: dict (i, k) -> direction for all hard macro pairs
             warm_start: if True, modify existing model rather than rebuilding
             time_limit: solver time limit in seconds
+            ref_positions: reference positions for sparse filtering (skip far-apart pairs)
+            sparse_margin: margin beyond min separation to include pair (0=all pairs)
 
         Returns:
             dict with:
@@ -317,10 +320,24 @@ class LPSolver:
         # 2. Separation constraints from assignment
         # Add small epsilon to ensure strict non-overlap after LP solve
         eps = 0.002
-        sep_constraint_start = len(row_lower)
         sep_constraint_map = {}
+        skipped_pairs = 0
 
         for (i, k), direction in assignment.items():
+            # Sparse filtering: skip pairs far apart (trivially satisfied)
+            if ref_positions is not None and sparse_margin > 0:
+                if direction in (L, R):
+                    min_sep = (float(self.sizes[i, 0]) + float(self.sizes[k, 0])) / 2
+                    actual_sep = abs(ref_positions[i, 0] - ref_positions[k, 0])
+                    if actual_sep > min_sep + sparse_margin:
+                        skipped_pairs += 1
+                        continue
+                else:
+                    min_sep = (float(self.sizes[i, 1]) + float(self.sizes[k, 1])) / 2
+                    actual_sep = abs(ref_positions[i, 1] - ref_positions[k, 1])
+                    if actual_sep > min_sep + sparse_margin:
+                        skipped_pairs += 1
+                        continue
             wi = float(self.sizes[i, 0])
             hi_h = float(self.sizes[i, 1])
             wk = float(self.sizes[k, 0])
@@ -960,11 +977,12 @@ class GridSurrogate:
         h_demand = sign / (n_cols * self.grid_h_cap)
         v_demand = sign / (n_rows * self.grid_v_cap)
 
-        for r in range(r_lo, r_hi + 1):
-            for c in range(c_lo, c_hi + 1):
-                cell_idx = r * self.grid_cols + c
-                self.h_cong[cell_idx] += h_demand
-                self.v_cong[cell_idx] += v_demand
+        # Vectorized cell update
+        rows = np.arange(r_lo, r_hi + 1)
+        cols = np.arange(c_lo, c_hi + 1)
+        idxs = (rows[:, None] * self.grid_cols + cols).ravel()
+        self.h_cong[idxs] += h_demand
+        self.v_cong[idxs] += v_demand
 
     def get_density_cost(self):
         """Compute density cost matching PlacementCost formula."""
@@ -1160,18 +1178,20 @@ class Navigator:
         min_dx = (w[:, None] + w[None, :]) / 2
         min_dy = (h[:, None] + h[None, :]) / 2
 
-        overlap = (dx < min_dx - 1e-3) & (dy < min_dy - 1e-3)
+        overlap = (dx < min_dx - 1e-6) & (dy < min_dy - 1e-6)
         np.fill_diagonal(overlap, False)
         return np.any(overlap)
 
     def _project_flip(self, positions: np.ndarray, pair: tuple,
-                       new_dir: int, assignment: dict) -> np.ndarray:
+                       new_dir: int, assignment: dict,
+                       return_moved: bool = False):
         """
         Apply a single pair flip via direct constraint projection.
 
         Push the two macros apart minimally to satisfy the new separation direction.
         Then cascade: fix any newly violated constraints with neighbors.
         Returns new positions or None if infeasible (out of canvas).
+        If return_moved=True, returns (positions, moved_set) tuple.
         """
         i, k = pair
         pos = positions.copy()
@@ -1338,9 +1358,7 @@ class Navigator:
             if violations == 0:
                 break
 
-        # Post-cascade: direct overlap repair for ALL hard macro pairs near moved set
-        # The assignment-based cascade only checks pairs in the topology, but overlaps
-        # can occur between any two hard macros after position adjustments
+        # Post-cascade: direct overlap repair for hard macros near the moved set
         for repair_round in range(10):
             any_overlap = False
             for a in list(moved):
@@ -1394,6 +1412,8 @@ class Navigator:
                 pos[idx, 0] = np.clip(pos[idx, 0], hw, cw - hw)
                 pos[idx, 1] = np.clip(pos[idx, 1], hh, ch - hh)
 
+        if return_moved:
+            return pos, moved
         return pos
 
     def greedy_descent(self, assignment: dict, initial_result: dict,
@@ -1449,14 +1469,14 @@ class Navigator:
                     print(f"  Time budget exhausted at iter {iteration}")
                 break
 
-            if stale_iters > 100:
+            if stale_iters > 50:
                 if verbose:
                     print(f"  Stale for {stale_iters} iters, stopping")
                 break
 
             # Get candidates from HPWL dual variables
             candidates = self.ng.rank_candidates(
-                hpwl_result["duals"], current_assignment, top_k=150
+                hpwl_result["duals"], current_assignment, top_k=50
             )
 
             if not candidates:
@@ -1478,27 +1498,18 @@ class Navigator:
                     break
                 old_dir = current_assignment[pair]
                 current_assignment[pair] = new_dir
-                new_pos = self._project_flip(
-                    current_positions, pair, new_dir, current_assignment
+                result_flip = self._project_flip(
+                    current_positions, pair, new_dir, current_assignment,
+                    return_moved=True
                 )
                 current_assignment[pair] = old_dir
 
-                if new_pos is None:
+                if result_flip is None:
                     continue
+                new_pos, moved_set = result_flip
 
                 if self.surrogate is not None:
-                    # Identify moved macros
-                    i, k = pair
-                    moved = []
-                    if not np.allclose(new_pos[i], current_positions[i]):
-                        moved.append(i)
-                    if not np.allclose(new_pos[k], current_positions[k]):
-                        moved.append(k)
-                    # Also check cascade-moved macros
-                    for m in range(self.benchmark.num_hard_macros):
-                        if m != i and m != k and not np.allclose(new_pos[m], current_positions[m]):
-                            moved.append(m)
-
+                    moved = list(moved_set)
                     surr_proxy = self.surrogate.evaluate_move(moved, new_pos)
                     surrogate_evals += 1
                 else:
@@ -1599,11 +1610,12 @@ class Navigator:
                               f"(delta={-improvement:.4f}, {desc}, "
                               f"surr={surr_proxy:.4f}, {elapsed:.1f}s)")
 
-                    # Refresh duals periodically (capped)
+                    # Refresh duals periodically (capped, sparse LP for speed)
                     remaining = time_budget - (time.time() - t0)
-                    if improvements % 5 == 0 and lp_resolves < lp_resolve_cap and remaining > 20:
+                    if improvements % 5 == 0 and lp_resolves < lp_resolve_cap and remaining > 15:
                         hpwl_result = self.lp.solve(
-                            current_assignment, time_limit=min(15.0, remaining - 10)
+                            current_assignment, time_limit=min(10.0, remaining - 5),
+                            ref_positions=current_positions, sparse_margin=10.0
                         )
                         lp_resolves += 1
                     break
@@ -1611,11 +1623,12 @@ class Navigator:
             if not improved_this_iter:
                 stale_iters += 1
 
-                # Refresh duals more aggressively when stale (capped)
+                # Refresh duals when stale — use sparse LP for speed
                 remaining = time_budget - (time.time() - t0)
-                if stale_iters % 20 == 0 and lp_resolves < lp_resolve_cap and remaining > 20:
+                if stale_iters % 15 == 0 and lp_resolves < lp_resolve_cap and remaining > 15:
                     hpwl_result = self.lp.solve(
-                        current_assignment, time_limit=min(15.0, remaining - 10)
+                        current_assignment, time_limit=min(10.0, remaining - 5),
+                        ref_positions=current_positions, sparse_margin=10.0
                     )
                     lp_resolves += 1
 
@@ -1836,7 +1849,7 @@ class PolyhedraNavigationPlacer:
     """
 
     def __init__(self, navigate: bool = True, refine: bool = False,
-                 nav_iters: int = 500, nav_time: float = 300.0,
+                 nav_iters: int = 500, nav_time: float = 50.0,
                  density_steps: int = 80, verbose: bool = True):
         self.navigate = navigate
         self.refine = refine
@@ -1946,16 +1959,43 @@ class PolyhedraNavigationPlacer:
                   f"{time.time() - t0:.2f}s")
 
         t0 = time.time()
-        lp_time_limit = max(10.0, 40.0 - (time.time() - t_start))
-        result = lp.solve(assignment, time_limit=lp_time_limit)
+        # Scale LP time with problem size; large benchmarks need more time
+        # but cap so navigation always gets at least half the budget
+        lp_cap = 15.0 if n_pairs < 100000 else 60.0
+        lp_time_limit = min(lp_cap, max(5.0, self.nav_time * 0.5))
+        # Use sparse LP for large benchmarks to avoid infeasibility/timeout
+        if n_pairs > 200000:
+            sparse_margin = 1.0  # Very large: aggressive filtering (ibm10/12/14)
+        elif n_pairs > 50000:
+            sparse_margin = 10.0
+        else:
+            sparse_margin = 0.0
+        result = lp.solve(assignment, time_limit=lp_time_limit,
+                          ref_positions=init_pos, sparse_margin=sparse_margin)
         if self.verbose:
             print(f"  LP solve: status={result['status']}, "
                   f"HPWL={result['hpwl']:.2f}, {result['solve_time']:.2f}s")
 
         if result["positions"] is None:
             if self.verbose:
-                print("  LP infeasible! Returning initial placement.")
-            return torch.tensor(init_pos, dtype=torch.float32)
+                print(f"  HPWL LP infeasible, retrying with tighter sparse margin...")
+            # Retry with progressively tighter margins
+            for retry_margin in [3.0, 1.0, 0.5]:
+                if retry_margin >= sparse_margin:
+                    continue  # Skip if same or looser than initial attempt
+                result = lp.solve(
+                    assignment, time_limit=lp_time_limit,
+                    ref_positions=init_pos, sparse_margin=retry_margin
+                )
+                if result["positions"] is not None:
+                    if self.verbose:
+                        print(f"  Sparse LP (margin={retry_margin}) succeeded: "
+                              f"HPWL={result['hpwl']:.2f}, {result['solve_time']:.2f}s")
+                    break
+            if result["positions"] is None:
+                if self.verbose:
+                    print("  All LP attempts infeasible! Returning initial placement.")
+                return torch.tensor(init_pos, dtype=torch.float32)
 
         # Use initial positions (not LP positions) — they have much better density
         positions = init_pos
@@ -1972,9 +2012,9 @@ class PolyhedraNavigationPlacer:
             ng = NeighborGenerator(alpha=1.0)
             nav = Navigator(lp, ng, benchmark, plc, surrogate=surrogate)
 
-            # Adaptive nav time budget: guarantee total place() < 55s
+            # Adaptive nav time budget
             elapsed_so_far = time.time() - t_start
-            nav_time = min(40, max(15, 50 - elapsed_so_far))
+            nav_time = min(self.nav_time, max(15, self.nav_time + 10 - elapsed_so_far))
             if self.verbose:
                 print(f"  Nav budget: {nav_time:.1f}s (elapsed {elapsed_so_far:.1f}s)")
 
@@ -1985,7 +2025,7 @@ class PolyhedraNavigationPlacer:
                 time_budget=nav_time,
                 top_k_verify=1,
                 verbose=self.verbose,
-                lp_resolve_cap=3,
+                lp_resolve_cap=5,
             )
 
             positions = nav_result["positions"]
