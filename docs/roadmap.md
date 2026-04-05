@@ -65,14 +65,14 @@ Competition deadline: May 21, 2026 (~6.5 weeks)
 ### Actions
 
 1. **Sparse LP for large benchmarks** — only include pairs within margin of their min separation distance (skip pairs far apart that are trivially satisfied). Should make ibm10/12/14 LP feasible in <15s, freeing time for navigation within the ~50s budget.
-2. **Verification with real proxy** — after surrogate accepts a move, do one real `compute_proxy_cost` as a safety check. Reject moves where surrogate improvement doesn't match reality. Costs ~1s per accepted move but prevents ibm15/ibm17-style regressions.
+2. **Verification with real proxy** — DEFERRED to Phase 5. Real proxy eval costs ~5s/call, too expensive for per-move verification in the ~50s budget. Plan to use it sparingly later (e.g., final placement validation, multi-start candidate selection).
 3. **Stale dual refresh** — when navigation stalls (20+ iterations with no improvement), re-solve LP to get fresh duals instead of just incrementing stale counter.
 4. **Navigation speed** — profile the per-iteration cost. Each navigation iteration takes ~6s on average (300s / 50 iterations). Identify and optimize the bottleneck (projection? surrogate eval? candidate generation?) to get more iterations per second.
 
 ### Verification
 
 - [x] ibm10 LP feasible in <18s (sparse margin=1.0, was infeasible at 60s)
-- [ ] ibm15/ibm17 no longer regress with navigation (DEFERRED — real proxy verification too expensive at ~5s/eval)
+- [ ] ibm15/ibm17 no longer regress with navigation — DEFERRED to Phase 5 with real proxy verification
 - [x] Navigation throughput: ~0.4 iters/second (was ~0.15). 16 improvements in 45s (was 9 in 45s)
 - [ ] Avg proxy --all < 1.485 (at 1.4921 with 50s nav; 1.4890 with 300s nav)
 
@@ -187,5 +187,5 @@ Avg proxy not below 1.46 → accept current score, focus on submission quality +
 | Hierarchical feasibility <1% | 4b | Medium-high | Adjust k; try 3D lifting (Phase 6) |
 | ibm01 gap irreducible (structural) | 5 | Medium | Accept it; focus on close benchmarks |
 | LP infeasible on large benchmarks | 3, 4 | Known | Sparse LP with margin-based pair filtering |
-| Surrogate RUDY fundamentally wrong | 4, 5 | Medium | Real proxy verification as safety net |
+| Surrogate RUDY fundamentally wrong | 4, 5 | Medium | Deferred real proxy verification in Phase 5; multi-start diversity |
 | Time budget insufficient for large cascade | 4b | Low | Adaptive budgeting; focus on worst benchmarks |
