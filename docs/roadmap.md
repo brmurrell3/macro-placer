@@ -10,182 +10,105 @@ Competition deadline: May 21, 2026 (~6.5 weeks)
 | Entry | Avg Proxy | Gap to RePlAce |
 |-------|-----------|----------------|
 | RePlAce (target) | 1.4578 | — |
-| **Polyhedra Navigation (ours)** | **1.4890** (300s nav) / **1.4921** (50s nav) | **-2.1%** / **-2.4%** |
-| SDF v5 (init topology) | 1.5002 | -2.9% |
-| Will's SA seed | 1.5338 | -5.2% |
+| **Polyhedra (50s nav)** | **1.4921** | **-2.4%** |
+| SDF v5 (init) | 1.5002 | -2.9% |
 
-- Beat RePlAce on 3 benchmarks (ibm02, ibm10, ibm12)
-- **Profiling complete** — congestion is 66.5% of proxy, density 29.3%, WL 4.2%
-- Surrogate formula discrepancies were investigated and found to be non-issues
-- RUDY vs ground truth routing model mismatch is the real surrogate accuracy limit
-- 4 benchmarks get 0 improvements from navigation (stuck in local optima)
-- ibm10 LP infeasible (308K pairs) — returns init, already winning vs RePlAce
-
-## Success Criteria
-
-| Metric | Current | Target | Champion |
-|--------|---------|--------|----------|
-| Avg proxy --all | 1.4921 (50s) / 1.4890 (300s) | <1.46 | <1.4578 |
-| Benchmarks beating RePlAce | 3/17 | 6+ | 10+ |
-| Zero overlaps | Yes | Yes | Yes |
-| Runtime / benchmark | ~60s | <60s | <60s |
-
-**Time budget constraint:** The 1hr competition limit is for the hidden NG45 test case (much larger). IBM benchmarks must run fast (~50-60s) as they are the public evaluation. Do not trade speed for quality on IBM — improvements must come from better algorithms, not more time.
+- Beat RePlAce on 3/17 benchmarks (ibm02, ibm10, ibm12)
+- Congestion is 66.5% of proxy, density 29.3%, WL 4.2%
+- Local navigation is at ceiling — can improve density but not congestion
+- Tunneling theory developed, not yet validated experimentally
 
 ---
 
-## Phase 1: Speedup (DONE)
+## Phase 1–3: DONE
 
-- [x] Surrogate-only navigation, vectorized overlap check, adaptive time budget
-- [x] All 17 benchmarks <60s, zero overlaps, <1% quality loss
-
-## Phase 2: Profiling & Diagnostics (DONE)
-
-- [x] Component breakdown, benchmark triage, surrogate accuracy, convergence, timing
-- Key findings in `results/profiling/` — see below for how they drive the remaining phases
-
-### What profiling revealed
-
-| Finding | Implication |
-|---------|-------------|
-| Congestion = 66.5% of proxy | All improvement must come from congestion reduction |
-| Surrogate RUDY ≠ ground truth routing | Within-benchmark candidate ranking is unreliable (rho=0.17) |
-| Surrogate formulas match ground truth | Phase 3's planned formula fixes are moot |
-| 4 benchmarks get 0 improvements | Single-pair flips can't escape SDF topology basin |
-| `num_nets` predicts gap (rho=0.958) | High-connectivity benchmarks are structurally harder |
-| ibm10 LP infeasible (308K pairs) | Need sparse LP for large benchmarks |
-| Search not plateauing at 300s | Need faster iterations, not more time (budget is ~50s) |
+- [x] SDF init + polyhedra navigation framework
+- [x] Surrogate-guided search (1000+ candidates/benchmark)
+- [x] Sparse LP for large benchmarks
+- [x] Navigation speedup (2x), SA acceptance, cluster moves
+- [x] Profiling + component breakdown + benchmark triage
+- [x] Congestion diagnostic experiments (proved local moves can't reach congestion)
 
 ---
 
-## Phase 3: Quick Wins (Apr 5–10)
+## Phase 4: Tunneling Validation (Apr 6–14)
 
-**Goal:** Harvest easy improvements before the hard architecture work.
+**Goal:** Test whether the tunneling theory produces actionable results. Three experiments in order of cost.
 
-### Actions
+### 4a. Soft-pair flipping (1 day)
 
-1. **Sparse LP for large benchmarks** — only include pairs within margin of their min separation distance (skip pairs far apart that are trivially satisfied). Should make ibm10/12/14 LP feasible in <15s, freeing time for navigation within the ~50s budget.
-2. **Verification with real proxy** — DEFERRED to Phase 5. Real proxy eval costs ~5s/call, too expensive for per-move verification in the ~50s budget. Plan to use it sparingly later (e.g., final placement validation, multi-start candidate selection).
-3. **Stale dual refresh** — when navigation stalls (20+ iterations with no improvement), re-solve LP to get fresh duals instead of just incrementing stale counter.
-4. **Navigation speed** — profile the per-iteration cost. Each navigation iteration takes ~6s on average (300s / 50 iterations). Identify and optimize the bottleneck (projection? surrogate eval? candidate generation?) to get more iterations per second.
+The core hypothesis: flipping pairs with SMALL duals (soft modes) moves congestion, while flipping pairs with LARGE duals (current approach) only moves density/WL.
+
+1. Solve LP, get duals
+2. Sort pairs by |dual| ASCENDING
+3. Flip softest 5-20 pairs, accept cost increases
+4. Re-solve LP, evaluate real proxy
+5. Compare congestion change vs hard-pair flips
+
+**Kill gate:** If soft-pair flips don't move congestion more than hard-pair flips → theory is wrong, skip 4b/4c.
+
+### 4b. Parametric LP continuation (3 days)
+
+If 4a validates, trace the mountain pass:
+
+1. Pick softest pair, set up parametric LP rotating constraint from direction A → B
+2. Solve LP at t = 0.0, 0.1, ..., 1.0
+3. Track proxy cost and congestion along the path
+4. Look for saddle structure (cost rises then falls)
+
+**Kill gate:** No saddle found in any parametric path → barrier is flat, not structured.
+
+### 4c. Saddle search integration (5 days)
+
+If 4b finds saddles:
+
+1. Implement dimer method: uphill on softest mode, downhill on all others
+2. Cross the saddle, descend into new basin
+3. Run local navigation in new basin to recover density
+4. Evaluate on --all
 
 ### Verification
 
-- [x] ibm10 LP feasible in <18s (sparse margin=1.0, was infeasible at 60s)
-- [ ] ibm15/ibm17 no longer regress with navigation — DEFERRED to Phase 5 with real proxy verification
-- [x] Navigation throughput: ~0.4 iters/second (was ~0.15). 16 improvements in 45s (was 9 in 45s)
-- [ ] Avg proxy --all < 1.485 (at 1.4921 with 50s nav; 1.4890 with 300s nav)
-
-### Kill gate
-
-None — each action is independent and low-risk.
+- [ ] Soft-pair flips move congestion >1% on ibm06
+- [ ] Parametric LP shows saddle structure
+- [ ] At least one benchmark improves proxy cost via saddle crossing
+- [ ] Avg proxy --all < 1.48
 
 ---
 
-## Phase 4: Escape Local Optima (Apr 10–21)
+## Phase 5: Innovation Prize (Apr 14–May 7)
 
-**Goal:** Break out of the SDF topology basin. This is the core problem — 4 benchmarks get zero improvements because no single-pair flip helps.
+**Goal:** Document the polyhedra framework for the innovation prize ($4K), regardless of placement score.
 
-### 4a. Larger moves (Apr 10–14)
+### The narrative
 
-The current search only flips 1-5 pairs at a time. For benchmarks where this doesn't help, we need structurally different topologies.
+1. **The decomposition theorem** — union of convex polyhedra, LP inside combinatorics
+2. **What we proved empirically** — local search ceiling, congestion barrier, failed approaches
+3. **The tunneling theory** — complexification, mountain pass, Potts model connection
+4. **Connections to deep math** — tropical geometry, cavity method, stratified Morse theory
 
-1. **Swendsen-Wang cluster flips** — identify connected components in the constraint graph (pairs sharing macros), flip entire components. Changes 10-50 pairs simultaneously.
-2. **Random restarts with perturbation** — perturb the SDF init positions (add Gaussian noise to 10-20% of macros), re-extract assignment, navigate from there. Different init → different topology basin.
-3. **Simulated annealing on surrogate** — accept worse moves with Boltzmann probability `exp(-delta/T)`. Temperature schedule over the nav budget. Escapes shallow local optima.
+### Deliverables
 
-### 4b. Hierarchical search (Apr 14–21)
-
-If 4a is insufficient, build the multi-fidelity cascade.
-
-1. **Spectral clustering** — group macros by netlist connectivity (k=8-16). Identify which inter-group relations matter most.
-2. **Group-level topology enumeration** — enumerate L/R/A/B assignments for group pairs. Filter by geometric feasibility + HPWL bound.
-3. **Topology expansion** — expand promising group topologies to macro-level, keeping intra-group structure from SDF.
-4. **Cascade integration** — group screen → surrogate eval → LP solve → verify. Target: 5000+ topologies explored, 5-10 expensive evaluations.
-
-### Verification
-
-- [ ] At least 2 of {ibm03, ibm06, ibm16} improve with larger moves
-- [ ] Avg proxy --all < 1.47
-- [ ] Beat RePlAce on >= 5/17 benchmarks
-
-### Kill gate
-
-- 4a fails (no benchmark improves): skip to 4b hierarchical
-- 4b feasibility rate <1% at all group counts: try 3D lifting (Phase 5)
-- Avg proxy not below 1.47 after full Phase 4: pivot to Phase 5
+- [ ] Competition report (PDF)
+- [ ] Visualizations of polyhedra structure + tunneling paths
+- [ ] Code documentation
 
 ---
 
-## Phase 5: Congestion-Aware Search (Apr 21 – May 7)
+## Phase 6: Polish & Submit (May 7–21)
 
-**Goal:** Congestion is 66.5% of proxy. Make the search directly target it.
-
-### Actions
-
-1. **Congestion-delta candidate ranking** — rank candidates by surrogate `delta_congestion` instead of LP dual magnitude. Duals only reflect HPWL (4.2% of proxy). Surrogate congestion deltas directly target the dominant cost component.
-2. **Congestion-aware init** — place high-fanout macros (most nets) first, spread them to reduce routing demand. Current SDF init optimizes density, not congestion.
-3. **Multi-start** — run 2-3 random perturbations of the init placement, navigate from each, keep the best. General-purpose way to escape local optima without benchmark-specific tuning.
-
-### Verification
-
-- [ ] Avg proxy --all < 1.46 (beats RePlAce)
-- [ ] Beat RePlAce on >= 6/17 benchmarks
-
-### Kill gate
-
-Avg proxy not below 1.46 → accept current score, focus on submission quality + innovation prize.
-
----
-
-## Phase 6: Contingency & Extensions (May 7–14)
-
-**Goal:** If Phases 4-5 insufficient, try structural changes. Prepare innovation prize.
-
-### Contingency actions (pick based on diagnosis)
-
-- **3D lifting** — add synthetic z-dimension during search, anneal to 2D. Mitigates low feasibility between polyhedra.
-- **Disjunctive programming** — tighter LP relaxation (Balas/Kronqvist P-split). Better bounds → better duals.
-- **Tropical gradient descent** — HPWL is tropical polynomial. May find better descent directions than LP duals.
-
-### Innovation prize
-
-- Write competition report documenting polyhedra framework
-- Reference `docs/novel-mathematical-machinery.pdf`
-- Prepare visualizations
-
-### Verification
-
-- [ ] Avg proxy --all < 1.45 (champion-level)
-- [ ] Innovation prize submission complete
-
----
-
-## Phase 7: Polish & Submit (May 14–21)
-
-**Goal:** Final tuning, robustness, and submission.
-
-### Actions
-
-1. **Final validation** — all 17 benchmarks + NG45 hidden set, verify zero overlaps, timing <60s per IBM benchmark
-2. **Robustness check** — run 3 seeds, verify results are stable
-3. **Submit**
-
-### Verification
-
-- [ ] All 17 IBM benchmarks: zero overlaps, <60s each
-- [ ] Avg proxy --all is personal best
-- [ ] Submission passes validation
+1. Final validation — all 17 benchmarks + NG45, zero overlaps, <60s/benchmark
+2. Best of: tunneling result (if Phase 4 works) or current 1.4921
+3. Robustness check — 3 seeds, stable results
+4. Submit placement + innovation prize report
 
 ---
 
 ## Risk Register
 
-| Risk | Phase | Likelihood | Mitigation |
-|------|-------|------------|------------|
-| Larger moves don't help (topology truly optimal) | 4a | Medium | Move to hierarchical (4b) or per-benchmark (5) |
-| Hierarchical feasibility <1% | 4b | Medium-high | Adjust k; try 3D lifting (Phase 6) |
-| ibm01 gap irreducible (structural) | 5 | Medium | Accept it; focus on close benchmarks |
-| LP infeasible on large benchmarks | 3, 4 | Known | Sparse LP with margin-based pair filtering |
-| Surrogate RUDY fundamentally wrong | 4, 5 | Medium | Deferred real proxy verification in Phase 5; multi-start diversity |
-| Time budget insufficient for large cascade | 4b | Low | Adaptive budgeting; focus on worst benchmarks |
+| Risk | Likelihood | Mitigation |
+|------|------------|------------|
+| Soft-pair flips don't move congestion | Medium | Accept 1.49, focus on innovation prize |
+| Parametric LP too slow for N=500+ | Medium | Focus on smaller benchmarks; extrapolate |
+| Tunneling finds better congestion but density regresses | High | Combine: tunnel for congestion, navigate for density |
+| Not enough time for both placement and innovation prize | Low | Innovation prize is parallelizable with experiments |

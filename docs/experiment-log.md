@@ -1,6 +1,6 @@
 # Experiment Log
 
-Last updated: 2026-04-04
+Last updated: 2026-04-05
 
 ## Summary
 
@@ -245,3 +245,25 @@ Note: Phase 2 (300s nav) is the best quality result at ~5300s total runtime. Pha
 - 2026-04-05: --all avg **1.4921** at 50s nav/benchmark (0 overlaps, ~60s/benchmark total).
 - 2026-04-05: Tradeoff: 5x faster runtime (1030s vs 5300s) with 0.2% quality regression on avg.
 - 2026-04-05: ibm03 and ibm06 now get improvements (were stuck with 0 nav improvements).
+- 2026-04-05: **Congestion diagnostic experiment** (scripts/congestion_diagnostic.py):
+- 2026-04-05: Real-proxy-guided navigation (300s) on ibm01/ibm06/ibm08.
+- 2026-04-05: ibm01: cong -0.04%, den -2.75%. ibm06: cong -0.67%, den -5.57%. ibm08: cong -0.36%, den -1.19%.
+- 2026-04-05: **Conclusion: local pair flips cannot reach congestion.** Density is the only improvable component.
+- 2026-04-05: **Swap diagnostic experiment** (scripts/swap_diagnostic.py):
+- 2026-04-05: swap+LP on ibm06: congestion -44% but density +180%. LP destroys density after swap.
+- 2026-04-05: swap_only (no LP): congestion <0.5%, density preserved. Single swap doesn't change routing structure.
+- 2026-04-05: **Conclusion: congestion IS reachable via different topologies, but needs coordinated multi-macro changes.**
+- 2026-04-05: Phases 4a (larger local moves) and 5 (congestion-aware ranking) killed by experimental evidence.
+- 2026-04-05: **Group topology cascade attempted and failed:**
+- 2026-04-05: Spectral clustering groups macros by connectivity (not space) — bounding boxes cover 60-100% of canvas.
+- 2026-04-05: Expanding group topology to macro-level: changing 200-900 pairs creates circular constraint chains → LP infeasible.
+- 2026-04-05: Even with gap filtering (only flip plausible pairs) and single group-pair flips: 0/20 LP feasible at sparse_margin=0.
+- 2026-04-05: Root cause: netlist-connected macros are spatially interleaved. "Group A left of Group B" is unenforceable at macro level.
+- 2026-04-05: **Sequence pair experiments:**
+- 2026-04-05: Single transpositions: 3205/3250 LP feasible, 14 overlap-free, 0 improvements. Same local basin.
+- 2026-04-05: Multi-step (10-500 transpositions): all feasible, all WORSE on congestion (+1-2%). Random distant topologies are worse than SDF.
+- 2026-04-05: **Position blending (SDF ↔ LP):** linear interpolation monotonically worse until pure LP. No smooth path in position space.
+- 2026-04-05: **Gaussian homotopy attempts:** noise+legalize fails (can't legalize 100+ overlaps). Surrogate-based ES finds lower surrogate cost but with overlaps.
+- 2026-04-05: **Key conclusion:** SDF basin is genuine local minimum in ALL tested directions. Need to tunnel through barrier, not search harder.
+- 2026-04-05: Tunneling theory developed: complexification, mountain pass, Potts model. See docs/tunneling-theory.md.
+- 2026-04-05: Core hypothesis: flip SOFT pairs (small duals) instead of HARD pairs (large duals) to cross saddle points between basins.
