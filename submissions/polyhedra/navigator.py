@@ -51,9 +51,10 @@ class SimulatedAnnealingAcceptance:
     Auto-calibrates T0 from the first few iterations' delta distribution.
     """
 
-    def __init__(self, rng: np.random.Generator = None):
+    def __init__(self, rng: np.random.Generator = None, min_t0: float = 5e-3):
         self.rng = rng or np.random.default_rng(42)
         self.t0 = 0.0
+        self.min_t0 = min_t0
         self.calibration_deltas = []
         self.calibrated = False
 
@@ -75,7 +76,8 @@ class SimulatedAnnealingAcceptance:
             len(self.calibration_deltas) >= 3
         ):
             median_delta = float(np.median(self.calibration_deltas))
-            self.t0 = median_delta / 0.693 if median_delta > 1e-8 else 0.01
+            raw_t0 = median_delta / 0.693 if median_delta > 1e-8 else 0.01
+            self.t0 = max(raw_t0, self.min_t0)
             self.calibrated = True
 
     @property
