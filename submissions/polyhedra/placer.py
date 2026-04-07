@@ -271,7 +271,7 @@ class PolyhedraNavigationPlacer:
                     ref_positions=start_pos,
                     max_iters=self.nav_iters,
                     time_budget=nav_budget,
-                    top_k_verify=1,
+                    top_k_verify=3,
                     verbose=self.verbose,
                     lp_resolve_cap=3,
                 )
@@ -282,7 +282,7 @@ class PolyhedraNavigationPlacer:
                 if self.verbose:
                     print(f"  Restart {restart}: {nav_result['improvements']} improvements")
             else:
-                positions = start_pos
+                positions = result["positions"]
 
             # Verify no overlaps
             if check_overlaps(positions, sizes, benchmark.num_hard_macros, tol=1e-3):
