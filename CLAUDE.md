@@ -66,6 +66,10 @@ uv run evaluate <placer.py> -b ibm01
 4. Read `docs/approach.md` for current strategy
 5. Ask what to work on, or continue the most promising alive hypothesis
 
+## Overnight autonomous mode
+
+To run autonomous experimentation for hours: read `overnight_driver.md` and `queue.md`, then `/loop` with the driver prompt. The driver pops queue items, runs each in an isolated worktree (with submodule symlinked — see `worktree_submodule_bootstrap` in memory), logs results to `results/overnight_run.log`, tracks per-stage bests, and ends on QUEUE_EMPTY / TIME_UP / CRASH. Stops are in `overnight_driver.md`; do not add threshold-based stops — we hunt global best.
+
 ## Writing a placer
 
 A placer is a Python file with a class that has a `place(self, benchmark) -> Tensor` method.
