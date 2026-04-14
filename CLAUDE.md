@@ -33,38 +33,37 @@ uv run evaluate <placer.py> -b ibm01
 
 ## Feedback loop
 
-1. Pick a hypothesis from `hypotheses.yaml` (alive ones only)
-2. Implement a placer variant in `submissions/`
-3. Run `--fast --json` → read the JSON output
-4. Check against thresholds in `hypotheses.yaml`:
+1. Implement a placer variant in `submissions/`
+2. Run `--fast --json` → read the JSON output
    - **fast_gate fail** → tweak parameters, try next variant
    - **fast_gate pass** → run `--all --json`
    - **avg < 1.50 (graduate)** → STOP. Surface to human for review.
    - **avg < 1.46 (champion)** → STOP immediately. This beats RePlAce.
-5. If best score hasn't improved >2% after N variants → kill hypothesis
-6. Update `docs/experiment-log.md` after every significant result
+3. If best score hasn't improved >2% after N variants → kill hypothesis
+4. Update `docs/results.md` after every significant result
 
 ## Key files
 
 | File | Purpose |
 |------|---------|
-| `hypotheses.yaml` | Per-hypothesis kill/graduate thresholds |
 | `results/experiment_log.jsonl` | Append-only log of all runs (read at session start) |
 | `docs/roadmap.md` | Phased action plan with verifiable goals and kill gates |
-| `docs/experiment-log.md` | Full experiment history and per-benchmark results |
-| `docs/strategy.md` | Approach theory, architecture, contingencies |
-| `docs/profiling-plan.md` | Measurement methodology for profiling work |
+| `docs/results.md` | Full experiment history and per-benchmark results |
+| `docs/approach.md` | Approach theory, architecture, contingencies |
+| `docs/theory.md` | Tunneling frameworks, literature grounding, deep math connections |
+| `docs/problem.md` | Formal mathematical problem statement |
 | `macro_place/evaluate.py` | Evaluation harness (don't modify unless infra work) |
 | `macro_place/objective.py` | Proxy cost computation |
 | `macro_place/benchmark.py` | Benchmark dataclass (PyTorch tensors) |
 | `submissions/examples/` | Reference placers (greedy, random) |
+| `submissions/polyhedra/init/sdf.py` | SDF initialization (moved from submissions/sdf_density/) |
 
 ## At session start
 
 1. Read `results/experiment_log.jsonl` to know what's been tried
 2. Read `docs/roadmap.md` for current phase and next actions
-3. Read `docs/experiment-log.md` for latest results
-4. Check `hypotheses.yaml` for thresholds
+3. Read `docs/results.md` for latest results
+4. Read `docs/approach.md` for current strategy
 5. Ask what to work on, or continue the most promising alive hypothesis
 
 ## Writing a placer

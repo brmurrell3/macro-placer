@@ -68,7 +68,7 @@ class PolyhedraNavigationPlacer:
         try:
             import importlib.util
             sdf_path = str(
-                pathlib.Path(__file__).parent.parent / "sdf_density" / "placer.py"
+                pathlib.Path(__file__).parent / "init" / "sdf.py"
             )
             spec = importlib.util.spec_from_file_location("sdf_placer", sdf_path)
             mod = importlib.util.module_from_spec(spec)
