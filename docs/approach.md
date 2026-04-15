@@ -1,6 +1,6 @@
 # Approach: Polyhedra Navigation
 
-Last updated: 2026-04-13
+Last updated: 2026-04-15
 
 ---
 
@@ -41,13 +41,14 @@ The problem decomposes into:
 | Entry | Avg Proxy | Gap to RePlAce |
 |-------|-----------|----------------|
 | RePlAce (target) | 1.4578 | -- |
-| **Polyhedra (50s nav)** | **1.4921** | **-2.4%** |
-| **Polyhedra (300s nav)** | **1.4890** | **-2.1%** |
+| **Polyhedra (50s nav)** | **1.4918** | **-2.3%** |
+| **Polyhedra (300s nav)** | **1.4867** | **-2.0%** |
 | SDF v5 (init only) | 1.5002 | -2.9% |
 
 - Beat RePlAce on 3/17 benchmarks (ibm02, ibm10, ibm12)
 - Congestion is **66.5%** of proxy cost, density 29.3%, WL 4.2%
 - Navigation improves density effectively but **cannot move congestion**
+- **Phase 5 sweep (22 experiments):** surrogate fixes, alternative inits, LP modifications — all within noise of baseline. The architecture is at a plateau for incremental changes.
 
 ---
 
