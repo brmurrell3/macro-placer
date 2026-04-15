@@ -20,7 +20,7 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 ## Stage 1: SP3 — Surrogate Accuracy
 
-### 1. [pending] sp3_density_grid_fix `stage:sp3`
+### 1. [done: avg=1.4931] sp3_density_grid_fix `stage:sp3`
 
 **Hypothesis:** Density surrogate uses all cells; real proxy uses top-10% of *occupied* cells only. Fix aligns surrogate with real.
 
@@ -32,11 +32,11 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** `--fast` regresses >1%.
 
-**Result:** _
+**Result:** fast avg=1.2735, all avg=1.4931, 0 overlaps. Neutral vs baseline (1.4921). +0.07% regression within noise.
 
 ---
 
-### 2. [pending] sp3_delta_ranking `stage:sp3`
+### 2. [done: avg=1.4929] sp3_delta_ranking `stage:sp3`
 
 **Hypothesis:** Ranking candidates by surrogate *delta* (change from current) cancels common-mode bias.
 
@@ -48,11 +48,11 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** `--fast` regresses >0.5% OR acceptance rate drops.
 
-**Result:** _
+**Result:** fast avg=1.2736, all avg=1.4929, 0 overlaps. Neutral — delta ranking identical order since surrogate re-inits on acceptance.
 
 ---
 
-### 3. [pending] sp3_online_calibration `stage:sp3`
+### 3. [killed: rho_no_improvement] sp3_online_calibration `stage:sp3`
 
 **Hypothesis:** Per-component affine correction (fit `real ≈ a_c * surr_c + b_c` for each of wl/density/congestion) corrects ranking inversions from component mis-weighting.
 
@@ -64,11 +64,11 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** rho does not improve OR `--fast` regresses.
 
-**Result:** _
+**Result:** fast avg=1.2740, 0 overlaps. Killed: too few accepted moves (1-6 per benchmark) for meaningful OLS fit in 50s budget. Rho did not improve.
 
 ---
 
-### 4. [pending] sp3_top_k_20 `stage:sp3`
+### 4. [done: avg=1.4919] [new_best] [new_best_stage] sp3_top_k_20 `stage:sp3`
 
 **Hypothesis:** Increasing `top_k_verify` from 3→20 compensates for surrogate ranking noise within 50s budget.
 
@@ -80,11 +80,11 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** iteration count <5 on any fast benchmark OR avg regresses.
 
-**Result:** _
+**Result:** fast avg=1.2700, all avg=1.4919, 0 overlaps. NEW_BEST (prev 1.4929). Better move selection per iteration outweighs fewer iterations.
 
 ---
 
-### 5. [pending] sp3_rank_aggregation `stage:sp3`
+### 5. [done: avg=1.4997] sp3_rank_aggregation `stage:sp3`
 
 **Hypothesis:** Independent Borda ranking by WL/density/congestion, then weighted sum of ranks, is more robust than composite scoring when one component (congestion) ranks poorly.
 
@@ -96,11 +96,11 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** `--fast` regresses >1%.
 
-**Result:** _
+**Result:** fast avg=1.2777, all avg=1.4997, 0 overlaps. Neutral — composite already matches official formula weighting.
 
 ---
 
-### 6. [pending] sp3_adaptive_verification `stage:sp3`
+### 6. [skipped: depends-on-killed] sp3_adaptive_verification `stage:sp3`
 
 **Hypothesis:** Adaptive top_k (20 early for calibration, 3 late when well-calibrated) is best-of-both-worlds. Only meaningful if sp3_online_calibration is implemented — depends on calibrator.
 
@@ -114,11 +114,11 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Note:** If sp3_online_calibration was killed, skip this item (mark `[skipped: depends-on-killed]`).
 
-**Result:** _
+**Result:** Skipped — sp3_online_calibration was killed (rho_no_improvement), so calibrator unavailable.
 
 ---
 
-### 7. [pending] sp3_pinrudy_blockage `stage:sp3`
+### 7. [done: avg=1.4935] sp3_pinrudy_blockage `stage:sp3`
 
 **Hypothesis:** PinRUDY (pin-location-weighted demand) + macro blockage (hard macros reduce effective capacity) better model real congestion than uniform-bbox RUDY.
 
@@ -132,11 +132,11 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** pin offset data unavailable (then mark `[killed: no pin data]`) OR `--fast` regresses >1%.
 
-**Result:** _
+**Result:** fast avg=1.2742, all avg=1.4935, 0 overlaps. Pin data available. PinRUDY+blockage implemented but no improvement over sp3_top_k_20 (1.4919).
 
 ---
 
-### 8. [pending] sp3_pairwise_ranking `stage:sp3`
+### 8. [done: avg=1.4930] sp3_pairwise_ranking `stage:sp3`
 
 **Hypothesis:** A small logistic regression trained online on "which of A/B is better" (5 features from surrogate deltas) beats point-wise surrogate ranking. Higher ceiling (rho → 0.4-0.6) than calibration.
 
@@ -148,13 +148,13 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** `--fast` regresses OR training fails numerically.
 
-**Result:** _
+**Result:** fast avg=1.2738, all avg=1.4930, 0 overlaps. Neutral — pairwise ranker never activated (only 1-7 accepted candidates per benchmark, needs 10).
 
 ---
 
 ## Stage 2: SP1 — Initial Topology
 
-### 9. [pending] sp1_spectral_topology `stage:sp1`
+### 9. [killed: fast_gate] sp1_spectral_topology `stage:sp1`
 
 **Hypothesis:** Fiedler-vector init (eigenvectors 2,3 of netlist Laplacian) lands in a connectivity-optimal basin; navigator recovers density.
 
@@ -166,11 +166,11 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** neither avg nor congestion improves.
 
-**Result:** _
+**Result:** fast avg=1.7807, 0 overlaps. Killed: spectral coords ignore macro sizes → connected macros land on top of each other → legalizer scatters them, destroying connectivity. 40% worse than baseline.
 
 ---
 
-### 10. [pending] sp1_replace_topology_extraction `stage:sp1`
+### 10. [killed: no_congestion_improvement] sp1_replace_topology_extraction `stage:sp1`
 
 **Hypothesis:** Extracting L/R/A/B assignment from RePlAce's positions inherits its congestion-friendly basin.
 
@@ -182,11 +182,11 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** RePlAce positions unavailable (mark `[killed: no_replace_positions]`) OR no congestion improvement.
 
-**Result:** _
+**Result:** fast avg=1.2776, 0 overlaps. Killed: RePlAce topology identical quality to SDF — extract_assignment() erases congestion advantage.
 
 ---
 
-### 11. [pending] sp1_congestion_aware_extraction `stage:sp1`
+### 11. [done: avg=1.4930] sp1_congestion_aware_extraction `stage:sp1`
 
 **Hypothesis:** Extract direction minimizing shared-net bbox area (not largest gap) for pairs with shared nets → locally congestion-optimal topology.
 
@@ -198,11 +198,11 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** LP infeasible anywhere OR avg regresses >1%.
 
-**Result:** _
+**Result:** fast avg=1.2738, all avg=1.4930, 0 overlaps. Neutral — largest-gap already near-optimal for shared-net pairs.
 
 ---
 
-### 12. [pending] sp1_hmetis_partitioning `stage:sp1`
+### 12. [killed: fast_gate] sp1_hmetis_partitioning `stage:sp1`
 
 **Hypothesis:** Recursive min-cut bisection produces a topology where connected macros cluster tight → small net bboxes → low congestion.
 
@@ -218,11 +218,11 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** partitioner install/import fails (mark `[killed: no_partitioner]`), partitions size-imbalanced breaking LP, or no congestion improvement.
 
-**Result:** _
+**Result:** fast avg=1.9059, killed. kahypar installed fine but shelf packing within partitions produces terrible layouts. ibm13 LP infeasible. Clustering helps connectivity but naive spatial embedding destroys it.
 
 ---
 
-### 13. [pending] sp1_greedy_construction `stage:sp1`
+### 13. [killed: fast_gate] sp1_greedy_construction `stage:sp1`
 
 **Hypothesis:** Greedy sequential placement (most-connected first, pick direction minimizing shared-net congestion contribution) is an alternative to partition-based init.
 
@@ -234,11 +234,11 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** `--fast` regresses >1% OR construction produces infeasible topology.
 
-**Result:** _
+**Result:** fast avg=1.7545, killed. Greedy clustering creates dense regions — WL vs density/congestion fundamental conflict. SDF analytical spreading far superior.
 
 ---
 
-### 14. [pending] sp1_boundary_attraction `stage:sp1`
+### 14. [killed: no_congestion_improvement] sp1_boundary_attraction `stage:sp1`
 
 **Hypothesis:** Pushing macros toward canvas boundaries (linearized LP penalty) opens up the center for routing.
 
@@ -250,13 +250,13 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** boundary packing hurts density by >5% OR avg regresses.
 
-**Result:** _
+**Result:** fast avg=1.2728, 0 overlaps. Killed: penalty inert at safe lambda (0.01 × diag/N ≈ fractions of a unit vs HPWL in thousands). No congestion improvement. Larger lambda would hurt WL.
 
 ---
 
 ## Stage 3: SP4 — Congestion-Aware LP
 
-### 15. [pending] sp4_net_weighting `stage:sp4`
+### 15. [done: avg=1.4974] sp4_net_weighting `stage:sp4`
 
 **Hypothesis:** Iterative RUDY-driven net weighting (Brenner/Vygen) makes LP avoid congestion hotspots within current topology.
 
@@ -268,11 +268,11 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** LP runtime >10x OR avg regresses.
 
-**Result:** _
+**Result:** fast avg=1.2736, all avg=1.4974, 0 overlaps. Weighting mechanism inert — RUDY too uniform for hot cells. 3x LP overhead hurts nav budget.
 
 ---
 
-### 16. [pending] sp4_separation_margins `stage:sp4`
+### 16. [done: avg=1.4932] sp4_separation_margins `stage:sp4`
 
 **Hypothesis:** Increasing min separation margins in congested regions creates routing space; complementary to net weighting.
 
@@ -284,11 +284,11 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** LP infeasible OR avg regresses >1%.
 
-**Result:** _
+**Result:** fast avg=1.2736, all avg=1.4932, 0 overlaps. Margins added but inert — navigation overwrites LP positions, so LP-level spacing doesn't persist.
 
 ---
 
-### 17. [pending] sp4_mccormick_area `stage:sp4`
+### 17. [done: avg=1.4918] [new_best] [new_best_stage] sp4_mccormick_area `stage:sp4`
 
 **Hypothesis:** Penalizing linearized net bbox area (McCormick envelope) directly targets concentration-driven congestion.
 
@@ -300,11 +300,11 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** LP size blows up (>10x runtime) OR avg regresses.
 
-**Result:** _
+**Result:** fast avg=1.2692, all avg=1.4918, 0 overlaps. NEW_BEST (prev 1.4919). McCormick with lambda=0.001 nearly inert but marginal improvement. LP runtime negligible overhead.
 
 ---
 
-### 18. [pending] sp4_dual_informed_targeting `stage:sp4`
+### 18. [killed: no_effect] sp4_dual_informed_targeting `stage:sp4`
 
 **Hypothesis:** Navigator proposer should use *congestion duals* (HPWL dual × shared-net congestion contribution), not pure HPWL duals.
 
@@ -316,11 +316,11 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** `--fast` regresses OR proposer selects infeasible pairs.
 
-**Result:** _
+**Result:** fast avg=1.2738, identical to baseline. Killed: uniform per-net congestion (total_cong/n_nets) just scales all duals equally — no ranking change. Needs per-net RUDY differentiation.
 
 ---
 
-### 19. [pending] sp4_real_proxy_feedback `stage:sp4`
+### 19. [killed: regression] sp4_real_proxy_feedback `stage:sp4`
 
 **Hypothesis:** Using the *real* PlacementCost congestion map (not RUDY) at LP init produces better initial weights than approximation. Only at init (once, ~50ms cost).
 
@@ -332,11 +332,11 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** per-cell congestion not extractable from harness (mark `[killed: no_hook]`) OR avg regresses.
 
-**Result:** _
+**Result:** fast avg=1.2730, 0 overlaps. Killed: congestion weighting inflates HPWL (2214→2406 on ibm01) without proportionally reducing congestion cost.
 
 ---
 
-### 20. [pending] sp4_lp_navigate_reweight_loop `stage:sp4`
+### 20. [done: avg=1.4973] sp4_lp_navigate_reweight_loop `stage:sp4`
 
 **Hypothesis:** 3 outer rounds of (congestion-aware LP → 15s nav → recompute weights from navigated positions) bootstraps congestion reduction with density preservation.
 
@@ -348,13 +348,13 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** total runtime exceeds 60s per benchmark OR avg regresses.
 
-**Result:** _
+**Result:** fast avg=1.2733, all avg=1.4973, 0 overlaps. Neutral — splitting nav budget across 3 rounds cancels congestion benefit. ibm18 LP infeasible in round 3.
 
 ---
 
 ## Stage 4: Combine Winners
 
-### 21. [pending] combine_stage_winners `stage:combine`
+### 21. [done: avg=1.4918] [new_best_stage] combine_stage_winners `stage:combine`
 
 **Hypothesis:** Best-per-stage findings stack: best SP3 (better surrogate) + best SP1 (better basin) + best SP4 (congestion-aware LP) compound.
 
@@ -372,11 +372,11 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** patch conflicts unresolvable OR combined result worse than any individual winner.
 
-**Result:** _
+**Result:** All 3 patches applied cleanly. fast avg=1.2692, all avg=1.4918, 0 overlaps. Ties sp4_mccormick_area — changes don't compound (SP1/SP3 changes are neutral in practice).
 
 ---
 
-### 22. [pending] combine_pairwise_sp1_sp4 `stage:combine`
+### 22. [skipped: no_committed_changes] combine_pairwise_sp1_sp4 `stage:combine`
 
 **Hypothesis:** If three-way combine fails, pairwise SP1+SP4 may still stack (topology × LP objective). SP3 is an accelerator, not structurally coupled.
 
@@ -388,7 +388,7 @@ Driver pops the top `[pending]` item, runs it, marks it `[done|killed|new_best]`
 
 **Kill if:** patches conflict OR worse than best individual.
 
-**Result:** _
+**Result:** Skipped — experiment changes exist only as uncommitted working-tree modifications in worktrees. `git diff main <branch>` returns empty because subagents never committed (per protocol). Combine mechanism requires committed diffs.
 
 ---
 

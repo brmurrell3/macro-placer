@@ -1,6 +1,6 @@
 # SP1: Initial Topology Selection — Improvement Avenues
 
-Last updated: 2026-04-14
+Last updated: 2026-04-15
 
 ## Current State
 
@@ -11,6 +11,25 @@ Last updated: 2026-04-14
 - **Opportunity:** swap+LP proved 44% lower congestion EXISTS in other topologies
 
 The initial topology determines ~95% of final congestion. Everything downstream (LP, navigation) optimizes within the basin SP1 chooses.
+
+## Overnight Sweep Results (Apr 14-15)
+
+6 experiments tested. **All alternative inits failed badly.** Only congestion-aware extraction completed (neutral at 1.4930).
+
+| Approach | Status | Avg | Key finding |
+|----------|--------|-----|-------------|
+| Spectral topology (Approach 1) | **killed** | 1.78 | Spectral coords ignore macro sizes → overlapping clusters → legalizer scatters them |
+| RePlAce extraction (Approach 2) | **killed** | — | extract_assignment() erases any congestion advantage — same topology as SDF |
+| Congestion-aware extraction (Approach 3) | **best** | 1.4930 | Largest-gap is already near-optimal for shared-net pairs |
+| hMETIS partitioning (Approach 4) | **killed** | 1.91 | kahypar works, but shelf packing within partitions produces terrible layouts |
+| Greedy construction (Approach 7) | **killed** | 1.75 | Clustering for WL creates dense regions — fundamental WL vs density conflict |
+| Boundary attraction (Approach 8) | **killed** | — | Penalty inert at safe lambda; larger lambda hurts WL |
+
+**Critical insight:** SDF's analytical spreading produces topology that is **extremely hard to beat**. The issue isn't that SDF finds a bad topology — it's that alternative inits either (a) produce terrible density that legalizer/navigator can't recover, or (b) get mapped to the same topology after extract_assignment().
+
+**Remaining viable approaches:** Only multilevel navigation (Approach 6) and TCG (Approach 5) remain untested. These change navigation reach, not init quality.
+
+**Status: INIT APPROACHES EXHAUSTED.** Focus shifts to multilevel (structural change to navigation).
 
 ---
 

@@ -1,6 +1,6 @@
 # SP3: Surrogate Accuracy — Improvement Avenues
 
-Last updated: 2026-04-14
+Last updated: 2026-04-15
 
 ## Current State
 
@@ -11,6 +11,25 @@ Last updated: 2026-04-14
 - Navigator is effectively blind when choosing between candidates
 
 Density is 29.3% of proxy cost. Navigation successfully reduces density, but with rho=0.17, it's finding improvements by luck rather than guidance.
+
+## Overnight Sweep Results (Apr 14-15)
+
+8 experiments tested. **All within noise of baseline 1.4921.** Only top_k_verify=20 showed marginal improvement (1.4919).
+
+| Approach | Status | Avg | Key finding |
+|----------|--------|-----|-------------|
+| Density grid fix (Approach 4) | done | 1.4931 | No effect — top-10% population doesn't matter |
+| Delta ranking (Approach 3) | done | 1.4929 | Surrogate re-inits on acceptance, so delta=absolute |
+| Online calibration (Approach 1) | **killed** | — | Only 1-6 accepted moves per benchmark; OLS needs 5+ samples |
+| Top-k=20 (Approach 2) | **best** | 1.4919 | Wider net compensates for blind ranking |
+| Rank aggregation (Approach 6) | done | 1.4997 | Borda with official weights = composite score |
+| Adaptive verification (Approach 8) | skipped | — | Depends on killed calibration |
+| PinRUDY + blockage (Approach 5) | done | 1.4935 | Pin data available; model implemented; no improvement |
+| Pairwise ranking (Approach 7) | done | 1.4930 | Never activated — needs 10 verified samples, got 1-7 |
+
+**Critical insight:** The real bottleneck isn't surrogate ranking quality — it's that **very few candidates are genuinely better** than the current state. With only 1-7 accepted moves per 50s benchmark run, the search space is nearly exhausted. Improving ranking won't help if there's nothing better to rank.
+
+**Status: EXHAUSTED.** No further SP3 work recommended unless navigation budget increases significantly.
 
 ---
 

@@ -1,6 +1,6 @@
 # Results
 
-Last updated: 2026-04-13
+Last updated: 2026-04-15
 
 Trimmed results focusing on the active polyhedra navigation hypothesis.
 SDF density and optimal transport hypotheses were explored and superseded/killed;
@@ -21,6 +21,8 @@ see git history for full variant logs.
 |------------|--------|----------------|-------|
 | Polyhedra Navigation | **graduated** | **1.4867** | Active approach, 2.0% behind RePlAce |
 | SDF Density | superseded | 1.5002 | Now used as init for polyhedra navigation |
+
+**Overnight run (Apr 14-15):** 22 experiments across SP3/SP1/SP4/combine. Best: 1.4918 (McCormick area penalty). All within noise of baseline 1.4921. See "Overnight Sweep" section below.
 
 ## Polyhedra Navigation --- Results
 
@@ -127,6 +129,76 @@ Note: Phase 2 (300s nav) is the best quality result at ~5300s total runtime. Pha
 - **Surrogate ranking is the bottleneck:** global correlation is strong (rho=0.899) but within-benchmark candidate ranking is weak (rho=0.17). Improving surrogate fidelity would directly improve navigation quality.
 - **Search is NOT plateauing:** ibm01 found 31 improvements in 300s, still improving at cutoff. More time budget -> more improvements.
 - **3 benchmarks beat RePlAce:** ibm02 (+11.8%), ibm10 (+6.3%), ibm12 (+4.5%). These have favorable macro/net ratios.
+
+## Overnight Sweep (Apr 14-15): 22 Experiments
+
+Full log: `results/overnight_run.log`. Queue: `queue.md`.
+
+### Summary
+
+22 items across 4 stages. **Global best: 1.4918** (vs baseline 1.4921). No experiment moved the needle more than noise.
+
+| Stage | Items | Done (--all) | Killed | Skipped | Winner | Avg |
+|-------|-------|-------------|--------|---------|--------|-----|
+| SP3 (Surrogate) | 8 | 5 | 2 | 1 | sp3_top_k_20 | 1.4919 |
+| SP1 (Topology) | 6 | 1 | 5 | 0 | sp1_congestion_aware_extraction | 1.4930 |
+| SP4 (LP) | 6 | 3 | 3 | 0 | sp4_mccormick_area | 1.4918 |
+| Combine | 2 | 1 | 0 | 1 | combine_stage_winners | 1.4918 |
+
+### SP3 — Surrogate Accuracy (8 items)
+
+| Hypothesis | Result | Avg | Finding |
+|------------|--------|-----|---------|
+| density_grid_fix | done | 1.4931 | Filtering to occupied cells — no effect |
+| delta_ranking | done | 1.4929 | Surrogate re-inits on acceptance, so delta=absolute |
+| online_calibration | killed | — | Too few accepted moves (1-6) for OLS fit in 50s |
+| **top_k_20** | **done** | **1.4919** | **Best SP3. Better move selection outweighs fewer iterations** |
+| rank_aggregation | done | 1.4997 | Borda ranking identical to composite (same weights) |
+| adaptive_verification | skipped | — | Depends on killed online_calibration |
+| pinrudy_blockage | done | 1.4935 | Pin data available; PinRUDY implemented but no improvement |
+| pairwise_ranking | done | 1.4930 | Ranker never activated (needs 10 samples, got 1-7) |
+
+**Lesson:** The surrogate is already well-calibrated for this task. Within-benchmark rho=0.17 is misleading — the real bottleneck isn't surrogate ranking, it's that **few candidates are actually better** (only 1-7 accepted per benchmark). Increasing top_k from 3→20 helps marginally by casting a wider net.
+
+### SP1 — Initial Topology (6 items)
+
+| Hypothesis | Result | Avg | Finding |
+|------------|--------|-----|---------|
+| spectral_topology | killed | 1.78 | Spectral coords ignore macro sizes → overlapping clusters → legalizer destroys connectivity |
+| replace_topology | killed | — | extract_assignment() erases any congestion advantage |
+| **congestion_aware_extraction** | **done** | **1.4930** | **Only SP1 finisher. Largest-gap already near-optimal** |
+| hmetis_partitioning | killed | 1.91 | kahypar works, but shelf packing within partitions is terrible |
+| greedy_construction | killed | 1.75 | Clustering creates dense regions — WL vs density conflict |
+| boundary_attraction | killed | — | Penalty inert at safe lambda, harmful at aggressive lambda |
+
+**Lesson:** SDF's analytical spreading produces a topology that is **extremely hard to beat** from alternative inits. Every alternative (spectral, partitioning, greedy, RePlAce extraction) produces either much worse density or identical topology after extract_assignment(). The SDF basin isn't just a local minimum — it's a **good** local minimum.
+
+### SP4 — Congestion-Aware LP (6 items)
+
+| Hypothesis | Result | Avg | Finding |
+|------------|--------|-----|---------|
+| net_weighting | done | 1.4974 | RUDY too uniform for meaningful hot cells; 3x LP overhead |
+| separation_margins | done | 1.4932 | Margins added but navigation overwrites LP positions |
+| **mccormick_area** | **done** | **1.4918** | **Best overall. Marginal — nearly inert at lambda=0.001** |
+| dual_informed_targeting | killed | — | Uniform per-net congestion → no ranking change |
+| real_proxy_feedback | killed | — | Congestion weighting inflates HPWL without reducing congestion |
+| lp_navigate_reweight | done | 1.4973 | Splitting nav budget across 3 rounds cancels benefit |
+
+**Lesson:** LP-level congestion modifications are **washed out by navigation**. The navigator re-solves the LP and re-extracts assignment each iteration, so LP starting conditions have minimal lasting effect. The few-second LP solve sets a starting point, but 50s of navigation dominates the final result.
+
+### Combine (2 items)
+
+Three-way combine (SP3+SP1+SP4 winners) scored 1.4918, tying sp4_mccormick_area. Changes don't compound because SP1 and SP3 winners are essentially neutral. Pairwise combine skipped due to uncommitted worktree changes.
+
+### Strategic Implications
+
+1. **The system is at a plateau.** 22 independent experiments spanning surrogate accuracy, initial topology, and LP formulation all produced results within ±0.5% of baseline. The polyhedra navigation architecture has been thoroughly explored at the parameter/surrogate/LP level.
+
+2. **Navigation dominates everything upstream.** LP changes, init changes, and surrogate changes are all erased by 50s of navigation. The only path to meaningful improvement is changing **what navigation can reach** — i.e., making larger topology jumps possible.
+
+3. **SDF init is not the bottleneck.** The literature-motivated hypothesis that "start connectivity-optimal, refine for density" would beat "start density-optimal, refine for connectivity" was decisively falsified. SDF's topology is genuinely good.
+
+4. **Congestion is structural, not parametric.** You can't reduce congestion by tuning LP weights or surrogate parameters. It requires fundamentally different macro arrangements that local navigation (1-5 pair flips) cannot reach.
 
 ## See Also
 
