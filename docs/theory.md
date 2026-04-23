@@ -298,7 +298,24 @@ The competition also imposes a generality constraint: the placer must work well 
 The theoretical frameworks in Sections 2-4 identify *what* to do (navigate through soft degrees of freedom at saddle points). This section addresses *how* to do it cheaply enough to fit within the ~30 LP-evaluation budget per benchmark. The core insight: most candidate assignments can be screened or bounded without full LP solves, expanding the effective search budget by orders of magnitude.
 
 
-### 5a. LP Sensitivity Bounds (Miftari)
+### 5a. LP Sensitivity Bounds (Miftari) --- TESTED, KILLED
+
+> **Empirical status (Apr 16):** Tested on ibm01. Cheap dual signals predict
+> LP-HPWL (rho=0.86, 42700x speedup), but LP-HPWL has **zero correlation with
+> proxy cost** (rho=-0.001). The chain `cheap signal -> LP-HPWL -> proxy`
+> breaks at the second link. See [results.md](results.md) "Miftari" section.
+>
+> This invalidates the entire class of LP-value-based cluster elimination:
+> branch-and-bound with LP relaxation, Lagrangian bounds from duals, MCMC
+> sampling weighted by LP cost, and partial-commitment LP bounding. All
+> optimize a function (HPWL) uncorrelated with the actual objective (proxy =
+> WL + 0.5*density + 0.5*congestion). Congestion is 66.5% of proxy cost and
+> is a structural property of the topology, not the LP solution.
+>
+> Any viable bounding strategy must include density and congestion terms —
+> which are non-convex (top-k order statistics) and not naturally available
+> from LP solves. The incremental real-proxy evaluator ([evaluation.md](evaluation.md))
+> is the only proposed path to cheap exact proxy signal.
 
 The most directly applicable result for cheap evaluation is the 2024-2026 work of Miftari, Derval et al. (arXiv:2410.14443, v3 February 2026) on sensitivity analysis for linear modifications of the LP constraint matrix. Their framework studies f(lambda) = min c^T x subject to (A + lambda*D)x <= b, where D encodes constraint-matrix perturbations -- precisely what happens when switching a separation direction changes specific rows.
 
