@@ -1,6 +1,6 @@
 # Approach: Polyhedra Navigation
 
-Last updated: 2026-04-15
+Last updated: 2026-04-23
 
 ---
 
@@ -32,6 +32,7 @@ The problem decomposes into:
 - GridSurrogate for fast (~0.1ms) candidate evaluation
 - Surrogate-guided navigation with SA acceptance
 - Cluster moves (net-correlated + macro-centered multi-pair flips)
+- ClusterScreener: multi-tier pre-projection pruning (Zobrist dedup, displacement floor, HPWL bound, axis crowding) — rejects ~20-40% of moves at ~1-10μs each before expensive projection+surrogate
 - Robust projection (cascade repair + overlap repair)
 
 ---
@@ -132,83 +133,45 @@ Cascade repair + overlap repair ensures zero overlaps. This is a clear advantage
 
 ## 7. Innovation Opportunities
 
-Ranked by potential impact x feasibility:
+### A. Congestion-Aware LP Objective --- KILLED
 
-### A. Congestion-Aware LP Objective (HIGH impact, MEDIUM effort)
+Tested as SP4 (6 variants: net weighting, separation margins, McCormick area, dual-informed targeting, real-proxy feedback, LP-navigate-reweight). Best result: McCormick area at 1.4918 (noise). LP-level congestion modifications are washed out by 50s of navigation — the navigator re-solves LP each iteration, erasing starting conditions.
 
-**The gap:** The LP minimizes only HPWL. But RUDY congestion is approximately linearizable. For each net j with bounding box area A_j, congestion demand ~ A_j / (grid cells in bbox). The sum of net bbox areas is:
+### B. Fix the Surrogate --- KILLED
 
-```
-sum_j (x_max_j - x_min_j) * (y_max_j - y_min_j)
-```
+Tested as SP3 (8 variants: online calibration, delta ranking, top-k verify, rank aggregation, PinRUDY, pairwise ranking). Best result: top_k_20 at 1.4919 (noise). Real bottleneck is not ranking quality — only 1-7 candidates are genuinely better per benchmark run. The search space is nearly exhausted at current navigation scale.
 
-This is bilinear -- not directly LP-compatible. But we could:
-1. Add a penalty `lambda * sum_j (x_span_j + y_span_j)` to the LP (this IS linear -- it's just scaled HPWL)
-2. Or add a **net-weighted HPWL** where high-congestion nets get higher weight
-3. Or iteratively solve: after each LP, identify the top-5% congested cells, increase weights on nets passing through them, re-solve
+### C. Hierarchical Topology Decomposition (UNTESTED — most promising remaining)
 
-This is essentially **Lagrangian relaxation** of the congestion constraint, a well-studied technique. RePlAce does something analogous via density bin potentials. We could do it within the LP framework.
+Flat O(N^2) pair flips can't make coordinated global changes. Group topology (200+ pairs) creates LP infeasibilities. Multilevel navigation clusters macros into K=15-25 super-macros, navigates at coarse level (190 pairs, exhaustive search possible), then refines within clusters. This is the only approach that could break the congestion barrier by making large topology jumps feasible. Novel combination of multilevel paradigm with LP-based polyhedra framework.
 
-**Why this is differentiated:** Nobody else has an LP solver inside a feasible-topology framework. Adding congestion awareness to the LP lets us optimize congestion *within* the polyhedron, not just across polyhedra.
+### D. Soft-Mode Tunneling --- KILLED
 
-### B. Fix the Surrogate (HIGH impact, MEDIUM effort)
+Tested in Phase 4. Soft-pair flips, group cascade, sequence pairs all failed to cross the congestion barrier. The barrier is hundreds of flips wide, not 5-20.
 
-Within-benchmark Spearman rho = 0.17 means **the navigator is nearly blind**. Of 1000+ candidates evaluated per benchmark, we're essentially picking randomly among them. Improving this to rho > 0.5 could double effective navigation quality.
+### E. Congestion-First Initialization --- KILLED
 
-**Options:**
-1. **Calibrate surrogate against real proxy** -- fit a per-benchmark linear correction (a,b) so `real ~ a*surrogate + b`, using the first few verified candidates
-2. **Delta-based surrogate** -- instead of absolute cost, predict cost *change* from a verified baseline. Relative predictions are often more stable
-3. **Use real proxy selectively** -- for the top-5 candidates, compute real proxy (we already do top-3 verify). Could also use real proxy to train the surrogate online
+Tested as SP1 (6 variants: spectral, RePlAce extraction, congestion-aware extraction, hMETIS, greedy, boundary attraction). All alternative inits either produce terrible density or map to the same topology after extract_assignment(). SDF's analytical spreading is genuinely hard to beat.
 
-**Why this is differentiated:** Most competitors either use expensive real evaluation or hand-tuned surrogates. An online-calibrated surrogate that gets better during search is novel.
+### F. Sequence Pair as Topology Representation --- KILLED
 
-### C. Hierarchical Topology Decomposition (HIGH impact, HIGH effort)
+Tested: 3205/3250 transpositions LP-feasible, 14 overlap-free, 0 improvements. Multi-step (10-500 transpositions) all worse on congestion.
 
-**The gap:** Flat O(N^2) pair flips can't make coordinated global changes. Group topology (changing 200+ pairs at once) creates LP infeasibilities. We need something in between.
+### G. Cheap-Signal Cluster Screening --- KILLED
 
-**Approach:** Build a **macro hierarchy** via recursive partitioning of the netlist (e.g., hMETIS). At each level:
-1. **Coarse level:** Treat macro clusters as single super-macros. The assignment between super-macros has O(K^2) pairs (K clusters << N). Large topology changes at this level are feasible.
-2. **Fine level:** Within each cluster, run current navigation.
-3. **Refinement:** Alternately optimize at coarse and fine levels.
+Tested as Miftari experiments. Cheap LP dual signals predict HPWL changes (rho=0.86, 42700x speedup) but LP-HPWL doesn't predict proxy (rho=-0.001). HPWL and density anti-correlate; congestion dominates proxy and is uncorrelated with HPWL. Any HPWL-based topology ranking is blind to the objective.
 
-This is the **multilevel paradigm** from partitioning (Karypis/Kumar), adapted to the polyhedra framework. It lets us make large global topology changes (at coarse level) without creating constraint cycles.
+### H. Incremental Real-Proxy Evaluator (PROPOSED)
 
-**Why this is differentiated:** Multilevel is used in partitioning and SA, but NOT inside an LP-based polyhedra framework. The combination is novel.
+Replace GridSurrogate (within-benchmark ρ=0.17) with an incremental evaluator that returns exact proxy cost by caching per-net HPWL, per-cell density, and per-cell congestion accumulators and updating only what a move touches. Motivated by Vedu Mallela's Partcl submission ("Incremental CD", 300× speedup on real objective).
 
-### D. Soft-Mode Tunneling (MEDIUM impact, already planned)
+**What it solves:** Eliminates surrogate ranking error entirely. If exact signal still finds only 1-7 improving moves per benchmark, the diagnosis shifts definitively from "bad signal" to "bad move set" — removing a confound for all future experiments.
 
-The tunneling theory (Phase 4 in the roadmap) targets exactly the right thing: crossing the congestion barrier via soft-pair flips. The math (mountain pass, Potts model, complexification) is elegant.
+**What it doesn't solve:** The congestion barrier (§5). Local moves still can't reach distant congestion basins regardless of eval accuracy. But faster exact eval enables more candidates per iteration, cheaper restarts, and tractable tunneling experiments.
 
-**Risk assessment:** The theory correctly identifies that *soft pairs* are the degrees of freedom congestion might live in. But the empirical question -- "does flipping 5-20 soft pairs actually move congestion?" -- is still open. If the answer is no (barrier is 500 flips wide, not 5), the theory is right but impractical.
+**Risk:** Matching `compute_proxy_cost` bit-for-bit requires reimplementing PlacementCost C++ internals (density grid, RUDY, top-k order statistics) in Python. Order statistics (top-10% density, top-5% congestion) don't decompose incrementally — need full reduce after each move (~10K cells, likely fine). SP3 overnight results suggest surrogate accuracy isn't the binding constraint, so the payoff may be diagnostic rather than score-improving.
 
-**Suggestion:** Test this immediately. It's 1 day of work and resolves the biggest uncertainty.
-
-### E. Congestion-First Initialization (MEDIUM impact, LOW effort)
-
-Instead of SDF -> navigate, try:
-1. Solve an HPWL LP with **no initial topology** (use a random or congestion-minimizing assignment)
-2. Use the LP positions as init
-3. Then navigate for density
-
-Currently we optimize: good density init -> navigate for density. Try: good congestion init -> navigate for density. The swap+LP experiment showed that LP-solved positions from different topologies CAN have 44% less congestion.
-
-**How to get a congestion-minimizing topology:**
-- Start from the SDF positions
-- Solve LP
-- Identify top-congested nets
-- For pairs within those nets, try ALL 4 directions, pick the one that minimizes the net's bounding box area
-- Re-solve LP
-
-This is a greedy congestion-aware topology construction, not navigation. It builds a NEW polyhedron from scratch rather than walking between neighbors.
-
-### F. Sequence Pair as Topology Representation (MEDIUM impact, HIGH effort)
-
-The current topology is an explicit O(N^2) pair assignment. A **sequence pair** (SP) encodes the same information in O(N) space -- two permutations of N macros. Benefits:
-- SP perturbations (adjacent transpositions) are guaranteed to produce feasible topologies
-- The SP naturally avoids the infeasibility issues from group topology changes
-- Well-studied in floorplanning literature (Murata et al., 1996)
-
-**Risk:** We already tried sequence pair transpositions (3205/3250 feasible, 0 improvements). But those were *random* transpositions. SP + LP solve + dual-guided selection of which transpositions to make could work.
+**Effort:** 3-5 days. See [evaluation.md](evaluation.md) for full design.
 
 ---
 
@@ -218,3 +181,4 @@ The current topology is an explicit O(N^2) pair assignment. A **sequence pair** 
 - [theory.md](theory.md) -- tunneling frameworks and theoretical backing
 - [results.md](results.md) -- experiment history and per-benchmark data
 - [roadmap.md](roadmap.md) -- action plan
+- [evaluation.md](evaluation.md) -- navigator eval pipeline (screener + proposed incremental evaluator)

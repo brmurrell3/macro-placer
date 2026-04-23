@@ -19,6 +19,7 @@ from assignment import extract_assignment, DIR_NAMES
 from projection import check_overlaps
 from moves import Move, MoveProposer, DualGuidedProposer, ClusterProposer
 from surrogate import Surrogate
+from cluster_bounds import ClusterScreener
 
 from macro_place.benchmark import Benchmark
 
@@ -120,6 +121,15 @@ class Navigator:
         self.rng = np.random.default_rng(42)
         self._macro_to_pairs = None
 
+        self.screener = ClusterScreener(
+            sizes=benchmark.macro_sizes.numpy(),
+            n_hard=benchmark.num_hard_macros,
+            canvas_w=benchmark.canvas_width,
+            canvas_h=benchmark.canvas_height,
+            macro_to_nets=(surrogate.macro_to_nets if surrogate else {}),
+            nets=(surrogate.nets if surrogate else []),
+        )
+
     def _get_macro_to_pairs(self, assignment):
         """Build macro -> list of pairs index."""
         if self._macro_to_pairs is not None:
@@ -130,6 +140,16 @@ class Navigator:
             m2p[b].append((a, b))
         self._macro_to_pairs = m2p
         return m2p
+
+    @staticmethod
+    def _extract_flips(move, assignment):
+        """Extract (pair, new_dir) list from a Move for screening."""
+        from moves import SingleFlipMove, ClusterFlipMove
+        if isinstance(move, SingleFlipMove):
+            return [(move.pair, move.new_dir)]
+        elif isinstance(move, ClusterFlipMove):
+            return move.flips
+        return []
 
     def navigate(self, assignment: dict, lp_result: dict,
                  ref_positions: np.ndarray,
@@ -179,6 +199,9 @@ class Navigator:
         best_stale_iters = 0
         lp_resolves = 0
 
+        self.screener.set_state(current_assignment, current_positions,
+                                hpwl_result["duals"])
+
         if verbose:
             print(f"  Starting navigation: proxy={best_proxy:.4f}, "
                   f"acceptance={type(self.acceptance).__name__}")
@@ -217,6 +240,13 @@ class Navigator:
             for move in all_moves:
                 if time.time() - t0 > time_budget:
                     break
+
+                # --- Screen before expensive projection ---
+                flips = self._extract_flips(move, current_assignment)
+                if flips:
+                    prune, reason = self.screener.screen(flips)
+                    if prune:
+                        continue
 
                 result = move.project(
                     current_positions, current_assignment, sizes, fixed_mask,
@@ -280,6 +310,12 @@ class Navigator:
                 if self.surrogate is not None:
                     self.surrogate.init_from_placement(current_positions)
 
+                # Update screener state
+                self.screener.set_state(
+                    current_assignment, current_positions,
+                    hpwl_result["duals"]
+                )
+
                 accepted_this_iter = True
 
                 # Track global best
@@ -331,6 +367,7 @@ class Navigator:
                   f"{surrogate_evals} surrogate evals, "
                   f"{improvements} improvements, {lp_resolves} LP resolves, "
                   f"{elapsed:.1f}s")
+            print(f"  Screener: {self.screener.report()}")
 
         return {
             "assignment": best_assignment,

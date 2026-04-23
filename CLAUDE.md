@@ -52,6 +52,7 @@ uv run evaluate <placer.py> -b ibm01
 | `docs/approach.md` | Approach theory, architecture, contingencies |
 | `docs/theory.md` | Tunneling frameworks, literature grounding, deep math connections |
 | `docs/problem.md` | Formal mathematical problem statement |
+| `docs/evaluation.md` | Navigator eval pipeline: ClusterScreener + proposed incremental evaluator |
 | `macro_place/evaluate.py` | Evaluation harness (don't modify unless infra work) |
 | `macro_place/objective.py` | Proxy cost computation |
 | `macro_place/benchmark.py` | Benchmark dataclass (PyTorch tensors) |
@@ -68,7 +69,7 @@ uv run evaluate <placer.py> -b ibm01
 
 ## Overnight autonomous mode
 
-To run autonomous experimentation for hours: read `overnight_driver.md` and `queue.md`, then `/loop` with the driver prompt. The driver pops queue items, runs each in an isolated worktree (with submodule symlinked — see `worktree_submodule_bootstrap` in memory), logs results to `results/overnight_run.log`, tracks per-stage bests, and ends on QUEUE_EMPTY / TIME_UP / CRASH. Stops are in `overnight_driver.md`; do not add threshold-based stops — we hunt global best.
+To run autonomous experimentation for hours: read `overnight_driver.md`, create a `queue.md`, then `/loop` with the driver prompt. The driver pops queue items, runs each in an isolated worktree (with submodule symlinked — see `worktree_submodule_bootstrap` in memory), logs results to `results/overnight_run.log`, tracks per-stage bests, and ends on QUEUE_EMPTY / TIME_UP / CRASH. Stops are in `overnight_driver.md`; do not add threshold-based stops — we hunt global best.
 
 ## Writing a placer
 

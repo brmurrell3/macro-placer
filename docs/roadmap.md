@@ -1,7 +1,7 @@
 # Roadmap
 
-Last updated: 2026-04-15
-Competition deadline: May 21, 2026 (~5.1 weeks)
+Last updated: 2026-04-23
+Competition deadline: May 21, 2026 (~4 weeks)
 
 ---
 
@@ -49,10 +49,17 @@ These change the architecture, not parameters.
 | **Multilevel navigation** | 1-2 weeks | Break congestion barrier via coarse-level topology | Coarse decisions may not survive refinement |
 | **TCG closure propagation** | 3-5 days | Large consistent topology moves (50-200 pairs) | O(N^3) may be too slow for N=500 |
 | **Hybrid: SA at coarse + LP at fine** | 1 week | SA explores topologies, LP optimizes within each | Integration complexity |
+| **Incremental real-proxy evaluator** | 3-5 days | Exact signal replaces ρ=0.17 surrogate; removes confound | SP3 results suggest accuracy isn't binding constraint |
 
 ### B. Accept ~1.49 and Focus on Innovation Prize
 
 The polyhedra decomposition framework IS novel and publishable regardless of whether we beat RePlAce. The innovation prize values methodology over raw score.
+
+---
+
+### C. Infrastructure (implemented)
+
+- **ClusterScreener** (implemented): multi-tier pre-projection pruning (Zobrist dedup, displacement floor, HPWL bound, axis crowding). Rejects ~20-40% of obviously bad moves at ~1-10us each, saving projection+surrogate cost. See [evaluation.md](evaluation.md).
 
 ---
 
@@ -83,6 +90,10 @@ The only approach from literature that could cross the congestion barrier. All o
 ### Option 6b: TCG (backup)
 
 Only if multilevel fails. TCG ensures consistency for large topology moves but is O(N^3) — may not scale to ibm18 (537 macros).
+
+### Option 6c: Incremental Real-Proxy Evaluator (infrastructure)
+
+Replace GridSurrogate with an exact incremental evaluator matching `compute_proxy_cost` bit-for-bit. Removes the surrogate as a confound and enables more candidates per iteration at exact signal. 3-5 days. Orthogonal to multilevel — could be combined with 6a. See [evaluation.md](evaluation.md) for full design. Risk: SP3 evidence suggests surrogate accuracy isn't the binding constraint, so payoff may be diagnostic rather than score-improving.
 
 ---
 
@@ -125,3 +136,4 @@ Only if multilevel fails. TCG ensures consistency for large topology moves but i
 - [approach.md](approach.md) --- methodology and architecture
 - [results.md](results.md) --- experiment history (includes overnight sweep)
 - [theory.md](theory.md) --- theoretical foundations
+- [evaluation.md](evaluation.md) --- navigator eval pipeline (screener + proposed incremental evaluator)
