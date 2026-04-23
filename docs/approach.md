@@ -95,6 +95,17 @@ Six experiments established that local navigation cannot reach congestion:
 
 The HPWL LP, when freed from the SDF topology, finds placements with 44% lower congestion but 180% higher density. Congestion and density are anti-correlated under unconstrained LP optimization. The SDF topology constrains the LP to find a good density-congestion compromise. But the current topology is stuck in a **local optimum** that all neighbor topologies (by any local move) make worse.
 
+### The LP-proxy disconnect
+
+The LP optimizes HPWL, but HPWL has **zero correlation with proxy cost** (rho=-0.001, Miftari experiments). HPWL and density anti-correlate physically (tighter WL = denser = worse density), and congestion is uncorrelated with HPWL (rho=0.072). This means:
+
+- **Branch-and-bound with LP relaxation** bounds HPWL, which is blind to proxy
+- **Lagrangian bounds from LP duals** predict LP-HPWL (rho=0.86) but not proxy
+- **MCMC/SA weighted by LP cost** samples from the wrong distribution
+- **Partial-commitment LP** bounds the wrong objective
+
+Any strategy that uses LP values to eliminate or rank polyhedra is structurally invalid. Viable bounding must include density and congestion — both non-convex (top-k order statistics), not available from LP solves. See [evaluation.md](evaluation.md) for the proposed incremental proxy evaluator.
+
 ### The real problem
 
 We're not searching inefficiently -- the SDF basin is genuinely a local minimum in all directions we can probe. We need to **tunnel through a barrier** to reach a distant basin with better congestion. This requires crossing topologies with higher cost (going uphill) before descending into a new basin.
@@ -161,7 +172,13 @@ Tested: 3205/3250 transpositions LP-feasible, 14 overlap-free, 0 improvements. M
 
 Tested as Miftari experiments. Cheap LP dual signals predict HPWL changes (rho=0.86, 42700x speedup) but LP-HPWL doesn't predict proxy (rho=-0.001). HPWL and density anti-correlate; congestion dominates proxy and is uncorrelated with HPWL. Any HPWL-based topology ranking is blind to the objective.
 
-### H. Incremental Real-Proxy Evaluator (PROPOSED)
+### H. LP-Based Cluster Elimination (B&B, Lagrangian, MCMC) --- KILLED
+
+Branch-and-bound with LP relaxation, Lagrangian bounds from duals, and MCMC weighted by LP cost all fail for the same reason: LP-HPWL has zero correlation with proxy cost (rho=-0.001). The chain `cheap signal -> LP-HPWL -> proxy` breaks because congestion (66.5% of proxy) is uncorrelated with HPWL (rho=0.072) and density anti-correlates with HPWL (rho=-0.536). See §5 "LP-proxy disconnect" and [theory.md](theory.md) §5a for full analysis.
+
+MCMC is additionally wrong-shaped for cluster elimination: sampling gives visit frequency proportional to quality, not hard pruning of entire neighborhoods. With ~30 LP evals per benchmark, thermalization through bad clusters is unaffordable.
+
+### I. Incremental Real-Proxy Evaluator (PROPOSED)
 
 Replace GridSurrogate (within-benchmark ρ=0.17) with an incremental evaluator that returns exact proxy cost by caching per-net HPWL, per-cell density, and per-cell congestion accumulators and updating only what a move touches. Motivated by Vedu Mallela's Partcl submission ("Incremental CD", 300× speedup on real objective).
 

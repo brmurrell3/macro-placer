@@ -174,5 +174,5 @@ risk is real — but those experiments improved surrogate *ranking*, not
 ## See also
 
 - [approach.md](approach.md) SS2 -- architecture overview
-- [approach.md](approach.md) SS7H -- incremental evaluator summary
+- [approach.md](approach.md) SS7I -- incremental evaluator summary
 - [roadmap.md](roadmap.md) Option 6c -- timeline and prioritization
