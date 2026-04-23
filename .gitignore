@@ -85,6 +85,7 @@ external/MacroPlacement/.git/
 
 # Local Claude overrides (keep settings.json tracked; ignore local-only files)
 .claude/settings.local.json
+.claude/scheduled_tasks.lock
 
 # Internal dev tooling (not for participants)
 scripts/test_*.py

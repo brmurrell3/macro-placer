@@ -1,6 +1,6 @@
 # Results
 
-Last updated: 2026-04-15
+Last updated: 2026-04-23
 
 Trimmed results focusing on the active polyhedra navigation hypothesis.
 SDF density and optimal transport hypotheses were explored and superseded/killed;
@@ -39,7 +39,8 @@ Decomposes placement into discrete topology (which polyhedron) + continuous solv
 4. **GridSurrogate** --- fast incremental proxy estimator (density + RUDY congestion + HPWL)
 5. **Surrogate-guided navigation** --- evaluate 1000+ candidates with surrogate, verify top-5 with real proxy
 6. **Cluster moves** --- net-correlated multi-pair flips + macro-centered flips
-7. **Robust projection** --- cascade constraint repair + direct overlap repair for zero overlaps
+7. **ClusterScreener** --- multi-tier pre-projection pruning ([evaluation.md](evaluation.md))
+8. **Robust projection** --- cascade constraint repair + direct overlap repair for zero overlaps
 
 ### Per-benchmark results (--all, Phase 3, 50s nav)
 
@@ -132,7 +133,7 @@ Note: Phase 2 (300s nav) is the best quality result at ~5300s total runtime. Pha
 
 ## Overnight Sweep (Apr 14-15): 22 Experiments
 
-Full log: `results/overnight_run.log`. Queue: `queue.md`.
+Full log: `results/overnight_run.log`.
 
 ### Summary
 
@@ -200,8 +201,52 @@ Three-way combine (SP3+SP1+SP4 winners) scored 1.4918, tying sp4_mccormick_area.
 
 4. **Congestion is structural, not parametric.** You can't reduce congestion by tuning LP weights or surrogate parameters. It requires fundamentally different macro arrangements that local navigation (1-5 pair flips) cannot reach.
 
+## Miftari / cheap-signal cluster screening (Apr 16) --- KILLED
+
+Tested the `theory.md` §5a hypothesis that cheap signals from a single
+solved "center" LP can rank-order nearby polyhedra for proxy quality —
+the NASA-star-system analogy. Two-step verification on ibm01.
+
+**Step 1 (experiment 1):** cheap signals vs ΔLP-HPWL across 120
+cluster flips (k ∈ {1, 2, 5, 10}). Best signal `S_viol` (constraint
+violation at x\*) → Spearman **ρ = 0.86**, 51 µs vs 2.2 s LP (≈ 42 700×
+speedup), 91 % precision/recall at 50 % kept.
+*The cheap signals are tight predictors of ΔLP-HPWL.*
+
+**Step 2 (experiment 3):** LP-HPWL vs final refined proxy across 24
+feasible topologies (Hamming 0–2 249 from base).
+
+| correlation | ρ |
+|---|---:|
+| LP-HPWL → refined proxy | **−0.001** |
+| LP-HPWL → refined WL | +0.852 |
+| LP-HPWL → refined density | −0.536 |
+| LP-HPWL → refined congestion | +0.072 |
+| refined WL → refined density | −0.416 |
+| refined congestion → refined proxy | +0.825 |
+
+*LP-HPWL carries no usable information about refined proxy.* HPWL and
+density anti-correlate physically (tighter WL ⇒ denser ⇒ worse density
+cost); the two effects nearly cancel. Proxy on ibm01 is congestion-
+dominated (ρ = 0.83) and LP-HPWL is uncorrelated with congestion.
+
+**Chain:** `cheap signal → LP-HPWL → refined proxy`; first link ✓ ρ=0.86,
+second link ✗ ρ≈0.
+
+**Implications:**
+- S_viol filtering is not a valid polyhedron-quality screen.
+- Re-confirms overnight SP1 finding at the signal level:
+  HPWL-based topology ranking is blind to the objective.
+- A proxy-predicting cheap signal would need density + congestion
+  components; `GridSurrogate` already integrates those with Spearman
+  ≈ 0.17, so the naive combination has been tried.
+
+Cost: ~2 h. Saved building a multi-level cascade on a signal that
+doesn't track the objective.
+
 ## See Also
 
 - [approach.md](approach.md) --- methodology and architecture
 - [theory.md](theory.md) --- theoretical foundations and frameworks
 - [roadmap.md](roadmap.md) --- next steps
+- [evaluation.md](evaluation.md) --- navigator eval pipeline (screener + proposed incremental evaluator)
