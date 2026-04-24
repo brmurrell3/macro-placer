@@ -4,65 +4,92 @@ Last updated: 2026-04-23
 
 DPO v3 achieves 1.4246 avg proxy (beats RePlAce by 2.3%). This document
 outlines improvements to push further, organized by the two key insights:
-(1) eliminate hardcoded constants, (2) exploit the full competition compute
-budget (1 hour + RTX 6000 Ada 48GB + 16-core EPYC + 100GB RAM).
+(1) eliminate hardcoded constants, (2) exploit the available compute
+budget more effectively.
 
 ---
 
-## 1. The Compute Budget We're Ignoring
+## 1. The Compute Budget
 
-We currently run in 8-60s per benchmark on an M3 Max CPU. The competition
-gives us:
+### Two regimes
 
-| Resource | Development (now) | Competition (eval) | Ratio |
-|----------|------------------|--------------------|-------|
-| Time | ~60s | 3600s | **60x** |
+**IBM benchmarks (17 known designs):** These are developed and tested
+on local hardware (M3 Max). Most competitive submissions run all 17
+in under 5 minutes total. Our current DPO runs in ~288s total (~17s
+avg per benchmark). There is headroom to spend more time per benchmark
+without exceeding reasonable limits — 60s/benchmark (17 min total) is
+our current ceiling, but 2-3 min/benchmark would still be practical.
+
+**Hidden test case (1 unknown design):** The 1-hour budget on full
+competition hardware (RTX 6000 Ada 48GB, 16-core EPYC 9655P, 100GB
+RAM) is for this. The hidden design may be larger/harder than any IBM
+benchmark. This is where GPU acceleration and heavy compute pay off —
+we can afford 100K+ optimization steps, multi-restart, SA refinement,
+and population search on a single design.
+
+### Available compute on eval hardware
+
+| Resource | Development (M3 Max) | Competition (eval) | Ratio |
+|----------|---------------------|--------------------|-------|
+| Time | ~17s avg/bench | 3600s (hidden) | **~200x** |
 | GPU | None (CPU only) | RTX 6000 Ada 48GB | **~100x throughput** |
 | CPU cores | 1 (sequential) | 16 (EPYC 9655P) | **16x** |
 | RAM | 36GB | 100GB | 3x |
 
-We are using ~1% of the available compute. The 1-hour budget exists
-because the organizers expect participants to USE it. The top submissions
-will absolutely saturate this budget.
+### Design principle
 
-### What 3600s + GPU enables
+The architecture should scale gracefully: run fast on CPU for IBM
+benchmarks (the ranking metric), and automatically exploit GPU + time
+budget when available for the hidden test case. This means:
+- GPU support via `device = torch.device("cuda" if available else "cpu")`
+- Time-budgeted optimization (run until time limit, not fixed steps)
+- Multi-restart when time permits
+- Same code path, different resource allocation
 
-**A. Massively more optimization steps.** We currently run 200-900 steps
-of DPO. With GPU acceleration (10-50x speedup on the vectorized ops) and
-60x more time, we could run 100,000+ steps. This means:
-- Much finer gamma annealing (smoother convergence to true HPWL)
-- Deeper overlap penalty continuation (gentler schedule, fewer residual overlaps)
-- More time in the "sweet spot" of each phase
+### What extra compute enables (scaling from IBM → hidden test case)
+
+**A. More optimization steps.** We currently run 200-900 steps of DPO.
+On IBM benchmarks, doubling to 1000-2000 steps is feasible within a
+2-3 min/benchmark budget. On the hidden test case with GPU, we could
+run 50,000-100,000+ steps with much finer gamma annealing, gentler
+overlap penalty continuation, and more time in each phase's sweet spot.
 
 **B. Multiple independent restarts.** Currently we run DPO once from SDF
-init. With the compute budget, we can run 10-50 independent DPO runs with
-different seeds, perturbations, or starting points, and take the best.
-This is trivially parallelizable across GPU streams or CPU cores.
+init. Running 3-5 seeds on IBM benchmarks adds ~1-3 min total. On the
+hidden test case, we can run 10-50 restarts with different seeds,
+perturbations, or starting points, trivially parallelizable across GPU
+streams or CPU cores.
 
-**C. Real proxy evaluation in the loop.** `compute_proxy_cost` takes ~50ms
-per call. In 3600s we can afford ~70K evaluations. This enables:
-- Periodic calibration of the smooth proxy against ground truth
+**C. Real proxy evaluation in the loop.** `compute_proxy_cost` takes
+~50ms per call. Even on IBM benchmarks, we can afford 100-200 calls
+per benchmark for calibration and SA refinement. On the hidden test
+case: ~70K evaluations in the full hour, enabling:
+- Periodic calibration of smooth proxy against ground truth
 - SA refinement with exact signal after DPO (thousands of moves)
 - Tournament selection between candidates using exact proxy
 
-**D. Population-based training.** Run N concurrent DPO instances with
-different hyperparameters (gamma schedule, lambda schedule, lr). Every K
-steps, evaluate all populations with real proxy, kill the bottom half,
-and clone+mutate the top half. This automatically discovers the best
-hyperparameters for each benchmark without manual tuning.
+**D. Population-based training.** On the hidden test case: run N
+concurrent DPO instances with different hyperparameters (gamma schedule,
+lambda schedule, lr). Every K steps, evaluate all populations with real
+proxy, kill the bottom half, clone+mutate the top half. This
+automatically discovers the best hyperparameters without manual tuning.
+Not practical for IBM benchmarks (too expensive for 17 runs), but ideal
+for a single high-stakes design.
 
 **E. GPU-accelerated DPO.** All our tensors fit easily in 48GB VRAM:
 - Pin positions: [num_nets, max_pins, 2] ~ 10MB
 - Grid overlap: [num_nets, R, C] ~ 100MB
-- Macro positions: trivial
 - Total: < 1GB even for the largest benchmarks
 PyTorch CUDA ops would give 10-100x speedup on the logsumexp, clamp,
-topk, and matmul operations that dominate DPO step cost.
+topk, and matmul operations that dominate DPO step cost. Speeds up both
+IBM benchmarks (more steps in same time) and the hidden test case
+(massive step budgets).
 
-**F. Ensemble of methods.** Run DPO, SA, and polyhedra navigation in
-parallel. Each gets ~20 minutes. Take the best per benchmark. This is
-a free +1-3% improvement with no algorithmic innovation — just spending
-compute to hedge across approaches.
+**F. Ensemble of methods.** On the hidden test case: run DPO, SA, and
+polyhedra navigation in parallel. Each gets ~20 minutes. Take the best.
+Free +1-3% with no algorithmic innovation — just hedging across
+approaches. For IBM benchmarks, a lighter version: run DPO + quick SA
+polish (5-10s extra per benchmark).
 
 ---
 
@@ -198,64 +225,77 @@ optimization.
 
 ## 4. Recommended Implementation Plan
 
-### Phase A: GPU + Compute Budget (high impact, moderate effort)
+### Phase A: Adaptive Constants (high impact, low effort)
 
-1. **Move tensors to CUDA** — add `.to(device)` throughout DPO.
-   Detect GPU availability, fallback to CPU for development.
-2. **Increase step count 10x** when on GPU with time budget.
-3. **Add multi-restart** — run N independent DPO instances (different
-   seeds), take the best. Parallelize across GPU streams.
-4. **Add SA refinement** — after DPO + legalization, run SA with
-   real proxy evaluation for the remaining time budget.
+These improve quality on IBM benchmarks without spending more compute.
 
-### Phase B: Adaptive Constants (high impact, low effort)
-
-5. **Position normalization** — normalize to [0,1]^2 for
+1. **Position normalization** — normalize to [0,1]^2 for
    scale-invariant optimization. Eliminates lr/gamma scaling issues.
-6. **Convergence-based phases** — replace fixed step counts with
-   loss-stall detection.
-7. **Adaptive lambda** — gradient-ratio-based overlap penalty
+2. **Convergence-based phases** — replace fixed step counts with
+   loss-stall detection. Small benchmarks finish faster, large ones
+   get more time.
+3. **Adaptive lambda** — gradient-ratio-based overlap penalty
    annealing.
+4. **Gradient normalization** — balance WL/density/congestion
+   gradient magnitudes so the optimizer doesn't ignore small
+   components.
+
+### Phase B: Compute Scaling (high impact, moderate effort)
+
+These exploit available compute — modest gains on IBM benchmarks,
+large gains on the hidden test case.
+
+5. **Move tensors to CUDA** — add `.to(device)` throughout DPO.
+   Detect GPU availability, fallback to CPU for development.
+6. **Time-budgeted optimization** — run until a time limit rather
+   than a fixed step count. Automatically scales to available
+   compute.
+7. **Add multi-restart** — run 3-5 seeds on IBM (adds ~1-2 min),
+   10-50 seeds on hidden test case. Take the best.
+8. **Add SA refinement** — after DPO + legalization, run SA with
+   real proxy evaluation for remaining time budget (5-10s on IBM,
+   minutes on hidden).
 
 ### Phase C: Congestion Model (medium impact, high effort)
 
-8. **Calibration ratio** — periodic real-proxy evaluation to
+9. **Calibration ratio** — periodic real-proxy evaluation to
    correct smooth congestion scale.
-9. **Differentiable L-routing** — replace RUDY with L-shaped
-   routing model.
+10. **Differentiable L-routing** — replace RUDY with L-shaped
+    routing model.
 
 ### Expected Impact
 
-| Change | Estimated Improvement | Effort |
-|--------|----------------------|--------|
-| GPU + 10x steps | +1-3% avg proxy | 1-2 days |
-| Multi-restart (10 seeds) | +1-2% avg proxy | 0.5 days |
-| SA refinement | +0.5-1.5% avg proxy | 1 day |
-| Adaptive constants | +0.5-1% avg proxy | 1 day |
-| Congestion calibration | +1-2% avg proxy | 1 day |
-| Ensemble (DPO+SA+poly) | +1-2% avg proxy | 0.5 days |
-| **Total (conservative)** | **+3-7% avg proxy** | **~1 week** |
+| Change | IBM Benchmarks | Hidden Test Case | Effort |
+|--------|---------------|------------------|--------|
+| Adaptive constants | +0.5-1.5% | +0.5-1.5% | 1 day |
+| GPU acceleration | +0.5-1% (more steps) | +2-4% (massive steps) | 1 day |
+| Multi-restart (3-5 / 50 seeds) | +0.5-1% | +1-3% | 0.5 days |
+| SA refinement | +0.2-0.5% | +0.5-1.5% | 1 day |
+| Congestion calibration | +1-2% | +1-2% | 1 day |
+| **Total (conservative)** | **+2-5%** | **+5-10%** | **~1 week** |
 
-A 5% improvement from 1.4246 would give ~1.35 avg proxy. Combined
-with the 1-hour compute budget, reaching 1.30 or below is plausible.
+On IBM benchmarks: 1.4246 → ~1.35-1.39 (realistic with phases A+B).
+On the hidden test case: the full compute budget could push
+significantly further.
 
 ---
 
 ## 5. Quick Wins (Today)
 
-If we want immediate improvement without major refactoring:
+Improvements that don't require major refactoring and stay within
+reasonable IBM benchmark runtime (~5 min total for all 17):
 
-1. **Multi-seed averaging**: Run current DPO with 3-5 seeds, take
-   best per benchmark. Cost: 3-5x runtime (still under 5 min total).
-   Expected: +0.5-1%.
+1. **Multi-seed**: Run current DPO with 3 seeds, take best per
+   benchmark. Cost: 3x runtime (~15 min total). Expected: +0.5-1%.
 
-2. **Increase steps for small benchmarks**: ibm01-ibm09 finish in
-   <15s. Double their step counts. Expected: +0.5% on those benchmarks
-   (we saw ibm01 go from 1.28 to 1.15 with more steps).
+2. **More steps on fast benchmarks**: ibm01-ibm09 finish in <15s.
+   Double step counts for benchmarks finishing under 20s.
+   Expected: +0.5% on those benchmarks (ibm01 went 1.28→1.15 with
+   more steps in earlier experiments).
 
 3. **SA polish**: After DPO, try 100-500 random single-macro
-   perturbations evaluated with real proxy. Accept improvements.
-   Cost: ~5-10s. Expected: +0.2-0.5%.
+   perturbations evaluated with `compute_proxy_cost`. Accept
+   improvements. Cost: ~5-10s per benchmark. Expected: +0.2-0.5%.
 
 ---
 
