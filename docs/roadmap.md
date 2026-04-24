@@ -9,14 +9,15 @@ Competition deadline: May 21, 2026 (~4 weeks)
 
 | Entry | Avg Proxy | Gap to RePlAce |
 |-------|-----------|----------------|
+| **DPO v1** | **1.4255** | **+2.2% (CHAMPION)** |
 | RePlAce (target) | 1.4578 | --- |
-| **Polyhedra (50s nav)** | **1.4918** | **-2.3%** |
+| Polyhedra (50s nav) | 1.4918 | -2.3% |
 | SDF v5 (init) | 1.5002 | -2.9% |
 
-- Beat RePlAce on 3/17 benchmarks (ibm02, ibm10, ibm12)
-- Congestion is 66.5% of proxy cost, density 29.3%, WL 4.2%
-- **Phase 5 complete (overnight sweep): 22 experiments, all within noise of baseline**
-- Local navigation at ceiling — neither surrogate fixes, alternative inits, nor LP modifications moved the needle
+- **DPO beats RePlAce on 14/17 benchmarks** — first method to surpass the target
+- Weaknesses: ibm01 (-28.2%), ibm06 (-6.7%), ibm04 (-4.5%)
+- Congestion model (RUDY) underestimates real congestion but gradients still help
+- All runtimes under 60s, all valid (zero overlaps)
 
 ---
 
