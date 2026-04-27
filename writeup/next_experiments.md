@@ -3,8 +3,9 @@
 Date: 2026-04-26 (DPO era). Updated 2026-04-27 (CD era).
 
 **Status:** All DPO-era experiments (1-6) completed. CDOnlyPlacer
-(1.1193 avg, 23.2% over RePlAce) supersedes DPO. See
-`docs/closing_the_gap.md` for CD-era experiments (E1-E11).
+(1.1193 avg, 23.2% over RePlAce) supersedes DPO; CDAdaptive (E9, 1.1055)
+beats the leaderboard. See `closing_the_gap.md` (this directory) for
+CD-era experiments (E1-E11), and `experiment_notes.md` §17 for E9.
 
 ---
 
@@ -193,9 +194,10 @@ a multi-day implementation effort with uncertain payoff.
 | RUDY gap is 3.1x, direction wrong | cell-by-cell analysis | experiment_notes.md §11 |
 | Barrier crossing: 5-12% pairs | traversal analysis | polyhedra_traversal.txt |
 | v2 (more steps) +2.5% | experiment log | experiment_log.jsonl |
-| **Incremental evaluator: 4657x speedup** | **ibm10 benchmark** | **closing_the_gap.md E1** |
-| **Full-proxy CD: 1.12 avg (+23%)** | **all 17 benchmarks** | **closing_the_gap.md E2** |
-| **CD breaks ibm02 basin lock (-32%)** | **ibm02 1.689→1.153** | **closing_the_gap.md** |
+| **Incremental evaluator: 4657x speedup** | **ibm10 benchmark** | **closing_the_gap.md E1 (this directory)** |
+| **Full-proxy CD: 1.12 avg (+23%)** | **all 17 benchmarks** | **closing_the_gap.md E2 (this directory)** |
+| **CD breaks ibm02 basin lock (-32%)** | **ibm02 1.689→1.153** | **closing_the_gap.md (this directory)** |
+| **CDAdaptive E9: 1.1055 (-24%)** | **all 17 benchmarks, beats leaderboard** | **experiment_notes.md §17** |
 
 ## What we know doesn't work
 

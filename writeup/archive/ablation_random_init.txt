@@ -1,0 +1,356 @@
+================================================================================
+evaluate · DPORandomInitPlacer  (submissions/dpo/ablation_random_init.py)
+================================================================================
+
+  ibm01... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+    P1: wl=0.481 den=1.106 cong=3.523
+  Ablation phase 1 done: best_score=2.1530  overlaps=6
+    P2: wl=0.496 den=0.592 cong=2.720
+  Ablation phase 2 done: best_score=2.0815  overlaps=0
+    P3: wl=0.492 den=0.609 cong=2.569
+  Ablation phase 3 done: best_score=2.0656  overlaps=0
+proxy=2.9618  (wl=0.404 den=0.616 cong=4.499)  VALID  [12.80s]
+  ibm02... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm02/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 30, Row: 27
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm02/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 30, Row: 27
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+    P1: wl=0.497 den=1.276 cong=9.059
+  Ablation phase 1 done: best_score=4.0567  overlaps=11
+    P2: wl=0.554 den=0.602 cong=6.397
+  Ablation phase 2 done: best_score=3.9000  overlaps=1
+    P3: wl=0.555 den=0.584 cong=6.099
+  Ablation phase 3 done: best_score=3.8919  overlaps=1
+proxy=4.6359  (wl=0.490 den=0.586 cong=7.706)  INVALID (1 overlaps)  [20.00s]
+  ibm03... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm03/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 32, Row: 29
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm03/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 32, Row: 29
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+    P1: wl=0.551 den=1.068 cong=7.731
+  Ablation phase 1 done: best_score=3.5163  overlaps=4
+    P2: wl=0.620 den=0.597 cong=5.194
+  Ablation phase 2 done: best_score=3.3694  overlaps=0
+    P3: wl=0.619 den=0.584 cong=4.915
+  Ablation phase 3 done: best_score=3.3218  overlaps=0
+proxy=3.8698  (wl=0.463 den=0.581 cong=6.232)  VALID  [16.80s]
+  ibm04... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm04/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 31, Row: 30
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm04/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 31, Row: 30
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+    P1: wl=0.541 den=1.004 cong=9.326
+  Ablation phase 1 done: best_score=4.2687  overlaps=4
+    P2: wl=0.566 den=0.588 cong=6.809
+  Ablation phase 2 done: best_score=4.0507  overlaps=0
+    P3: wl=0.563 den=0.590 cong=6.380
+  Ablation phase 3 done: best_score=3.9943  overlaps=1
+proxy=3.5924  (wl=0.400 den=0.594 cong=5.792)  VALID  [17.68s]
+  ibm06... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm06/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 31, Row: 28
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm06/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 31, Row: 28
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+    P1: wl=0.594 den=1.026 cong=10.777
+  Ablation phase 1 done: best_score=4.8193  overlaps=2
+    P2: wl=0.643 den=0.648 cong=7.697
+  Ablation phase 2 done: best_score=4.5885  overlaps=1
+    P3: wl=0.642 den=0.636 cong=7.247
+  Ablation phase 3 done: best_score=4.5663  overlaps=1
+proxy=4.8908  (wl=0.453 den=0.639 cong=8.236)  INVALID (4 overlaps)  [13.25s]
+  ibm07... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm07/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 35, Row: 32
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm07/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 35, Row: 32
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+    P1: wl=0.575 den=1.063 cong=13.483
+  Ablation phase 1 done: best_score=5.8939  overlaps=5
+    P2: wl=0.629 den=0.604 cong=9.919
+  Ablation phase 2 done: best_score=5.6153  overlaps=0
+    P3: wl=0.634 den=0.594 cong=9.364
+  Ablation phase 3 done: best_score=5.5322  overlaps=0
+proxy=4.4375  (wl=0.446 den=0.594 cong=7.390)  VALID  [12.00s]
+  ibm08... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm08/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 38, Row: 34
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm08/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 38, Row: 34
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+    P1: wl=0.562 den=1.112 cong=12.652
+  Ablation phase 1 done: best_score=5.7624  overlaps=2
+    P2: wl=0.605 den=0.620 cong=9.689
+  Ablation phase 2 done: best_score=5.5059  overlaps=0
+    P3: wl=0.610 den=0.612 cong=9.175
+  Ablation phase 3 done: best_score=5.4258  overlaps=0
+proxy=4.9755  (wl=0.445 den=0.606 cong=8.454)  VALID  [22.56s]
+  ibm09... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm09/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 36, Row: 38
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm09/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 36, Row: 38
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+    P1: wl=0.601 den=1.111 cong=11.202
+  Ablation phase 1 done: best_score=5.0918  overlaps=3
+    P2: wl=0.622 den=0.689 cong=8.247
+  Ablation phase 2 done: best_score=4.8033  overlaps=0
+    P3: wl=0.621 den=0.668 cong=7.692
+  Ablation phase 3 done: best_score=4.7321  overlaps=0
+proxy=3.6434  (wl=0.418 den=0.665 cong=5.786)  VALID  [11.36s]
+  ibm10... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm10/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 55, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm10/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 55, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+    P1: wl=0.559 den=1.094 cong=16.779
+  Ablation phase 1 done: best_score=7.4818  overlaps=100
+    P2: wl=0.600 den=0.650 cong=13.087
+  Ablation phase 2 done: best_score=7.1630  overlaps=28
+    P3: wl=0.609 den=0.638 cong=12.430
+  Ablation phase 3 done: best_score=7.1630  overlaps=28
+proxy=4.8393  (wl=0.440 den=0.942 cong=7.856)  INVALID (266 overlaps)  [36.11s]
+  ibm11... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm11/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 39, Row: 45
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm11/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 39, Row: 45
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+    P1: wl=0.613 den=1.118 cong=13.304
+  Ablation phase 1 done: best_score=6.0225  overlaps=8
+    P2: wl=0.648 den=0.644 cong=10.095
+  Ablation phase 2 done: best_score=5.7303  overlaps=0
+    P3: wl=0.654 den=0.637 cong=9.511
+  Ablation phase 3 done: best_score=5.6508  overlaps=0
+proxy=4.0738  (wl=0.417 den=0.635 cong=6.678)  VALID  [17.39s]
+  ibm12... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm12/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 47, Row: 47
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm12/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 47, Row: 47
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+    P1: wl=0.578 den=1.258 cong=18.566
+  Ablation phase 1 done: best_score=8.1634  overlaps=23
+    P2: wl=0.634 den=0.662 cong=14.391
+  Ablation phase 2 done: best_score=7.7362  overlaps=0
+    P3: wl=0.647 den=0.642 cong=13.531
+  Ablation phase 3 done: best_score=7.6245  overlaps=0
+proxy=5.5243  (wl=0.459 den=0.640 cong=9.491)  VALID  [48.18s]
+  ibm13... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm13/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 43, Row: 43
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm13/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 43, Row: 43
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+    P1: wl=0.651 den=1.054 cong=14.414
+  Ablation phase 1 done: best_score=6.6041  overlaps=4
+    P2: wl=0.675 den=0.627 cong=11.223
+  Ablation phase 2 done: best_score=6.3003  overlaps=0
+    P3: wl=0.676 den=0.615 cong=10.628
+  Ablation phase 3 done: best_score=6.2177  overlaps=0
+proxy=4.1176  (wl=0.420 den=0.616 cong=6.778)  VALID  [28.71s]
+  ibm14... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm14/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 49, Row: 44
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm14/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 49, Row: 44
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+    P1: wl=0.699 den=1.038 cong=25.643
+  Ablation phase 1 done: best_score=11.1032  overlaps=19
+    P2: wl=0.742 den=0.555 cong=20.156
+  Ablation phase 2 done: best_score=10.5886  overlaps=0
+    P3: wl=0.750 den=0.563 cong=19.105
+  Ablation phase 3 done: best_score=10.4415  overlaps=0
+proxy=6.6928  (wl=0.421 den=0.567 cong=11.977)  VALID  [106.10s]
+  ibm15... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm15/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 57, Row: 38
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm15/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 57, Row: 38
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+    P1: wl=0.727 den=1.126 cong=20.429
+  Ablation phase 1 done: best_score=8.9894  overlaps=2
+    P2: wl=0.779 den=0.732 cong=15.687
+  Ablation phase 2 done: best_score=8.5117  overlaps=0
+    P3: wl=0.790 den=0.711 cong=14.725
+  Ablation phase 3 done: best_score=8.3806  overlaps=0
+proxy=5.5896  (wl=0.426 den=0.707 cong=9.621)  VALID  [55.91s]
+  ibm16... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm16/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 48
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm16/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 48
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+    P1: wl=0.700 den=1.079 cong=29.829
+  Ablation phase 1 done: best_score=12.8415  overlaps=10
+    P2: wl=0.747 den=0.616 cong=23.557
+  Ablation phase 2 done: best_score=12.2298  overlaps=0
+    P3: wl=0.757 den=0.607 cong=22.330
+  Ablation phase 3 done: best_score=12.0688  overlaps=0
+proxy=6.1637  (wl=0.415 den=0.614 cong=10.884)  VALID  [91.98s]
+  ibm17... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm17/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 51, Row: 44
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm17/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 51, Row: 44
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+    P1: wl=0.707 den=1.007 cong=35.274
+  Ablation phase 1 done: best_score=15.3260  overlaps=11
+    P2: wl=0.754 den=0.543 cong=28.580
+  Ablation phase 2 done: best_score=14.6023  overlaps=0
+    P3: wl=0.766 den=0.553 cong=27.133
+  Ablation phase 3 done: best_score=14.4234  overlaps=0
+proxy=8.0692  (wl=0.424 den=0.563 cong=14.728)  VALID  [76.78s]
+  ibm18... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm18/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 55, Row: 39
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm18/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 55, Row: 39
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+    P1: wl=0.794 den=1.096 cong=24.755
+  Ablation phase 1 done: best_score=10.9268  overlaps=2
+    P2: wl=0.840 den=0.551 cong=19.610
+  Ablation phase 2 done: best_score=10.4548  overlaps=0
+    P3: wl=0.849 den=0.530 cong=18.673
+  Ablation phase 3 done: best_score=10.3367  overlaps=0
+proxy=5.9276  (wl=0.415 den=0.533 cong=10.493)  VALID  [42.10s]
+
+--------------------------------------------------------------------------------
+    Benchmark     Proxy        SA   RePlAce     vs SA  vs RePlAce  Overlaps
+--------------------------------------------------------------------------------
+        ibm01    2.9618    1.3166    0.9976   -125.0%     -196.9%         0
+        ibm02    4.6359    1.9072    1.8370   -143.1%     -152.4%         1
+        ibm03    3.8698    1.7401    1.3222   -122.4%     -192.7%         0
+        ibm04    3.5924    1.5037    1.3024   -138.9%     -175.8%         0
+        ibm06    4.8908    2.5057    1.6187    -95.2%     -202.1%         4
+        ibm07    4.4375    2.0229    1.4633   -119.4%     -203.3%         0
+        ibm08    4.9755    1.9239    1.4285   -158.6%     -248.3%         0
+        ibm09    3.6434    1.3875    1.1194   -162.6%     -225.5%         0
+        ibm10    4.8393    2.1108    1.5009   -129.3%     -222.4%       266
+        ibm11    4.0738    1.7111    1.1774   -138.1%     -246.0%         0
+        ibm12    5.5243    2.8261    1.7261    -95.5%     -220.0%         0
+        ibm13    4.1176    1.9141    1.3355   -115.1%     -208.3%         0
+        ibm14    6.6928    2.2750    1.5436   -194.2%     -333.6%         0
+        ibm15    5.5896    2.3000    1.5159   -143.0%     -268.7%         0
+        ibm16    6.1637    2.2337    1.4780   -175.9%     -317.0%         0
+        ibm17    8.0692    3.6726    1.6446   -119.7%     -390.6%         0
+        ibm18    5.9276    2.7755    1.7722   -113.6%     -234.5%         0
+--------------------------------------------------------------------------------
+          AVG    4.9415    2.1251    1.4578   -132.5%     -239.0%       271
+
+Total runtime: 629.71s
+⚠  DISQUALIFIED: 271 total overlaps across benchmarks
+
+Results written to results/DPORandomInitPlacer_20260426_143155.json
+Logged to results/experiment_log.jsonl
