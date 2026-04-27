@@ -1,121 +1,76 @@
-# Pre-writeup TODO
+# Writeup TODO
 
-Work that must be completed before drafting. Organized by what it
-unblocks in the writeup.
-
----
-
-## Blocking: cannot write the relevant section without this
-
-### 1. Ablation experiments for DPO (section 7)
-
-Run each on --all. Compare avg proxy to full DPO (1.42) and SDF-only
-(1.50).
-
-| Ablation | What it isolates | How to run |
-|----------|-----------------|------------|
-| DPO without congestion gradient | Does dC/dp help or is density enough? | Zero out congestion loss term |
-| DPO without density gradient | How much does top-10% focusing add? | Zero out density loss term |
-| DPO phase 1 only (exploration) | Is multi-phase continuation needed? | Run 1 phase, legalize |
-| DPO with random init (not SDF) | How much does SDF contribute? | `use_sdf_init=False`, random uniform |
-| Multi-seed stability (5 seeds) | How much does the result vary? | Seeds 42,43,44,45,46 |
-
-**Effort:** ~4-5 hours (each --all run takes ~5 min, plus code changes).
-**Blocks:** Section 7 (empirical results), any claim about component
-contributions.
-
-### 2. Generalize rho=-0.001 to more benchmarks (section 4)
-
-The Miftari correlation was measured on ibm01 only. Run the same
-analysis on ibm10 (large, DPO wins big), ibm06 (small, DPO loses),
-and ibm14 (medium). Need at minimum:
-
-- LP-HPWL vs refined proxy correlation
-- LP-HPWL vs refined congestion correlation
-- Component breakdown (WL/density/congestion fractions)
-
-**Effort:** 2-3 hours.
-**Blocks:** Section 4 (barrier analysis) — specifically, generalizing
-the claim from "on ibm01" to "across benchmarks."
-
-### 3. Literature check: congestion gradient novelty (section 6)
-
-Search 2020-2026 analytical placement literature for any work that
-computes dC/dp (gradient of congestion w.r.t. macro positions) and
-includes it in the backward pass. Key papers to check:
-
-- Lu et al. 2020 (congestion-aware DREAMPlace) — uses congestion as
-  net weights, but verify the gradient computation
-- Liang et al. 2022 (DREAMPlace 4.0) — mixed-size placement
-- Any ISPD/DAC/ICCAD 2021-2025 papers on congestion-driven placement
-- Lee et al. ICML 2025 (diffusion placement) — check if congestion
-  enters the score model gradient
-
-If the answer is "yes, someone did this," reframe contribution 3 as
-"applied to competition metric with top-k aggregation" rather than
-"first congestion gradient."
-
-**Effort:** 2-3 hours of targeted search.
-**Blocks:** The core novelty claim in section 6.
+The DPO-era pre-writeup TODO is retired — every item from that list
+(ablations, multi-seed, RUDY analysis, polyhedra traversal, novelty
+literature check, version cleanup) is captured in `experiment_notes.md`.
+What follows is the remaining work to ship the writeup.
 
 ---
 
-## Strengthening: writeup works without this but is better with it
+## Prose drafts (one file per outline section)
 
-### 4. Quantify polyhedra traversal in DPO
+Outline source of truth: `outline.md`. Each section below should become
+its own draft file.
 
-Compare the pairwise L/R/A/B assignment between SDF init and DPO
-output. Count how many pairs changed. This directly tests the
-"penalty-as-barrier-crossing" claim (contribution 4). If DPO changes
-50+ pair assignments, the barrier crossing is real and quantified.
-
-**Effort:** 1-2 hours.
-**Strengthens:** Section 6 (DPO theory), contribution 4.
-
-### 5. Clean up version confusion
-
-The experiment log shows:
-- Unnamed DPO --all: 1.4361
-- dpo_v1: 1.4255
-- dpo_v2_moresteps: 1.4107 (best)
-- dpo_v3_final: 1.4246
-
-results.md reports 1.4246 as "DPO v3." The best run is actually v2 at
-1.4107 (3.2% better than RePlAce). Clarify: is v3 the intended final
-configuration? If so, why does v2 beat it? Seed sensitivity? The
-writeup needs one clean number backed by multi-seed runs.
-
-**Effort:** 1 hour to investigate + ties into ablation runs.
-**Strengthens:** All results claims.
-
-### 6. Per-benchmark figures
-
-Generate scatter plots for the writeup:
-- LP-HPWL vs proxy cost (the rho=-0.001 plot)
-- Congestion vs proxy cost (the rho=0.825 plot)
-- DPO vs RePlAce per-benchmark comparison bar chart
-- Overnight sweep results (22 experiments, all flat)
-
-**Effort:** Half day.
-**Strengthens:** Sections 4 and 7.
+- [ ] `sec1_introduction.md` — problem, RePlAce baseline, our 1.1055
+  result + two-pivot trajectory
+- [ ] `sec2_polyhedra.md` — decomposition theorem, LP within each
+  polyhedron, dual sensitivity. Source: `theory.md` §1-2, `problem.md`
+- [ ] `sec3_navigation.md` — SDF init, assignment extraction, HiGHS LP
+  + dual extraction, GridSurrogate, ClusterScreener, navigation loop.
+  Source: `contributions.md` §1, `eval_pipeline_design.md`
+- [ ] `sec4_barrier.md` — overnight 22-experiment sweep, Miftari
+  rho=-0.001, swap+LP. Source: `historical_results.md`,
+  `lp_hpwl_diagnostic.md` (in `docs/`)
+- [ ] `sec5_dpo.md` — DPO architecture, smooth components, penalty
+  continuation. Source: `dpo.md` §3-5
+- [ ] `sec6_dpo_theory.md` — penalty as barrier crossing, complexification,
+  low-seed-variance evidence. Source: `dpo.md` §6, `theory.md` §2a,
+  `contributions.md` §4 + §6
+- [ ] `sec7_rudy_limit.md` — congestion weight sweep killed, cell-by-cell
+  RUDY/real, 10.9% hotspot overlap. Source: `experiment_notes.md` §10-11,
+  `rudy_analysis.py`
+- [ ] `sec8_cd.md` — incremental evaluator (E1), breakpoint enumeration,
+  CDOnly→CDAdaptive (E9). Source: `cd_ibm10_results.md`,
+  `closing_the_gap.md`, `experiment_notes.md` §15-17,
+  `contributions.md` §8-9 + §12
+- [ ] `sec9_results.md` — full per-bench tables for CDAdaptive,
+  champion lineage, dead-ends summary. Source: `historical_results.md`,
+  `docs/results.md`, `docs/experiment_index.md`
+- [ ] `sec10_discussion.md` — non-decomposability, "bypass don't fix",
+  infrastructure unlocks algorithms (twice — E1 and E9). Source:
+  `contributions.md` §5 + §10 + §11
+- [ ] `references.md` — ~25-30 cites, see `outline.md` references list
 
 ---
 
-## Parallel with writing: can happen concurrently
+## Data captures (re-runnable)
 
-### 7. DPO adaptive constants + multi-seed
+- [ ] `data/rudy_ibm01.txt` — capture stdout from `rudy_analysis.py`
+- [ ] `data/e9_per_bench.json` — extract from `results/experiment_log.jsonl`
+- [ ] `data/dpo_ablation.json` — extract from `experiment_log.jsonl`
 
-Implement position normalization, convergence-based phase transitions,
-adaptive lambda. Run 3-5 seeds. If this pushes avg proxy below 1.40,
-update section 7 numbers. If not, the writeup is no weaker.
+---
 
-**Effort:** 1-2 days.
-**Does not block any section.**
+## Figures
 
-### 8. SA polish after DPO
+All listed in `outline.md`. Generate from data once captured.
 
-Add 5-10s of SA refinement with real proxy evaluation after DPO +
-legalization. Expected +0.2-0.5%.
+- [ ] LP-HPWL vs proxy scatter (rho=-0.001) — outline §4
+- [ ] Congestion vs proxy scatter (rho=0.825) — outline §4
+- [ ] Overnight sweep bar chart (22 experiments, all flat) — outline §4
+- [ ] RUDY vs real congestion heatmap (ibm01) — outline §7
+- [ ] Per-cell ratio distribution (RUDY/real) — outline §7
+- [ ] Champion lineage bar chart (1.50→1.49→1.38→1.12→1.10) — outline §9
+- [ ] CD convergence curve (sweep deltas vs wall time) — outline §9
+- [ ] CDAdaptive per-benchmark wall time chart — outline §9
 
-**Effort:** Half day.
-**Does not block any section.**
+---
+
+## Final pass
+
+- [ ] Length/density check vs 12-14 page target
+- [ ] Math notation consistency
+- [ ] References ordered + DOIs
+- [ ] Title + abstract draft
+- [ ] Final read-through with someone unfamiliar with the project

@@ -195,11 +195,11 @@ RUDY congestion *is* decomposable per single-macro move (per-net congestion cont
 ## See also
 
 - [problem.md](problem.md) — formal mathematical formulation
-- [theory.md](theory.md) — tunneling frameworks and theoretical backing
 - [results.md](results.md) — per-benchmark champion tables
 - [roadmap.md](roadmap.md) — submission plan
 - [experiment_index.md](experiment_index.md) — full catalog including falsified hypotheses
 - [lp_hpwl_diagnostic.md](lp_hpwl_diagnostic.md) — E8 (the unblock)
-- [cd_ibm10_results.md](cd_ibm10_results.md) — E2 single-bench breakthrough
-- [closing_the_gap.md](closing_the_gap.md) — leaderboard-beating run narrative
-- [evaluation.md](evaluation.md) — earlier surrogate-eval pipeline (now superseded)
+- `writeup/theory.md` — polyhedra theory, complexification, tunneling frameworks
+- `writeup/cd_ibm10_results.md` — E2 single-bench breakthrough
+- `writeup/closing_the_gap.md` — leaderboard-beating run narrative + E3/E4 algorithm sketches
+- `writeup/eval_pipeline_design.md` — earlier surrogate-eval pipeline (superseded by E1 incremental evaluator)

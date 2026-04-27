@@ -92,8 +92,8 @@ hit a ceiling.
 | Date | Event | Source |
 |---|---|---|
 | 2026-04-26 | E8 LP-HPWL diagnostic: proxy is **6% WL, 20% density, 74% congestion**. Pure HPWL CD caps at ~5% improvement; full-proxy CD is required. | `docs/lp_hpwl_diagnostic.md`, `scripts/lp_hpwl_lower_bound.py` |
-| 2026-04-26 | E1 Incremental evaluator validated: 4657× speedup, bit-for-bit parity. | `docs/cd_ibm10_results.md` |
-| 2026-04-27 (early) | E2 ibm10 single-bench: full-proxy CD on incremental evaluator hits 1.0632 (40min budget) and 1.1039 (10min). Beats DPO 1.254 by 12-15%. | `docs/cd_ibm10_results.md` |
+| 2026-04-26 | E1 Incremental evaluator validated: 4657× speedup, bit-for-bit parity. | `writeup/cd_ibm10_results.md` |
+| 2026-04-27 (early) | E2 ibm10 single-bench: full-proxy CD on incremental evaluator hits 1.0632 (40min budget) and 1.1039 (10min). Beats DPO 1.254 by 12-15%. | `writeup/cd_ibm10_results.md` |
 | 2026-04-27 (early) | E5 falsified: batched seeds wall scales 8.9×, all collapse to same basin. | `submissions/dpo/batched_seeds_placer.py` |
 | 2026-04-27 (early) | CDOnly --all: avg 1.1193, matches leaderboard 1.1172 within 0.18%, -23.2% vs RePlAce. | `submissions/cd/cd_only_placer.py` |
 | 2026-04-27 (mid) | E10 marginal, E11 flat: within-DPO refinements cap at 1-2%; basin lock structural. | `submissions/dpo/congestion_refine_placer.py`, `diverse_priors_placer.py` |

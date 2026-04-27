@@ -100,11 +100,12 @@ Decision rule: submit current champion (1.1055) as the safe baseline. Iterate op
 | `macro_place/incremental_evaluator.py` | E1 — 4657× speedup, load-bearing |
 | `scripts/cd_ibm10_diagnostic.py` | E2 — sparked the CD line |
 | `scripts/lp_hpwl_lower_bound.py` | E8 — proxy-decomposition diagnostic |
-| `docs/results.md` | Full per-bench result tables |
+| `docs/results.md` | Current champion per-bench tables |
 | `docs/experiment_index.md` | **Rigorous catalog of every experiment** |
-| `docs/closing_the_gap.md` | E9 win narrative + falsification record |
 | `docs/lp_hpwl_diagnostic.md` | E8 details |
-| `docs/cd_ibm10_results.md` | E2 details |
+| `writeup/closing_the_gap.md` | E9 win narrative + E3/E4 design sketches |
+| `writeup/cd_ibm10_results.md` | E2 details |
+| `writeup/historical_results.md` | DPO/Polyhedra/Overnight per-bench data |
 | `results/experiment_log.jsonl` | Source of truth for all numbers |
 
 ---
@@ -123,9 +124,10 @@ Decision rule: submit current champion (1.1055) as the safe baseline. Iterate op
 ## See also
 
 - [approach.md](approach.md) — current CD-on-incremental-evaluator architecture
-- [results.md](results.md) — per-benchmark champion tables (CDAdaptive, CDOnly, DPO, RePlAce)
-- [closing_the_gap.md](closing_the_gap.md) — narrative of the leaderboard-beating run
+- [results.md](results.md) — current champion (CDAdaptive) per-benchmark tables
 - [experiment_index.md](experiment_index.md) — full catalog including falsified hypotheses
-- [theory.md](theory.md) — theoretical foundations (polyhedra decomposition, proxy decomposition)
 - [lp_hpwl_diagnostic.md](lp_hpwl_diagnostic.md) — the diagnostic that unblocked CD
-- [cd_ibm10_results.md](cd_ibm10_results.md) — single-benchmark CD breakthrough
+- `writeup/historical_results.md` — DPO/Polyhedra/Overnight per-bench tables
+- `writeup/closing_the_gap.md` — narrative of the leaderboard-beating run
+- `writeup/cd_ibm10_results.md` — single-benchmark CD breakthrough
+- `writeup/theory.md` — theoretical foundations (polyhedra decomposition, proxy decomposition)

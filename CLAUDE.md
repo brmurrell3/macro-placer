@@ -6,8 +6,12 @@ Partcl/HRT Macro Placement Challenge. Place 200-537 rectangular macros on a 2D
 chip canvas to minimize proxy cost (wirelength + density + congestion) with zero
 overlaps. Prize: $29K+. Deadline: May 21, 2026.
 
-Target: beat RePlAce baseline (1.4578 avg proxy cost on 17 IBM benchmarks).
-Current best submission: Will's SA seed (1.5338).
+**Current champion:** CDAdaptive (E9), avg proxy 1.1055 on --all (17 IBM
+benchmarks). Beats public leaderboard 1.1172 by -1.05%, beats RePlAce 1.4578
+by -24.2%, zero overlaps. Entry: `submissions/cd/cd_adaptive_placer.py`.
+
+Reference baselines: RePlAce 1.4578, Will's pre-fork seed 1.5338, leaderboard
+target 1.1172.
 
 ## Your role
 
@@ -37,27 +41,32 @@ uv run evaluate <placer.py> -b ibm01
 2. Run `--fast --json` → read the JSON output
    - **fast_gate fail** → tweak parameters, try next variant
    - **fast_gate pass** → run `--all --json`
-   - **avg < 1.50 (graduate)** → STOP. Surface to human for review.
-   - **avg < 1.46 (champion)** → STOP immediately. This beats RePlAce.
+   - **avg < 1.12 (above champion)** → likely noise; verify carefully
+   - **avg < 1.10 (graduate)** → STOP. Surface to human for review.
+   - **avg < 1.05 (new champion)** → STOP immediately. This beats E9 Adaptive.
 3. If best score hasn't improved >2% after N variants → kill hypothesis
-4. Update `docs/results.md` after every significant result
+4. Update `docs/results.md` and `docs/experiment_index.md` after every significant result
 
 ## Key files
 
 | File | Purpose |
 |------|---------|
 | `results/experiment_log.jsonl` | Append-only log of all runs (read at session start) |
-| `docs/roadmap.md` | Phased action plan with verifiable goals and kill gates |
-| `docs/results.md` | Full experiment history and per-benchmark results |
-| `docs/approach.md` | Approach theory, architecture, contingencies |
-| `docs/theory.md` | Tunneling frameworks, literature grounding, deep math connections |
+| `docs/roadmap.md` | Phased action plan, champion lineage, risk register |
+| `docs/results.md` | Current champion (CDAdaptive) per-benchmark tables |
+| `docs/approach.md` | Current CD-on-incremental-evaluator architecture + prior approaches |
 | `docs/problem.md` | Formal mathematical problem statement |
-| `docs/evaluation.md` | Navigator eval pipeline: ClusterScreener + proposed incremental evaluator |
+| `docs/experiment_index.md` | Rigorous catalog of every experiment (live + falsified) |
+| `docs/lp_hpwl_diagnostic.md` | E8 — proxy decomposition (6% WL / 20% density / 74% congestion) |
 | `macro_place/evaluate.py` | Evaluation harness (don't modify unless infra work) |
 | `macro_place/objective.py` | Proxy cost computation |
+| `macro_place/incremental_evaluator.py` | E1 — 4657× speedup; load-bearing for CD |
 | `macro_place/benchmark.py` | Benchmark dataclass (PyTorch tensors) |
+| `submissions/cd/cd_adaptive_placer.py` | **CHAMPION** — full-proxy CD + plateau detection |
+| `submissions/cd/cd_only_placer.py` | Prior champion (CDOnly fixed-budget) |
+| `submissions/polyhedra/init/sdf.py` | SDF initialization (used by champion) |
 | `submissions/examples/` | Reference placers (greedy, random) |
-| `submissions/polyhedra/init/sdf.py` | SDF initialization (moved from submissions/sdf_density/) |
+| `writeup/` | Innovation-prize writeup; killed-hypothesis history (DPO, polyhedra, theory, leaderboard recipe) |
 
 ## At session start
 
@@ -66,10 +75,6 @@ uv run evaluate <placer.py> -b ibm01
 3. Read `docs/results.md` for latest results
 4. Read `docs/approach.md` for current strategy
 5. Ask what to work on, or continue the most promising alive hypothesis
-
-## Overnight autonomous mode
-
-To run autonomous experimentation for hours: read `overnight_driver.md`, create a `queue.md`, then `/loop` with the driver prompt. The driver pops queue items, runs each in an isolated worktree (with submodule symlinked — see `worktree_submodule_bootstrap` in memory), logs results to `results/overnight_run.log`, tracks per-stage bests, and ends on QUEUE_EMPTY / TIME_UP / CRASH. Stops are in `overnight_driver.md`; do not add threshold-based stops — we hunt global best.
 
 ## Writing a placer
 
@@ -90,4 +95,5 @@ See `SETUP.md` for the full API (Benchmark fields, compute_proxy_cost, validatio
 ## Hardware
 
 M3 Max (36GB unified, MPS/PyTorch). Fast subset: ~10s. Full --all: ~40s.
+Champion (`cd_adaptive_placer.py`) takes ~5 hr on --all (per-benchmark plateau).
 Cloud not needed for development. The bottleneck is thinking, not compute.
