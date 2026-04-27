@@ -1,6 +1,41 @@
 # Closing the Gap to 1.11
 
-## 🎯 CD --all COMPLETE 2026-04-27 04:01 — avg 1.1193 (matches leaderboard +0.2%)
+## 🏆 LEADERBOARD BEATEN 2026-04-27 17:22 — E9 Adaptive avg 1.1055
+
+**CDAdaptivePlacer --all final: avg_proxy_cost = 1.1055 across all 17 IBM benchmarks. Zero overlaps. Runtime 17480s (4.85 hr).**
+
+| Method | Avg | Delta |
+| --- | --- | --- |
+| **CDAdaptivePlacer (E9, NEW)** | **1.1055** | (this run) |
+| Leaderboard vmallela target | 1.1172 | **-1.05%** |
+| CDOnly --all (prior champion) | 1.1193 | -1.23% |
+| DPO best_of_v2 | 1.3834 | -20.1% |
+| RePlAce baseline | 1.4578 | -24.2% |
+
+**The plateau-detection bet worked.** CDOnly's 600s/bench was one-size-fits-all: easy benchmarks stopped descending around 5-6 min, hard ones still had Δ≈0.001-0.003 at the 600s mark. E9's plateau detection lets each benchmark exit when its 3-sweep delta-window drops below 0.005 OR after 1hr (competition rule). Net: hard benchmarks 12/14/15/16/17/18 each gained 1.7-3.6%; easy benchmarks tied within ±0.4%. All 17 exited via plateau, none hit the 1hr cap.
+
+**Per-bench wins (E9 vs CDOnly):**
+
+| Bench | E9 | CDOnly | Δ | E9 Wall (s) |
+| --- | --- | --- | --- | --- |
+| ibm10 | 1.0749 | 1.1000 | -2.3% | 1332 |
+| ibm12 | 1.2153 | 1.2418 | -2.1% | 1424 |
+| ibm13 | 0.9772 | 0.9939 | -1.7% | 1143 |
+| ibm14 | 1.2234 | 1.2478 | -2.0% | 1572 |
+| ibm15 | 1.1809 | 1.2109 | -2.5% | 1609 |
+| ibm16 | 1.1610 | 1.1919 | -2.6% | 1518 |
+| ibm17 | 1.3326 | 1.3830 | **-3.6%** | 2238 |
+| ibm18 | 1.3633 | 1.3865 | -1.7% | 1589 |
+
+The 1-hour cap was never hit. Plateau is the right exit condition, not a wall.
+
+**E3 LNS verdict (this branch):** Falsified at single-macro local-window architecture. E3 v2 ibm17 ran 15 LNS iterations in 600s (vs v1's 1-2 in 428s) but final VALID 1.3824 = essentially flat vs CDOnly 1.3830. Cost-based destroy selector saturates after 1-2 accepts; 5×5 window can't move clusters. Real LNS would need cluster-level joint reinsertion or randomized destroy strategies. NOT pursued — E9 already beats the leaderboard.
+
+**Submission deadline May 21 — 24 days away. Champion entry secured.**
+
+---
+
+## 🎯 CD --all COMPLETE 2026-04-27 04:01 — avg 1.1193 (matches leaderboard +0.2%) [SUPERSEDED BY E9]
 
 CDOnlyPlacer --all final: **avg_proxy_cost = 1.1193 across all 17 IBM benchmarks. Zero overlaps. Runtime 10316s (172 min).**
 

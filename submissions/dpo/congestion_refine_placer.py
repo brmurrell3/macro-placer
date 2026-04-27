@@ -1,3 +1,7 @@
+# STATUS: MARGINAL/FALSIFIED 2026-04-27. E10 hypothesis: congestion-only
+# refinement on top of DPO output (74% of cost). Mild config -1.0% on fast,
+# only -0.33% on --all (1.3788 vs 1.3834). ibm02 got WORSE +2.3% — basin-
+# locked benchmarks regressed. Within-DPO refinement caps at 1-2%.
 """
 E10 — Congestion-Only Refinement Placer
 

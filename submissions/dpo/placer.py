@@ -1,3 +1,6 @@
+# STATUS: SUPERSEDED 2026-04-27. Original DPO placer (v1: 1.4255, v2: 1.4107,
+# v3: 1.4246 --all). Replaced by DPO best_of_v2 (1.3834) → CDAdaptive (1.1055).
+# Kept for writeup evidence of the gradient-DPO baseline.
 """
 Differentiable Proxy Optimization (DPO) Placer
 

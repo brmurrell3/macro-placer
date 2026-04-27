@@ -1,3 +1,10 @@
+# STATUS: FALSIFIED 2026-04-27 (both v1 full-canvas and v2 5×5 local-window).
+# E3 hypothesis: LNS rip-up-and-reinsert escapes CD's per-macro plateau.
+# v1 (full-canvas search): 1 LNS iter in 428s on ibm17, final 1.3846 vs CDOnly 1.3830 = flat.
+# v2 (5×5 window, 90× faster): 15 iters in 600s on ibm17, final 1.3824 vs 1.3830 = flat.
+# Cost-based destroy selector saturates after 1-2 accepts; single-macro local
+# moves cannot escape CD's local minimum. Cluster-level joint reinsertion
+# would be needed. Kept as evidence — see docs/experiment_index.md.
 """
 LNS rip-up-and-reinsert module — experiment E3.
 

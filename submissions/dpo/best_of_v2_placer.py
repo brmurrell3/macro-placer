@@ -1,3 +1,6 @@
+# STATUS: SUPERSEDED 2026-04-27. Was DPO champion at 1.3834 (--all);
+# replaced by CDOnly (1.1193) → CDAdaptive (1.1055, beats leaderboard).
+# Kept as evidence of DPO basin lock — see docs/experiment_index.md.
 """
 Best-of-Two Placer: SDF init vs DPO v2-steps
 

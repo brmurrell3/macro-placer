@@ -1,3 +1,6 @@
+# STATUS: SUPERSEDED 2026-04-27. DPOv2StepsPlacer was the v2-restore variant
+# (1.3888 --all alone, 1.3834 inside best_of_v2). Replaced by CDAdaptive (1.1055).
+# Imported by other ablations via subclassing — kept as the reference DPO body.
 """
 DPO Placer — v2 step count ablation
 

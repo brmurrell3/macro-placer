@@ -1,3 +1,5 @@
+# STATUS: FALSIFIED (E11) 2026-04-27. Init strategies — used by E11
+# diverse_priors_placer.py. Hypothesis falsified on --all. Kept as evidence.
 """
 E11 — Diverse init strategies for DPO
 

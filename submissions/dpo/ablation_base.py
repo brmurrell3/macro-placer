@@ -1,3 +1,5 @@
+# STATUS: SUPERSEDED 2026-04-27. DPO ablation base — used only by other
+# ablation_*.py scripts. DPO line is now superseded by CDAdaptive (1.1055).
 """
 DPO Ablation base — configurable variant of DPOPlacer for ablation experiments.
 Not a standalone placer; imported by ablation_*.py scripts.
