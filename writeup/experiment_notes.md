@@ -445,6 +445,244 @@ how accurately we model congestion.
 
 ---
 
+## 10. Congestion Weight Sweep (Exp 1) — KILLED
+
+Tested whether scaling the congestion weight (from 0.5 to 1.5) compensates
+for RUDY's ~2x underestimate.
+
+| Cong Weight | Avg Proxy (--fast) | vs Baseline |
+|---|---|---|
+| 0.50 (control) | 1.2081 | -- |
+| 0.75 | 1.2251 | +1.4% worse |
+| 1.00 | 1.2278 | +1.6% worse |
+| 1.25 | 1.2377 | +2.5% worse |
+| 1.50 | 1.2382 | +2.5% worse |
+
+**Kill gate triggered.** Increasing congestion weight monotonically
+worsens avg proxy. Per-benchmark, ibm01 slightly improves at higher
+weights but ibm04 degrades severely, dominating the average.
+
+**Conclusion:** The problem is RUDY's gradient *direction*, not
+magnitude. Amplifying a noisy signal makes things worse.
+
+---
+
+## 11. RUDY vs Real Congestion Analysis (Exp 6)
+
+Deep cell-by-cell comparison on ibm01 (worst RUDY mismatch).
+
+### Key findings
+
+1. **Overall gap is ~3.1x, not ~2x.** ABU-5% ratio (Real/RUDY): 3.129.
+   Real congestion exceeds RUDY on 1843/1845 cells.
+
+2. **Error is spatially varying (CoV = 0.944).** Per-cell ratio:
+   mean=4.63, median=3.33, P10-P90 range 2.1x-8.3x. NOT uniform.
+
+3. **RUDY and Real disagree on which cells are worst.** Top-5% cell
+   overlap: 10.9% (10/92 cells agree). Jaccard similarity: 0.057
+   (near-random). 77% of Real top-5% cells not even in RUDY top-10%.
+
+4. **Three structural sources of divergence:**
+   - L-routing vs uniform bbox: ~2.74x ratio
+   - Macro blockage (RUDY ignores entirely): 28.3% of real congestion
+   - Spatial smoothing (smooth_range=2): redistributes peaks
+
+5. **Vertical congestion worst.** V correlation: 0.327 vs H: 0.635.
+
+**Implication:** DPO's congestion gradient points at the wrong cells.
+A simple weight scaling cannot fix this — structural model improvements
+needed (macro blockage + L-routing paths). This explains why DPO
+worsens ibm01 vs SDF init.
+
+---
+
+## 12. DPO Improvement Experiments (Exp 2-4)
+
+### v2 step counts (Exp 3)
+
+step_scale = max(0.6, current_scale) instead of min 0.25:
+
+| Config | Avg Proxy | vs RePlAce |
+|---|---|---|
+| v3 (current) | 1.4246 | +2.3% |
+| v2 (more steps) | 1.3888 | +4.7% |
+
+v2 beats v3 on nearly all benchmarks. The optimizer hasn't converged —
+more compute = better quality. Runtime increases from ~5 min to ~10 min.
+
+### Best-of(SDF, DPO) wrapper (Exp 2)
+
+Evaluates both SDF init and DPO output, returns the better per benchmark:
+- v3 best-of: 1.4145 avg (SDF wins 4/17: ibm01, ibm02, ibm06, ibm12)
+- v2 best-of: 1.3834 avg (SDF wins 2/17: ibm02, ibm12)
+
+v2's more thorough optimization fixes ibm01 and ibm06 regressions,
+reducing SDF wins from 4 to 2.
+
+### Combined (Exp 4): best-of-v2
+
+**New champion: 1.3834 avg, 5.1% better than RePlAce.**
+
+| Method | Avg Proxy | vs RePlAce |
+|---|---|---|
+| DPO v3 | 1.4246 | +2.3% |
+| DPO v2 steps | 1.3888 | +4.7% |
+| Best-of(SDF, v3) | 1.4145 | +3.0% |
+| **Best-of(SDF, v2)** | **1.3834** | **+5.1%** |
+
+The improvements are nearly orthogonal: v2 steps fix most regressions,
+best-of catches the remaining 2 (ibm02, ibm12).
+
+---
+
+## 13. Updated Assessment
+
+### Revised improvement potential
+
+| Improvement | Status | Impact |
+|---|---|---|
+| Best-of(SDF, DPO) | **DONE** | +0.8% → +1.0% (ibm02, ibm12) |
+| v2 config (more steps) | **DONE** | +2.5% (1.4246 → 1.3888) |
+| Congestion weight scaling | **KILLED** | 0% (direction wrong) |
+| RUDY analysis | **DONE** | Explains 3.1x gap, 10.9% hotspot agreement |
+| Multi-seed best-of-5 | **DONE** | +0.9% (1.3834 → 1.3703 best-of-5) |
+| Better RUDY model | Future | Needs macro blockage + L-routing |
+| SA polish after legalization | Future | +0.2-0.5% |
+
+**DPO best single-seed: 1.3790 (seed 46, 5.4% over RePlAce).**
+**DPO best-of-5 per benchmark: 1.3703 (6.0% over RePlAce).**
+
+5-seed stats: mean=1.3831, stdev=0.0056, range=1.0% (1.3790-1.3927).
+All 5 seeds beat RePlAce. ibm02/ibm12 zero variance (SDF always wins).
+ibm01/ibm14 most seed-sensitive (spread ~0.07-0.08).
+
+**SUPERSEDED by CDOnlyPlacer (1.1193 avg, 23.2% over RePlAce).**
+
+---
+
+## 14. Dead Ends in the DPO Era (2026-04-27)
+
+Experiments attempted to improve DPO before the CD pivot. All confirmed
+DPO's ceiling is structural, not parametric.
+
+### E5: Batched seeds (64 seeds on GPU)
+
+B=64 seeds vectorized on MPS: wall clock 8.9x B=1 (RUDY congestion
+kernel scales 27x). Quality flat: B=64 fast-set 1.1698 vs B=1 1.1682.
+SDF-perturbed seeds at sigma=0.04*canvas all collapse to same basin.
+
+**Lesson:** Within-basin best-of-N doesn't help. The basin IS the limit.
+
+### E10: Congestion-only refinement
+
+Freeze WL+density, optimize congestion only after DPO convergence.
+Mild variant: --all avg 1.3788 (-0.33% vs 1.3834). ibm06 -3.0% but
+ibm02 +2.3% (congestion refinement deepened the basin lock).
+
+**Lesson:** Marginal lever. Within-DPO congestion optimization can't
+overcome RUDY's directional error.
+
+### E11: Diverse priors (SDF + Will + greedy + random)
+
+4-prior best-of on --fast: 1.1704 (-0.4% vs SDF-only). Will-prior
+wins ibm09/ibm13 on fast set. But --all: 1.3839 (+0.04%, FLAT).
+ibm02 and ibm12 got WORSE with alternative priors.
+
+**Lesson:** Basin diversity exists but doesn't scale to hard benchmarks.
+The basin-locked benchmarks are locked by topology, not init.
+
+---
+
+## 15. The CD Breakthrough (2026-04-27)
+
+### The pivot logic
+
+The RUDY analysis (§11) proved DPO's congestion gradient points at the
+wrong cells (10.9% hotspot overlap). Two possible responses:
+  (a) Build a better differentiable congestion model
+  (b) Bypass the differentiable model — evaluate the real proxy directly
+
+The leaderboard entry (vmallela, 1.1172 avg, CD+LNS, ~40 min/bench)
+demonstrated that (b) was viable. The key prerequisite: an incremental
+evaluator fast enough for thousands of move evaluations per sweep.
+
+### E1: Incremental evaluator (the infrastructure gate)
+
+`macro_place/incremental_evaluator.py` — 930 lines. Per-net min/max
+trackers, bin-density grid with delta updates, per-net RUDY congestion
+contributions, smoothing via vectorized cumsum.
+
+- 4657x speedup on ibm10 (6.5 ms/move vs 30s full eval)
+- Bit-for-bit parity verified (worst diff 1.1e-15 absolute)
+- RUDY congestion IS decomposable per single-macro move
+- Smoothing is the dominant per-call cost; move() is much cheaper
+
+### E2: Full-proxy CD (the breakthrough)
+
+ibm10: SDF init 1.411 → CD 40-min 1.063 → CD 10-min 1.100.
+13 sweeps, 14932 accepted moves, zero overlaps.
+
+Trade-off pattern: WL up 13-15%, density down 21-32%, congestion
+down 23-40%. CD trades cheap WL for expensive density/congestion —
+exactly the trade DPO cannot make because RUDY misidentifies cells.
+
+### ibm02 basin lock broken
+
+All 5 DPO seeds converge to byte-identical ibm02 placement (1.6888).
+CD: 1.6888 → 1.1534 (-32%). The DPO basin lock on high-density
+benchmarks is structural — gradient methods through RUDY cannot see
+the escape path. CD on the real proxy can.
+
+### CDOnlyPlacer --all result
+
+| Method | Avg Proxy | vs RePlAce |
+|---|---|---|
+| SDF init | 1.5002 | -2.9% |
+| Polyhedra nav | 1.4867 | -2.0% |
+| DPO best-of-v2 | 1.3834 | +5.1% |
+| **CDOnlyPlacer** | **1.1193** | **+23.2%** |
+| Leaderboard (vmallela) | 1.1172 | +23.4% |
+
+Every benchmark improves over DPO. No regressions. 10 min/benchmark.
+Total runtime: 172 min for 17 benchmarks.
+
+### Remaining gap to leaderboard
+
+1.1193 vs 1.1172 = +0.18% gap. Paths below:
+- Per-benchmark budget allocation (hard benchmarks need more time)
+- LNS rip-up-and-reinsert for CD plateau escape
+- ibm17/18 still improving when budget expired
+
+---
+
+## 16. Updated Assessment (post-CD)
+
+### The two-pivot narrative
+
+| Stage | Method | Avg | Diagnosis | Resolution |
+|---|---|---|---|---|
+| 1 | Polyhedra nav | 1.49 | LP-HPWL rho=-0.001 | → DPO |
+| 2 | DPO | 1.38 | RUDY 10.9% hotspot overlap | → CD |
+| 3 | **CD** | **1.12** | — | — |
+
+Each pivot was driven by quantitative diagnosis, not intuition. The
+same methodology (systematic ablation + correlation analysis) detected
+both failure modes.
+
+### What this means for the writeup
+
+The paper is now a three-act story:
+1. Build a principled system on structural insight (polyhedra)
+2. Diagnose why it fails, pivot to gradient method (DPO)
+3. Diagnose why DPO is limited, pivot to exact evaluation (CD)
+
+The contributions are layered: each pivot preserves what worked from
+the previous stage (SDF init is used by all three methods) while
+addressing the specific failure mode.
+
+---
+
 Sources (literature check):
 - [DREAMPlace routability DATE 2021](https://www.cse.cuhk.edu.hk/~byu/papers/C112-DATE2021-DREAMPlace-Cong.pdf)
 - [DCGP DAC 2025](https://ieda.oscc.cc/res/papers/25-DAC25-DCGP.pdf)

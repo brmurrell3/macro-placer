@@ -35,12 +35,15 @@ class AblationDPOPlacer:
 
     def __init__(self, seed=42, use_sdf_init=True,
                  skip_congestion=False, skip_density=False,
-                 max_phases=3):
+                 max_phases=3,
+                 congestion_weight=0.5, density_weight=0.5):
         self.seed = seed
         self.use_sdf_init = use_sdf_init
         self.skip_congestion = skip_congestion
         self.skip_density = skip_density
         self.max_phases = max_phases
+        self.congestion_weight = congestion_weight
+        self.density_weight = density_weight
 
     def place(self, benchmark: Benchmark) -> torch.Tensor:
         torch.manual_seed(self.seed)
@@ -194,7 +197,7 @@ class AblationDPOPlacer:
                 overlap = _overlap_penalty(clamped[:n_hard], half_sizes[:n_hard])
                 overlap_norm = overlap / (cw * ch)
 
-                proxy = wl + 0.5 * density + 0.5 * congestion
+                proxy = wl + self.density_weight * density + self.congestion_weight * congestion
                 loss = proxy + lam * overlap_norm
 
                 loss.backward()

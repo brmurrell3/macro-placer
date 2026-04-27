@@ -63,29 +63,29 @@ broadly. (See `todo.md`.)
 
 **Claim:** Differentiating through the actual competition metric
 f(p) = WL + 0.5*D + 0.5*C — including a fully differentiable RUDY
-congestion model — beats RePlAce by 2-3% on the IBM benchmarks.
+congestion model — beats RePlAce by 5% on the IBM benchmarks.
 
-**What's novel (pending verification):** Including the congestion
-gradient directly in placement optimization. DREAMPlace (Lin et al.
-2019) differentiates HPWL + electrostatic density. Congestion-aware
-DREAMPlace variants (Lu et al. 2020) use congestion as *net weights on
-HPWL* — the gradient of "congestion-weighted HPWL" is not the gradient
-of congestion itself. Our gradient computes dC/dp directly: how moving
-each macro changes the top-5% congested cells.
-
-**THIS CLAIM NEEDS LITERATURE VERIFICATION.** If any 2020-2026 work
-already includes dC/dp in the backward pass for analytical placement,
-our contribution downgrades to "applied to this specific competition
-metric with top-k focusing." Still useful, but not "first."
+**What's novel:** Including the congestion gradient dC/dp directly in
+macro placement optimization. DREAMPlace (Lin et al. 2019) differentiates
+HPWL + electrostatic density. Congestion-aware variants (Lu et al. 2020)
+use congestion as net weights on HPWL. C3PO/NV-Place (ASP-DAC 2026)
+computes dC/dp for standard-cell placement. Our contribution is the
+application to macro placement with the competition metric and top-k
+aggregation — not "first dC/dp" but "first direct congestion gradient
+for macro placement."
 
 **What's not novel:** LSE-HPWL (Naylor 2001), differentiable grid
 density (standard), penalty continuation (Bertsekas 1982, Hazan 2016),
 Adam optimizer, top-k via PyTorch.
 
-**Evidence:** `submissions/dpo/placer.py`, 1.4264 ± 0.0025 avg proxy
-across 5 seeds (range 1.4237–1.4301). All seeds beat RePlAce (1.4578).
-Ablation: removing congestion gradient → 1.5092 (+5.9%), removing
-density gradient → 1.7342 (+21.7%), random init → 4.94 (+247%).
+**Evidence:** `submissions/dpo/placer.py`. Best-of-v2 config: 1.3831 ±
+0.0056 avg proxy across 5 seeds (range 1.3790–1.3927). All seeds beat
+RePlAce (1.4578). Ablation: removing congestion gradient → 1.5092
+(+5.9%), removing density gradient → 1.7342 (+21.7%), random init →
+4.94 (+247%).
+
+**Superseded by CD as competition method** but remains the key
+intermediate result in the paper's narrative arc.
 
 ---
 
@@ -190,19 +190,117 @@ under normal model.
 
 ---
 
-## 7. Methodology: the complete experimental trajectory
+## 7. RUDY fidelity analysis: the second diagnosis
+
+**Claim:** DPO's RUDY congestion model is not just inaccurate in
+magnitude — it is structurally wrong in direction. The real/RUDY gap is
+3.1x (not 2x). Top-5% hotspot overlap is 10.9% (Jaccard 0.057,
+near-random). Three identified sources: L-routing vs uniform bbox
+distribution (2.74x), missing macro blockage (28% of real congestion),
+missing spatial smoothing.
+
+**What's novel:** The cell-by-cell characterization of RUDY vs real
+congestion for macro placement. Prior work discusses RUDY's aggregate
+inaccuracy; we show the spatial pattern of disagreement and identify
+that the gradient *direction* is wrong, not just the magnitude. This
+is confirmed experimentally: congestion weight sweep (0.5-1.5) is
+monotonically worse.
+
+**Why it matters:** This diagnosis directly motivated the second pivot.
+The natural response to "RUDY is wrong" is to build a better RUDY.
+The correct response was to bypass RUDY entirely — evaluate the real
+proxy cost through the incremental evaluator.
+
+**Evidence:** `writeup/rudy_analysis.py`, `experiment_notes.md` §11.
+Congestion weight sweep: 5 variants, all monotonically worse (§10).
+
+---
+
+## 8. Incremental proxy evaluator (4657x speedup)
+
+**Claim:** An incremental evaluator that maintains per-net min/max
+trackers, bin-density grid, and RUDY congestion deltas achieves
+bit-for-bit parity with compute_proxy_cost at 4657x speedup (6.5 ms/move
+vs 30s full evaluation on ibm10). This infrastructure gates the
+full-proxy CD algorithm.
+
+**What's novel:** The specific combination of incremental data structures
+for the competition's proxy cost (WL + 0.5*density + 0.5*congestion).
+Incremental HPWL evaluators are standard; incrementalizing density
+(bin-level delta) and RUDY congestion (per-net contribution tracking +
+smoothing via vectorized cumsum) for parity with the competition
+evaluator is specific to this work.
+
+**What's not novel:** Incremental evaluation for VLSI placement is
+well-established.
+
+**Evidence:** `macro_place/incremental_evaluator.py` (930 lines).
+Verified bit-for-bit parity on ibm01 and ibm10 across 130 random
+moves (worst diff 1.1e-15 absolute). Revert test passes within 1e-9
+relative. Speedup benchmark: `scripts/bench_incremental.py`.
+
+---
+
+## 9. Full-proxy coordinate descent
+
+**Claim:** Coordinate descent on the actual proxy cost — via the
+incremental evaluator, with breakpoint enumeration for exact 1D
+search — achieves 1.12 avg proxy (23.2% over RePlAce, matching the
+competition leaderboard). Every benchmark improves over DPO. Zero
+regressions.
+
+**What's novel:** The application of full-proxy CD (not HPWL-only
+weighted median) to macro placement. The key insight is that CD on
+the real objective, enabled by a fast enough evaluator, outperforms
+gradient descent on a differentiable approximation — even though
+the approximation (RUDY) is the standard approach in the literature.
+
+**What's not novel:** Coordinate descent, breakpoint enumeration,
+incremental evaluation — all textbook techniques. The contribution
+is recognizing that combining them bypasses the RUDY fidelity
+problem that limits gradient methods.
+
+**Evidence:** `submissions/cd/cd_only_placer.py`. 1.1193 avg proxy
+on all 17 IBM benchmarks. Zero overlaps. 10 min/benchmark budget.
+Breaks the ibm02 basin lock (1.6888 → 1.1534, -32%) that DPO cannot
+escape regardless of seed.
+
+---
+
+## 10. "Bypass, don't fix" as a design principle
+
+**Claim:** When a model approximation is structurally wrong (not just
+noisy), exact evaluation with a faster data structure beats a more
+accurate approximation. This is demonstrated twice:
+  - LP-HPWL → DPO (bypass LP's single-component optimization with
+    joint gradient on all three components)
+  - DPO RUDY → CD (bypass the differentiable approximation with exact
+    proxy evaluation via incremental data structures)
+
+**What's novel:** The explicit identification of this principle through
+two sequential demonstrations on the same problem. Each bypass was
+motivated by quantitative diagnosis (rho=-0.001; 10.9% hotspot overlap)
+that proved the model was structurally wrong, not improvable by tuning.
+
+---
+
+## 11. Methodology: the complete experimental trajectory
 
 **Claim:** The sequence *build system on structural insight* ->
 *hit wall* -> *run systematic ablation to diagnose root cause* ->
 *use diagnosis to pivot* is a transferable methodology for applied
-optimization research.
+optimization research. This sequence occurs TWICE in our work:
+
+  Cycle 1: polyhedra nav (1.49) → 22-experiment sweep → rho=-0.001
+  → DPO (1.38)
+  
+  Cycle 2: DPO (1.38) → RUDY analysis → 10.9% hotspot overlap
+  → incremental evaluator + CD (1.12)
 
 **What's novel:** The specific application and the completeness of the
-documentation. Each step is quantified: 1.49 (system), 22 experiments
-(diagnosis), rho=-0.001 (root cause), 1.42 (resolution). Additionally,
-the post-resolution analysis (ablation study, non-decomposability
-experiments, seed variance analysis) quantifies why the resolution
-works and what its limits are.
+documentation. Each step is quantified. The two-cycle structure shows
+the methodology is not ad hoc — the same diagnosis pattern works on
+different failure modes.
 
 **Evidence:** The full experiment log, results history, and approach
 documents.
