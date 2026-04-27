@@ -1,28 +1,26 @@
 # Next Experiments — Prioritized
 
-Date: 2026-04-26. Context: DPO achieves 1.4246 avg (2.3% over RePlAce).
-Leading teams at ~1.22 (16% over RePlAce). The gap is almost entirely
-congestion — see `writeup/experiment_notes.md` §9 for full analysis.
+Date: 2026-04-26 (DPO era). Updated 2026-04-27 (CD era).
+
+**Status:** All DPO-era experiments (1-6) completed. CDOnlyPlacer
+(1.1193 avg, 23.2% over RePlAce) supersedes DPO. See
+`docs/closing_the_gap.md` for CD-era experiments (E1-E11).
 
 ---
 
-## The core diagnosis
+## The core diagnosis (DPO era — SUPERSEDED)
 
-DPO's differentiable proxy has a **2x congestion underestimate** (RUDY
-vs real L-routing). This means the optimizer effectively minimizes:
+DPO's differentiable proxy has a **3.1x congestion gap** (RUDY vs real
+L-routing, confirmed by §11 analysis). The error is in gradient
+*direction*, not magnitude (§10 congestion weight sweep killed).
+Top-5% hotspot overlap: 10.9%. This motivated the CD pivot.
 
-    f ≈ WL + 0.5*D + 0.25*C_real   (what DPO actually optimizes)
-
-instead of:
-
-    f = WL + 0.5*D + 0.5*C_real    (the competition metric)
-
-Congestion is 75% of the proxy cost. The gradient on the dominant
-component is wrong by 2x. This is the single biggest lever available.
+**Resolution:** Bypass RUDY entirely via incremental evaluator (4657x
+speedup) + full-proxy coordinate descent. See `experiment_notes.md` §15.
 
 ---
 
-## Experiment 1: Scale congestion weight to compensate (TRIVIAL)
+## Experiment 1: Scale congestion weight to compensate (DONE — KILLED)
 
 **What:** Change DPO loss from `wl + 0.5*C` to `wl + 1.0*C` (or sweep
 0.5, 0.75, 1.0, 1.25, 1.5).
@@ -55,9 +53,12 @@ Neutral or worse if RUDY error is directional (wrong gradient direction).
 **Kill gate:** If no weight in [0.5, 1.5] beats 1.4246 on --fast, the
 issue is RUDY's gradient direction, not magnitude. Stop here.
 
+**RESULT:** Kill gate triggered. All weights monotonically worse. Problem
+is gradient direction, not magnitude. See experiment_notes.md §10.
+
 ---
 
-## Experiment 2: Best-of(SDF, DPO) submission (ZERO EFFORT)
+## Experiment 2: Best-of(SDF, DPO) submission (DONE)
 
 **What:** Evaluate both SDF init and DPO output per benchmark, submit
 the better one.
@@ -71,9 +72,12 @@ proxy cost, returns the better.
 
 **Expected:** +0.8% improvement, guaranteed. No risk.
 
+**RESULT:** 1.4145 avg (+3.0% over RePlAce). SDF wins on ibm01, ibm02,
+ibm06, ibm12 as expected. See experiment_notes.md §12.
+
 ---
 
-## Experiment 3: Restore v2 config (more optimizer steps) (TRIVIAL)
+## Experiment 3: Restore v2 config (more optimizer steps) (DONE)
 
 **What:** The experiment log shows dpo_v2_moresteps at 1.4107 (3.2%
 over RePlAce), systematically better than v3 on 15/17 benchmarks.
@@ -92,9 +96,12 @@ Either remove step_scale entirely or set a minimum (e.g., step_scale
 **Expected:** +1.0% (already demonstrated). Combined with experiment 2,
 could reach ~1.39.
 
+**RESULT:** 1.3888 avg (+4.7% over RePlAce). step_scale = max(0.6,
+current). See experiment_notes.md §12.
+
 ---
 
-## Experiment 4: Congestion weight + more steps combined
+## Experiment 4: v2 steps + best-of combined (DONE)
 
 **What:** Best congestion weight from Exp 1 + v2-style step counts +
 best-of(SDF, DPO).
@@ -105,9 +112,12 @@ catches benchmarks where DPO regresses.
 
 **Expected:** 1.37-1.40 range if congestion weight helps.
 
+**RESULT:** 1.3834 avg (+5.1% over RePlAce). New champion. SDF wins
+only ibm02 and ibm12 (v2 steps fixed ibm01 and ibm06). See §12.
+
 ---
 
-## Experiment 5: Multi-seed with best config (LOW EFFORT)
+## Experiment 5: Multi-seed with best config (DONE)
 
 **What:** Run 5-10 seeds with the best config from Exp 4, take best
 per benchmark.
@@ -119,9 +129,14 @@ potentially widening the range.
 **Caveat:** The diminishing returns analysis suggests this adds only
 ~0.1%. But it's free if compute is available.
 
+**RESULT:** 5-seed mean=1.3831, stdev=0.0056, range=1.0%. Best single
+seed=1.3790 (seed 46). Best-of-5 per benchmark=1.3703 (6.0% over
+RePlAce). 4/5 seeds contribute benchmark-bests. ibm02/ibm12 zero
+variance (SDF deterministic). See experiment_notes.md §13.
+
 ---
 
-## Experiment 6: Investigate RUDY vs real congestion (RESEARCH)
+## Experiment 6: Investigate RUDY vs real congestion (DONE)
 
 **What:** For ibm01 (where RUDY is worst), compare RUDY congestion
 map vs PlacementCost congestion map cell by cell. Identify where they
@@ -138,6 +153,10 @@ per-cell ratio, visualize.
 **Expected outcome:** Either (a) RUDY is ~2x everywhere (scaling fix
 is sufficient) or (b) RUDY is wildly wrong in specific regions (need
 a better model). This determines whether Exp 1 has legs.
+
+**RESULT:** Answer is (b). Gap is 3.1x not 2x. Top-5% hotspot overlap
+only 10.9% (near-random). Three sources: L-routing vs bbox (2.74x),
+macro blockage (28% missing), spatial smoothing. See §11.
 
 ---
 
@@ -161,7 +180,7 @@ a multi-day implementation effort with uncertain payoff.
 
 ---
 
-## What we know works (from today's experiments)
+## What we know works (full trajectory)
 
 | Finding | Evidence | File |
 |---|---|---|
@@ -171,12 +190,12 @@ a multi-day implementation effort with uncertain payoff.
 | Multi-phase: +2.5% | ablation_phase1 | experiment_log.jsonl |
 | 5-seed stability: 0.45% range | seeds 42-46 | experiment_log.jsonl |
 | Congestion = 75% of proxy | component breakdown | experiment_notes.md §2 |
-| RUDY underestimates 2x | DPO internal vs real | experiment_notes.md §9 |
-| DPO worsens 4/17 benchmarks | SDF vs DPO per-bench | experiment_notes.md §8 |
-| Decomposition fails | 22 sweep + 0/190 swaps + hierarchical | experiment_notes.md §7 |
-| Legal-state methods trapped | polyhedra nav at ceiling | results.md |
+| RUDY gap is 3.1x, direction wrong | cell-by-cell analysis | experiment_notes.md §11 |
 | Barrier crossing: 5-12% pairs | traversal analysis | polyhedra_traversal.txt |
-| v2 (more steps) +1.0% | experiment log | experiment_log.jsonl |
+| v2 (more steps) +2.5% | experiment log | experiment_log.jsonl |
+| **Incremental evaluator: 4657x speedup** | **ibm10 benchmark** | **closing_the_gap.md E1** |
+| **Full-proxy CD: 1.12 avg (+23%)** | **all 17 benchmarks** | **closing_the_gap.md E2** |
+| **CD breaks ibm02 basin lock (-32%)** | **ibm02 1.689→1.153** | **closing_the_gap.md** |
 
 ## What we know doesn't work
 
@@ -186,5 +205,9 @@ a multi-day implementation effort with uncertain payoff.
 | Alternative inits (spectral, partitioning) | SDF already near-optimal coarsely | Overnight SP1 |
 | Better surrogate ranking | Only 1-7 good candidates exist | Overnight SP3 |
 | LP-based congestion optimization | LP-HPWL uncorrelated with proxy | rho=-0.001 |
-| Multi-start brute force | Diminishing returns (0.45% range) | Seed analysis |
+| Congestion weight scaling | RUDY direction wrong, not magnitude | Exp 1, §10 |
+| Multi-start brute force (DPO) | Diminishing returns (0.45% range) | Seed analysis |
+| Batched GPU seeds (64x) | Same-basin collapse | E5, §14 |
+| Diverse priors (4-init best-of) | Flat on --all, ibm02/12 worse | E11, §14 |
+| Congestion-only DPO refinement | Marginal -0.33%, basin lock deepens | E10, §14 |
 | Pulling clusters together | Increases density (WL-density anti-correlation) | Hierarchical v2 |
