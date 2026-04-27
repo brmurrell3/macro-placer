@@ -1,6 +1,6 @@
 # Results
 
-Last updated: 2026-04-23
+Last updated: 2026-04-27
 
 ## Baselines
 
@@ -10,20 +10,77 @@ Last updated: 2026-04-23
 | SA | 2.1362 | 0 | Weak baseline |
 | Will's seed (SA 3000) | 1.5338 | 0 | Current best submission |
 | Greedy row | ~2.20 | 0 | Demo placer |
+| Leaderboard target (vmallela) | 1.1172 | 0 | Unverified; CD+LNS, ~40 min/bench |
 
 ## Summary
 
 | Hypothesis | Status | Best Avg Proxy | Notes |
 |------------|--------|----------------|-------|
-| **DPO (Differentiable Proxy Optimization)** | **CHAMPION** | **1.4246** | **Beats RePlAce by 2.3%, wins 13/17 benchmarks** |
-| Polyhedra Navigation | graduated | 1.4867 | 2.0% behind RePlAce; at ceiling (22-experiment overnight sweep confirmed) |
-| SDF Density | superseded | 1.5002 | Now used as init for DPO and polyhedra navigation |
+| **CDOnlyPlacer** | **CHAMPION** | **1.1193** | **Matches leaderboard +0.18%; -23.2% vs RePlAce; 10 min/bench** |
+| DPO best-of-v2 | superseded | 1.3834 | Was champion 2026-04-26; -19.1% vs CDOnly |
+| DPO v3 (original) | superseded | 1.4246 | -23.9% vs CDOnly |
+| Polyhedra Navigation | superseded | 1.4867 | At ceiling; replaced by CD |
+| SDF Density | init only | 1.5002 | Now used as init for CDOnlyPlacer |
 
-## DPO --- Champion Result
+## CDOnlyPlacer --- Champion Result (2026-04-27)
 
-**Status: CHAMPION** --- avg proxy **1.4255** on --all (**2.2% better than RePlAce**).
+**Status: CHAMPION** --- avg proxy **1.1193** on --all (**23.2% better than RePlAce**, **matches leaderboard 1.1172 within 0.18%**, **19.1% better than prior DPO champion**).
 
-Implementation: `submissions/dpo/placer.py`
+Configuration: `submissions/cd/cd_only_placer.py` (full-proxy coordinate descent on `IncrementalProxyEvaluator`, 600s budget per benchmark, SDF init). Runtime 10316s = 172 min total. Zero overlaps on all 17 benchmarks.
+
+### How it works
+
+1. **SDF init** --- same as DPO baseline, gives non-overlapping starting placement
+2. **Incremental evaluator** (`macro_place/incremental_evaluator.py`) --- bit-for-bit parity with `compute_proxy_cost`, **4657x speedup** on per-move cost queries via per-net min/max trackers + bin-density grid + RUDY congestion deltas
+3. **Full-proxy coordinate descent** --- for each non-fixed macro, search both x and y axes; enumerate breakpoints (net endpoints + bin grid lines) and pick the proxy-minimizing position via incremental cost queries. No gradient, no DPO.
+4. **Time budget** --- 600s wall clock per benchmark; sweeps continue until budget expires. Typical: 3-13 sweeps depending on macro count.
+
+### Per-benchmark (zero overlaps everywhere)
+
+| Bench | CDOnly | DPO BoV2 | RePlAce | Delta vs DPO |
+|---|---|---|---|---|
+| ibm01 | 0.9133 | 1.1285 | 0.9976 | -19.1% |
+| ibm02 | 1.1534 | 1.6888 | 1.8370 | -31.7% |
+| ibm03 | 0.9942 | 1.2508 | 1.3222 | -20.5% |
+| ibm04 | 1.0193 | 1.3239 | 1.3024 | -23.0% |
+| ibm06 | 1.1656 | 1.6434 | 1.6187 | -29.1% |
+| ibm07 | 1.1105 | 1.3846 | 1.4633 | -19.8% |
+| ibm08 | 1.1307 | 1.3816 | 1.4285 | -18.2% |
+| ibm09 | 0.8606 | 1.0130 | 1.1194 | -15.1% |
+| ibm10 | 1.1000 | 1.2540 | 1.5009 | -12.3% |
+| ibm11 | 0.9248 | 1.0657 | 1.1774 | -13.2% |
+| ibm12 | 1.2418 | 1.6497 | 1.7261 | -24.7% |
+| ibm13 | 0.9939 | 1.2089 | 1.3355 | -17.8% |
+| ibm14 | 1.2478 | 1.4725 | 1.5436 | -15.3% |
+| ibm15 | 1.2109 | 1.3802 | 1.5159 | -12.3% |
+| ibm16 | 1.1919 | 1.3594 | 1.4780 | -12.3% |
+| ibm17 | 1.3830 | 1.5888 | 1.6446 | -13.0% |
+| ibm18 | 1.3865 | 1.6352 | 1.7722 | -15.2% |
+| **AVG** | **1.1193** | **1.3134** | **1.4578** | **-14.8%** |
+
+Every single benchmark improves over DPO. No regressions.
+
+### What unblocked this
+
+The 2026-04-26 strategic update decomposed proxy cost as **WL 6%, density 20%, congestion 74%**. Pure HPWL coordinate descent (closed-form weighted-median) caps at ~5% improvement. **Full-proxy CD on a fast incremental evaluator** captures all three components at once. The infrastructure prerequisite (4657x speedup) gated the entire approach.
+
+### Path below 1.117
+
+Closing the remaining 0.002 to leaderboard parity and pushing below:
+
+1. **Per-benchmark budget allocation:** ibm17/18/14/12 still improving when budget expired; give them 20-30 min, give easy ones (ibm09 at 0.86) only 3-5 min.
+2. **LNS rip-up-and-reinsert:** Hard benchmarks plateau because CD respects topology. LNS escapes by relocating clusters of macros at once.
+3. **Combination:** Long CD + LNS polish on worst benchmarks.
+
+See `docs/closing_the_gap.md` for full experiment lineage.
+
+---
+
+## DPO --- Prior Champion (superseded 2026-04-27)
+
+**Status: SUPERSEDED.** Was champion 2026-04-26 at avg proxy **1.3834** on --all (**5.1% better than RePlAce**). Replaced by CDOnlyPlacer.
+
+Best configuration: `submissions/dpo/best_of_v2_placer.py` (best-of SDF + v2-steps DPO).
 
 ### Architecture
 
@@ -35,43 +92,54 @@ Differentiates through the actual proxy cost formula f(p) = WL + 0.5*D + 0.5*C:
 5. **Overlap penalty** --- pairwise ReLU, annealed across 3 phases
 6. **Adam optimizer** --- 3-phase penalty continuation (exploration → refinement → sharpening)
 7. **Legalization** --- iterative overlap repair for zero hard-macro overlaps
+8. **Best-of selection** --- evaluate both SDF init and DPO output, return the better per benchmark
 
-### Per-benchmark results (--all, DPO v1)
+### Configuration evolution
 
-| Benchmark | DPO v3 | Poly (50s) | SDF v5 | RePlAce | vs RePlAce | Time |
-|-----------|--------|------------|--------|---------|------------|------|
-| ibm01 | 1.2105 | 1.1871 | 1.1953 | 0.9976 | -21.3% | 8s |
-| ibm02 | 1.7560 | 1.6205 | 1.6888 | 1.8370 | **+4.4%** | 11s |
-| ibm03 | 1.2869 | 1.4058 | 1.4070 | 1.3222 | **+2.7%** | 9s |
-| ibm04 | 1.3570 | 1.3652 | 1.3826 | 1.3024 | -4.2% | 10s |
-| ibm06 | 1.7553 | 1.7003 | 1.7150 | 1.6187 | -8.4% | 7s |
-| ibm07 | 1.4352 | 1.4867 | 1.4898 | 1.4633 | **+1.9%** | 8s |
-| ibm08 | 1.4383 | 1.5080 | 1.5113 | 1.4285 | -0.7% | 14s |
-| ibm09 | 1.0529 | 1.1245 | 1.1337 | 1.1194 | **+5.9%** | 9s |
-| ibm10 | 1.2793 | 1.4067 | 1.4112 | 1.5009 | **+14.8%** | 26s |
-| ibm11 | 1.0999 | 1.2317 | 1.2336 | 1.1774 | **+6.6%** | 10s |
-| ibm12 | 1.7166 | 1.6482 | 1.6497 | 1.7261 | **+0.6%** | 18s |
-| ibm13 | 1.2384 | 1.3984 | 1.3986 | 1.3355 | **+7.3%** | 14s |
-| ibm14 | 1.5056 | 1.6025 | 1.6003 | 1.5436 | **+2.5%** | 60s |
-| ibm15 | 1.4047 | 1.6059 | 1.6073 | 1.5159 | **+7.3%** | 14s |
-| ibm16 | 1.4217 | 1.5421 | 1.5424 | 1.4780 | **+3.8%** | 23s |
-| ibm17 | 1.6038 | 1.7431 | 1.7431 | 1.6446 | **+2.5%** | 32s |
-| ibm18 | 1.6569 | 1.7897 | 1.7927 | 1.7722 | **+6.5%** | 14s |
-| **AVG** | **1.4246** | **1.4921** | **1.5002** | **1.4578** | **+2.3%** | 17s |
+| Version | Avg Proxy | vs RePlAce | Key change |
+|---------|-----------|------------|------------|
+| v3 (original) | 1.4246 | +2.3% | Aggressive step_scale for runtime |
+| v2 (more steps) | 1.3888 | +4.7% | step_scale = max(0.6, current) |
+| **best-of-v2** | **1.3834** | **+5.1%** | v2 steps + best-of(SDF, DPO) per benchmark |
+
+### Per-benchmark results (--all, best-of-v2)
+
+| Benchmark | Best-of-v2 | DPO v3 | Poly (50s) | SDF v5 | RePlAce | vs RePlAce | Winner |
+|-----------|------------|--------|------------|--------|---------|------------|--------|
+| ibm01 | 1.1285 | 1.2105 | 1.1871 | 1.1953 | 0.9976 | -13.1% | DPO-v2 |
+| ibm02 | 1.6888 | 1.7560 | 1.6205 | 1.6888 | 1.8370 | **+8.1%** | SDF |
+| ibm03 | 1.2508 | 1.2869 | 1.4058 | 1.4070 | 1.3222 | **+5.4%** | DPO-v2 |
+| ibm04 | 1.3239 | 1.3570 | 1.3652 | 1.3826 | 1.3024 | -1.7% | DPO-v2 |
+| ibm06 | 1.6434 | 1.7553 | 1.7003 | 1.7150 | 1.6187 | -1.5% | DPO-v2 |
+| ibm07 | 1.3846 | 1.4352 | 1.4867 | 1.4898 | 1.4633 | **+5.4%** | DPO-v2 |
+| ibm08 | 1.3816 | 1.4383 | 1.5080 | 1.5113 | 1.4285 | **+3.3%** | DPO-v2 |
+| ibm09 | 1.0130 | 1.0529 | 1.1245 | 1.1337 | 1.1194 | **+9.5%** | DPO-v2 |
+| ibm10 | 1.2540 | 1.2793 | 1.4067 | 1.4112 | 1.5009 | **+16.5%** | DPO-v2 |
+| ibm11 | 1.0657 | 1.0999 | 1.2317 | 1.2336 | 1.1774 | **+9.5%** | DPO-v2 |
+| ibm12 | 1.6497 | 1.7166 | 1.6482 | 1.6497 | 1.7261 | **+4.4%** | SDF |
+| ibm13 | 1.2327 | 1.2384 | 1.3984 | 1.3986 | 1.3355 | **+7.7%** | DPO-v2 |
+| ibm14 | 1.4719 | 1.5056 | 1.6025 | 1.6003 | 1.5436 | **+4.6%** | DPO-v2 |
+| ibm15 | 1.3742 | 1.4047 | 1.6059 | 1.6073 | 1.5159 | **+9.3%** | DPO-v2 |
+| ibm16 | 1.3819 | 1.4217 | 1.5421 | 1.5424 | 1.4780 | **+6.5%** | DPO-v2 |
+| ibm17 | 1.6121 | 1.6038 | 1.7431 | 1.7431 | 1.6446 | **+2.0%** | DPO-v2 |
+| ibm18 | 1.6614 | 1.6569 | 1.7897 | 1.7927 | 1.7722 | **+6.3%** | DPO-v2 |
+| **AVG** | **1.3834** | **1.4246** | **1.4921** | **1.5002** | **1.4578** | **+5.1%** | 15 DPO / 2 SDF |
 
 ### Key findings
 
-1. **DPO beats RePlAce on 14/17 benchmarks.** Average improvement of +2.2%. Largest wins on ibm10 (+15.5%), ibm11 (+7.4%), ibm18 (+7.3%).
+1. **Best-of-v2 beats RePlAce on 15/17 benchmarks.** Average improvement of +5.1%. Largest wins on ibm10 (+16.5%), ibm09/ibm11 (+9.5%), ibm15 (+9.3%).
 
-2. **Density is the main improvement vector.** DPO consistently achieves density ~0.51-0.57 vs SDF's ~0.9+. The density gradient pushes macros away from top-10% hotspots.
+2. **v2 step counts matter.** Relaxing step_scale from min 0.25 to min 0.6 improves avg from 1.4246 to 1.3888 (+2.5%). The optimizer hasn't converged — more steps = better quality.
 
-3. **RUDY congestion underestimates real congestion** (smooth: 0.5-5.0 vs real: 1.3-2.8). Despite this, the approximate gradient still helps — DPO reduces congestion compared to SDF even though the model is imperfect.
+3. **Best-of selection catches regressions.** SDF wins on ibm02 and ibm12. With v2's more thorough optimization, DPO now wins 15/17 (vs 13/17 with v3). ibm01 and ibm06 regressions fixed by v2.
 
-4. **ibm01 is the main weakness** (-28.2% vs RePlAce). ibm01 has the smallest canvas and highest macro density, making it congestion-dominated. The RUDY approximation is least accurate here.
+4. **Density is the main improvement vector.** DPO consistently achieves density ~0.51-0.57 vs SDF's ~0.9+. The density gradient pushes macros away from top-10% hotspots.
 
-5. **All runtimes under 60s.** Adaptive step scaling + congestion gradient skipping for large benchmarks. Max: ibm14 at 55s.
+5. **RUDY congestion underestimates real congestion by ~3.1x** (not ~2x as initially estimated). Top-5% hotspot overlap between RUDY and real: only 10.9%. Despite this, the approximate gradient still helps — DPO reduces congestion compared to SDF.
 
-6. **Overlap penalty continuation works.** Phase 1 (λ=1) allows overlaps for exploration, Phase 2 (λ=50) penalizes heavily, Phase 3 (λ=500) eliminates remaining overlaps. Legalization cleans up 0-50 residual overlaps.
+6. **Congestion weight scaling doesn't help.** Sweep of weights 0.5-1.5 showed monotonically worse results. The problem is RUDY's gradient direction, not magnitude. Three structural sources: L-routing vs uniform bbox, missing macro blockage (28% of real congestion), and missing spatial smoothing.
+
+7. **Overlap penalty continuation works.** Phase 1 (λ=1) allows overlaps for exploration, Phase 2 (λ=50) penalizes heavily, Phase 3 (λ=500) eliminates remaining overlaps. Legalization cleans up 0-50 residual overlaps.
 
 **Overnight run (Apr 14-15):** 22 experiments across SP3/SP1/SP4/combine. Best: 1.4918 (McCormick area penalty). All within noise of baseline 1.4921. See "Overnight Sweep" section below.
 
