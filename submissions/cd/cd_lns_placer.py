@@ -1,3 +1,6 @@
+# STATUS: FALSIFIED 2026-04-27. See submissions/cd/lns.py for the falsification
+# record. Kept as evidence — single-macro local LNS does not escape CD's
+# local minimum on ibm17/18. CDAdaptive (1.1055) is the champion.
 """
 CDLNSPlacer — CDOnly + LNS rip-up-and-reinsert phase (experiment E3).
 

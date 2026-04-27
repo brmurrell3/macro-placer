@@ -1,3 +1,8 @@
+# STATUS: FALSIFIED 2026-04-26. E5 hypothesis: massively parallel DPO seeds
+# (B=64 best-of-N at ≤2× wall) to break basin lock via prior diversity.
+# Result: B=64 wall = 8.9× B=1 (RUDY congestion kernel scales 27× on MPS).
+# All seeds collapse to same basin under sigma=0.04·canvas perturbation.
+# Best-of-N within a single basin doesn't help. Kept as evidence.
 """
 Batched-Seeds DPO Placer (E5 from docs/closing_the_gap.md)
 

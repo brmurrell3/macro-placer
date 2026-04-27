@@ -1,3 +1,8 @@
+# STATUS: FALSIFIED 2026-04-27. E11 hypothesis: diverse priors (SDF/Will/
+# greedy/random) should give DPO best-of-N basin diversity.
+# Result: --all = 1.3839 vs baseline 1.3834 = FLAT (+0.04%). ibm02/ibm12
+# got WORSE. Greedy/random priors land in deeper basins on hard benchmarks.
+# Kept as evidence that prior diversity ≠ basin diversity for DPO.
 """
 E11 — Diverse-Priors Best-of-N DPO Placer
 

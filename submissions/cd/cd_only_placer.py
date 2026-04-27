@@ -1,3 +1,7 @@
+# STATUS: SUPERSEDED 2026-04-27 by CDAdaptive (1.1055). Was champion at
+# 1.1193 --all (matched leaderboard within 0.18%). Replaced by adding
+# per-benchmark plateau detection (see cd_adaptive_placer.py). Still the
+# fixed-budget reference; `run_cd` is reused by CDLNSPlacer.
 """
 CDOnlyPlacer — productionizes the E2 result.
 

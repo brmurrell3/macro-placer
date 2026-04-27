@@ -1,3 +1,5 @@
+# STATUS: SUPERSEDED 2026-04-27. Earlier DPO best-of variant (1.4145 --all).
+# Replaced by best_of_v2 (1.3834) and ultimately by CDAdaptive (1.1055).
 """
 Best-of-Two Placer: SDF init vs DPO
 
