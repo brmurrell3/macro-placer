@@ -23,7 +23,7 @@ SDF init
 
 ### 1.2 Components
 
-**SDF init.** Same as DPO — analytical spreading via signed distance fields produces a non-overlapping starting placement that respects density. Reused from `submissions/polyhedra/init/sdf.py`.
+**SDF init.** Same as DPO — analytical spreading via signed distance fields produces a non-overlapping starting placement that respects density. Lives in `submissions/cd/sdf_init.py`.
 
 **Incremental proxy evaluator (E1).** `macro_place/incremental_evaluator.py`. Caches per-net min/max trackers, per-cell density, per-cell macro routing, per-net WL bbox; updates only what a single-macro move touches. Re-uses bit-for-bit the smoothing pass from `compute_proxy_cost` for parity. **4657× speedup per move on ibm10**, parity at 1e-15 absolute, revert tested. This is load-bearing — without it, 600s/bench wouldn't be enough sweeps to converge.
 

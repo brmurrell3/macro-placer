@@ -31,11 +31,10 @@ from macro_place.incremental_evaluator import IncrementalProxyEvaluator
 from macro_place.loader import load_benchmark_from_dir
 from macro_place.objective import compute_overlap_metrics, compute_proxy_cost
 
-# SDF init lives in submissions/polyhedra/init/ — read-only per task rules.
 import sys
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-from submissions.polyhedra.init.sdf import SDFPlacer
+from submissions.cd.sdf_init import SDFPlacer
 
 
 TESTCASE_ROOT = ROOT / "external/MacroPlacement/Testcases/ICCAD04"

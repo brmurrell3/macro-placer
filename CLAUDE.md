@@ -64,7 +64,7 @@ uv run evaluate <placer.py> -b ibm01
 | `macro_place/benchmark.py` | Benchmark dataclass (PyTorch tensors) |
 | `submissions/cd/cd_adaptive_placer.py` | **CHAMPION** — full-proxy CD + plateau detection |
 | `submissions/cd/cd_only_placer.py` | Prior champion (CDOnly fixed-budget) |
-| `submissions/polyhedra/init/sdf.py` | SDF initialization (used by champion) |
+| `submissions/cd/sdf_init.py` | SDF initialization (used by champion) |
 | `submissions/examples/` | Reference placers (greedy, random) |
 | `writeup/` | Innovation-prize writeup; killed-hypothesis history (DPO, polyhedra, theory, leaderboard recipe) |
 

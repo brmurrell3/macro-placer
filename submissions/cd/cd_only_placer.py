@@ -220,7 +220,7 @@ class CDOnlyPlacer:
     """Coordinate-descent-only placer (E2 productionized).
 
     Pipeline per call to `place(benchmark)`:
-      1. SDF init (via the SDFPlacer in submissions/polyhedra/init/sdf.py)
+      1. SDF init (via the SDFPlacer in submissions/cd/sdf_init.py)
       2. Iterative push-apart projection to clean any residual overlaps
       3. Build IncrementalProxyEvaluator (full-proxy: WL + density + congestion)
       4. CD sweeps (closed-form breakpoint enumeration per axis) for
