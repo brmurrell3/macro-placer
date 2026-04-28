@@ -15,7 +15,7 @@ The LP-HPWL is an unattainable lower bound on the wirelength achievable by
 any feasible placement. The gap (our_HPWL - LP_HPWL) / LP_HPWL tells us how
 much wirelength room remains.
 
-Output: docs/lp_hpwl_diagnostic.md (markdown table + interpretation).
+Output: analysis/lp_hpwl_diagnostic/lp_hpwl_diagnostic.md (markdown table + interpretation).
 """
 
 import json

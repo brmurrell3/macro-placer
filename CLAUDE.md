@@ -6,9 +6,10 @@ Partcl/HRT Macro Placement Challenge. Place 200-537 rectangular macros on a 2D
 chip canvas to minimize proxy cost (wirelength + density + congestion) with zero
 overlaps. Prize: $29K+. Deadline: May 21, 2026.
 
-**Current champion:** CDAdaptive (E9), avg proxy 1.1055 on --all (17 IBM
-benchmarks). Beats public leaderboard 1.1172 by -1.05%, beats RePlAce 1.4578
-by -24.2%, zero overlaps. Entry: `submissions/cd/cd_adaptive_placer.py`.
+**Current champion:** CDLNSGridBin (E12), avg proxy 1.0990 on --all (17 IBM
+benchmarks). Beats public leaderboard 1.1172 by -1.63%, beats RePlAce 1.4578
+by -24.6%, zero overlaps. Entry: `submissions/cd_lns_gridbin/placer.py`.
+Prior champion: CDAdaptive (E9) at 1.1055.
 
 Reference baselines: RePlAce 1.4578, Will's pre-fork seed 1.5338, leaderboard
 target 1.1172.
@@ -42,8 +43,8 @@ uv run evaluate <placer.py> -b ibm01
    - **fast_gate fail** → tweak parameters, try next variant
    - **fast_gate pass** → run `--all --json`
    - **avg < 1.12 (above champion)** → likely noise; verify carefully
-   - **avg < 1.10 (graduate)** → STOP. Surface to human for review.
-   - **avg < 1.05 (new champion)** → STOP immediately. This beats E9 Adaptive.
+   - **avg < 1.099 (at-or-below champion)** → STOP. Surface to human for review (current champion E12 is 1.0990).
+   - **avg < 1.05 (new champion)** → STOP immediately. This beats E12 CDLNSGridBin.
 3. If best score hasn't improved >2% after N variants → kill hypothesis
 4. Update `docs/results.md` and `docs/experiment_index.md` after every significant result
 
@@ -53,18 +54,19 @@ uv run evaluate <placer.py> -b ibm01
 |------|---------|
 | `results/experiment_log.jsonl` | Append-only log of all runs (read at session start) |
 | `docs/roadmap.md` | Phased action plan, champion lineage, risk register |
-| `docs/results.md` | Current champion (CDAdaptive) per-benchmark tables |
+| `docs/results.md` | Current champion (CDLNSGridBin) per-benchmark tables |
 | `docs/approach.md` | Current CD-on-incremental-evaluator architecture + prior approaches |
 | `docs/problem.md` | Formal mathematical problem statement |
 | `docs/experiment_index.md` | Rigorous catalog of every experiment (live + falsified) |
-| `docs/lp_hpwl_diagnostic.md` | E8 — proxy decomposition (6% WL / 20% density / 74% congestion) |
+| `analysis/lp_hpwl_diagnostic/lp_hpwl_diagnostic.md` | E8 — proxy decomposition (6% WL / 20% density / 74% congestion) |
 | `macro_place/evaluate.py` | Evaluation harness (don't modify unless infra work) |
 | `macro_place/objective.py` | Proxy cost computation |
 | `macro_place/incremental_evaluator.py` | E1 — 4657× speedup; load-bearing for CD |
 | `macro_place/benchmark.py` | Benchmark dataclass (PyTorch tensors) |
-| `submissions/cd/cd_adaptive_placer.py` | **CHAMPION** — full-proxy CD + plateau detection |
-| `submissions/cd/cd_only_placer.py` | Prior champion (CDOnly fixed-budget) |
-| `submissions/cd/sdf_init.py` | SDF initialization (used by champion) |
+| `submissions/cd_lns_gridbin/placer.py` | **CHAMPION** — CD plateau + grid-bin LNS overlay (E12, 1.0990) |
+| `submissions/cd_adaptive/placer.py` | Prior champion (CDAdaptive E9, 1.1055) — full-proxy CD + plateau detection |
+| `submissions/cd_only/placer.py` | Prior-prior champion (CDOnly fixed-budget) |
+| `macro_place/sdf_init.py` | SDF initialization (used by champion) |
 | `submissions/examples/` | Reference placers (greedy, random) |
 | `writeup/` | Innovation-prize writeup; killed-hypothesis history (DPO, polyhedra, theory, leaderboard recipe) |
 
@@ -95,5 +97,5 @@ See `SETUP.md` for the full API (Benchmark fields, compute_proxy_cost, validatio
 ## Hardware
 
 M3 Max (36GB unified, MPS/PyTorch). Fast subset: ~10s. Full --all: ~40s.
-Champion (`cd_adaptive_placer.py`) takes ~5 hr on --all (per-benchmark plateau).
+Champion (`submissions/cd_lns_gridbin/placer.py`) takes ~7.85 hr on --all (CD plateau + LNS overlay).
 Cloud not needed for development. The bottleneck is thinking, not compute.

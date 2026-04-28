@@ -1,14 +1,14 @@
 # Approach
 
-Last updated: 2026-04-27
+Last updated: 2026-04-28
 
-The current approach is **full-proxy coordinate descent on an incremental evaluator with per-benchmark plateau detection**. It superseded the DPO and polyhedra-navigation approaches that came before. Both are documented further down — keep them in mind for the writeup, since the failures motivated the architecture that won.
+The current approach is **full-proxy coordinate descent on an incremental evaluator with per-benchmark plateau detection, followed by a grid-bin LNS escape phase (E12)**. The CD core superseded the DPO and polyhedra-navigation approaches; the LNS overlay (ADR-007) supersedes plain CDAdaptive (ADR-003) as the champion-bearing decision. The earlier approaches are documented further down — keep them in mind for the writeup, since the failures motivated the architecture that won.
 
 ---
 
-## 1. Current approach: CD on incremental evaluator (CHAMPION)
+## 1. Current approach: CD + grid-bin LNS overlay (CHAMPION)
 
-**Result:** avg proxy **1.1055** on --all (17 IBM benchmarks), beats leaderboard 1.1172 by -1.05%, beats RePlAce 1.4578 by -24.2%. Zero overlaps. Total runtime 17480s (4.85 hr).
+**Result:** avg proxy **1.0990** on --all (17 IBM benchmarks), beats leaderboard 1.1172 by **-1.63%**, beats RePlAce 1.4578 by **-24.6%**. Zero overlaps. Total runtime 28 256 s (7.85 hr). Entry: `submissions/cd_lns_gridbin/placer.py`. ADR: [007](decisions/007_cd_lns_gridbin_promotion.md).
 
 ### 1.1 The pipeline
 
@@ -17,13 +17,18 @@ SDF init
   -> push-apart projection (clean residual overlaps)
   -> IncrementalProxyEvaluator (full-proxy: WL + density + congestion)
   -> coordinate descent sweeps (per-axis breakpoint enumeration)
-       with per-benchmark plateau detection
+       with per-benchmark plateau detection (CD ≤ 3 000 s)
+  -> grid-bin LNS escape phase (LNS ≤ 600 s; (col × row) candidate
+       enumeration per destroyed macro; cost-aware destroy ranking)
   -> validate (zero overlaps, fixed macros not moved)
 ```
 
+Total per-benchmark wall budget: CD ≤ 3 000 s + LNS ≤ 600 s = 3 600 s
+(matches the contest 1-hour-per-bench legal cap).
+
 ### 1.2 Components
 
-**SDF init.** Same as DPO — analytical spreading via signed distance fields produces a non-overlapping starting placement that respects density. Lives in `submissions/cd/sdf_init.py`.
+**SDF init.** Same as DPO — analytical spreading via signed distance fields produces a non-overlapping starting placement that respects density. Lives in `macro_place/sdf_init.py`.
 
 **Incremental proxy evaluator (E1).** `macro_place/incremental_evaluator.py`. Caches per-net min/max trackers, per-cell density, per-cell macro routing, per-net WL bbox; updates only what a single-macro move touches. Re-uses bit-for-bit the smoothing pass from `compute_proxy_cost` for parity. **4657× speedup per move on ibm10**, parity at 1e-15 absolute, revert tested. This is load-bearing — without it, 600s/bench wouldn't be enough sweeps to converge.
 
@@ -33,11 +38,19 @@ SDF init
 - *Best position* on the axis = the breakpoint that minimizes proxy under the incremental evaluator. Closed-form when breakpoint count is tractable; falls back to golden section if too dense.
 - *Acceptance* = monotone, only commit if proxy strictly drops by > 1e-9.
 
-**Per-benchmark plateau detection (E9 — the leaderboard-beating change).** Each benchmark exits CD when:
-- 3 consecutive sweep-deltas drop below `plateau_threshold = 0.005`, AND
+**Per-benchmark plateau detection (E9 — the first leaderboard-beating change).** Each benchmark exits CD when:
+- 3 consecutive sweep-deltas drop below `plateau_threshold` (E9 default 0.005; E12 production 0.001), AND
 - `elapsed >= min_time_s = 300` (don't exit too early on a noisy first few sweeps).
 
-Or hard-caps at `hard_cap_s = 3600` (matches competition 1hr/bench rule). All 17 IBM benchmarks exit via plateau under defaults; none hit the cap. Easy benchmarks exit at ~5-10 min; hard benchmarks (ibm14/15/16/17) get 25-37 min when they're still descending.
+Or hard-caps at `hard_cap_s` (E12 production 3 000 s — leaves 600 s for the LNS phase within the contest 3 600 s legal cap). Easy benchmarks exit at ~5-10 min; hard benchmarks get 25-50 min when still descending.
+
+**Grid-bin LNS overlay (E12 — the current-champion change).** After CD plateaus, the LNS phase runs as a polish:
+
+- *Destroy.* Pick K = max(1, min(30, 0.05 × |movable hard macros|)) macros for destruction. Default destroy strategy is **cost-aware ranking**: each candidate macro is scored by the proxy delta produced by temporarily moving it to canvas center; the K most costly are destroyed. (Ablation: random destroy on `--fast` matched cost-aware within noise — see §1.4.)
+- *Reinsert.* For each destroyed macro, enumerate every `(grid_col × grid_row)` cell center as a candidate position. Reject candidates that violate canvas bounds or non-overlap; commit the legal candidate that minimizes proxy under the incremental evaluator. This is a **different move type than CD's per-axis breakpoint search** — it considers full 2D grid positions outside CD's reachable set.
+- *Iterate.* Repeat destroy/reinsert until either (a) a sample produces no improvement, or (b) the LNS phase wall budget (`lns_budget_s = 600 s`) expires.
+
+The LNS overlay is what carries the result from 1.1055 (CDAdaptive) to 1.0990 (E12). Its escape mechanism is move-type, not random restart, not basin-hopping: grid-bin candidates exist outside CD's per-axis breakpoint enumeration. Three earlier escape mechanisms (E3 single-macro LNS, multi-init via SDF jitter, subset-CD destroy/reinsert) all reused CD's per-axis move type and produced flat results.
 
 ### 1.3 Why this works
 
@@ -51,7 +64,9 @@ Full-proxy CD with breakpoint enumeration is **basin-changing**:
 - Across a sweep, every macro tries to relocate to a globally cost-minimizing position given the current state of all others. Topology can flip without going through "infeasible" intermediates.
 - ibm02 (DPO basin-locked at 1.6888 across 4 seeds) drops to 1.1534 in 600s of CD — proves CD reaches a different fixed point.
 
-### 1.4 The plateau-detection win
+### 1.4 Lineage refinements that compose into the champion
+
+#### 1.4.1 Plateau detection (E9)
 
 CDOnly's fixed 600s/bench was one-size-fits-all. Easy benchmarks (ibm09 ~3 min) plateaued early and wasted the rest. Hard benchmarks (ibm17/18 sweep deltas at 0.001-0.003 at the 600s mark) ran out mid-descent. CDAdaptive lets hard benchmarks use the time the easy ones save:
 
@@ -62,6 +77,12 @@ CDOnly's fixed 600s/bench was one-size-fits-all. Easy benchmarks (ibm09 ~3 min) 
 | ibm17 (hardest) | 2238 | 600 | **-3.64%** |
 
 Total wall 17480s (E9) vs 10316s (CDOnly) — 70% more compute, but every minute spent on a hard benchmark.
+
+#### 1.4.2 Grid-bin LNS overlay (E12)
+
+E9's run signature revealed it was *plateau-bound*, not budget-bound: every benchmark exited via plateau, none hit the 1-hour cap. The plateau is a per-axis fixed point — same wall-clock with the same move type cannot escape it. E12's grid-bin LNS (described in §1.2) layers a **different move type** on top of CD's plateau, picking up an additional -0.59% (1.1055 → 1.0990) at the cost of +3 hr wall (4.85 → 7.85 hr on `--all`).
+
+**Cost-aware destroy ranking is not load-bearing.** A `--fast` ablation (`experiments/E12_grid_bin_lns/code/cd_lns_gridbin_random.py`) with random destroy averaged 0.9372 on ibm01/04/09/13 — matching cost-aware within noise. On ibm09, random (0.8541) actually beat cost-aware (0.8591). Cost ranking adds ~10% wall per LNS sample but does not change quality. Stays cost-aware in production for now to avoid mid-deadline changes; future simplification is to drop the ranking.
 
 ### 1.5 Why this transfers to the hidden NG45 test
 
@@ -142,7 +163,7 @@ The LP optimizes HPWL, but **HPWL has zero correlation with proxy cost** (rho=-0
 - MCMC/SA weighted by LP cost (samples wrong distribution)
 - Partial-commitment LP (bounds wrong objective)
 
-**This is the unblock that motivated the incremental real-proxy evaluator** (E1) and ultimately CD on full proxy. See `docs/lp_hpwl_diagnostic.md` for the formal decomposition (6% WL, 20% density, 74% congestion).
+**This is the unblock that motivated the incremental real-proxy evaluator** (E1) and ultimately CD on full proxy. See `analysis/lp_hpwl_diagnostic/lp_hpwl_diagnostic.md` for the formal decomposition (6% WL, 20% density, 74% congestion).
 
 ---
 
@@ -157,8 +178,9 @@ The LP optimizes HPWL, but **HPWL has zero correlation with proxy cost** (rho=-0
 | MaskPlace (RL) | Learned policy, sequential | Sequential feasible placement | Reward shaping | Generalization is poor |
 | **Polyhedra navigation (ours, 1.49)** | LP inside combinatorial navigation | Always feasible by construction | Surrogate (RUDY) guides search | Hit congestion barrier |
 | **DPO (ours, 1.38)** | Differentiable proxy + gradient steps | Iterative legalization | Smooth congestion gradient | Basin lock — within-basin only |
-| **CD on incremental evaluator (ours, 1.10)** | Per-axis breakpoint enumeration on full proxy | Strict per-axis legality | Direct in evaluator | **CHAMPION** |
-| **CD-adaptive (ours, 1.1055)** | CD + per-benchmark plateau detection | Same | Same | **BEATS leaderboard** |
+| **CD on incremental evaluator (ours, 1.10)** | Per-axis breakpoint enumeration on full proxy | Strict per-axis legality | Direct in evaluator | superseded |
+| **CD-adaptive (ours, 1.1055)** | CD + per-benchmark plateau detection | Same | Same | prior champion (E9) |
+| **CD + grid-bin LNS (ours, 1.0990)** | CD plateau + (col×row) destroy/reinsert overlay | Strict per-axis + per-reinsertion legality | Direct in evaluator | **CHAMPION (E12, 2026-04-28)** |
 
 ---
 
@@ -186,9 +208,11 @@ RUDY congestion *is* decomposable per single-macro move (per-net congestion cont
 
 2. **Incremental evaluator with full-proxy parity (E1).** First (in our exploration) to update RUDY congestion deltas per single-macro move at bit-for-bit parity with `compute_proxy_cost`. 4657× speedup unlocks coordinate-descent inside the 1hr/bench compute budget. `macro_place/incremental_evaluator.py`.
 
-3. **Per-benchmark plateau detection (E9).** Adapts compute budget to each benchmark's actual descent trajectory rather than fixed budget or per-benchmark prior. Transfers to hidden NG45 without manual tuning. `submissions/cd/cd_adaptive_placer.py`.
+3. **Per-benchmark plateau detection (E9).** Adapts compute budget to each benchmark's actual descent trajectory rather than fixed budget or per-benchmark prior. Transfers to hidden NG45 without manual tuning. `submissions/cd_adaptive/placer.py`.
 
-4. **Falsification record.** 60+ experiments documented in `docs/experiment_index.md`. The LP-proxy disconnect (LP-HPWL doesn't correlate with proxy) and the basin lock (DPO byte-identical across seeds) are the deep findings that motivated the working approach.
+4. **Grid-bin LNS escape (E12).** A different move type (full (col × row) candidate enumeration per destroyed macro) layered on top of CD's plateau. Escapes per-axis fixed points that single-axis LNS cannot. `submissions/cd_lns_gridbin/placer.py`. ADR-007.
+
+5. **Falsification record.** 60+ experiments documented in `docs/experiment_index.md`. The LP-proxy disconnect (LP-HPWL doesn't correlate with proxy), the basin lock (DPO byte-identical across seeds), and the three failed CD-escape attempts (E3 LNS, SDF jitter, subset-CD destroy — all reusing CD's move type) are the deep findings that motivated the working approach.
 
 ---
 
