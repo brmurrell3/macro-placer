@@ -31,7 +31,7 @@ sys.path.insert(0, str(ROOT))
 from macro_place.incremental_evaluator import IncrementalProxyEvaluator
 from macro_place.loader import load_benchmark_from_dir
 from macro_place.objective import compute_overlap_metrics
-from submissions.cd.sdf_init import SDFPlacer
+from macro_place.sdf_init import SDFPlacer
 
 _diag_spec = importlib.util.spec_from_file_location(
     "cd_ibm10_diagnostic", str(ROOT / "scripts" / "cd_ibm10_diagnostic.py")
