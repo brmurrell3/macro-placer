@@ -152,13 +152,17 @@ class SDFPlacer:
 
     def __init__(self, seed=42, n_iters=500, lr=3.0,
                  density_weight=0.4, overlap_weight=80.0,
-                 grid_resolution=32):
+                 grid_resolution=32, init_jitter=0.0):
         self.seed = seed
         self.n_iters = n_iters
         self.lr = lr
         self.density_weight = density_weight
         self.overlap_weight = overlap_weight
         self.grid_resolution = grid_resolution
+        # Stddev of optional Gaussian noise added to init position, expressed as
+        # a fraction of canvas_diag. 0.0 (default) is byte-identical to the
+        # champion. >0 is consumed only by the E17 multi-seed experiment.
+        self.init_jitter = float(init_jitter)
 
     def place(self, benchmark: Benchmark) -> torch.Tensor:
         torch.manual_seed(self.seed)
@@ -191,6 +195,11 @@ class SDFPlacer:
         uniform_density = total_macro_area / (cw * ch)
 
         init_pos = benchmark.macro_positions[:n_hard].clone()
+        if self.init_jitter > 0.0:
+            sigma = self.init_jitter * canvas_diag
+            noise = torch.randn(init_pos.shape) * sigma
+            mov_mask = movable.unsqueeze(1).expand_as(init_pos)
+            init_pos = torch.where(mov_mask, init_pos + noise, init_pos)
         init_pos[:, 0] = init_pos[:, 0].clamp(half_sizes[:, 0], cw - half_sizes[:, 0])
         init_pos[:, 1] = init_pos[:, 1].clamp(half_sizes[:, 1], ch - half_sizes[:, 1])
 
