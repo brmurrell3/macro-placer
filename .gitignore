@@ -60,6 +60,10 @@ results/
 *.log
 logs/
 
+# Exception: archived run logs are part of the historical record
+!writeup/archive/run_logs/
+!writeup/archive/run_logs/*.log
+
 # Jupyter
 .ipynb_checkpoints/
 *.ipynb_checkpoints

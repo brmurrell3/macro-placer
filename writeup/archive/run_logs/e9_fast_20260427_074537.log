@@ -1,0 +1,162 @@
+================================================================================
+evaluate · CDAdaptivePlacer  (submissions/cd/cd_adaptive_placer.py)
+================================================================================
+
+  ibm01... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+=== CDAdaptivePlacer (ibm01): min=300s, cap=3600s, patience=3, threshold=0.005, init=sdf ===
+  num_macros=1140, n_hard=246, canvas=22.9x23.0
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+  SDF init wall = 3.4 s
+  overlap projection: 0 iters, residual count=0
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+  evaluator init = 0.7 s, init proxy=1.19532 [wl=0.0731 d=0.9426 c=1.3019]
+  movable macros: 1140; starting adaptive CD (min=300s, cap=3600s)
+  sweep   1  elapsed=   43.8s  sweep_t=  43.8s  proxy=0.99807  Δ=+0.19725  accepted=1587/2280  gs=0  [wl=0.0878 d=0.7268 c=1.0936]
+  sweep   2  elapsed=   85.5s  sweep_t=  41.7s  proxy=0.95337  Δ=+0.04469  accepted=874/2280  gs=0  [wl=0.0853 d=0.6805 c=1.0557]
+  sweep   3  elapsed=  126.9s  sweep_t=  41.4s  proxy=0.93502  Δ=+0.01836  accepted=614/2280  gs=0  [wl=0.0850 d=0.6622 c=1.0379]
+  sweep   4  elapsed=  167.6s  sweep_t=  40.7s  proxy=0.92597  Δ=+0.00905  accepted=434/2280  gs=0  [wl=0.0846 d=0.6557 c=1.0270]
+  sweep   5  elapsed=  207.8s  sweep_t=  40.3s  proxy=0.92097  Δ=+0.00499  accepted=298/2280  gs=0  [wl=0.0846 d=0.6508 c=1.0221]
+  sweep   6  elapsed=  247.6s  sweep_t=  39.8s  proxy=0.91805  Δ=+0.00292  accepted=194/2280  gs=0  [wl=0.0845 d=0.6470 c=1.0202]
+  sweep   7  elapsed=  287.3s  sweep_t=  39.7s  proxy=0.91620  Δ=+0.00186  accepted=160/2280  gs=0  [wl=0.0843 d=0.6440 c=1.0197]
+  sweep   8  elapsed=  326.1s  sweep_t=  38.8s  proxy=0.91542  Δ=+0.00077  accepted=105/2280  gs=0  [wl=0.0844 d=0.6428 c=1.0194]
+=== CD done: exit=plateau, sweeps=8, accepts=4266, gs-fallbacks=0, wall=326.1s, final_deltas=[+0.00292,+0.00186,+0.00077] ===
+  final proxy=0.91542 [wl=0.0844 d=0.6428 c=1.0194]
+  total wall: 330.2 s (init+CD+validate)
+proxy=0.9159  (wl=0.084 den=0.643 cong=1.020)  VALID  [330.25s]
+  ibm04... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm04/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 31, Row: 30
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+=== CDAdaptivePlacer (ibm04): min=300s, cap=3600s, patience=3, threshold=0.005, init=sdf ===
+  num_macros=1380, n_hard=295, canvas=34.1x34.1
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm04/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 31, Row: 30
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+  SDF init wall = 3.0 s
+  overlap projection: 0 iters, residual count=0
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm04/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 31, Row: 30
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+  evaluator init = 1.0 s, init proxy=1.38253 [wl=0.0728 d=0.8544 c=1.7650]
+  movable macros: 1380; starting adaptive CD (min=300s, cap=3600s)
+  sweep   1  elapsed=   61.7s  sweep_t=  61.7s  proxy=1.10496  Δ=+0.27757  accepted=2136/2760  gs=0  [wl=0.0975 d=0.6211 c=1.3938]
+  sweep   2  elapsed=  119.7s  sweep_t=  57.9s  proxy=1.05559  Δ=+0.04938  accepted=1116/2760  gs=0  [wl=0.0918 d=0.5925 c=1.3350]
+  sweep   3  elapsed=  175.2s  sweep_t=  55.5s  proxy=1.03286  Δ=+0.02273  accepted=771/2760  gs=0  [wl=0.0888 d=0.5759 c=1.3123]
+  sweep   4  elapsed=  229.0s  sweep_t=  53.8s  proxy=1.02579  Δ=+0.00706  accepted=458/2760  gs=0  [wl=0.0865 d=0.5726 c=1.3059]
+  sweep   5  elapsed=  282.2s  sweep_t=  53.1s  proxy=1.02236  Δ=+0.00343  accepted=308/2760  gs=0  [wl=0.0865 d=0.5723 c=1.2994]
+  sweep   6  elapsed=  334.8s  sweep_t=  52.7s  proxy=1.02030  Δ=+0.00206  accepted=218/2760  gs=0  [wl=0.0863 d=0.5707 c=1.2974]
+  sweep   7  elapsed=  387.4s  sweep_t=  52.6s  proxy=1.01937  Δ=+0.00092  accepted=141/2760  gs=0  [wl=0.0864 d=0.5694 c=1.2965]
+=== CD done: exit=plateau, sweeps=7, accepts=5148, gs-fallbacks=0, wall=387.4s, final_deltas=[+0.00343,+0.00206,+0.00092] ===
+  final proxy=1.01937 [wl=0.0864 d=0.5694 c=1.2965]
+  total wall: 391.4 s (init+CD+validate)
+proxy=1.0226  (wl=0.086 den=0.569 cong=1.303)  VALID  [391.40s]
+  ibm09... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm09/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 36, Row: 38
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+=== CDAdaptivePlacer (ibm09): min=300s, cap=3600s, patience=3, threshold=0.005, init=sdf ===
+  num_macros=1301, n_hard=253, canvas=46.7x46.9
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm09/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 36, Row: 38
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+  SDF init wall = 2.6 s
+  overlap projection: 0 iters, residual count=0
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm09/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 36, Row: 38
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+  evaluator init = 1.2 s, init proxy=1.13367 [wl=0.0579 d=0.8681 c=1.2836]
+  movable macros: 1301; starting adaptive CD (min=300s, cap=3600s)
+  sweep   1  elapsed=   71.2s  sweep_t=  71.2s  proxy=0.93574  Δ=+0.19794  accepted=1854/2602  gs=0  [wl=0.0691 d=0.6592 c=1.0740]
+  sweep   2  elapsed=  138.3s  sweep_t=  67.1s  proxy=0.89098  Δ=+0.04475  accepted=974/2602  gs=0  [wl=0.0658 d=0.6244 c=1.0259]
+  sweep   3  elapsed=  203.7s  sweep_t=  65.4s  proxy=0.87491  Δ=+0.01607  accepted=658/2602  gs=0  [wl=0.0641 d=0.6136 c=1.0081]
+  sweep   4  elapsed=  267.7s  sweep_t=  64.0s  proxy=0.86626  Δ=+0.00865  accepted=439/2602  gs=0  [wl=0.0634 d=0.6056 c=1.0001]
+  sweep   5  elapsed=  330.8s  sweep_t=  63.1s  proxy=0.86158  Δ=+0.00468  accepted=343/2602  gs=0  [wl=0.0633 d=0.5987 c=0.9979]
+  sweep   6  elapsed=  394.6s  sweep_t=  63.8s  proxy=0.85858  Δ=+0.00300  accepted=232/2602  gs=0  [wl=0.0630 d=0.5962 c=0.9949]
+  sweep   7  elapsed=  458.0s  sweep_t=  63.4s  proxy=0.85740  Δ=+0.00118  accepted=150/2602  gs=0  [wl=0.0629 d=0.5958 c=0.9932]
+=== CD done: exit=plateau, sweeps=7, accepts=4650, gs-fallbacks=0, wall=458.0s, final_deltas=[+0.00468,+0.00300,+0.00118] ===
+  final proxy=0.85740 [wl=0.0629 d=0.5958 c=0.9932]
+  total wall: 461.9 s (init+CD+validate)
+proxy=0.8611  (wl=0.063 den=0.596 cong=1.001)  VALID  [461.95s]
+  ibm13... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm13/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 43, Row: 43
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+=== CDAdaptivePlacer (ibm13): min=300s, cap=3600s, patience=3, threshold=0.005, init=sdf ===
+  num_macros=1725, n_hard=424, canvas=55.9x56.0
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm13/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 43, Row: 43
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+  SDF init wall = 3.7 s
+  overlap projection: 0 iters, residual count=0
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm13/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 43, Row: 43
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+  evaluator init = 1.8 s, init proxy=1.39861 [wl=0.0542 d=0.9117 c=1.7772]
+  movable macros: 1725; starting adaptive CD (min=300s, cap=3600s)
+  sweep   1  elapsed=  142.6s  sweep_t= 142.6s  proxy=1.11254  Δ=+0.28607  accepted=2571/3450  gs=0  [wl=0.0807 d=0.6862 c=1.3774]
+  sweep   2  elapsed=  286.0s  sweep_t= 143.5s  proxy=1.03665  Δ=+0.07589  accepted=1421/3450  gs=0  [wl=0.0745 d=0.6369 c=1.2873]
+  sweep   3  elapsed=  418.5s  sweep_t= 132.5s  proxy=1.01120  Δ=+0.02545  accepted=971/3450  gs=0  [wl=0.0733 d=0.6226 c=1.2532]
+  sweep   4  elapsed=  548.4s  sweep_t= 129.9s  proxy=0.99910  Δ=+0.01210  accepted=654/3450  gs=0  [wl=0.0733 d=0.6123 c=1.2392]
+  sweep   5  elapsed=  678.0s  sweep_t= 129.6s  proxy=0.98625  Δ=+0.01285  accepted=589/3450  gs=0  [wl=0.0724 d=0.6042 c=1.2234]
+  sweep   6  elapsed=  806.9s  sweep_t= 128.8s  proxy=0.97975  Δ=+0.00650  accepted=463/3450  gs=0  [wl=0.0724 d=0.5981 c=1.2166]
+  sweep   7  elapsed=  932.5s  sweep_t= 125.6s  proxy=0.97699  Δ=+0.00276  accepted=354/3450  gs=0  [wl=0.0720 d=0.5961 c=1.2138]
+  sweep   8  elapsed= 1054.9s  sweep_t= 122.5s  proxy=0.97530  Δ=+0.00169  accepted=284/3450  gs=0  [wl=0.0718 d=0.5943 c=1.2127]
+  sweep   9  elapsed= 1177.0s  sweep_t= 122.0s  proxy=0.97406  Δ=+0.00124  accepted=226/3450  gs=0  [wl=0.0716 d=0.5928 c=1.2121]
+=== CD done: exit=plateau, sweeps=9, accepts=7533, gs-fallbacks=0, wall=1177.0s, final_deltas=[+0.00276,+0.00169,+0.00124] ===
+  final proxy=0.97406 [wl=0.0716 d=0.5928 c=1.2121]
+  total wall: 1182.6 s (init+CD+validate)
+proxy=0.9772  (wl=0.072 den=0.593 cong=1.218)  VALID  [1182.66s]
+
+--------------------------------------------------------------------------------
+    Benchmark     Proxy        SA   RePlAce     vs SA  vs RePlAce  Overlaps
+--------------------------------------------------------------------------------
+        ibm01    0.9159    1.3166    0.9976    +30.4%       +8.2%         0
+        ibm04    1.0226    1.5037    1.3024    +32.0%      +21.5%         0
+        ibm09    0.8611    1.3875    1.1194    +37.9%      +23.1%         0
+        ibm13    0.9772    1.9141    1.3355    +48.9%      +26.8%         0
+--------------------------------------------------------------------------------
+          AVG    0.9442    1.5305    1.1887    +38.3%      +20.6%         0
+
+Total runtime: 2366.27s
+
+Results written to results/CDAdaptivePlacer_20260427_082527.json
+Logged to results/experiment_log.jsonl

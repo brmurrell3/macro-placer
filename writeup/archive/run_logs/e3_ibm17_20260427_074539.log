@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/Users/brendan/Developer/macro-place-challenge-2026/.venv/bin/evaluate", line 10, in <module>
+    sys.exit(main())
+  File "/Users/brendan/Developer/macro-place-challenge-2026/macro_place/evaluate.py", line 385, in main
+    placer = _load_placer(placer_path)
+  File "/Users/brendan/Developer/macro-place-challenge-2026/macro_place/evaluate.py", line 120, in _load_placer
+    spec.loader.exec_module(mod)
+  File "<frozen importlib._bootstrap_external>", line 850, in exec_module
+  File "<frozen importlib._bootstrap>", line 228, in _call_with_frames_removed
+  File "/Users/brendan/Developer/macro-place-challenge-2026/submissions/cd/cd_lns_placer.py", line 47, in <module>
+    from submissions.cd.cd_only_placer import (
+ModuleNotFoundError: No module named 'submissions'

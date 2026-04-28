@@ -1,0 +1,24 @@
+{
+  "placer_name": "CDLNSPlacer",
+  "placer_path": "submissions/cd/cd_lns_placer.py",
+  "mode": "single",
+  "timestamp": "2026-04-27T12:09:14.823375+00:00",
+  "benchmarks": [
+    {
+      "name": "ibm17",
+      "proxy_cost": 1.3846287727355957,
+      "wirelength": 0.0740402489900589,
+      "density": 0.6707600355148315,
+      "congestion": 1.950417107000416,
+      "overlap_count": 0,
+      "runtime_seconds": 1227.5564,
+      "sa_baseline": 3.6726,
+      "replace_baseline": 1.6446
+    }
+  ],
+  "avg_proxy_cost": 1.384629,
+  "total_overlaps": 0,
+  "total_runtime_seconds": 1227.5564,
+  "qualified": true,
+  "hypothesis": "e3_lns_ibm17"
+}
