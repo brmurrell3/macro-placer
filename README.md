@@ -41,11 +41,13 @@ We’re changing that.
 Partcl develops GPU-accelerated systems for physical design that run orders of magnitude faster than legacy tools. Our goal is simple: make iteration cheap enough that design space exploration becomes the default, not the exception.
 
 ## Background Papers
-[An Updated Assessment of Reinforcement Learning for Macro Placement](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=11300304)
+[1] [An Updated Assessment of Reinforcement Learning for Macro Placement](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=11300304)
 
-[Assessment of Reinforcement Learning for Macro Placement](https://vlsicad.ucsd.edu/Publications/Conferences/396/c396.pdf)
+[2] [Assessment of Reinforcement Learning for Macro Placement](https://vlsicad.ucsd.edu/Publications/Conferences/396/c396.pdf)
 
-[A graph placement methodology for fast chip design](https://www.nature.com/articles/s41586-021-03544-w.epdf?sharing_token=tYaxh2mR5EozfsSL0WHZLdRgN0jAjWel9jnR3ZoTv0PW0K0NmVrRsFPaMa9Y5We9O4Hqf_liatg-lvhiVcYpHL_YQpqkurA31sxqtmA-E1yNUWVMMVSBxWSp7ZFFIWawYQYnEXoBE4esRDSWqubhDFWUPyI5wK_5B_YIO-D_kS8%3D)
+[3] [Reevaluating Google's Reinforcement Learning for IC Macro Placement](https://cacm.acm.org/research/reevaluating-googles-reinforcement-learning-for-ic-macro-placement/)
+
+[4] [A graph placement methodology for fast chip design](https://www.nature.com/articles/s41586-021-03544-w.epdf?sharing_token=tYaxh2mR5EozfsSL0WHZLdRgN0jAjWel9jnR3ZoTv0PW0K0NmVrRsFPaMa9Y5We9O4Hqf_liatg-lvhiVcYpHL_YQpqkurA31sxqtmA-E1yNUWVMMVSBxWSp7ZFFIWawYQYnEXoBE4esRDSWqubhDFWUPyI5wK_5B_YIO-D_kS8%3D)
 
 ## 🏆 Prizes
 
@@ -56,6 +58,8 @@ Partcl develops GPU-accelerated systems for physical design that run orders of m
 - **Swag:** Every valid submission gets HRT swag!
 - **Note:** An additional score adjustment will be applied based on human-expert analysis of the resulting placement.
 
+For full Grand Prize scoring rules, feasibility gate, tie-breaking, and ORFS-failure handling, see [`SCORING.md`](SCORING.md).
+
 ## Submission Format
 
 - All submissions will be via google form. Submissions may be made public or private before the end of judging.
@@ -65,7 +69,7 @@ Partcl develops GPU-accelerated systems for physical design that run orders of m
 - All teams may only submit one algorithm.
 - **All winning implementations must be made open-source under Apache 2.0 or GPL**
 - All submissions must be registered via this [Submission Link](https://forms.gle/YDRtYV5Vq68SZgKW9).
-- All submissions must be under 1 hour end-to-end runtime for the macro placement algorithm.
+- All submissions must be under 1 hour end-to-end runtime (per benchmark) for the macro placement algorithm.
 - All submissions will be evaluated on a AMD EPYC 9655P with 16 cores + 100GB of memory and an NVIDIA RTX 6000 Ada 48GB.
 
 ## Additional Rules
@@ -76,6 +80,7 @@ Partcl develops GPU-accelerated systems for physical design that run orders of m
 - **Any framework**: PyTorch, TensorFlow, JAX, or pure Python/C++
 - **Any optimization technique**: Gradient descent, evolutionary algorithms, local search, etc.
 - **Training on public benchmarks**: You can learn from the IBM benchmark data
+- **Hard-macro orientation flips** (Klein-4 only: `N`, `FN`, `FS`, `S`) — carried to Tier 2 via an optional `orientations.pt` sidecar
 
 ### Not Allowed
 
@@ -83,7 +88,9 @@ Partcl develops GPU-accelerated systems for physical design that run orders of m
 - Hardcoding solutions for specific benchmarks (must be general algorithm)
 - Using external/proprietary placement tools (must be open-source submission)
 - Exceeding runtime limits (1 hour per benchmark hard timeout)
-- Overlaps in resulting placement
+- Overlaps in resulting placement (strictly zero overlap between hard macros — no tolerance. Participants should add small gaps in their legalization to avoid float-precision edge cases.)
+- 90° rotations of hard macros (`R90`, `R270`, `FE`, `FW`) — the fakeram45 SRAMs in our benchmarks aren't designed for rotation (pin access and internal metal direction assume a fixed orientation)
+- Resizing soft macros — soft-macro size is a proxy-only concept for density/congestion that doesn't translate to Tier 2; sizes are locked to the initial `.plc` values on every `compute_proxy_cost` call
 
 ## Evaluation Details
 
@@ -101,13 +108,14 @@ Baseline numbers are from: [An Updated Assessment of Reinforcement Learning for 
 
 The top 7 submissions by proxy score will be evaluated through the full **OpenROAD flow** on NG45 designs to measure real PnR outcomes: **WNS, TNS, and Area**.
 
-- The **Grand Prize ($20K)** is awarded based on best OpenROAD results among these top submissions.
-- To qualify, you must surpass the SA and RePlAce baselines for WNS, TNS, and Area.
+- The **Grand Prize ($20K)** is awarded to the highest-scoring submission using a **geometric mean of improvement ratios** across WNS, TNS, and Area vs. the average SA/RePlAce baseline.
+- To qualify, submissions must pass a **feasibility gate** — timing (WNS, TNS) cannot regress below both baselines on any design.
 - To avoid overfitting, we will also evaluate on 1-2 hidden NG45 designs.
+- **Full scoring rules: [`SCORING.md`](SCORING.md)**
 
 ## 🚀 Quick Start
 
-### Installation
+### Installation 
 
 ```bash
 # Clone the repository
@@ -178,7 +186,7 @@ We evaluate on the complete ICCAD04 IBM benchmark suite:
 
 Each benchmark includes:
 - Hard macros (you place these)
-- Soft macros (pre-placed standard cell clusters, fixed during evaluation)
+- Soft macros (you can also place these)
 - Nets connecting all components
 - Initial placement (hand-crafted, serves as reference)
 
@@ -218,16 +226,47 @@ Classical methods (SA, RePlAce) have been refined for decades but still have roo
 
 ## 🏅 Leaderboard
 
-Submissions are ranked by **average proxy cost** across all 18 IBM benchmarks (lower is better). Zero overlaps required on all benchmarks.
+Submissions are ranked by **average proxy cost** across all 17 IBM benchmarks (lower is better). Zero overlaps required on all benchmarks. Scores are unverified until confirmed by judges.
 
-| Rank | Team | Avg Proxy Cost | Best | Worst | Overlaps | Runtime |
-|------|------|---------------|------|-------|----------|---------|
-| — | RePlAce (baseline) | **1.4578** | 0.9976 | 1.8370 | 0 | — |
-| 1 | Will (Partcl) | **1.5338** | 1.1625 | 1.7965 | 0 | 35s |
-| — | SA (baseline) | 2.1251 | 1.3166 | 3.6726 | 0 | — |
-| — | Greedy Row (demo) | 2.2109 | 1.6728 | 2.7696 | 0 | 0.3s |
+| Rank | Team | Avg Proxy Cost | Best | Worst | Overlaps | Runtime | Verified | Notes |
+|------|------|---------------|------|-------|----------|---------|----------|-------|
+| 1 | "vmallela" (Incremental CD+LNS) | **1.1172** | — | — | 0 | 40min/bench | | New 4/24; pure Python+numpy, single-threaded |
+| 2 | "Cezar" (ReFine) | **1.2224** | 0.8843 | 1.5115 | 0 | 5min/bench | :white_check_mark: | Verified 1.2224 vs self-reported 1.0666; beats RePlAce by 16.2%, SA by 42.5%; resubmitted 4/25, contesting result — re-verification pending |
+| 3 | "MTK" (DreamPlace++) | **1.2818** | 0.9073 | 1.6529 | 0 | 37s/bench (GPU) | :white_check_mark: | Verified better than self-reported 1.317; beats RePlAce on all 17 benchmarks |
+| 4 | "RoRa" (RipPlace) | **1.3241** | — | — | 0 | 694s/bench | | |
+| 5 | "UToronto Analytical" (MOSAIC) | **1.3325** | — | — | 0 | 99s/bench | | New 4/23; gradient-based with smooth surrogates, hard+soft |
+| 6 | "V5" (TierPlace) | **1.3382** | — | — | 0 | 850s/bench | | New 4/23; GPU-based, multi-density-formulation pilot + phased optimization |
+| 7 | "Archgen" (AutoDMP++) | **1.3479** | — | — | 0 | 2404s total | | New 4/24; multi-start + fast proxy screening + bounded refinement |
+| 8 | "Electric Beatel" (ePlace-Lite) | **1.3913** | 0.9773 | 1.7253 | 0 | 155s/bench (GPU) | :white_check_mark: | |
+| 9 | "Varun's Parallel Worlds" (GRPlace) | **1.4017** | 1.0362 | 1.7298 | 0 | 27s/bench | :white_check_mark: | |
+| 10 | "UT Austin" - AS (DREAMPlace Analytical) | **1.4076** | — | — | 0 | 17s/bench | | |
+| 11 | "ByteDancer" (Incremental CD) | **1.4151** | 1.0236 | 1.7792 | 0 | 38min/bench | :white_check_mark: | |
+| 12 | "TAISPlAce" (ALNS + Thompson Sampling) | **1.4321** | — | — | 0 | 28min/bench | | |
+| 13 | "Pragnay" (SweepingBellPlacement) | **1.4427** | — | — | 0 | 632s/bench | | |
+| 14 | "Convex Optimization" (UWaterloo Student) | **1.4556** | 1.0432 | 1.7867 | 0 | 11s/bench | :white_check_mark: | Resubmitted 4/13; fixed from DQ (was 846 overlaps) |
+| 15 | "another Waterloo kid" (Batched Nesterov GP) | **1.4568** | — | — | 0 | 118s/bench | | |
+| — | RePlAce (baseline) | **1.4578** | 0.9976 | 1.8370 | 0 | — | :white_check_mark: | |
+| 16 | "W3 Solutions" (GRACE) | **1.4824** | — | — | 0 | 90s/bench | | |
+| 17 | "Jiangban Ya" (Spectral-Seed + Adaptive Legalizer) | **1.4943** | 1.0891 | 1.8099 | 0 | 49s/bench | :white_check_mark: | |
+| 18 | "UTAUSTIN-CT" (PLC-Exact Congestion-Aware SA) | **1.5062** | 1.1363 | 1.7941 | 0 | 6s/bench | :white_check_mark: | |
+| 19 | "oracleX" (Oracle) | **1.5130** | 1.1340 | 1.7937 | 0 | 11s/bench | :white_check_mark: | |
+| 20 | "SEVmakers" (Hybrid Legalization + SA) | **1.5200** | — | — | 0 | 200s/bench | | Private repo — pending judge access |
+| 21 | "CA" (congestion_aware) | **1.5247** | 1.2226 | 1.7945 | 0 | 2s/bench | :white_check_mark: | Verified 1.5247 vs self-reported 1.5238 |
+| 22 | "#5 ubc cpen student" (Gene Pool Shuffle) | **1.5337** | 1.1411 | 1.8084 | 0 | 13s/bench | :white_check_mark: | |
+| 23 | Will Seed (Partcl) | **1.5338** | 1.1625 | 1.7965 | 0 | 35s total | :white_check_mark: | |
+| 24 | "UT Austin" - RH (DREAMPlace) | **1.6037** | — | — | 0 | 4.5s/bench | | |
+| 25 | "UT Austin" - CT (PROXYCost) | **1.8706** | — | — | 0 | 187s/bench | | |
+| 26 | "AS" (Shelf Stacker) | **1.9121** | 1.4614 | 2.3508 | 0 | 0.16s total | :white_check_mark: | |
+| 27 | "Adi's Team" (GNN-ePlace Hybrid) | **2.0025** | — | — | 0 | 3726s/bench | | |
+| 28 | "Sharc #1" (Auction Placer) | **2.0433** | 1.5143 | 2.4336 | 0 | 96s/bench | :white_check_mark: | |
+| — | SA (baseline) | 2.1251 | 1.3166 | 3.6726 | 0 | — | :white_check_mark: | |
+| — | Greedy Row (demo) | 2.2109 | 1.6728 | 2.7696 | 0 | 0.3s total | :white_check_mark: | |
+| — | "Binghamton" (feng shui) | pending | — | — | — | — | | |
+| — | "MacroBio" (Two-Opt Swap) | pending | — | — | — | — | | |
+| DQ | "Mike Gao" (autoresearch) | self-reported 1.3255 | — | — | 1939 | 16min/bench | | DREAMPlace silently fails in eval environment, returns unlegalized placements (47–189 overlaps per benchmark) |
+| DQ | "BakaBobo" (Global Relocation Sweep) | self-reported 1.4044 | — | — | — | 282s/bench | | Imports `macro_place.fast_proxy` which isn't bundled and isn't part of the evaluator — code won't run |
 
-*Submit your results to appear on the leaderboard!*
+*Submit your results via the [Submission Link](https://forms.gle/YDRtYV5Vq68SZgKW9)!*
 
 ## 🤔 FAQ
 
