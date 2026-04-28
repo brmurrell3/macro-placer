@@ -28,13 +28,13 @@ its failure mode (see contribution 2).
 **What's not novel:** The math. Disjunctive programming, LP duality,
 piecewise-linear HPWL formulation — all textbook.
 
-**Evidence:** Polyhedra navigation system (`submissions/polyhedra/`
-in pre-2026-04-28 git history; the `init/sdf.py` module is retained
-because the CD champion still uses SDF init). 1.49 avg proxy on 17 IBM
-benchmarks, 0 overlaps. The seven non-init modules (`placer.py`,
-`navigator.py`, `assignment.py`, `lp.py`, `moves.py`, `projection.py`,
-`surrogate.py`, `cluster_bounds.py`) were removed in the post-CD repo
-cleanup; their role is described above.
+**Evidence:** Polyhedra navigation system (`submissions/polyhedra/` in
+pre-2026-04-28 git history). 1.49 avg proxy on 17 IBM benchmarks, 0
+overlaps. The seven non-init modules (`placer.py`, `navigator.py`,
+`assignment.py`, `lp.py`, `moves.py`, `projection.py`, `surrogate.py`,
+`cluster_bounds.py`) were removed in the post-CD repo cleanup. The SDF
+initialization module was retained because the CD champion still uses
+it; it now lives at `submissions/cd/sdf_init.py`.
 
 ---
 

@@ -7,7 +7,7 @@ falsified, superseded, or stale planning.
 Nothing here is imported by live code. The champion
 (`submissions/cd/cd_adaptive_placer.py`) and the live ablation
 `submissions/cd/cd_only_placer.py` continue to depend only on
-`scripts/cd_ibm10_diagnostic.py`, `submissions/polyhedra/init/sdf.py`,
+`scripts/cd_ibm10_diagnostic.py`, `submissions/cd/sdf_init.py`,
 and the `macro_place/` package.
 
 ## Contents

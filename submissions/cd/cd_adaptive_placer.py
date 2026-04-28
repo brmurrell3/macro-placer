@@ -259,7 +259,7 @@ class CDAdaptivePlacer:
     """Adaptive CD placer — E9.
 
     Pipeline per call to `place(benchmark)`:
-      1. SDF init (via SDFPlacer in submissions/polyhedra/init/sdf.py)
+      1. SDF init (via SDFPlacer in submissions/cd/sdf_init.py)
       2. Iterative push-apart projection to clean any residual overlaps
       3. Build IncrementalProxyEvaluator (full-proxy: WL + density + congestion)
       4. Adaptive CD sweeps — exit on plateau or 1hr hard cap
