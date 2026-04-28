@@ -1,0 +1,200 @@
+{
+  "placer_name": "BestOfV2Seed44Placer",
+  "placer_path": "submissions/dpo/best_of_v2_seed44.py",
+  "mode": "all",
+  "timestamp": "2026-04-27T03:11:11.308424+00:00",
+  "benchmarks": [
+    {
+      "name": "ibm01",
+      "proxy_cost": 1.1952950954437256,
+      "wirelength": 0.0730733722448349,
+      "density": 0.9425515532493591,
+      "congestion": 1.3018918759463316,
+      "overlap_count": 0,
+      "runtime_seconds": 21.9336,
+      "sa_baseline": 1.3166,
+      "replace_baseline": 0.9976
+    },
+    {
+      "name": "ibm02",
+      "proxy_cost": 1.6887761354446411,
+      "wirelength": 0.07707247883081436,
+      "density": 0.8432117104530334,
+      "congestion": 2.3801955025721795,
+      "overlap_count": 0,
+      "runtime_seconds": 34.5515,
+      "sa_baseline": 1.9072,
+      "replace_baseline": 1.837
+    },
+    {
+      "name": "ibm03",
+      "proxy_cost": 1.22847318649292,
+      "wirelength": 0.10723323374986649,
+      "density": 0.5099309086799622,
+      "congestion": 1.7325490512473467,
+      "overlap_count": 0,
+      "runtime_seconds": 24.2013,
+      "sa_baseline": 1.7401,
+      "replace_baseline": 1.3222
+    },
+    {
+      "name": "ibm04",
+      "proxy_cost": 1.3097152709960938,
+      "wirelength": 0.09376242756843567,
+      "density": 0.5083860158920288,
+      "congestion": 1.9235197324253477,
+      "overlap_count": 0,
+      "runtime_seconds": 32.6896,
+      "sa_baseline": 1.5037,
+      "replace_baseline": 1.3024
+    },
+    {
+      "name": "ibm06",
+      "proxy_cost": 1.627427577972412,
+      "wirelength": 0.08572838455438614,
+      "density": 0.5071811676025391,
+      "congestion": 2.5762170576216423,
+      "overlap_count": 0,
+      "runtime_seconds": 26.7717,
+      "sa_baseline": 2.5057,
+      "replace_baseline": 1.6187
+    },
+    {
+      "name": "ibm07",
+      "proxy_cost": 1.401131510734558,
+      "wirelength": 0.0869852751493454,
+      "density": 0.5177294611930847,
+      "congestion": 2.1105630812847003,
+      "overlap_count": 0,
+      "runtime_seconds": 32.0564,
+      "sa_baseline": 2.0229,
+      "replace_baseline": 1.4633
+    },
+    {
+      "name": "ibm08",
+      "proxy_cost": 1.4319924116134644,
+      "wirelength": 0.08806417137384415,
+      "density": 0.5692249536514282,
+      "congestion": 2.118631582473564,
+      "overlap_count": 0,
+      "runtime_seconds": 55.8161,
+      "sa_baseline": 1.9239,
+      "replace_baseline": 1.4285
+    },
+    {
+      "name": "ibm09",
+      "proxy_cost": 1.013883352279663,
+      "wirelength": 0.07025755941867828,
+      "density": 0.5164265036582947,
+      "congestion": 1.37082517355914,
+      "overlap_count": 0,
+      "runtime_seconds": 37.0018,
+      "sa_baseline": 1.3875,
+      "replace_baseline": 1.1194
+    },
+    {
+      "name": "ibm10",
+      "proxy_cost": 1.260913610458374,
+      "wirelength": 0.08013708144426346,
+      "density": 0.5422843098640442,
+      "congestion": 1.8192687605001912,
+      "overlap_count": 0,
+      "runtime_seconds": 123.1346,
+      "sa_baseline": 2.1108,
+      "replace_baseline": 1.5009
+    },
+    {
+      "name": "ibm11",
+      "proxy_cost": 1.0671747922897339,
+      "wirelength": 0.06857182085514069,
+      "density": 0.5090534687042236,
+      "congestion": 1.488152510252366,
+      "overlap_count": 0,
+      "runtime_seconds": 39.86,
+      "sa_baseline": 1.7111,
+      "replace_baseline": 1.1774
+    },
+    {
+      "name": "ibm12",
+      "proxy_cost": 1.6497297286987305,
+      "wirelength": 0.06001308932900429,
+      "density": 0.8066534996032715,
+      "congestion": 2.372779736934772,
+      "overlap_count": 0,
+      "runtime_seconds": 113.0415,
+      "sa_baseline": 2.8261,
+      "replace_baseline": 1.7261
+    },
+    {
+      "name": "ibm13",
+      "proxy_cost": 1.2404038906097412,
+      "wirelength": 0.06757242232561111,
+      "density": 0.5051537156105042,
+      "congestion": 1.84050916622657,
+      "overlap_count": 0,
+      "runtime_seconds": 60.931,
+      "sa_baseline": 1.9141,
+      "replace_baseline": 1.3355
+    },
+    {
+      "name": "ibm14",
+      "proxy_cost": 1.54259192943573,
+      "wirelength": 0.0675184354186058,
+      "density": 0.5868227481842041,
+      "congestion": 2.3633241913021097,
+      "overlap_count": 0,
+      "runtime_seconds": 265.1061,
+      "sa_baseline": 2.275,
+      "replace_baseline": 1.5436
+    },
+    {
+      "name": "ibm15",
+      "proxy_cost": 1.3913198709487915,
+      "wirelength": 0.0694565400481224,
+      "density": 0.5148946046829224,
+      "congestion": 2.128832127182417,
+      "overlap_count": 0,
+      "runtime_seconds": 78.48,
+      "sa_baseline": 2.3,
+      "replace_baseline": 1.5159
+    },
+    {
+      "name": "ibm16",
+      "proxy_cost": 1.3781248331069946,
+      "wirelength": 0.061153121292591095,
+      "density": 0.527825653553009,
+      "congestion": 2.106117799729983,
+      "overlap_count": 0,
+      "runtime_seconds": 147.6169,
+      "sa_baseline": 2.2337,
+      "replace_baseline": 1.478
+    },
+    {
+      "name": "ibm17",
+      "proxy_cost": 1.613254427909851,
+      "wirelength": 0.06808148324489594,
+      "density": 0.5038738250732422,
+      "congestion": 2.586472136238278,
+      "overlap_count": 0,
+      "runtime_seconds": 267.3413,
+      "sa_baseline": 3.6726,
+      "replace_baseline": 1.6446
+    },
+    {
+      "name": "ibm18",
+      "proxy_cost": 1.6351737976074219,
+      "wirelength": 0.06840002536773682,
+      "density": 0.5325937271118164,
+      "congestion": 2.6009537230907442,
+      "overlap_count": 0,
+      "runtime_seconds": 101.8668,
+      "sa_baseline": 2.7755,
+      "replace_baseline": 1.7722
+    }
+  ],
+  "avg_proxy_cost": 1.392669,
+  "total_overlaps": 0,
+  "total_runtime_seconds": 1462.4002,
+  "qualified": true,
+  "hypothesis": "best_of_v2_seed44"
+}

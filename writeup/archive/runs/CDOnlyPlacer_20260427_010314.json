@@ -1,0 +1,24 @@
+{
+  "placer_name": "CDOnlyPlacer",
+  "placer_path": "submissions/cd/cd_only_placer.py",
+  "mode": "single",
+  "timestamp": "2026-04-27T05:03:14.938808+00:00",
+  "benchmarks": [
+    {
+      "name": "ibm18",
+      "proxy_cost": 1.3928643465042114,
+      "wirelength": 0.07647223025560379,
+      "density": 0.7979156374931335,
+      "congestion": 1.8348685403577276,
+      "overlap_count": 0,
+      "runtime_seconds": 607.0663,
+      "sa_baseline": 2.7755,
+      "replace_baseline": 1.7722
+    }
+  ],
+  "avg_proxy_cost": 1.392864,
+  "total_overlaps": 0,
+  "total_runtime_seconds": 607.0663,
+  "qualified": true,
+  "hypothesis": "cd_only_ibm18_10min"
+}

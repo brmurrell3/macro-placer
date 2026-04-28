@@ -1,0 +1,41 @@
+================================================================================
+evaluate · CDLNSPlacer  (submissions/cd/cd_lns_placer.py)
+================================================================================
+
+  ibm17... #[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm17/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 51, Row: 44
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+=== CDLNSPlacer (ibm17): cd_budget=600s, lns_budget=600s, k_schedule=(5, 10, 20, 30), init=sdf ===
+  num_macros=2604, n_hard=760, canvas=72.6x72.6
+#[INFO] Reading from external/MacroPlacement/Testcases/ICCAD04/ibm17/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 51, Row: 44
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+  SDF init wall = 12.5 s
+  overlap projection: 0 iters, residual count=0
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm17/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 51, Row: 44
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+  evaluator init = 4.3 s, init proxy=1.74308 [wl=0.0541 d=0.9518 c=2.4262]
+  movable macros: 2604; starting CD (600s budget)
+  sweep   1  elapsed=  310.8s  sweep_t= 310.8s  proxy=1.44299  accepted=3775/5208  gs=0  [wl=0.0775 d=0.7176 c=2.0134]
+  sweep   2  elapsed=  600.1s  sweep_t= 289.3s  proxy=1.38389  accepted=2004/5110  gs=0  [wl=0.0750 d=0.6707 c=1.9470]
+=== CD done: 2 sweeps, 5779 accepts, 0 gs-fallbacks, 600.1s wall ===
+  post-CD proxy=1.38389 [wl=0.0750 d=0.6707 c=1.9470]
+  starting LNS (600s budget, k_schedule=(5, 10, 20, 30))
+  lns iter   1  k=  5  elapsed=  428.6s  iter_t= 428.1s  snap=1.38389 -> new=1.38311  ACCEPT  reinserts=5  moves=5  [wl=0.0740 d=0.6708 c=1.9474]
+  lns iter   2  k= 10  elapsed=  610.1s  iter_t= 181.0s  snap=1.38311 -> new=1.38311  reject  reinserts=2  moves=0  [wl=0.0740 d=0.6708 c=1.9474]
+=== LNS done: 2 iters, 1 accepts / 1 rejects, 7 reinserts, 5 moves, 610.1s wall ===
+  post-LNS proxy=1.38311 [wl=0.0740 d=0.6708 c=1.9474]
+  total wall: 1227.5 s (init+CD+LNS+validate)
+proxy=1.3846  (wl=0.074 den=0.671 cong=1.950)  VALID  [1227.56s]
+Results written to results/CDLNSPlacer_20260427_080914.json
+Logged to results/experiment_log.jsonl
