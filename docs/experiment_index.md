@@ -1,6 +1,6 @@
 # Experiment Index
 
-Last updated: 2026-04-27
+Last updated: 2026-04-28
 
 A rigorous catalog of every experiment run during the Partcl/HRT Macro Placement
 Challenge 2026. Includes the failures alongside the wins — both are part of the
@@ -22,7 +22,8 @@ hypothesis across all runs (`fast`, `all`, or `single` benchmark).
 | DPO v2 | `dpo_v2_moresteps` / `v2_steps_restore` | 1.3888-1.4107 | 2026-04-26 | More gradient steps |
 | DPO best-of | `best_of_v2` | 1.3834 | 2026-04-26 | Best-of(SDF, DPO) per benchmark |
 | CD-only | `cd_only_all_10min` (CDOnly) | 1.1193 | 2026-04-27 03:50 | Matches leaderboard 1.1172 within 0.18% |
-| **CD-adaptive** | **`e9_adaptive_all`** (CDAdaptive) | **1.1055** | **2026-04-27 13:22** | **BEATS leaderboard 1.1172 by -1.05%** |
+| CD-adaptive | `e9_adaptive_all` (CDAdaptive) | 1.1055 | 2026-04-27 13:22 | Beat leaderboard by -1.05%; plateau-bound (every bench exited via plateau) |
+| **CD + grid-bin LNS** | **`e12_gridbin_lns`** (CDLNSGridBin) | **1.0990** | **2026-04-28 15:57** | **BEATS leaderboard 1.1172 by -1.63%; ADR-007** |
 
 Lineage: each champion replaced the prior by a structural change, not parameter
 tuning.
@@ -33,9 +34,10 @@ tuning.
 
 | ID | Hypothesis | Files | Best | Mode | Status |
 |---|---|---|---|---|---|
-| E1 | Incremental proxy evaluator | `macro_place/incremental_evaluator.py`, `test/test_incremental_evaluator.py`, `scripts/bench_incremental.py` | 4657× speedup, bit-for-bit parity | infrastructure | **VALIDATED** — load-bearing for E2/E9/E3 |
+| E1 | Incremental proxy evaluator | `macro_place/incremental_evaluator.py`, `test/test_incremental_evaluator.py`, `scripts/bench_incremental.py` | 4657× speedup, bit-for-bit parity | infrastructure | **VALIDATED** — load-bearing for E2/E9/E12 |
 | E2 | Full-proxy CD on ibm10 (40 min) | `scripts/cd_ibm10_diagnostic.py` | 1.0632 (ibm10 single) | single | **VALIDATED** — sparked CDOnly |
-| E9 | Adaptive per-bench plateau detection | `submissions/cd/cd_adaptive_placer.py` | **1.1055 (--all)** | all | **CHAMPION** |
+| E9 | Adaptive per-bench plateau detection | `submissions/cd_adaptive/placer.py` | 1.1055 (--all) | all | **prior champion** (superseded 2026-04-28 by E12) |
+| E12 | CD plateau + grid-bin LNS overlay | `submissions/cd_lns_gridbin/placer.py`, `experiments/E12_grid_bin_lns/` | **1.0990 (--all)** | all | **CHAMPION** (graduated 2026-04-28; ADR-007) |
 
 ---
 
@@ -66,8 +68,8 @@ tuning.
 | **E5** | Massively parallel DPO seeds (best-of-N at scale) | `submissions/dpo/batched_seeds_placer.py` (679L), `batched_seeds_b1.py` | 1.1638 (fast), 1.1698 (B=64 fast) | **FALSIFIED 2026-04-26** | B=64 wall = 8.9× B=1 (RUDY congestion kernel scales 27× on MPS). All 64 seeds collapse to same basin (sigma=0.04·canvas). Best-of-N within a single basin doesn't help. |
 | **E10** | Congestion-only refinement on DPO output | `submissions/dpo/congestion_refine_placer.py`, `_e10_sweep_{mild,aggressive}.py` | 1.1636 (fast) `mild`, 1.3788 (--all) | **MARGINAL/FALSIFIED** | Mild config gained 1.0% on fast set; only -0.33% on --all. **ibm02 got WORSE +2.3%** — basin-locked benchmarks regressed. |
 | **E11** | DPO from diverse priors (SDF + Will + greedy + random) | `submissions/dpo/diverse_priors_placer.py`, `init_strategies.py`, `e11_sdf_only.py`, `e11_sdf_random.py` | 1.1659 (fast 2-prior), 1.3839 (--all) | **FALSIFIED 2026-04-27** | Fast-set -0.8% didn't scale to --all (FLAT +0.04%). ibm02/ibm12 got WORSE — alternative priors land in deeper basins for high-density benchmarks. |
-| **E3 v1** | LNS rip-up-and-reinsert (full-canvas search) | `submissions/cd/lns.py`, `submissions/cd/cd_lns_placer.py` | 1.3846 (ibm17 single) | **FALSIFIED 2026-04-27** | Full-canvas 2244 grid candidates × ~100ms each = 200s+ per macro reinsertion. 1 LNS iteration in 428s. Final ibm17 = 1.3846 vs CDOnly 1.3830 (flat). |
-| **E3 v2** | LNS with 5×5 local-window reinsert | `submissions/cd/lns.py` (window_radius=5), `cd_lns_placer.py` | 1.3824 (ibm17 single) | **FALSIFIED 2026-04-27** | 90× faster (15 iters in 600s) but final ibm17 = 1.3824 vs CDOnly 1.3830 = flat. Cost-based destroy selector saturates after 1-2 accepts; 5×5 window can't move clusters. Single-macro local LNS does NOT escape CD's local minimum. |
+| **E3 v1** | LNS rip-up-and-reinsert (full-canvas search) | (deleted from active tree in commit 44efd16; preserved at `writeup/archive/submissions/lns.py`, `writeup/archive/submissions/cd_lns_placer.py`) | 1.3846 (ibm17 single) | **FALSIFIED 2026-04-27** | Full-canvas 2244 grid candidates × ~100ms each = 200s+ per macro reinsertion. 1 LNS iteration in 428s. Final ibm17 = 1.3846 vs CDOnly 1.3830 (flat). |
+| **E3 v2** | LNS with 5×5 local-window reinsert | (deleted from active tree in commit 44efd16; preserved at `writeup/archive/submissions/lns.py` with `window_radius=5`, and `writeup/archive/submissions/cd_lns_placer.py`) | 1.3824 (ibm17 single) | **FALSIFIED 2026-04-27** | 90× faster (15 iters in 600s) but final ibm17 = 1.3824 vs CDOnly 1.3830 = flat. Cost-based destroy selector saturates after 1-2 accepts; 5×5 window can't move clusters. Single-macro local LNS does NOT escape CD's local minimum. |
 
 ### Earlier polyhedra-era experiments (Phases 1-5)
 
@@ -91,14 +93,16 @@ hit a ceiling.
 
 | Date | Event | Source |
 |---|---|---|
-| 2026-04-26 | E8 LP-HPWL diagnostic: proxy is **6% WL, 20% density, 74% congestion**. Pure HPWL CD caps at ~5% improvement; full-proxy CD is required. | `docs/lp_hpwl_diagnostic.md`, `scripts/lp_hpwl_lower_bound.py` |
+| 2026-04-26 | E8 LP-HPWL diagnostic: proxy is **6% WL, 20% density, 74% congestion**. Pure HPWL CD caps at ~5% improvement; full-proxy CD is required. | `analysis/lp_hpwl_diagnostic/lp_hpwl_diagnostic.md`, `scripts/lp_hpwl_lower_bound.py` |
 | 2026-04-26 | E1 Incremental evaluator validated: 4657× speedup, bit-for-bit parity. | `writeup/cd_ibm10_results.md` |
 | 2026-04-27 (early) | E2 ibm10 single-bench: full-proxy CD on incremental evaluator hits 1.0632 (40min budget) and 1.1039 (10min). Beats DPO 1.254 by 12-15%. | `writeup/cd_ibm10_results.md` |
 | 2026-04-27 (early) | E5 falsified: batched seeds wall scales 8.9×, all collapse to same basin. | `submissions/dpo/batched_seeds_placer.py` |
-| 2026-04-27 (early) | CDOnly --all: avg 1.1193, matches leaderboard 1.1172 within 0.18%, -23.2% vs RePlAce. | `submissions/cd/cd_only_placer.py` |
+| 2026-04-27 (early) | CDOnly --all: avg 1.1193, matches leaderboard 1.1172 within 0.18%, -23.2% vs RePlAce. | `submissions/cd_only/placer.py` |
 | 2026-04-27 (mid) | E10 marginal, E11 flat: within-DPO refinements cap at 1-2%; basin lock structural. | `submissions/dpo/congestion_refine_placer.py`, `diverse_priors_placer.py` |
-| 2026-04-27 (mid) | E3 LNS v1 + v2 falsified: single-macro local LNS doesn't escape CD's local minimum. | `submissions/cd/lns.py`, `cd_lns_placer.py` |
-| 2026-04-27 17:22 | **E9 CDAdaptive --all: avg 1.1055 — BEATS leaderboard by -1.05%.** | `submissions/cd/cd_adaptive_placer.py` |
+| 2026-04-27 (mid) | E3 LNS v1 + v2 falsified: single-macro local LNS doesn't escape CD's local minimum. | (deleted from active tree in commit 44efd16; preserved at `writeup/archive/submissions/lns.py`, `writeup/archive/submissions/cd_lns_placer.py`) |
+| 2026-04-27 17:22 | E9 CDAdaptive --all: avg 1.1055 — beat leaderboard by -1.05% (now superseded). | `submissions/cd_adaptive/placer.py` |
+| 2026-04-28 (am) | Three CD-escape mechanisms falsified: E3 LNS (single-macro, flat); SDF-jitter multi-init (0/8 improved, contractive); subset-CD destroy (0/24 improved, same per-axis fixed point). All reused CD's move type. | `experiments/E3_lns_v1/`, `experiments/E3_lns_v2/`, `analysis/multi_init_probe/`, `analysis/lns_escape_probe/` |
+| 2026-04-28 15:57 | **E12 CDLNSGridBin --all: avg 1.0990 — BEATS leaderboard by -1.63%, beats E9 by -0.59%.** Grid-bin LNS uses a *different* move type ((col, row) cell centers, outside CD's per-axis breakpoint set). Promoted to champion (ADR-007). | `submissions/cd_lns_gridbin/placer.py`, `docs/decisions/007_cd_lns_gridbin_promotion.md` |
 
 ---
 
@@ -121,12 +125,16 @@ hit a ceiling.
    DPO's 1.6888 (byte-identical across 4 seeds) to CD's 1.1534 — basin-changing,
    not within-basin tuning.
 
-5. **LNS as we built it is not the missing piece.** Single-macro destroy/reinsert
-   (full-canvas or local-window) gives essentially zero gain on top of CD. Real
-   LNS would need cluster-level joint reinsertion or randomized destroy
-   strategies. The leaderboard's "Incremental CD+LNS" name is a red herring for
-   our architecture — the gain we got from CDOnly→CDAdaptive (1.1193→1.1055,
-   -1.23%) came from giving hard benchmarks more time, not from any LNS phase.
+5. **LNS escape requires a different move type, not more time on the same one.**
+   Single-axis destroy/reinsert (E3 v1/v2, subset-CD probe) reuses CD's per-axis
+   breakpoint search and finds the same fixed point. Multi-init via SDF jitter
+   (multi_init_probe) is contractive — perturbing strictly hurts. **Grid-bin
+   LNS (E12) escapes** because its candidate set is `(grid_col × grid_row)` cell
+   centers, outside CD's per-axis reachable set. This is the structural
+   distinction between flat LNS and effective LNS, and it's what carried the
+   champion from 1.1055 to 1.0990. The leaderboard's "Incremental CD+LNS"
+   description was correct after all — earlier attempts had picked the wrong
+   move type.
 
 6. **Plateau detection > fixed budget.** ALL 17 benchmarks exited via plateau
    (none hit the 1hr cap) under default `(min_time_s=300, hard_cap_s=3600,
@@ -135,14 +143,15 @@ hit a ceiling.
 
 ---
 
-## What's next (post-1.1055)
+## What's next (post-1.0990)
 
 | Lever | Expected | Effort | Notes |
 |---|---|---|---|
-| Tighten plateau threshold (`0.005` → `0.002`) | -0.5 to -1% | 1 hr | Hard benchmarks may still descend below current exit |
-| Cluster-level LNS | Speculative | 1 week | Would need joint reinsertion + multi-macro evaluator |
-| GPU-batched CD via conflict-graph coloring (E4) | 5-20× speedup | 3-4 days | Useful only if we exceed budget; currently we don't |
-| NG45 hidden-test prep / robustness | Confirm | 1-2 days | Verify zero overlaps, plateau detection on commercial designs |
-| Submission writeup | Required by May 21 | ~1 week | See `writeup/` (other agent's responsibility) |
+| NG45 hidden-test datapoint for E12 | Confirm transfer | 1-2 hr per design | ADR-007 needs its own NG45 result before treating LNS-overlay transfer as confirmed |
+| Drop cost-aware destroy ranking (use random) | flat (already shown on `--fast`) | 30 min | Saves ~10% wall per LNS sample at no quality cost; defer until post-deadline to avoid mid-deadline changes |
+| Tighten LNS budget cap to 1200 s? | speculative | 1 day | If 600 s LNS still finds improvements, more time may help; verify before changing |
+| Cluster-level LNS (joint reinsertion of K>1 macros) | speculative | 1 week | Different again from grid-bin; could compose on top of E12 |
+| GPU-batched CD via conflict-graph coloring (E4) | 5-20× speedup | 3-4 days | Useful only if E12 wall risks the 1-hr-per-bench cap on NG45 |
+| Submission writeup | Required by May 21 | ~1 week | See `writeup/` (other agent's responsibility); update for E12 |
 
-Champion entry is secured 24 days before the deadline.
+Champion entry is secured ~23 days before the deadline.

@@ -54,8 +54,12 @@ from macro_place.objective import compute_overlap_metrics
 
 _THIS_FILE = Path(__file__).resolve()
 _ROOT = _THIS_FILE.parent.parent.parent
-_TESTCASE_ROOT = _ROOT / "external/MacroPlacement/Testcases/ICCAD04"
 _DIAGNOSTIC_PATH = _ROOT / "scripts" / "cd_ibm10_diagnostic.py"
+
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from macro_place.bench_paths import find_benchmark_dir as _find_benchmark_dir
 
 
 def _import_diagnostic():
@@ -259,7 +263,7 @@ class CDAdaptivePlacer:
     """Adaptive CD placer — E9.
 
     Pipeline per call to `place(benchmark)`:
-      1. SDF init (via SDFPlacer in submissions/cd/sdf_init.py)
+      1. SDF init (via SDFPlacer in macro_place/sdf_init.py)
       2. Iterative push-apart projection to clean any residual overlaps
       3. Build IncrementalProxyEvaluator (full-proxy: WL + density + congestion)
       4. Adaptive CD sweeps — exit on plateau or 1hr hard cap
@@ -295,11 +299,7 @@ class CDAdaptivePlacer:
 
     def _load_plc_for(self, benchmark: Benchmark):
         """Load a fresh PlacementCost for this benchmark."""
-        bench_dir = _TESTCASE_ROOT / benchmark.name
-        if not bench_dir.exists():
-            raise FileNotFoundError(
-                f"Benchmark dir not found for '{benchmark.name}': {bench_dir}"
-            )
+        bench_dir = _find_benchmark_dir(benchmark.name)
         return load_benchmark_from_dir(str(bench_dir))
 
     # ----------------------------------------------------------------------

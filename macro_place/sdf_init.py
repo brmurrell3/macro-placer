@@ -6,6 +6,7 @@ Changes: tune density threshold, add more iterations, adjust overlap timing.
 Goal: reduce density and congestion while maintaining low WL.
 """
 
+import sys
 import torch
 import numpy as np
 import math
@@ -13,14 +14,20 @@ import random
 from pathlib import Path
 from macro_place.benchmark import Benchmark
 
+_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
 
 def _load_plc(name):
     from macro_place.loader import load_benchmark_from_dir
-    root = Path("external/MacroPlacement/Testcases/ICCAD04") / name
-    if root.exists():
-        _, plc = load_benchmark_from_dir(str(root))
-        return plc
-    return None
+    from macro_place.bench_paths import find_benchmark_dir
+    try:
+        root = find_benchmark_dir(name)
+    except FileNotFoundError:
+        return None
+    _, plc = load_benchmark_from_dir(str(root))
+    return plc
 
 
 def _extract_edges(benchmark, plc):

@@ -34,7 +34,7 @@ from macro_place.objective import compute_overlap_metrics, compute_proxy_cost
 import sys
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-from submissions.cd.sdf_init import SDFPlacer
+from macro_place.sdf_init import SDFPlacer
 
 
 TESTCASE_ROOT = ROOT / "external/MacroPlacement/Testcases/ICCAD04"

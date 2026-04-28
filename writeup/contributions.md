@@ -34,7 +34,7 @@ overlaps. The seven non-init modules (`placer.py`, `navigator.py`,
 `assignment.py`, `lp.py`, `moves.py`, `projection.py`, `surrogate.py`,
 `cluster_bounds.py`) were removed in the post-CD repo cleanup. The SDF
 initialization module was retained because the CD champion still uses
-it; it now lives at `submissions/cd/sdf_init.py`.
+it; it now lives at `macro_place/sdf_init.py`.
 
 ---
 
@@ -221,7 +221,7 @@ The natural response to "RUDY is wrong" is to build a better RUDY.
 The correct response was to bypass RUDY entirely — evaluate the real
 proxy cost through the incremental evaluator.
 
-**Evidence:** `writeup/rudy_analysis.py`, `experiment_notes.md` §11.
+**Evidence:** `analysis/rudy_fidelity/rudy_analysis.py`, `experiment_notes.md` §11.
 Congestion weight sweep: 5 variants, all monotonically worse (§10).
 
 ---
@@ -256,8 +256,10 @@ relative. Speedup benchmark: `scripts/bench_incremental.py`.
 **Claim:** Coordinate descent on the actual proxy cost — via the
 incremental evaluator, with breakpoint enumeration for exact 1D
 search — achieves 1.1193 avg proxy at 600s/bench (matches leaderboard
-within 0.18%) and **1.1055 avg with adaptive budget (beats leaderboard
-by -1.05%)**. Every benchmark improves over DPO. Zero regressions.
+within 0.18%), **1.1055 avg with adaptive budget (E9, beats leaderboard
+by -1.05%)**, and **1.0990 avg with grid-bin LNS overlay (E12, beats
+leaderboard by -1.63%)**. Every benchmark improves over DPO; under E12
+every benchmark also improves over E9. Zero regressions throughout.
 
 **What's novel:** The application of full-proxy CD (not HPWL-only
 weighted median) to macro placement. The key insight is that CD on
@@ -270,11 +272,13 @@ incremental evaluation — all textbook techniques. The contribution
 is recognizing that combining them bypasses the RUDY fidelity
 problem that limits gradient methods.
 
-**Evidence:** `submissions/cd/cd_only_placer.py` (fixed-budget
-1.1193). `submissions/cd/cd_adaptive_placer.py` (plateau-detection
-1.1055). All 17 IBM benchmarks. Zero overlaps. Breaks the ibm02
-basin lock (1.6888 → 1.1534, -32%) that DPO cannot escape regardless
-of seed.
+**Evidence:** `submissions/cd_only/placer.py` (fixed-budget
+1.1193). `submissions/cd_adaptive/placer.py` (plateau-detection
+1.1055). `submissions/cd_lns_gridbin/placer.py` (grid-bin LNS
+overlay 1.0990 — current champion, ADR-007). All 17 IBM benchmarks.
+Zero overlaps. Breaks the ibm02 basin lock (1.6888 → 1.1534, -32%)
+that DPO cannot escape regardless of seed; E12 lifts ibm02 a further
+-1.72% (1.1538 → 1.1340).
 
 ---
 
@@ -312,6 +316,10 @@ third infrastructure-driven refinement:
   Refinement: CDOnly (1.12, fixed 600s) → per-bench sweep-delta logs
   → adaptive budget (E9) → 1.1055 (beats leaderboard by -1.05%)
 
+  Refinement 2: CDAdaptive (1.1055, every bench plateau-bound) →
+  diagnose plateau as per-axis fixed point → introduce a *different
+  move type* (grid-bin LNS, E12) → 1.0990 (beats leaderboard by -1.63%)
+
 **What's novel:** The specific application and the completeness of the
 documentation. Each step is quantified. The two-cycle structure shows
 the methodology is not ad hoc — the same diagnosis pattern works on
@@ -331,7 +339,10 @@ budget-allocation wins that fixed schedules miss.
 drops below 0.005 (with a 1-hour hard cap matching the competition
 rule) outperforms any fixed budget. On --all, this turned a 1.1193
 result (CDOnly fixed 600s/bench) into 1.1055 — a -1.23% lift that
-**beats the public leaderboard 1.1172 by -1.05%**.
+beats the public leaderboard 1.1172 by -1.05%. (E9 was the champion
+2026-04-27 to 2026-04-28, then superseded by E12 grid-bin LNS at
+1.0990; the plateau-detection mechanism remains the CD-phase budget
+controller in the E12 production placer.)
 
 **Why this is more than a hyperparameter trick:** A fixed per-benchmark
 budget is fragile to dataset shift. The hidden NG45 commercial designs
@@ -353,10 +364,63 @@ it to per-bench sweep deltas in a way that fits the competition's
 **What's not novel:** Plateau detection, patience-based stopping —
 all textbook.
 
-**Evidence:** `submissions/cd/cd_adaptive_placer.py`. Per-bench wall
+**Evidence:** `submissions/cd_adaptive/placer.py`. Per-bench wall
 times, plateau exits, and deltas in `docs/results.md`. Total runtime
 17480s (4.85 hr) — comfortably inside the 17-hr (17 × 1hr) hidden-test
 envelope.
+
+---
+
+## 13. Grid-bin LNS overlay (E12 — current champion, 1.0990)
+
+**Claim:** When CD's per-axis breakpoint enumeration plateaus (every
+benchmark exits via plateau, none budget-bound), the right intervention
+is a *different move type* — not more wall-clock on the same one. After
+CD plateaus, destroy K = max(1, min(30, 5 % × |movable hard macros|))
+macros and reinsert each at the proxy-minimizing legal position drawn
+from the full `(grid_col × grid_row)` cell-center set. The candidate
+set is outside CD's per-axis breakpoint enumeration, which is exactly
+why it can find escapes CD cannot. Result: avg `--all` 1.0990 (vs E9
+1.1055, -0.59 %), zero overlaps, all 17 IBM benchmarks improved over
+E9 (no regressions).
+
+**Why this is more than a hyperparameter trick:** Three earlier escape
+mechanisms tested before E12 all reused CD's per-axis move type and
+produced flat results: E3 single-macro LNS (full-canvas v1, 5×5 local
+v2, both flat on ibm17), SDF-jitter multi-init (0/8 improved on ibm09 —
+contractive), subset-CD destroy/reinsert (0/24 improved on ibm09+ibm12
+— same fixed point). The unifying lesson: same move type cannot escape
+the same fixed point, regardless of how the destroy step is randomized
+or how much wall is allocated. Grid-bin LNS works because its candidate
+set is *structurally different* from CD's.
+
+**Cost-aware destroy ranking is NOT load-bearing.** A `--fast` ablation
+(`experiments/E12_grid_bin_lns/code/cd_lns_gridbin_random.py`)
+replaced the cost-aware destroy ranking with uniform random destroy
+and matched cost-aware within noise (ibm09 random 0.8541 actually beat
+cost-aware 0.8591). Production keeps the cost-aware ranking only
+because the ablation result landed late relative to the May 21
+deadline. Future simplification: drop the ranking.
+
+**What's novel:** The diagnosis (CD's plateau is a per-axis fixed
+point, not a wall-clock limit), the falsification of three move-type-
+preserving escape attempts, and the decisive demonstration that
+swapping the move type is the load-bearing change. Validates the
+leaderboard winner's "Incremental CD+LNS" architecture without
+reproducing it.
+
+**What's not novel:** LNS as a meta-heuristic, grid-bin candidate
+enumeration — both standard. The contribution is the diagnostic
+sequence that identified what the move type had to *be*.
+
+**Evidence:** `submissions/cd_lns_gridbin/placer.py`.
+`results/CDLNSGridBinPlacer_20260428_155739.json` (verified `--all`).
+Per-bench table at `writeup/evidence.md` §2.1 and `docs/results.md`.
+ADR: `docs/decisions/007_cd_lns_gridbin_promotion.md`. Falsified
+escape mechanisms: `experiments/E3_lns_v1/`, `experiments/E3_lns_v2/`,
+`analysis/multi_init_probe/`, `analysis/lns_escape_probe/`. Total
+runtime 28 256 s = 7.85 hr — inside the 17-hr (17 × 1 hr) hidden-test
+envelope with ~9 hr of headroom.
 
 ---
 
