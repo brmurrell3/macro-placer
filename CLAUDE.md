@@ -38,37 +38,107 @@ uv run evaluate <placer.py> -b ibm01
 
 ## Feedback loop
 
-1. Implement a placer variant in `submissions/`
-2. Run `--fast --json` → read the JSON output
-   - **fast_gate fail** → tweak parameters, try next variant
-   - **fast_gate pass** → run `--all --json`
-   - **avg < 1.12 (above champion)** → likely noise; verify carefully
-   - **avg < 1.099 (at-or-below champion)** → STOP. Surface to human for review (current champion E12 is 1.0990).
-   - **avg < 1.05 (new champion)** → STOP immediately. This beats E12 CDLNSGridBin.
-3. If best score hasn't improved >2% after N variants → kill hypothesis
-4. Update `docs/results.md` and `docs/experiment_index.md` after every significant result
+1. **Set up the experiment.** Copy `experiments/_template/` to
+   `experiments/E<NN>_<short_name>/`. Fill in the manifest's `Hypothesis`,
+   `Method`, `Kill gate`, and `Generalization check`. Put placer code in
+   `code/`. Find the next free `E<NN>` with `ls experiments/ | grep '^E'`.
+
+2. **Run.** Always pass `--hypothesis E<NN>` so the row in
+   `results/experiment_log.jsonl` is attributable:
+   ```
+   uv run evaluate experiments/E<NN>_*/code/<placer>.py --fast --json --hypothesis E<NN>
+   ```
+
+3. **Decide from the JSON.**
+   - **fast_gate fail** → tweak parameters, try next variant.
+   - **fast_gate pass** → run `--all --json`.
+   - **avg < 1.12** → likely noise; verify carefully.
+   - **avg < 1.099 (at-or-below champion)** → STOP. Surface to human (current champion E12 is 1.0990).
+   - **avg < 1.05** → STOP immediately. New champion territory.
+
+4. **If killed:** Set the manifest's `status: falsified`, fill `decided`
+   and `outcome`, write the killing data into `Outcome`. Falsified
+   experiments stay forever — they're the signpost that stops the next
+   person re-running the dead end.
+
+5. **If graduated:** Surface to human first. Promotion = move code to
+   `submissions/<name>/placer.py`, set `status: graduated, graduated_to: ...`,
+   write an ADR in `docs/decisions/NNN_short_name.md` if the decision is
+   load-bearing.
+
+If best score hasn't improved by >2 % after N variants → kill the hypothesis.
+
+## On a result, update these
+
+| When | Update |
+|------|--------|
+| Any terminal decision | Manifest's `status` / `decided` / `outcome` / `champion_delta` |
+| Falsified | Manifest's `Outcome` section with the killing data |
+| Graduated | Move code to `submissions/<name>/placer.py`; set `graduated_to:` |
+| New champion | CLAUDE.md champion line; `docs/results.md`; `submissions/README.md`; `writeup/evidence.md` §1 |
+| Structural decision | New ADR in `docs/decisions/NNN_short_name.md` (immutable once accepted) |
+| Paper-relevant finding | `writeup/evidence.md` (the experimental archive) |
+| Always | `docs/experiment_index.md` (status table) |
+
+**Manifest vs ADR.** A manifest records *what you tried and how it went*
+(per-experiment, many per generation). An ADR records *a decision about
+how the project works going forward* (rare, structural, immutable). Most
+experiments only need a manifest. ADRs are reserved for things like
+"we abandon LP-HPWL ranking" or "we promote E12 as champion."
 
 ## Key files
 
-| File | Purpose |
-|------|---------|
-| `results/experiment_log.jsonl` | Append-only log of all runs (read at session start) |
+### Where to put new work
+
+| Path | Role |
+|------|------|
+| `experiments/_template/` | Boilerplate for a new experiment manifest |
+| `experiments/E<NN>_*/` | Per-experiment manifest + `code/` + `notes.md` |
+| `analysis/<name>/` | Diagnostic probes (one-shot, not score-improvement experiments) |
+| `submissions/<name>/placer.py` | Graduated placer (post-promotion only) |
+
+### Read at session start
+
+| Path | Role |
+|------|------|
+| `results/experiment_log.jsonl` | Append-only log of all runs |
 | `docs/roadmap.md` | Phased action plan, champion lineage, risk register |
-| `docs/results.md` | Current champion (CDLNSGridBin) per-benchmark tables |
-| `docs/approach.md` | Current CD-on-incremental-evaluator architecture + prior approaches |
+| `docs/results.md` | Current champion per-benchmark tables |
+| `docs/approach.md` | Current architecture + prior approaches |
+| `docs/experiment_index.md` | Catalog of every experiment (live + falsified) |
+| `experiments/*/manifest.md` | Per-experiment hypothesis, status, kill gate, outcome |
+
+### Decisions, gotchas, formal spec
+
+| Path | Role |
+|------|------|
+| `docs/decisions/` | ADRs — structural decisions, immutable once accepted |
+| `docs/gotchas.md` | Codebase footguns (net_nodes empty bug, single-step revert, etc.) |
 | `docs/problem.md` | Formal mathematical problem statement |
-| `docs/experiment_index.md` | Rigorous catalog of every experiment (live + falsified) |
-| `analysis/lp_hpwl_diagnostic/lp_hpwl_diagnostic.md` | E8 — proxy decomposition (6% WL / 20% density / 74% congestion) |
+| `analysis/lp_hpwl_diagnostic/lp_hpwl_diagnostic.md` | E8 — 6 % WL / 20 % density / 74 % congestion |
+
+### Library and submissions
+
+| Path | Role |
+|------|------|
 | `macro_place/evaluate.py` | Evaluation harness (don't modify unless infra work) |
 | `macro_place/objective.py` | Proxy cost computation |
 | `macro_place/incremental_evaluator.py` | E1 — 4657× speedup; load-bearing for CD |
 | `macro_place/benchmark.py` | Benchmark dataclass (PyTorch tensors) |
-| `submissions/cd_lns_gridbin/placer.py` | **CHAMPION** — CD plateau + grid-bin LNS overlay (E12, 1.0990) |
-| `submissions/cd_adaptive/placer.py` | Prior champion (CDAdaptive E9, 1.1055) — full-proxy CD + plateau detection |
-| `submissions/cd_only/placer.py` | Prior-prior champion (CDOnly fixed-budget) |
-| `macro_place/sdf_init.py` | SDF initialization (used by champion) |
+| `macro_place/sdf_init.py` | SDF initialization (used by every champion) |
+| `submissions/cd_lns_gridbin/placer.py` | **CHAMPION** — E12 CD + grid-bin LNS overlay, 1.0990 |
+| `submissions/cd_adaptive/placer.py` | Prior champion — E9 CDAdaptive, 1.1055 |
+| `submissions/cd_only/placer.py` | Prior-prior — CDOnly fixed-budget, 1.1193 |
 | `submissions/examples/` | Reference placers (greedy, random) |
-| `writeup/` | Innovation-prize writeup; killed-hypothesis history (DPO, polyhedra, theory, leaderboard recipe) |
+
+### Writeup (innovation prize)
+
+| Path | Role |
+|------|------|
+| `writeup/paper.md` | Canonical draft with TODO markers |
+| `writeup/evidence.md` | Experimental archive — every paper.md datapoint lives here |
+| `writeup/contributions.md` | Claim / novelty / evidence registry |
+| `writeup/theory.md` | Supplementary mathematical material |
 
 ## At session start
 
@@ -76,7 +146,8 @@ uv run evaluate <placer.py> -b ibm01
 2. Read `docs/roadmap.md` for current phase and next actions
 3. Read `docs/results.md` for latest results
 4. Read `docs/approach.md` for current strategy
-5. Ask what to work on, or continue the most promising alive hypothesis
+5. Find live experiments: `grep -l "status: in_progress" experiments/*/manifest.md`
+6. Ask what to work on, or continue the most promising alive hypothesis
 
 ## Writing a placer
 
