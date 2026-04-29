@@ -4,24 +4,23 @@ SDF-Based Soft Rasterization Placer — v5
 Back to v2 approach (best so far: 1.5062 avg on --all).
 Changes: tune density threshold, add more iterations, adjust overlap timing.
 Goal: reduce density and congestion while maintaining low WL.
+
+Used as the initial pass for every CD-based placer (see
+``macro_place.cd_core.sdf_init`` for the thin wrapper used by placers).
 """
 
-import sys
-import torch
-import numpy as np
 import math
 import random
-from pathlib import Path
-from macro_place.benchmark import Benchmark
 
-_ROOT = Path(__file__).resolve().parent.parent.parent
-if str(_ROOT) not in sys.path:
-    sys.path.insert(0, str(_ROOT))
+import numpy as np
+import torch
+
+from macro_place.benchmark import Benchmark
+from macro_place.bench_paths import find_benchmark_dir
+from macro_place.loader import load_benchmark_from_dir
 
 
 def _load_plc(name):
-    from macro_place.loader import load_benchmark_from_dir
-    from macro_place.bench_paths import find_benchmark_dir
     try:
         root = find_benchmark_dir(name)
     except FileNotFoundError:

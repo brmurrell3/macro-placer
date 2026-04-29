@@ -26,7 +26,6 @@ Hard limit: total wall ≤ 3600s/benchmark (contest legal limit).
 """
 from __future__ import annotations
 
-import importlib.util
 import sys
 import time
 from pathlib import Path
@@ -35,42 +34,24 @@ from typing import Callable, List, Optional
 import numpy as np
 import torch
 
-# This file lives at submissions/cd_lns_gridbin/, so repo root is 3 levels up.
-_ROOT = Path(__file__).resolve().parent.parent.parent
+# The eval harness loads placers via importlib.spec_from_file_location, which
+# does NOT add the repo root to sys.path. We need it on sys.path so the
+# `macro_place.*` imports below resolve. This is the only sys.path tweak
+# the placer needs; all shared CD code lives in macro_place.cd_core.
+_ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from macro_place.benchmark import Benchmark
+from macro_place.bench_paths import find_benchmark_dir
+from macro_place.cd_core import (
+    project_overlaps,
+    run_cd_adaptive,
+    sdf_init,
+)
 from macro_place.incremental_evaluator import IncrementalProxyEvaluator
 from macro_place.loader import load_benchmark_from_dir
 from macro_place.objective import compute_overlap_metrics
-
-from macro_place.bench_paths import find_benchmark_dir
-from submissions.cd_adaptive.placer import (
-    CDAdaptivePlacer,
-    run_cd_adaptive,
-)
-
-
-_THIS_FILE = Path(__file__).resolve()
-_DIAGNOSTIC_PATH = _ROOT / "scripts" / "cd_ibm10_diagnostic.py"
-
-
-def _import_diagnostic():
-    if "cd_ibm10_diagnostic" in sys.modules:
-        return sys.modules["cd_ibm10_diagnostic"]
-    spec = importlib.util.spec_from_file_location(
-        "cd_ibm10_diagnostic", str(_DIAGNOSTIC_PATH)
-    )
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules["cd_ibm10_diagnostic"] = mod
-    spec.loader.exec_module(mod)
-    return mod
-
-
-_diag = _import_diagnostic()
-sdf_init = _diag.sdf_init
-project_overlaps = _diag.project_overlaps
 
 
 # ── LNS primitives ──────────────────────────────────────────────────────────
