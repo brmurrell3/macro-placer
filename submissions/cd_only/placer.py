@@ -10,10 +10,8 @@ E2 (40-min full-proxy CD on incremental evaluator, SDF init) on ibm10 reached
 by 15.2%. This placer wraps the same machinery into a `place(benchmark) -> Tensor`
 class so it can run via the `evaluate` harness.
 
-The CD primitives (legal_axis_range, search_axis, sdf_init, project_overlaps) are
-imported from `scripts/cd_ibm10_diagnostic.py` rather than copy-pasted. The CD
-sweep loop itself is factored into `run_cd(...)` defined here so that anything
-that wants CD on top of an existing evaluator can just call this function.
+The CD primitives and per-sweep loop live in ``macro_place.cd_core``; this
+file is just the placer-class wrapper.
 
 Constructor args:
     time_budget_s: CD wall-clock budget (default 600 = 10 min). SDF init and
@@ -32,189 +30,25 @@ Returned placement:
 
 from __future__ import annotations
 
-import importlib.util
 import sys
 import time
 from pathlib import Path
-from typing import Callable, List, Optional
+from typing import List
 
-import numpy as np
 import torch
 
-from macro_place.benchmark import Benchmark
-from macro_place.incremental_evaluator import IncrementalProxyEvaluator
-from macro_place.loader import load_benchmark_from_dir
-from macro_place.objective import compute_overlap_metrics
-
-
-# ── Repo-relative paths ─────────────────────────────────────────────────────
-
-_THIS_FILE = Path(__file__).resolve()
-_ROOT = _THIS_FILE.parent.parent.parent
-_DIAGNOSTIC_PATH = _ROOT / "scripts" / "cd_ibm10_diagnostic.py"
-
+# Eval harness loads us via importlib.spec_from_file_location and does NOT add
+# the repo root to sys.path; do it ourselves so `macro_place.*` imports resolve.
+_ROOT = Path(__file__).resolve().parents[2]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+from macro_place.benchmark import Benchmark
 from macro_place.bench_paths import find_benchmark_dir as _find_benchmark_dir
-
-
-def _import_diagnostic():
-    """Import scripts/cd_ibm10_diagnostic.py as a module without modifying it.
-
-    Reuses the module's helpers: sdf_init, project_overlaps, legal_axis_range,
-    search_axis, axis_breakpoints, golden_section.
-    """
-    if "cd_ibm10_diagnostic" in sys.modules:
-        return sys.modules["cd_ibm10_diagnostic"]
-    if str(_ROOT) not in sys.path:
-        sys.path.insert(0, str(_ROOT))
-    spec = importlib.util.spec_from_file_location(
-        "cd_ibm10_diagnostic", str(_DIAGNOSTIC_PATH)
-    )
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules["cd_ibm10_diagnostic"] = mod
-    spec.loader.exec_module(mod)
-    return mod
-
-
-_diag = _import_diagnostic()
-sdf_init = _diag.sdf_init
-project_overlaps = _diag.project_overlaps
-legal_axis_range = _diag.legal_axis_range
-search_axis = _diag.search_axis
-
-
-# ── CD sweep loop (extracted; reusable) ─────────────────────────────────────
-
-
-def run_cd(
-    evaluator: IncrementalProxyEvaluator,
-    benchmark: Benchmark,
-    plc,
-    movable: List[int],
-    time_budget_s: float,
-    log_fn: Optional[Callable[[str], None]] = None,
-) -> dict:
-    """Coordinate-descent sweeps on the incremental evaluator.
-
-    Visits each `movable` macro in randomized order per sweep. For each macro,
-    searches the legal range on each axis (x then y) using `search_axis`
-    (closed-form breakpoint enumeration; falls back to golden section when the
-    candidate set is too dense). Commits any improving move; reverts otherwise.
-    Stops when wall clock crosses `time_budget_s`.
-
-    Args:
-        evaluator: an IncrementalProxyEvaluator already initialized with a
-            valid (zero-overlap) placement.
-        benchmark: source benchmark — used for canvas bounds and fixed mask.
-        plc: PlacementCost — used for grid-line geometry only.
-        movable: list of macro indices that may be moved (i.e. not fixed).
-        time_budget_s: wall-clock budget for CD only (init excluded).
-        log_fn: optional `print`-like callable; called once per sweep.
-
-    Returns:
-        dict with sweep count, accepted moves, GS fallbacks, total wall.
-    """
-    n_hard = benchmark.num_hard_macros
-
-    gw = float(plc.width / plc.grid_col)
-    gh = float(plc.height / plc.grid_row)
-    grid_lines_x = np.arange(plc.grid_col + 1, dtype=np.float64) * gw
-    grid_lines_y = np.arange(plc.grid_row + 1, dtype=np.float64) * gh
-
-    cur_cost = evaluator.current_cost()["proxy"]
-
-    sweep_idx = 0
-    total_moves = 0
-    total_probes = 0
-    total_gs_fallbacks = 0
-
-    t_start = time.perf_counter()
-
-    while True:
-        elapsed = time.perf_counter() - t_start
-        if elapsed >= time_budget_s:
-            break
-        sweep_idx += 1
-        sweep_t0 = time.perf_counter()
-        sweep_accepted = 0
-        sweep_probes = 0
-        sweep_gs = 0
-
-        rng = np.random.default_rng(seed=sweep_idx)
-        order = list(movable)
-        rng.shuffle(order)
-
-        for macro_idx in order:
-            if time.perf_counter() - t_start >= time_budget_s:
-                break
-
-            # ── X-axis ──
-            lo_x, hi_x = legal_axis_range(
-                macro_idx, evaluator.placement, evaluator.macro_sizes,
-                benchmark.macro_fixed, n_hard, axis=0,
-                canvas_w=benchmark.canvas_width, canvas_h=benchmark.canvas_height,
-            )
-            cur_xy = (float(evaluator.placement[macro_idx, 0]),
-                      float(evaluator.placement[macro_idx, 1]))
-            best_x, best_c, mode = search_axis(
-                macro_idx, 0, evaluator, grid_lines_x,
-                lo_x, hi_x, cur_cost, cur_xy[1],
-            )
-            if mode == "gs":
-                sweep_gs += 1
-                total_gs_fallbacks += 1
-            sweep_probes += 1
-            if best_c < cur_cost - 1e-9 and abs(best_x - cur_xy[0]) > 1e-7:
-                evaluator.move(macro_idx, (float(best_x), cur_xy[1]))
-                cur_cost = best_c
-                sweep_accepted += 1
-                total_moves += 1
-
-            # ── Y-axis ──
-            cur_xy = (float(evaluator.placement[macro_idx, 0]),
-                      float(evaluator.placement[macro_idx, 1]))
-            lo_y, hi_y = legal_axis_range(
-                macro_idx, evaluator.placement, evaluator.macro_sizes,
-                benchmark.macro_fixed, n_hard, axis=1,
-                canvas_w=benchmark.canvas_width, canvas_h=benchmark.canvas_height,
-            )
-            best_y, best_c, mode = search_axis(
-                macro_idx, 1, evaluator, grid_lines_y,
-                lo_y, hi_y, cur_cost, cur_xy[0],
-            )
-            if mode == "gs":
-                sweep_gs += 1
-                total_gs_fallbacks += 1
-            sweep_probes += 1
-            if best_c < cur_cost - 1e-9 and abs(best_y - cur_xy[1]) > 1e-7:
-                evaluator.move(macro_idx, (cur_xy[0], float(best_y)))
-                cur_cost = best_c
-                sweep_accepted += 1
-                total_moves += 1
-
-        sweep_wall = time.perf_counter() - sweep_t0
-        elapsed = time.perf_counter() - t_start
-        cost_break = evaluator.current_cost()
-        cur_cost = cost_break["proxy"]
-        total_probes += sweep_probes
-        if log_fn is not None:
-            log_fn(
-                f"  sweep {sweep_idx:3d}  elapsed={elapsed:7.1f}s  "
-                f"sweep_t={sweep_wall:6.1f}s  proxy={cost_break['proxy']:.5f}  "
-                f"accepted={sweep_accepted}/{sweep_probes}  gs={sweep_gs}  "
-                f"[wl={cost_break['wl']:.4f} d={cost_break['density']:.4f} "
-                f"c={cost_break['congestion']:.4f}]"
-            )
-
-    return {
-        "sweeps": sweep_idx,
-        "total_moves": total_moves,
-        "total_probes": total_probes,
-        "total_gs_fallbacks": total_gs_fallbacks,
-        "wall_total_s": time.perf_counter() - t_start,
-    }
+from macro_place.cd_core import project_overlaps, run_cd, sdf_init
+from macro_place.incremental_evaluator import IncrementalProxyEvaluator
+from macro_place.loader import load_benchmark_from_dir
+from macro_place.objective import compute_overlap_metrics
 
 
 # ── Placer class ────────────────────────────────────────────────────────────
