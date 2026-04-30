@@ -1,6 +1,6 @@
 # Results
 
-Last updated: 2026-04-29
+Last updated: 2026-04-30
 
 Operational doc — current champion only. Historical per-benchmark
 tables for DPO / Polyhedra / Overnight Sweep / Miftari live in
@@ -21,7 +21,9 @@ tables for DPO / Polyhedra / Overnight Sweep / Miftari live in
 | Hypothesis | Status | Best Avg Proxy | Notes |
 |------------|--------|----------------|-------|
 | **CDLNSGridBinPlacer (E12)** | **CHAMPION** | **1.0990** | **Beats leaderboard 1.1172 by -1.63%; -24.6% vs RePlAce; CD plateau + grid-bin LNS overlay (ADR-007). Promoted 2026-04-28.** |
-| CDLNSSAPlacer (E25) | champion candidate | 1.0954 | **Verified −0.33% lift over E12, −1.95% vs leaderboard; not promoted.** Adds SA-v2 polish on per-axis breakpoints with best-so-far tracking + T₀=5e-4. Code at `submissions/cd_lns_sa/placer.py`; ADR-008 *Proposed* (awaiting human decision). |
+| **CDLNSSADPOInitPlacer (E18)** | **strongest verified candidate** | **1.08979** | **Verified −0.84 % vs E12 (−2.45 % vs leaderboard); 11/17 IBM wins, 4/4 NG45 wins (avg 0.69193, −1.67 % vs E12 NG45 0.7037).** DPO best_of_v2 init replaces SDF in the E25 pipeline. Code at `experiments/E18_dpo_init/code/cd_lns_sa_dpo_init.py`; ADR-009 *Proposed* (awaiting human decision). 13.30 hr `--all` wall (+3 hr vs E25; 3.7 hr cap headroom). |
+| CDLNSSAPlacer (E25) | candidate (older; superseded by E18) | 1.0954 | Verified −0.33% lift over E12, −1.95% vs leaderboard. Adds SA-v2 polish on per-axis breakpoints with best-so-far tracking + T₀=5e-4. Code at `submissions/cd_lns_sa/placer.py`; ADR-008 *Proposed*. Recommend marking *Superseded* if ADR-009 (E18) is accepted. |
+| CDLNSSADPOKJointPlacer (E41) | strongest --fast/NG45 (--all incomplete) | 0.92178 (--fast); 0.69022 (--ng45) | E18 ⊕ E39 K-joint composition. **--fast −1.27 % vs E25, --ng45 −1.91 % vs E12.** `--all` stalled at 6/17 (multiproc.Queue + K-joint overlap-validation bug; bug fixed 2026-04-30 04:35; rerun pending). |
 | CDAdaptivePlacer (E9) | superseded | 1.1055 | Was champion 2026-04-27; -0.59% lift from E12 LNS overlay. Plateau-bound: every bench exited via plateau, none hit cap. |
 | CDOnlyPlacer | superseded | 1.1193 | Was champion 2026-04-27 (am); -1.23% lift from E9 adaptive budget |
 | DPO best-of-v2 | superseded | 1.3834 | Was champion 2026-04-26; -19.1% vs CDOnly. Details in `writeup/historical_results.md`. |

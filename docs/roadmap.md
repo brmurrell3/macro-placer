@@ -1,14 +1,16 @@
 # Roadmap
 
-Last updated: 2026-04-29
-Competition deadline: May 21, 2026 (~22 days)
+Last updated: 2026-04-30
+Competition deadline: May 21, 2026 (~21 days)
 
 ## TL;DR
 
 - **Champion:** E12 CDLNSGridBin (1.0990, ADR-007). Submission-ready.
-- **Candidate awaiting promotion:** E25 CDLNSSA (1.0954, ADR-008 *Proposed*).
-- **In flight (parallel agent, 2026-04-29):** E17, E18, E27, E32, E39, E40.
-- **Gate:** E27 basin-persistence diagnostic. Single-basin verdict → ship E25 + writeup. Multi-basin verdict → pursue Tier 0a structural reframings (E41–E44 / E45 — see §6.2 for the unresolved E40 numbering collision).
+- **Candidate awaiting promotion (older):** E25 CDLNSSA (1.0954, ADR-008 *Proposed*).
+- **NEW candidate awaiting promotion:** **E18 CDLNSSADPOInit (1.08979, --all; -0.51 % vs E25, -0.84 % vs E12).** DPO best_of_v2 init replaces SDF init in the E25 pipeline. 11/17 IBM wins; 4/4 NG45 wins (avg 0.69193, -1.67 % vs E12). Code at `experiments/E18_dpo_init/code/cd_lns_sa_dpo_init.py`. Awaiting human promotion decision.
+- **Strongest --fast/NG45 candidate, --all unfinished:** **E41 DPO+K-joint composition (--fast 0.92178, -1.27 % vs E25; --ng45 0.69022, -1.91 % vs E12).** --all stalled at 6/17 due to multiprocessing.Queue under heavy load + a K-joint overlap bug; bug fixed 2026-04-30 04:35, --all rerun queued.
+- **Falsified overnight:** E17 random init, E26 longer SA, E32 SAM-CD.
+- **Marginal overnight:** E40 multi-SA-seed (within-basin), E27 basin-persistence (insufficient diversity due to BestOfV2Placer init bug).
 - **Submission:** E12 is locked in if no further work lands. NG45 transfer already verified (E23). Safety margin 9 hr on the 17-hr cap.
 
 ---
@@ -93,24 +95,32 @@ The 2026-04-26 LP-HPWL diagnostic decomposed proxy as **6 % WL, 20 % density, 74
 
 ---
 
-## 4. Currently in flight (parallel agent, 2026-04-29)
+## 4. Overnight wave 2026-04-29 → 30 outcomes
 
-Six experiments running concurrently. Each has a clean yes/no outcome that triggers a downstream action.
+Six tactical experiments + one diagnostic + one combo decided overnight. Summary table:
 
-| ID | Hypothesis | Decision logic |
-|---|---|---|
-| **E27 basin_persistence** *(THE GATE)* | Persistence-homology diagnostic on 50–100 CD trajectories from 11 diverse inits across ibm11/13/14/15. H₀ filtration measures whether the E25 floor is one big basin or several. | Single dominant H₀ feature below E25 → kill the post-E25 algorithmic line; ship E25 + writeup; pivot remaining weeks to Tier-2 grand prize (ORFS proxy calibration). Multiple long-lived H₀ features below E25 → distinct basins exist; launch Tier 0a (E41 multigrid first, E42 symmetry second, E40-or-renumbered BP third). |
-| **E17 random_init** | Replace SDF init with uniform-random legal placement; rerun E25 pipeline unchanged. Tests if SDF is contractive. | Random beats SDF on any benchmark → multi-init best-of-{SDF, random} is a free lift; integrate into next champion run; also signals SDF basin is wrong for that bench, feeds into E40-BP priors and diversifies E27's trajectory set. Random uniformly worse → SDF is the right basin entry; multi-init dead-end stays dead; reinforces ADR-005. |
-| **E18 dpo_init** | DPO best_of_v2 → CD → LNS → SA-v2 (replaces SDF init with DPO output). Tests if DPO basin holds topology info CD missed. | Improves over E25 → pipeline becomes DPO → CD → LNS → SA; strongly motivates E33 (low-rank reparam — DPO's basin is a low-rank fixed point CD couldn't reach). Worse → DPO basin lock is real *and* dominated; CD-from-SDF is the right ordering; closes the E11/E18 line. |
-| **E32 sam_cd** | SAM-style worst-case-perturbation breakpoint scoring inside CD. Tests if CD's fixed point is sharp (proxy artifact) or flat (genuine). Predicts better OOD generalization to NG45. | IBM `--all` lift → ship; verify NG45 lift ≥ IBM lift. NG45 lift < IBM → IBM-overfit; drop. Flat-or-worse on `--fast` → CD's fixed point isn't a sharp minimum at this proxy resolution; sharpness-aware angle closes. |
-| **E39 kmacro_joint_lns** | After E25 pipeline, run 600 s K-macro joint LNS (top-N enumeration; cartesian product N^K=125, pairwise non-overlap check, brute-force best). Cheap operationalization of K-MIQP idea. | Improves over E25 on `--fast` → operationalizes K-MIQP cheaply; promote as E25 successor and skip E29 (full MIQP) build cost. Flat → either K too small (try K=20–30) or proxy-quadratic approx inadequate → E29 is the principled escalation. |
-| **E40 multi_sa_seed** | Snapshot post-LNS state, fork 4 SA seeds {42,1,2,3} from the same state, keep best. Tests SA-v2 seed sensitivity. (CD+LNS shared across forks → cheap.) | Lift over E25 on benches where E25 SA already won (ibm01/04/08/09/10) → multi-seed SA is a free lift; integrate. No lift on hardest benches (ibm12–18) → confirms plateau is robust to move set, not seed. |
+| ID | Result | --fast vs E25 0.9336 | --all vs E25 1.0954 | NG45 vs E12 0.7037 | Status |
+|---|---|---|---|---|---|
+| E17 random_init | Random init lands in separate, much worse basin | far worse | n/a | n/a | **falsified** |
+| **E18 dpo_init** | DPO basin → E25 polish: 11/17 IBM wins, 4/4 NG45 wins | 0.92542 (-0.91 %) | **1.08979 (-0.51 %)** | **0.69193 (-1.67 %)** | **CHAMPION CANDIDATE — awaiting human promotion** |
+| E27 basin_persistence | 16/44 trajectories (DPO/jitter inits crashed); SDF basin tight, off-init basins separate | n/a | n/a | n/a | **marginal** (empirical signal from E18 supplies the diagnostic instead) |
+| E32 sam_cd | K=4 perturbations multiply CD eval ~5× → CD never plateaus | 0.98501 (+5.5 %) | n/a | n/a | **falsified** (kill gate fired) |
+| E39 kmacro_joint_lns | K-joint phase commits 12-58 K-tuples/bench post-CD-LNS-SA | 0.93070 (-0.31 %) | crash on ibm07 (overlap-validation bug; **fixed 2026-04-30 04:35**) | 0.70126 (-0.35 % vs E12) | **marginal — bug fixed, partial --all valid** |
+| E40 multi_sa_seed | Multi-seed forks don't compound; fork 1 (seed=42) usually best | 0.93295 (-0.07 %) | skipped (~14 hr for ≤0.1 % gain) | n/a | **marginal** |
+| **E41 dpo_kjoint** | E18 ⊕ E39: composes DPO basin shift with K-joint escape | **0.92178 (-1.27 %)** | stalled at 6/17 (multiproc + K-joint bug) | **0.69022 (-1.91 % vs E12)** | **strong candidate — --all rerun pending K-joint fix verification** |
 
-### Joint verdict matrix (when all six return)
+### Verdict synthesis
 
-- **E27 multi-basin AND any tactical lift (E17/E18/E32/E39/E40)** → ship the lift first (cheap), then launch Tier 0a from the new floor.
-- **E27 single-basin AND all tactical experiments flat** → pivot fully to ORFS / writeup; ship E25.
-- **Mixed (most likely)** → run E41 (multigrid) + E42 (symmetry quotient) in parallel — independent code paths — while shipping any tactical lift.
+- **Multi-basin ACROSS init classes:** E18's --all win (-0.51 %) and 4/4 NG45 wins prove the DPO basin is structurally distinct from the SDF basin AND deeper. E27 captured this empirically through E18, not through its own incomplete persistence-homology output. The basin-diagnostic line is closed: the answer is multi-basin in the productive direction (different inits), single-basin in the unproductive direction (within SDF init class).
+- **Productive next moves:** *different inits* (E18 is the proof of concept) and *different move types* (E39 K-joint adds 0.001-0.005 lift on top of post-CD-LNS-SA on every bench). *Combinations* (E41) compose multiplicatively on --fast and --ng45.
+- **Unproductive next moves:** within-basin ensemble methods (E40 confirms zero compounding), random init (E17 confirms the SDF basin is contractive in a useful way for legal sub-regions; uniform basin is structurally worse), sharpness-aware probes (E32 fails on the eval-cost multiplier).
+
+### Pending actions
+
+1. **Human promotion decision on E18.** ADR draft needed at `docs/decisions/009_e18_dpo_init_promotion.md` if accepted.
+2. **E41 --all rerun** after K-joint overlap-fix verification on ibm07 (verification in progress 2026-04-30 04:36; ~50-65 min single-bench wall). Re-run --all sequentially or with --jobs 4 to avoid the multiproc.Queue stall observed earlier (occurred under 6+ concurrent --all jobs).
+3. **DPO trajectory-init bug fix.** `BestOfV2Placer` references missing `writeup/archive/submissions/polyhedra/init/sdf.py`. Fix unblocks any future E27 rerun and any DPO-basin diagnostic on harder benches.
+4. **K-joint mechanism extension.** E39 K=3 already extracts wins; K=4-5 is the next probe. E29 (MIQP) is the principled escalation if K=5 saturates.
 
 ---
 

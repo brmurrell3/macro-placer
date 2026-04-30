@@ -35,12 +35,10 @@ class BestOfV2Placer:
     def place(self, benchmark: Benchmark) -> torch.Tensor:
         import importlib.util
 
-        # Load SDFPlacer
-        sdf_path = Path(__file__).parent.parent / "polyhedra" / "init" / "sdf.py"
-        spec = importlib.util.spec_from_file_location("sdf", str(sdf_path))
-        sdf_mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(sdf_mod)
-        SDFPlacer = sdf_mod.SDFPlacer
+        # SDFPlacer: use canonical macro_place.sdf_init (the polyhedra/init/sdf.py
+        # sibling was orphaned during a writeup-archive reorg; canonical version
+        # has the same seed=42 constructor and place() signature).
+        from macro_place.sdf_init import SDFPlacer
 
         # Load DPOv2StepsPlacer
         v2_path = Path(__file__).parent / "ablation_v2_steps.py"
