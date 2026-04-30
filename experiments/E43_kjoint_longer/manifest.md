@@ -1,14 +1,15 @@
 ---
 id: E43
 name: kjoint_longer
-status: marginal
+status: falsified
 parent: E41
 created: 2026-04-30
 decided: 2026-04-30
 champion_at_time: 1.0990 (E12; E41 1.0848 strongest verified candidate; ADR-010 *Proposed*)
-fast_outcome: 0.9187 (--fast); -0.33 % vs E41 fast 0.92178; tied with E42 K=4 fast 0.9186. Per-bench: ibm01 0.9077, ibm04 0.9959 (+1.16 % LOSS vs E41), ibm09 0.8284, ibm13 0.9427 (-0.68 % vs E41 — only bench where longer budget genuinely helped). Per-bench variance dominated by DPO seed-noise (~1 % per bench), not by the K-joint extension. ibm13's 72 commits in pass 1 (vs ibm01/04/09's 2-50 commits, all converging in pass 2) confirms K-joint is *budget-bound on large benches, saturation-bound on small ones* — but the differential lift only shows on the largest --fast bench (3450 macros).
-outcome: marginal — 0.33 % lift on --fast is exactly at the gen-check threshold and concentrated on ibm13 only; --ng45 not queued (3 hr wall would not fit before 18:00). Larger NG45 designs (ariane133, mempool_tile) might benefit more from longer budget if K-joint is budget-bound there too — worth follow-up.
-champion_delta: -0.33 % (--fast)
+fast_outcome: 0.9187 (--fast); -0.33 % vs E41 fast 0.92178; tied with E42 K=4 fast 0.9186. Per-bench: ibm01 0.9077, ibm04 0.9959 (+1.16 % LOSS vs E41), ibm09 0.8284, ibm13 0.9427 (-0.68 % vs E41 — only bench where longer budget genuinely helped). Per-bench variance dominated by DPO seed-noise (~1 % per bench). ibm13's 72 commits in pass 1 (vs ibm01/04/09's 2-50 commits, all converging in pass 2) confirms K-joint is *budget-bound on large benches, saturation-bound on small ones* — but the differential lift only shows on the largest --fast bench (3450 macros).
+ng45_outcome: 0.7009 (--ng45); **+1.55 % REGRESSION vs E41 ng45 0.69022**. Per-design: ariane133 0.7009 (+4.10 % LOSS vs E41 0.6733), ariane136 0.6895 (+2.48 % LOSS vs E41 0.6728), mempool_tile 0.7366 (-0.12 % sub-noise tie), nvdla 0.6764 (-0.13 % sub-noise tie). Same overfit pattern as E42 K=4 NG45 but hits BOTH ariane designs. Longer budget on the K-joint phase exposes the placer to additional commits that don't generalize — the NG45 ariane designs apparently have a different K-tuple structure where K=3 K-joint at 600 s is the sweet spot.
+outcome: falsified — IBM-fast lift was right at noise threshold (0.33 %) but NG45 generalization fails by +1.55 % avg, with catastrophic regressions on the two ariane designs. Same overfit class as E42 K=4. The K-joint mechanism saturation floor at K=3, 600 s budget, netlist-adjacency selection is the right operating point for NG45 transfer.
+champion_delta: --fast -0.33 % (marginal); --ng45 +1.55 % (falsified)
 graduated_to: null
 superseded_by: null
 ---
