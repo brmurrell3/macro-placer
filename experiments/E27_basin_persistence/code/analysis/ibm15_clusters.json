@@ -1,0 +1,76 @@
+{
+  "benchmark": "ibm15",
+  "trajectories": [
+    {
+      "init": "greedy",
+      "seed": 0,
+      "final_proxy": 1.4995682985089922
+    },
+    {
+      "init": "sdf",
+      "seed": 1,
+      "final_proxy": 1.2303788855084299
+    },
+    {
+      "init": "sdf",
+      "seed": 2,
+      "final_proxy": 1.2215328041407505
+    },
+    {
+      "init": "sdf",
+      "seed": 42,
+      "final_proxy": 1.2244569104147494
+    }
+  ],
+  "cluster_ids": [
+    0,
+    1,
+    1,
+    1
+  ],
+  "clusters": [
+    {
+      "cluster_id": 1,
+      "size": 3,
+      "mean_proxy": 1.2254562000213098,
+      "std_proxy": 0.00367987533115241,
+      "min_proxy": 1.2215328041407505,
+      "max_proxy": 1.2303788855084299,
+      "members": [
+        {
+          "init": "sdf",
+          "seed": 1,
+          "final_proxy": 1.2303788855084299
+        },
+        {
+          "init": "sdf",
+          "seed": 2,
+          "final_proxy": 1.2215328041407505
+        },
+        {
+          "init": "sdf",
+          "seed": 42,
+          "final_proxy": 1.2244569104147494
+        }
+      ]
+    },
+    {
+      "cluster_id": 0,
+      "size": 1,
+      "mean_proxy": 1.4995682985089922,
+      "std_proxy": 0.0,
+      "min_proxy": 1.4995682985089922,
+      "max_proxy": 1.4995682985089922,
+      "members": [
+        {
+          "init": "greedy",
+          "seed": 0,
+          "final_proxy": 1.4995682985089922
+        }
+      ]
+    }
+  ],
+  "verdict": "ambiguous",
+  "e25_floor": 1.1797,
+  "cluster_threshold": 4.778629510644239
+}

@@ -16,3 +16,16 @@ verbatim from the retired `findings.md` so they don't get lost.
 3. **Incremental evaluator's `revert()` is single-step only** — only undoes
    the LAST move. For multi-move sequences (pair-swap, multi-destroy LNS),
    revert manually via inverse moves.
+
+4. **Legality-check eps must point AWAY from `compute_overlap_metrics`'s zero
+   tolerance.** `compute_overlap_metrics` (in `macro_place/objective.py`) flags
+   any positive overlap area as a violation — it has no tolerance. If a
+   custom legality check uses `dx < min_dx - eps` with a positive eps to
+   "tolerate float noise", it will admit placements with up to `eps × eps`
+   overlap area that the validation harness will reject. Bit us in E39 K-joint
+   on `ibm07` (eps=1e-4 → "1 overlap, area 0.0000" crash on bench 7/17 of
+   `--all`). Fix: use `dx < min_dx + eps` (strict separation REQUIRED, not
+   tolerated) with a small positive eps like 1e-9, AND add a post-commit
+   `compute_overlap_metrics` defensive revert. See
+   `experiments/E39_kmacro_joint_lns/code/cd_lns_sa_kjoint.py` for the
+   pattern. Inherited by E41 via import.

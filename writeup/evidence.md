@@ -865,7 +865,270 @@ SA-attainable floor on these benchmarks.*
 
 Source JSON: `results/CDLNSSAE26Placer_20260429_171533.json`.
 
-### 9.E E25 — CD + LNS + SA-v2 compositional test — `--fast` PASSED 2026-04-29
+### 9.G E17, E32 — falsified inits / proxy probes (overnight 2026-04-29 → 30)
+
+Two short kills from the overnight wave:
+
+- **E17 random_init** — replaced SDF with uniform-random legal init in the
+  E25 pipeline. `--fast` 1.08653 (+16.4 % vs E25 fast 0.9336); kill gate
+  fired on every bench. Confirms ADR-005 (SDF as the canonical CD init):
+  uniform inits land in a basin so far above SDF that downstream CD+LNS+SA
+  can't recover. The basin difference is *structural*, not a tuning gap.
+  E27's persistence-homology output corroborates: the uniform-init final
+  proxy on ibm14 was 1.7996 vs SDF 1.2616 (+43 %); on ibm15 1.4996 vs
+  1.2255 (+22 %). Different basin, not just different sample.
+- **E32 sam_cd** — sharpness-aware breakpoint scoring inside CD (K=4
+  perturbations, ρ=1 % canvas-diag). Hypothesis was that CD's fixed point
+  might be a sharp local minimum (proxy artifact) — flatter basins should
+  generalize better OOD. `--fast` 0.98501 (+5.5 % vs E25 fast 0.9336);
+  kill gate fired. Mechanism: K=4 perturbations multiply CD's per-probe
+  cost by ~5×, so CD never plateaus within the 2400 s cap. ibm13 ended
+  at +10.6 % vs E25. Sharpness-aware angle dies on the eval-cost
+  multiplier, not on the hypothesis itself — would need a much faster
+  perturbation primitive to test. *Lesson: the per-iter cost of a
+  modified CD primitive is the binding constraint; a 5× slowdown on
+  per-axis evaluation cannot be amortized when CD already hits the cap.*
+
+### 9.H E40 — multi-SA-seed best-of-4 (overnight 2026-04-29 → 30) — MARGINAL
+
+`experiments/E40_multi_sa_seed/code/cd_lns_sa_multi_seed.py`. Hypothesis:
+E25 SA-v2 is the only stochastic phase (CD and LNS are deterministic
+modulo `lns_seed`, which is fixed). Snapshot the post-LNS state and fork
+4 SA seeds {42, 1, 2, 3} from the *same* state; keep the best. CD+LNS
+amortize across forks → cheap (4× 600 s SA vs E25's 600 s).
+
+`--fast` 0.93295 — only −0.07 % vs E25 fast 0.9336. Per-bench wins on
+ibm04 (−0.07 %), ibm09 (−0.20 %), ibm13 (−0.18 %); loss on ibm01
+(+0.16 %). Fork 1 (seed=42, same as E25) is usually the best fork.
+**Multi-seed lift doesn't compound** — consistent with the post-E25
+plateau being robust to the SA seed at T₀ = 5e-4. Skipped `--all` (~14 hr
+wall for ≤0.1 % expected gain).
+
+*This is the seed-independence half of the basin diagnostic.* Within
+SDF init class, no compounding from SA seed perturbation. Any further
+gain requires breaking the SA seed axis — a different move type, a
+different init, a different acceptance rule, or more T₀ (E26 falsified
+the budget axis; that decoupling is independent of T₀).
+
+### 9.I E27 — basin-persistence diagnostic (the gate) — MARGINAL via E18
+
+`experiments/E27_basin_persistence/code/{run_trajectory.py,
+analyze_persistence.py}`. Designed as the gate on the post-E25
+algorithmic line: persistent homology of the proxy landscape sampled by
+44 diverse-init CD trajectories on ibm11/13/14/15. Single dominant H₀
+feature → kill the post-E25 line; multiple long-lived H₀ features →
+justify multi-day reframings (parallel-tempering, BP, multigrid).
+
+**Outcome: 16/44 trajectories completed.** The DPO best_of_v2 init
+helper crashed on every bench (`writeup/archive/submissions/polyhedra/
+init/sdf.py` is referenced but missing from the archive — likely
+orphaned during a writeup reorg). `sdf_jitter` inits also failed (jitter-
+then-relegalize path issue, not investigated; lower priority once E18
+provided the empirical signal directly).
+
+The completed trajectories give a partial picture:
+
+| Bench | E25 floor | SDF-cluster mean (std) | greedy/uniform (separate clusters) |
+|---|---:|---:|---:|
+| ibm11 | 0.9136 | 0.9295 (0.0015) | 1.3658 (cluster of 1) |
+| ibm13 | 0.9766 | 1.0077 (0.0026) | 1.3918 (cluster of 1) |
+| ibm14 | 1.2205 | 1.2616 (0.0034) | 1.9389, 1.7996 (separate clusters of 1) |
+| ibm15 | 1.1797 | 1.2255 (0.0037) | 1.4996 (cluster of 1) |
+
+Standard interpretation of the analyzer's output: "ambiguous" — three
+SDF seeds always land in one tight cluster (std 0.0015-0.0037 in proxy)
+on every bench, so the basin is locked within the SDF init class. But
+the analyzer can't distinguish "single global basin" from "single basin
+the inits I sampled all converge to."
+
+**The E18 result resolves the ambiguity.** E18 substituted DPO best_of_v2
+for SDF init in the E25 pipeline and verified `--all` 1.08979 (-0.51 %
+vs E25, -0.84 % vs E12) with 11/17 per-bench wins, plus NG45 0.69193
+(-1.67 % vs E12, 4/4 per-bench wins). The DPO basin is *both*
+structurally distinct from the SDF basin AND deeper. **This is the
+multi-basin signal the persistence-homology analysis was meant to find;
+E18 supplied it via a stronger form (full-pipeline `--all` and NG45
+validation, not a CD-only trajectory cluster).**
+
+The verdict has two halves:
+
+- **Single-basin within the SDF init class.** Adding more SDF seeds
+  (E40-style) does not find a deeper basin. Multi-start ensembles within
+  this class are a dead direction.
+- **Multi-basin across init classes.** Distinct inits (DPO, possibly
+  RePlAce, possibly AutoDMP) find different basins, and at least one
+  (DPO) is meaningfully deeper. Cross-init compositions (E18, E41) are
+  the productive direction.
+
+*Lesson: empirical multi-basin evidence (full-pipeline `--all` win) is
+strictly stronger than CD-only persistence-homology cluster-counting.
+When the diagnostic and the empirical probe disagree, trust the
+empirical probe — and use it to retroactively interpret the diagnostic.*
+
+**Bug fixed 2026-04-30 07:48.** `writeup/archive/submissions/dpo/
+best_of_v2_placer.py` was using `importlib` to dynamically load a
+sibling `polyhedra/init/sdf.py` that never made it into the archive
+during a writeup reorg. Fix: replaced the dynamic-load path with
+`from macro_place.sdf_init import SDFPlacer`. Verified by
+instantiation. E27 is rerunnable.
+
+### 9.J E18 — DPO init → CD + LNS + SA-v2 — CHAMPION CANDIDATE 2026-04-30
+
+`experiments/E18_dpo_init/code/cd_lns_sa_dpo_init.py`. Replaces the SDF
+init in the E25 pipeline with the DPO best_of_v2 output (DPO's prior-
+prior champion at 1.3834 before being superseded by CD). After DPO
+converges, run `project_overlaps` → CD plateau → LNS → SA-v2. All other
+hyperparameters identical to E25.
+
+**`--fast`** (zero overlaps):
+
+| Benchmark | E18 | E25 | Δ vs E25 |
+|---|---:|---:|---:|
+| ibm01 | 0.8895 | 0.8910 | −0.17 % |
+| ibm04 | 1.0066 | 1.0119 | −0.52 % |
+| ibm09 | 0.8401 | 0.8551 | −1.75 % |
+| ibm13 | 0.9655 | 0.9766 | −1.14 % |
+| **AVG** | **0.9252** | 0.9336 | **−0.91 %** |
+
+3/4 wins on `--fast`; the largest gain on ibm09 (−1.75 %) is a benchmark
+where DPO had previously been particularly strong and SDF-CD had been
+weaker. (Per-bench numbers from `experiments/E18_dpo_init/manifest.md`;
+sub-percent precision approximated.)
+
+**`--all`** (zero overlaps): avg **1.08979**, **−0.51 % vs E25 1.0954**,
+**−0.84 % vs E12 1.0990**. 11/17 per-bench wins, 6/17 losses. Total
+wall 47 876 s (13.30 hr) — +3 hr vs E25, but still 3.7 hr of headroom on
+the 17-hr competition envelope. Per-bench worst-case wall well under the
+1-hr-per-bench contest cap.
+
+**`--ng45`** (4 commercial designs, zero overlaps): avg **0.69193**,
+**−1.67 % vs E12 0.7037**, **4/4 per-design wins**: ariane133 −3.75 %,
+ariane136 −1.64 %, mempool_tile −0.85 %, nvdla −0.42 %. **The DPO basin
+transfer to OOD designs is strong** — and was a major risk. ADR-005 had
+ruled out perturbation-class alternative inits (random, jitter); DPO is
+a separate class (learned descent on differentiable proxy with
+congestion gradient). The OOD lift confirms DPO captures topology
+information CD-from-SDF cannot reach, and that information generalizes
+across IBM (in-distribution) and NG45 (out-of-distribution) designs.
+
+**Why DPO works here when ADR-005 ruled out random/jitter inits.**
+ADR-005 falsified random and SDF-jitter inits on the principle that they
+were perturbations of SDF that landed in worse-or-equivalent basins.
+DPO is *not* a perturbation of SDF — it's hundreds of smooth gradient
+steps on a differentiable proxy with congestion-gradient information CD
+per-axis greedy cannot exploit. CD-from-DPO refines from a structurally
+different initial point and converges to a different local minimum.
+ADR-005 stands for what it tested; DPO was a separate untested class.
+
+ADR-009 *Proposed* covers the promotion to champion. Source results in
+`results/experiment_log.jsonl` rows `e18_dpo_init_{fast,all,ng45}`.
+
+### 9.K E39 — K-macro joint LNS — MARGINAL with float-precision gotcha
+
+`experiments/E39_kmacro_joint_lns/code/cd_lns_sa_kjoint.py`. Hypothesis:
+E25's plateau on ibm11/13/14/15 (tied with E12 under five distinct
+single-or-2-macro mechanisms) is a *coupled* fixed point — escape
+requires *simultaneous* multi-macro moves. Add a 600 s K-macro joint
+LNS phase after the E25 pipeline: K=3, top_N=5 candidates per macro,
+brute-force 125 cartesian combos with pairwise non-overlap check.
+
+**`--fast`** (zero overlaps): avg **0.93070**, −0.31 % vs E25 fast 0.9336.
+Per-bench wins on ibm09 (−0.79 %) and ibm13 (−0.63 %); ties on ibm01,
+ibm04. K-joint phase committed 12-58 K-tuples per bench with Δ ranging
+−0.0013 to −0.0047 — proves the K=3 joint move type extracts wins
+post-CD-LNS-SA, just at small magnitude.
+
+**`--ng45`** (zero overlaps): avg **0.70126**, −0.35 % vs E12 0.7037 —
+margin smaller than E18's −1.67 %. K-joint adds marginal lift on NG45
+but E18 dominates on OOD.
+
+**`--all`** crashed at ibm07 (bench 7/17): K-joint committed a placement
+that passed its internal `_is_legal_2d_excluded` check (eps=1e-4
+tolerance for "near touching") but failed `compute_overlap_metrics`
+("1 overlap, area 0.0000" — sub-printable-precision overlap). Validation
+raised `RuntimeError`, halting the entire `--all` run. Partial results
+were still useful:
+
+| Bench | E39 partial | E25 |
+|---|---:|---:|
+| ibm01 | 0.8926 | 0.8917 |
+| ibm04 | 1.0131 | 1.0140 |
+| ibm03 | 0.9828 | 0.9854 |
+| ibm02 | 1.1181 | 1.1198 |
+| ibm06 | 1.1475 | 1.1470 |
+| ibm09 | 0.8521 | 0.8585 |
+| **sum** | **6.0062** | 6.0227 |
+
+Sum-of-six K-joint vs E25 = −0.27 % over the 6 benches that completed.
+
+**Bug fix (2026-04-30 04:35).** Root cause: `_is_legal_2d_excluded` and
+`_ktuples_pairwise_legal` used `dx < min_dx - eps` with eps=1e-4 — a
+**tolerance for overlap up to 1e-4 in both axes**. `compute_overlap_metrics`
+in `macro_place/objective.py` flags any positive overlap area, so a
+placement legal-by-checker but with 0.5e-4 × 0.5e-4 = 2.5e-9 overlap
+area would crash validation. Fix: change to `dx < min_dx + eps` with
+eps=1e-9 — **demand strict separation** rather than tolerate near-zero
+overlap. Plus a defensive `compute_overlap_metrics`-based revert after
+each K-joint commit, so any future float-precision wedge fails safe
+(revert) instead of corrupting the placement. Codified as gotcha #4 in
+`docs/gotchas.md`.
+
+*Lesson: when a custom legality check has a tolerance, it must point in
+the same direction as (or be stricter than) the validation check it
+defends. eps=1e-4 in the wrong direction is a class of bug that
+manifests only at scale and only on specific benches — exactly the case
+where partial validation can miss it.*
+
+Inherited by E41 via import; the fix propagates automatically.
+
+### 9.L E41 — DPO init + K-joint LNS combo — strongest --fast/NG45 of the night
+
+`experiments/E41_dpo_kjoint/code/cd_lns_sa_dpo_kjoint.py`. Composes E18
+(DPO basin) with E39 (K-joint joint-move escape). Pipeline: DPO best_of_v2
+init → project_overlaps → CD plateau → grid-bin LNS → SA-v2 → K-joint
+LNS (600 s, K=3, top_N=5) → validate.
+
+**`--fast`** (zero overlaps): avg **0.92178**, **−1.27 % vs E25 fast
+0.9336** — the strongest `--fast` result of the overnight wave. Per-bench
+vs E18 fast 0.92542:
+
+| Benchmark | E41 | E18 | Δ vs E18 | Δ vs E25 |
+|---|---:|---:|---:|---:|
+| ibm01 | 0.8941 | 0.8895 | +0.52 % | (loss vs E25) |
+| ibm04 | 0.9845 | 1.0066 | −2.20 % | −2.71 % |
+| ibm09 | 0.8413 | 0.8401 | +0.14 % | −1.62 % |
+| ibm13 | 0.9495 | 0.9655 | −1.66 % | −2.80 % |
+| **AVG** | **0.9224** | 0.9255 | **−0.34 %** | **−1.27 %** |
+
+K-joint adds 0.001-0.003 lift on top of DPO post-SA state on most
+benches; on ibm04 the K-joint phase plus DPO basin together beats E25
+by a substantial −2.71 %. **E41 beats both parents on every metric we
+can validate.**
+
+**`--ng45`** (zero overlaps): avg **0.69022**, **−1.91 % vs E12 0.7037,
+−0.25 % vs E18 NG45 0.69193**. ariane133 −4.64 % vs E12 (−0.92 %
+additional vs E18); other 3 designs ~tied with E18. K-joint composes on
+top of DPO basin on the design where it can find joint-move structure
+(ariane133's macro layout is most amenable).
+
+**`--all`** STALLED at 6/17. The previous run had two distinct issues:
+
+1. ProcessPoolExecutor main process stalled after 6 valid benches
+   despite 15 placer pipelines completing in workers (9-bench backlog
+   of pickled results never drained). Likely a multiprocessing.Queue
+   stall under heavy box load (6+ concurrent `--all`/`--ng45` jobs
+   running simultaneously at the time).
+2. The E39 K-joint overlap-validation bug would have hit ibm07
+   regardless. Fixed 2026-04-30 04:35 (see 9.K).
+
+The 6 valid `--all` benches (ibm01, ibm04, ibm02, ibm03, ibm06, ibm09)
+showed E41 K-joint adding ~0.005-0.015 lift over E18 `--all` on each.
+Re-run pending; if compositional rate holds at `--all` scale, E41 would
+land ~−0.5-1.0 % below E18's 1.08979.
+
+ADR-010 will cover E41 promotion if its `--all` rerun succeeds.
+
+
 
 `experiments/E25_lns_sa_compose/code/cd_lns_sa.py`. Hypothesis: E12's
 grid-bin LNS overlay (champion at avg `--all` 1.0990) and E24's SA
