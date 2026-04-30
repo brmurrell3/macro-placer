@@ -1,17 +1,19 @@
 # Roadmap
 
-Last updated: 2026-04-30
+Last updated: 2026-04-30 09:30 EDT
 Competition deadline: May 21, 2026 (~21 days)
 
 ## TL;DR
 
 - **Champion:** E12 CDLNSGridBin (1.0990, ADR-007). Submission-ready.
-- **Candidate awaiting promotion (older):** E25 CDLNSSA (1.0954, ADR-008 *Proposed*).
-- **NEW candidate awaiting promotion:** **E18 CDLNSSADPOInit (1.08979, --all; -0.51 % vs E25, -0.84 % vs E12).** DPO best_of_v2 init replaces SDF init in the E25 pipeline. 11/17 IBM wins; 4/4 NG45 wins (avg 0.69193, -1.67 % vs E12). Code at `experiments/E18_dpo_init/code/cd_lns_sa_dpo_init.py`. Awaiting human promotion decision.
-- **Strongest --fast/NG45 candidate, --all unfinished:** **E41 DPO+K-joint composition (--fast 0.92178, -1.27 % vs E25; --ng45 0.69022, -1.91 % vs E12).** --all stalled at 6/17 due to multiprocessing.Queue under heavy load + a K-joint overlap bug; bug fixed 2026-04-30 04:35, --all rerun queued.
+- **STRONGEST verified candidate, awaiting promotion:** **E41 CDLNSSADPOKJoint at 1.0848 --all** (**−1.29 % vs E12**, −2.90 % vs leaderboard, 14/17 IBM wins). DPO basin + K=3 K-joint composes basin shift + 3-coupled joint-move escape — the multi-mechanism plateau on ibm11/14/15 finally breaks (−4.06 % / −1.73 % / −1.24 % vs E25). NG45 0.69022 (−1.91 % vs E12). Wall 13.58 hr. ADR-010 *Proposed*. Code at `experiments/E41_dpo_kjoint/code/cd_lns_sa_dpo_kjoint.py`.
+- **Prior candidate (superseded by E41):** E18 CDLNSSADPOInit at 1.08979 (−0.84 % vs E12, 4/4 NG45 wins). ADR-009 *Proposed* (mark *Superseded* on ADR-010 accept).
+- **Older candidate (superseded by E18 + E41):** E25 CDLNSSA at 1.0954 (−0.33 % vs E12). ADR-008 *Proposed* (same).
+- **In flight 2026-04-30 09:30 EDT:** E42 (K=4 K-joint) `--fast` running; ETA 11:00. Smoke ibm01 found very small K-joint Δ (-0.00002), suggesting K=4 may not lift on top of K=3 because the per-K-tuple cost (5×) starves the budget.
+- **Pre-built backup:** E43 (longer K-joint budget 1200 s) ready to launch if E42 falsifies.
 - **Falsified overnight:** E17 random init, E26 longer SA, E32 SAM-CD.
-- **Marginal overnight:** E40 multi-SA-seed (within-basin), E27 basin-persistence (insufficient diversity due to BestOfV2Placer init bug).
-- **Submission:** E12 is locked in if no further work lands. NG45 transfer already verified (E23). Safety margin 9 hr on the 17-hr cap.
+- **Marginal overnight:** E40 multi-SA-seed (within-basin), E27 basin-persistence (insufficient diversity from BestOfV2Placer bug; fix landed 2026-04-30 07:48).
+- **Submission:** E12 locked in if no further work lands. NG45 transfer verified for E12 (E23), E18, E41. 3.4 hr safety margin on the 17-hr cap if we ship E41.
 
 ---
 

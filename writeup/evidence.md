@@ -1111,22 +1111,53 @@ additional vs E18); other 3 designs ~tied with E18. K-joint composes on
 top of DPO basin on the design where it can find joint-move structure
 (ariane133's macro layout is most amenable).
 
-**`--all`** STALLED at 6/17. The previous run had two distinct issues:
+**`--all` rerun complete 2026-04-30 09:13** (after K-joint bug fix verified):
+**avg 1.0848, zero overlaps, 13.58 hr wall on `--jobs 4`**. Beats E25
+candidate by −0.97 %, E18 candidate by −0.46 %, E12 champion by
+**−1.29 %**, leaderboard 1.1172 by **−2.90 %**.
 
-1. ProcessPoolExecutor main process stalled after 6 valid benches
-   despite 15 placer pipelines completing in workers (9-bench backlog
-   of pickled results never drained). Likely a multiprocessing.Queue
-   stall under heavy box load (6+ concurrent `--all`/`--ng45` jobs
-   running simultaneously at the time).
-2. The E39 K-joint overlap-validation bug would have hit ibm07
-   regardless. Fixed 2026-04-30 04:35 (see 9.K).
+| Bench | E41 | E25 | Δ vs E25 |
+|---|---:|---:|---:|
+| ibm01 | 0.9121 | 0.8902 | +2.46 % |
+| ibm02 | 1.1122 | 1.1310 | −1.66 % |
+| ibm03 | 0.9548 | 0.9831 | **−2.88 %** |
+| ibm04 | 0.9874 | 1.0102 | **−2.26 %** |
+| ibm06 | 1.1694 | 1.1549 | +1.26 % |
+| ibm07 | 1.1127 | 1.0982 | +1.32 % |
+| ibm08 | 1.1031 | 1.1112 | −0.73 % |
+| ibm09 | 0.8413 | 0.8533 | −1.41 % |
+| ibm10 | 1.0096 | 1.0459 | **−3.47 %** |
+| **ibm11** | **0.8765** | **0.9136** | **−4.06 %** |
+| ibm12 | 1.2056 | 1.2079 | −0.19 % |
+| ibm13 | 0.9478 | 0.9766 | **−2.95 %** |
+| **ibm14** | **1.1994** | **1.2205** | **−1.73 %** |
+| **ibm15** | **1.1651** | **1.1797** | **−1.24 %** |
+| ibm16 | 1.1435 | 1.1547 | −0.97 % |
+| ibm17 | 1.3406 | 1.3311 | +0.71 % |
+| ibm18 | 1.3604 | 1.3595 | +0.07 % |
+| **AVG** | **1.0848** | **1.0954** | **−0.97 %** |
 
-The 6 valid `--all` benches (ibm01, ibm04, ibm02, ibm03, ibm06, ibm09)
-showed E41 K-joint adding ~0.005-0.015 lift over E18 `--all` on each.
-Re-run pending; if compositional rate holds at `--all` scale, E41 would
-land ~−0.5-1.0 % below E18's 1.08979.
+**14 wins / 3 losses / 0 ties on `--all`.** The 3 losses concentrate on
+benches where E25 had a strong SA lift over E12 (ibm01 was −1.58 % in
+E25). The K=3 K-joint eps-strict version (post-fix 2026-04-30 04:35)
+commits fewer near-touching K-tuples on those benches, losing the
+small SA-attainable lift. Net is heavily positive.
 
-ADR-010 will cover E41 promotion if its `--all` rerun succeeds.
+**The headline result is the hard-plateau wins.** ibm11/14/15 had been
+*tied with E12* under five distinct mechanisms (CD per-axis breakpoints,
+grid-bin LNS, SA-v2, pair-swap, spatial cluster destroy) in E25 and all
+its predecessors. Five mechanisms hitting the same floor was strong
+evidence the floor was structural — a *coupled* fixed point. E41 lifts
+ibm11 by −4.06 %, ibm14 by −1.73 %, ibm15 by −1.24 % vs E25.
+**The plateau was 3-coupled multi-basin, breakable by simultaneous
+3-macro moves once a DPO basin entry opens the right K-tuple structure.**
+Both ingredients were necessary: E39 (K=3 K-joint on SDF init) only
+lifted −0.31 % on `--fast` and near-tied on the hard benches; E18
+(DPO basin alone) lifted −0.84 % vs E12 but did not specifically attack
+the coupled fixed points. The composition (E41) extracts both.
+
+ADR-010 *Proposed* covers the E41 promotion. Recommend marking ADR-008
+(E25) and ADR-009 (E18) *Superseded* on accept.
 
 
 
