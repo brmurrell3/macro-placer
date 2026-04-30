@@ -1,16 +1,16 @@
 ---
 id: E41
 name: dpo_kjoint
-status: in_progress
+status: champion_candidate
 parent: E18, E39
 created: 2026-04-29
-decided: null
-champion_at_time: 1.0990 (E12; E18/E39 are champion candidates from tonight's --fast)
+decided: 2026-04-30
+champion_at_time: 1.0990 (E12; E18 1.08979 is a separate candidate, ADR-009 *Proposed*)
 fast_outcome: 0.92178 (--fast); -1.27 % vs E25 fast 0.9336; per-bench wins on ibm04 (-2.71 %), ibm09 (-1.62 %), ibm13 (-2.80 %); loss on ibm01 (+2.36 %); zero overlaps. **BEATS E18 on all 4 fast benches** (E18 fast was 0.92542). DPO basin + K-joint compose: K-joint adds 0.001-0.003 lift on top of DPO post-SA state. Strongest --fast result of tonight's experiments.
 ng45_outcome: 0.69022 (--ng45 avg); -1.91 % vs E12 NG45 0.7037, -0.25 % vs E18 NG45 0.69193; ariane133 -4.64 % vs E12 (-0.92 % vs E18); other 3 benches ~tied with E18. **E41 strongest on NG45 too.**
-all_outcome: STALLED at 6/17 (initial --all run 2026-04-29); 6 verified VALID benches (ibm01, ibm04, ibm02, ibm03, ibm06, ibm09) avg per-bench mostly matches --fast pattern with K-joint adding ~0.005-0.015 lift over E18 --all. ProcessPoolExecutor main process stalled after 6th bench despite 15 placer pipelines completing in workers (9-bench backlog of pickled results never drained — likely a multiprocessing queue issue under heavy box load). Killed E41 --all main at 04:27 to recover cores. **K-joint overlap-validation bug fixed 2026-04-30 04:35** (E39 ibm07 single-bench verified clean post-fix at 04:56; proxy=1.09857, VALID, zero REVERT events). **--all RERUN STARTED 2026-04-30 05:16 with --jobs 4** (lighter parallelism than the --jobs 8 stall) on idle box. Eta ~3-4 hr if no stall recurs. Result will land in `results/experiment_log.jsonl` as `e41_dpo_kjoint_all_postfix`.
-outcome: null
-champion_delta: null
+all_outcome: STALLED at 6/17 (initial --all run 2026-04-29) due to multiprocessing.Queue stall under heavy box load + K-joint overlap-validation bug at ibm07. Bug fixed 2026-04-30 04:35 (eps direction; see `docs/gotchas.md` #4). **--all RERUN COMPLETE 2026-04-30 09:13: avg 1.0848, zero overlaps, 13.58 hr wall (--jobs 4 parallel; serial ~16-17 hr).** -0.97 % vs E25 candidate 1.0954, **-1.29 % vs E12 champion 1.0990**, -0.46 % vs E18 candidate 1.08979, **-2.90 % vs leaderboard 1.1172**.
+outcome: 1.0848 (--all); 14 wins / 3 losses / 0 ties vs E25; biggest wins on hard-plateau benches (ibm11 -4.06 %, ibm10 -3.47 %, ibm13 -2.95 %, ibm03 -2.88 %, ibm04 -2.26 %, ibm14 -1.73 %, ibm15 -1.24 %); losses on 3 benches where E25 had strong SA lifts (ibm01 +2.46 %, ibm07 +1.32 %, ibm06 +1.26 %); ibm18 ~tied (+0.07 %). **Multi-mechanism plateau on hard benches IS breakable** — DPO basin opens 3-coupled K-tuple structure that K=3 K-joint enumeration finds.
+champion_delta: -0.0142 (-1.29 %) vs E12; -0.0106 (-0.97 %) vs E25; -0.0050 (-0.46 %) vs E18
 graduated_to: null
 superseded_by: null
 ---

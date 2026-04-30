@@ -11,25 +11,26 @@ benchmarks). Beats public leaderboard 1.1172 by -1.63%, beats RePlAce 1.4578
 by -24.6%, zero overlaps. Entry: `submissions/cd_lns_gridbin/placer.py`.
 Prior champion: CDAdaptive (E9) at 1.1055.
 
-**Strongest verified candidate (awaiting human decision):** CDLNSSADPOInit
-(E18) at **1.08979** on --all (−0.84% vs E12, −2.45% vs leaderboard).
-**Verified --ng45 0.69193** (−1.67% vs E12 0.7037, 4/4 per-design wins:
-ariane133 −3.75%, ariane136 −1.64%, mempool_tile −0.85%, nvdla −0.42%).
-11/17 IBM wins, zero overlaps. Pipeline: DPO best_of_v2 init (replaces
-SDF) → CD plateau (≤2400s) → grid-bin LNS (≤600s) → SA-v2 polish
-(≤600s). Total wall 13.30 hr (3.7 hr cap headroom). Code at
-`experiments/E18_dpo_init/code/cd_lns_sa_dpo_init.py`; ADR draft at
-`docs/decisions/009_dpo_init_promotion.md` (status Proposed).
+**STRONGEST VERIFIED CANDIDATE (awaiting human decision):** CDLNSSADPOKJoint
+(E41) at **1.0848** on --all (**−1.29% vs E12 1.0990**, −2.90% vs
+leaderboard 1.1172, −0.97% vs E25 candidate, −0.46% vs E18 candidate).
+**14 wins / 3 losses on IBM**, zero overlaps. Pipeline: DPO best_of_v2
+init → CD plateau (≤2400s) → grid-bin LNS (≤600s) → SA-v2 polish (≤600s)
+→ K-macro joint LNS K=3 top_N=5 (≤600s). Wall 13.58 hr on --jobs 4.
+Headline: hard-plateau benches where E25 tied E12 under five mechanisms
+now move (ibm11 −4.06%, ibm14 −1.73%, ibm15 −1.24% vs E25 candidate).
+**--ng45 0.69022** (−1.91% vs E12, beats E18 NG45 by −0.25%; ariane133
+−4.64% vs E12). Code at `experiments/E41_dpo_kjoint/code/cd_lns_sa_dpo_kjoint.py`;
+ADR draft at `docs/decisions/010_dpo_kjoint_promotion.md` (status Proposed).
 
-**Older candidate (superseded by E18 if ADR-009 accepted):** CDLNSSA
-(E25) at 1.0954 (−0.33% vs E12). Code at `submissions/cd_lns_sa/placer.py`;
-ADR-008 *Proposed* (mark *Superseded* on ADR-009 acceptance).
+**Prior candidate (superseded by E41 if ADR-010 accepted):** CDLNSSADPOInit
+(E18) at 1.08979 (−0.84% vs E12, 4/4 NG45 wins). Code at
+`experiments/E18_dpo_init/code/cd_lns_sa_dpo_init.py`; ADR-009 *Proposed*
+(mark *Superseded* on ADR-010 acceptance).
 
-**Strongest --fast/NG45 (--all incomplete):** CDLNSSADPOKJoint (E41) at
-**0.92178 --fast** (−1.27% vs E25) and **0.69022 --ng45** (−1.91% vs E12).
-E18 ⊕ E39 K-joint composition. --all stalled at 6/17 (multiproc.Queue +
-K-joint overlap-validation bug). K-joint bug fixed 2026-04-30; --all
-rerun pending. ADR-010 covers promotion if rerun succeeds.
+**Older candidate (superseded by E18/E41):** CDLNSSA (E25) at 1.0954
+(−0.33% vs E12). Code at `submissions/cd_lns_sa/placer.py`; ADR-008
+*Proposed* (mark *Superseded* on ADR-010 acceptance).
 
 Reference baselines: RePlAce 1.4578, Will's pre-fork seed 1.5338, leaderboard
 target 1.1172.

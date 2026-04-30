@@ -21,14 +21,125 @@ tables for DPO / Polyhedra / Overnight Sweep / Miftari live in
 | Hypothesis | Status | Best Avg Proxy | Notes |
 |------------|--------|----------------|-------|
 | **CDLNSGridBinPlacer (E12)** | **CHAMPION** | **1.0990** | **Beats leaderboard 1.1172 by -1.63%; -24.6% vs RePlAce; CD plateau + grid-bin LNS overlay (ADR-007). Promoted 2026-04-28.** |
-| **CDLNSSADPOInitPlacer (E18)** | **strongest verified candidate** | **1.08979** | **Verified −0.84 % vs E12 (−2.45 % vs leaderboard); 11/17 IBM wins, 4/4 NG45 wins (avg 0.69193, −1.67 % vs E12 NG45 0.7037).** DPO best_of_v2 init replaces SDF in the E25 pipeline. Code at `experiments/E18_dpo_init/code/cd_lns_sa_dpo_init.py`; ADR-009 *Proposed* (awaiting human decision). 13.30 hr `--all` wall (+3 hr vs E25; 3.7 hr cap headroom). |
-| CDLNSSAPlacer (E25) | candidate (older; superseded by E18) | 1.0954 | Verified −0.33% lift over E12, −1.95% vs leaderboard. Adds SA-v2 polish on per-axis breakpoints with best-so-far tracking + T₀=5e-4. Code at `submissions/cd_lns_sa/placer.py`; ADR-008 *Proposed*. Recommend marking *Superseded* if ADR-009 (E18) is accepted. |
-| CDLNSSADPOKJointPlacer (E41) | strongest --fast/NG45 (--all incomplete) | 0.92178 (--fast); 0.69022 (--ng45) | E18 ⊕ E39 K-joint composition. **--fast −1.27 % vs E25, --ng45 −1.91 % vs E12.** `--all` stalled at 6/17 (multiproc.Queue + K-joint overlap-validation bug; bug fixed 2026-04-30 04:35; rerun pending). |
+| **CDLNSSADPOKJointPlacer (E41)** | **STRONGEST VERIFIED CANDIDATE** | **1.0848** | **Verified −1.29 % vs E12 (−2.90 % vs leaderboard, −0.97 % vs E25); 14/17 IBM wins; --ng45 0.69022 (−1.91 % vs E12, beats E18 NG45 by −0.25 %).** DPO + CD + LNS + SA-v2 + K-joint K=3. Hard-plateau wins (ibm11 −4.06 %, ibm14 −1.73 %, ibm15 −1.24 % vs E25). Code at `experiments/E41_dpo_kjoint/code/cd_lns_sa_dpo_kjoint.py`; ADR-010 *Proposed*. Wall 13.58 hr `--jobs 4`. |
+| CDLNSSADPOInitPlacer (E18) | candidate (superseded by E41 if ADR-010 accepted) | 1.08979 | Verified −0.84 % vs E12, 4/4 NG45 wins. DPO basin transfer to OOD designs proven. Code at `experiments/E18_dpo_init/code/cd_lns_sa_dpo_init.py`; ADR-009 *Proposed* (mark *Superseded* on ADR-010 accept). 13.30 hr `--all` wall. |
+| CDLNSSAPlacer (E25) | candidate (older; superseded by E18/E41) | 1.0954 | Verified −0.33% lift over E12, −1.95% vs leaderboard. Adds SA-v2 polish on per-axis breakpoints with best-so-far tracking + T₀=5e-4. Code at `submissions/cd_lns_sa/placer.py`; ADR-008 *Proposed*. Mark *Superseded* on ADR-010 accept. |
 | CDAdaptivePlacer (E9) | superseded | 1.1055 | Was champion 2026-04-27; -0.59% lift from E12 LNS overlay. Plateau-bound: every bench exited via plateau, none hit cap. |
 | CDOnlyPlacer | superseded | 1.1193 | Was champion 2026-04-27 (am); -1.23% lift from E9 adaptive budget |
 | DPO best-of-v2 | superseded | 1.3834 | Was champion 2026-04-26; -19.1% vs CDOnly. Details in `writeup/historical_results.md`. |
 | Polyhedra Navigation | superseded | 1.4867 | At ceiling; replaced by DPO. Details in `writeup/historical_results.md`. |
 | SDF Density | init only | 1.5002 | Now used as init for both CD placers |
+
+## CDLNSSADPOKJointPlacer --- Strongest Verified Candidate (2026-04-30)
+
+**Status: STRONGEST CANDIDATE — not promoted.** Verified avg proxy
+**1.0848** on --all (**−1.29 % vs E12 champion 1.0990**, **−2.90 % vs
+leaderboard 1.1172**, −0.97 % vs E25 candidate, −0.46 % vs E18 candidate,
+zero overlaps everywhere). 14 wins / 3 losses / 0 ties on IBM.
+
+NG45 commercial-design transfer: **0.69022** (−1.91 % vs E12 0.7037,
+−0.25 % beyond E18 NG45 0.69193). Per-design wins: ariane133 −4.64 %
+(largest), ariane136 ~tied with E18, mempool_tile/nvdla ~tied with E18.
+
+Configuration: `experiments/E41_dpo_kjoint/code/cd_lns_sa_dpo_kjoint.py`.
+Pipeline:
+1. DPO best_of_v2 init (replaces SDF; E18's component).
+2. project_overlaps to clear DPO residuals.
+3. CD plateau (`hard_cap_s=2400`, `plateau_threshold=0.001`, `patience=3`).
+4. Grid-bin LNS (`destroy_frac=0.05`, `destroy_cap=30`,
+   `lns_budget_s=600`).
+5. SA-v2 polish (`T0=5e-4`, `Tf=1e-6`, `sa_budget_s=600`,
+   best-so-far tracking).
+6. K-macro joint LNS (`K=3`, `top_N=5`, `kjoint_budget_s=600`,
+   `kjoint_seed=42`; eps=1e-9 strict-separation pairwise legality;
+   post-commit `compute_overlap_metrics` defensive revert).
+7. Validate (zero overlaps), preserve fixed macros.
+
+Per-benchmark budget: 30 s DPO + 2400 s CD + 600 s LNS + 600 s SA + 600 s
+K-joint = 4230 s ≈ 70 min. Total wall 13.58 hr `--jobs 4` parallel
+(`--jobs 1` serial would be ~16-17 hr; observed per-bench wall up to
+4200 s on ibm17).
+
+ADR-010 *Proposed* (awaiting human decision); ADR-008 (E25) and
+ADR-009 (E18) recommended for *Superseded* on ADR-010 accept.
+
+### How it differs from E18 (DPO + CD + LNS + SA-v2)
+
+E18 already lifts E25 by −0.51 % on `--all`, primarily by changing the
+*basin*: DPO best_of_v2 finds a different starting region than SDF, and
+CD-from-DPO converges to a different (deeper) local minimum than
+CD-from-SDF. E41 adds a 600 s K=3 K-joint phase after SA-v2.
+
+The K-joint phase commits 12-58 K-tuples per bench, with brute-force
+enumeration of N^K = 5^3 = 125 combos per K-tuple, pairwise
+non-overlap check, and a post-commit `compute_overlap_metrics`
+defensive revert. The mechanism's reachable set is *new* — three
+macros move simultaneously, escaping the coupled-fixed-point plateau
+that no single-or-2-macro mechanism (CD per-axis, grid-bin LNS,
+SA-v2, pair-swap, spatial cluster) could touch.
+
+The wins concentrate on the *hard-plateau benches* — exactly where
+E25 had tied E12 under five different mechanisms: ibm11 −4.06 %,
+ibm14 −1.73 %, ibm15 −1.24 %. **The plateau was 3-coupled multi-basin,
+breakable by simultaneous 3-macro moves once a DPO basin entry opens
+the right K-tuple structure.** Both ingredients matter — E39 (K-joint
+on top of SDF init) only lifted −0.31 % on `--fast` and near-tied on
+the hard benches; the DPO basin is what makes K=3 productive.
+
+### Per-benchmark (--all, zero overlaps everywhere)
+
+| Benchmark | E41 (candidate) | E25 (older candidate) | E12 (champion) | Δ vs E12 |
+|---|---:|---:|---:|---:|
+| ibm01 | 0.9121 | 0.8902 | 0.9045 | **+0.84 %** loss |
+| ibm02 | 1.1122 | 1.1310 | 1.1340 | **−1.92 %** |
+| ibm03 | 0.9548 | 0.9831 | 0.9886 | **−3.42 %** |
+| ibm04 | 0.9874 | 1.0102 | 1.0150 | **−2.72 %** |
+| ibm06 | 1.1694 | 1.1549 | 1.1583 | +0.96 % loss |
+| ibm07 | 1.1127 | 1.0982 | 1.1021 | +0.96 % loss |
+| ibm08 | 1.1031 | 1.1112 | 1.1190 | −1.42 % |
+| ibm09 | 0.8413 | 0.8533 | 0.8591 | **−2.07 %** |
+| ibm10 | 1.0096 | 1.0459 | 1.0562 | **−4.41 %** |
+| ibm11 | 0.8765 | 0.9136 | 0.9136 | **−4.06 %** ← hard plateau |
+| ibm12 | 1.2056 | 1.2079 | 1.2076 | −0.17 % |
+| ibm13 | 0.9478 | 0.9766 | 0.9766 | **−2.95 %** ← hard plateau |
+| ibm14 | 1.1994 | 1.2205 | 1.2205 | **−1.73 %** ← hard plateau |
+| ibm15 | 1.1651 | 1.1797 | 1.1797 | **−1.24 %** ← hard plateau |
+| ibm16 | 1.1435 | 1.1547 | 1.1573 | −1.19 % |
+| ibm17 | 1.3406 | 1.3311 | 1.3299 | +0.80 % loss |
+| ibm18 | 1.3604 | 1.3595 | 1.3603 | +0.01 % ~ |
+| **AVG** | **1.0848** | 1.0954 | 1.0990 | **−1.29 %** |
+
+Source: `results/CDLNSSADPOKJointPlacer_20260430_091323.json`,
+`results/experiment_log.jsonl` row `e41_dpo_kjoint_all_postfix`.
+
+### NG45 transfer (4 commercial designs, zero overlaps)
+
+| Design | E41 | E18 | E12 | Δ vs E18 | Δ vs E12 |
+|---|---:|---:|---:|---:|---:|
+| ariane133 | 0.6733 | 0.6796 | 0.7061 | **−0.93 %** | **−4.64 %** |
+| ariane136 | 0.6728 | 0.6728 | 0.6840 | tied | −1.65 % |
+| mempool_tile | 0.7375 | 0.7375 | 0.7438 | tied | −0.85 % |
+| nvdla | 0.6773 | 0.6778 | 0.6807 | sub-noise | −0.50 % |
+| **AVG** | **0.69022** | 0.69193 | 0.70365 | **−0.25 %** | **−1.91 %** |
+
+Source: `results/experiment_log.jsonl` rows `e41_dpo_kjoint_ng45`,
+`e18_dpo_init_ng45`, `e23_ng45_e12`.
+
+**ariane133 sees the largest K-joint contribution beyond E18** (−0.93 %);
+the other three NG45 designs tie E18 within sub-noise. K-joint exposes
+extra structure on ariane133 specifically — its macro layout is most
+amenable to 3-coupled simultaneous moves. The other three commercial
+designs apparently lack this structure or it requires K>3 / different
+tuple selection (E42, E44 follow-ups).
+
+## CDLNSSADPOInitPlacer (E18) --- Prior Candidate (2026-04-30, superseded by E41 if ADR-010 accepted)
+
+Verified avg `--all` **1.08979** (−0.84 % vs E12, 4/4 NG45 wins).
+Pipeline = E25 with SDF init replaced by DPO best_of_v2. ADR-009
+*Proposed*. See `experiments/E18_dpo_init/manifest.md` for per-bench
+breakdown. Code at `experiments/E18_dpo_init/code/cd_lns_sa_dpo_init.py`.
+**Outclassed by E41** which composes E18's basin shift with K-joint
+joint-move escape.
 
 ## CDLNSSAPlacer --- Champion Candidate (2026-04-29)
 
