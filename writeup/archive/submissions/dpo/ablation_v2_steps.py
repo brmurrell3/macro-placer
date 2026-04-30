@@ -228,13 +228,14 @@ class DPOv2StepsPlacer:
         return result
 
     def _sdf_init(self, benchmark):
-        """Run SDF placer for initial positions."""
-        import importlib.util
-        sdf_path = Path(__file__).parent.parent / "polyhedra" / "init" / "sdf.py"
-        spec = importlib.util.spec_from_file_location("sdf", str(sdf_path))
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
-        return mod.SDFPlacer(seed=self.seed).place(benchmark)
+        """Run SDF placer for initial positions.
+
+        Uses canonical macro_place.sdf_init.SDFPlacer; the previously-
+        referenced sibling polyhedra/init/sdf.py was orphaned during a
+        writeup-archive reorg. Same fix as best_of_v2_placer.py (2026-04-30).
+        """
+        from macro_place.sdf_init import SDFPlacer
+        return SDFPlacer(seed=self.seed).place(benchmark)
 
     # -----------------------------------------------------------------------
     # Core optimization loop
