@@ -9,10 +9,13 @@ Competition deadline: May 21, 2026 (~21 days)
 - **STRONGEST verified candidate, awaiting promotion:** **E41 CDLNSSADPOKJoint at 1.0848 --all** (**−1.29 % vs E12**, −2.90 % vs leaderboard, 14/17 IBM wins). DPO basin + K=3 K-joint composes basin shift + 3-coupled joint-move escape — the multi-mechanism plateau on ibm11/14/15 finally breaks (−4.06 % / −1.73 % / −1.24 % vs E25). NG45 0.69022 (−1.91 % vs E12). Wall 13.58 hr. ADR-010 *Proposed*. Code at `experiments/E41_dpo_kjoint/code/cd_lns_sa_dpo_kjoint.py`.
 - **Prior candidate (superseded by E41):** E18 CDLNSSADPOInit at 1.08979 (−0.84 % vs E12, 4/4 NG45 wins). ADR-009 *Proposed* (mark *Superseded* on ADR-010 accept).
 - **Older candidate (superseded by E18 + E41):** E25 CDLNSSA at 1.0954 (−0.33 % vs E12). ADR-008 *Proposed* (same).
-- **In flight 2026-04-30 09:30 EDT:** E42 (K=4 K-joint) `--fast` running; ETA 11:00. Smoke ibm01 found very small K-joint Δ (-0.00002), suggesting K=4 may not lift on top of K=3 because the per-K-tuple cost (5×) starves the budget.
-- **Pre-built backup:** E43 (longer K-joint budget 1200 s) ready to launch if E42 falsifies.
-- **Falsified overnight:** E17 random init, E26 longer SA, E32 SAM-CD.
-- **Marginal overnight:** E40 multi-SA-seed (within-basin), E27 basin-persistence (insufficient diversity from BestOfV2Placer bug; fix landed 2026-04-30 07:48).
+- **K-joint variants tested 2026-04-30 (all fell short of E41):**
+  - **E42 K=4** (DPO + K=4 K-joint): `--fast` marginal (-0.35 %), but NG45 catastrophic (+3.57 % regression on ariane133). **Falsified.** K=4's per-K-tuple cost (5×) starves the budget at the wrong margin.
+  - **E43 longer K-joint budget (1200 s)**: `--fast` -0.33 % (right at gen-check threshold). **Marginal**, skipped --ng45. K-joint saturation-bound on small benches, marginally budget-bound on large (ibm13: 72 commits in pass 1).
+  - **E44 spatial K-tuple selection**: `--fast` +0.63 % regression — kill gate fired. **Falsified.** Spatial K-tuples are myopic; netlist-adjacency selection is load-bearing.
+  - **Conclusion:** E41 K=3 with 600 s budget IS the K-joint saturation floor. Further K-joint variants don't lift; need a structurally different mechanism (MIQP joint, hierarchical/multigrid, or hybrid pipeline best-of) to push past 1.0848.
+- **Falsified earlier:** E17 random init, E26 longer SA, E32 SAM-CD, E42 K=4, E44 spatial.
+- **Marginal:** E40 multi-SA-seed (within-basin), E27 basin-persistence (originally insufficient diversity from BestOfV2Placer bug — fixed 2026-04-30; DPO trajectory rerun confirms DPO basin is -3-5 % below SDF basin on every hard bench).
 - **Submission:** E12 locked in if no further work lands. NG45 transfer verified for E12 (E23), E18, E41. 3.4 hr safety margin on the 17-hr cap if we ship E41.
 
 ---

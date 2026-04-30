@@ -2,6 +2,11 @@
   "benchmark": "ibm14",
   "trajectories": [
     {
+      "init": "dpo",
+      "seed": 42,
+      "final_proxy": 1.222499282407532
+    },
+    {
       "init": "greedy",
       "seed": 0,
       "final_proxy": 1.9389114479852636
@@ -30,19 +35,25 @@
   "cluster_ids": [
     0,
     1,
-    1,
-    1,
+    0,
+    0,
+    0,
     2
   ],
   "clusters": [
     {
-      "cluster_id": 1,
-      "size": 3,
-      "mean_proxy": 1.2615988596794085,
-      "std_proxy": 0.0033987353211819707,
-      "min_proxy": 1.2584972620165786,
+      "cluster_id": 0,
+      "size": 4,
+      "mean_proxy": 1.2518239653614394,
+      "std_proxy": 0.01718456365812003,
+      "min_proxy": 1.222499282407532,
       "max_proxy": 1.266329622603171,
       "members": [
+        {
+          "init": "dpo",
+          "seed": 42,
+          "final_proxy": 1.222499282407532
+        },
         {
           "init": "sdf",
           "seed": 1,
@@ -61,7 +72,7 @@
       ]
     },
     {
-      "cluster_id": 0,
+      "cluster_id": 1,
       "size": 1,
       "mean_proxy": 1.9389114479852636,
       "std_proxy": 0.0,
