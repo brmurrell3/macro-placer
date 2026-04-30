@@ -1,12 +1,12 @@
 ---
 id: E15
 name: pair_swap
-status: in_progress
+status: falsified
 parent: ADR-003
 created: 2026-04-27
-decided: null
+decided: 2026-04-28
 champion_at_time: 1.1055
-outcome: null
+outcome: 0.9414 (--fast); flat vs E16 baseline 0.9425 (Δ=-0.0011, below noise)
 champion_delta: null
 graduated_to: null
 superseded_by: null
@@ -37,6 +37,10 @@ Zero accepted swaps on `--fast` ⇒ CD's fixed point is stable to swaps too
 If `--fast` shows non-trivial accepted swaps, validate on NG45 ariane133.
 
 ## Outcome (filled when decided)
+**Falsified 2026-04-28.** v2 of the pair-swap mechanism runs cleanly and
+finds real candidates (21–53 accepted swaps per benchmark on `--fast`) but
+the proxy delta is below noise.
+
 - **v1 was buggy.** The candidate filter used `min_shared_nets = 2`, but
   per `findings.md` §"Algorithmic findings" #7, *most macro pairs share
   exactly 1 net* in the IBM benchmarks. v1 found zero candidates and
@@ -45,13 +49,17 @@ If `--fast` shows non-trivial accepted swaps, validate on NG45 ariane133.
 - **v2 dropped the filter to `min_shared_nets = 1`.** On `--fast` v2 finds
   21–53 real swaps per benchmark and lands at avg **0.9414** — essentially
   flat versus the E16 baseline (`--fast` avg 0.9425 from
-  `CDAdaptiveE16Placer` over the same set). Result file
-  `results/CDPairSwapPlacer_20260428_125855.json`.
-- The kill gate (zero accepted swaps) is *not* triggered for v2, but the
-  proxy delta is below noise. v2 is best read as **marginal / falsified**
-  in spirit: real swaps exist but don't move score. The manifest is left
-  at `in_progress` because the parent agent's status table still has E15
-  v2 listed as "running"; flip to `falsified` once that table catches up.
+  `CDAdaptiveE16Placer` over the same set; Δ = −0.0011, below run-to-run
+  noise). Result file `results/CDPairSwapPlacer_20260428_125855.json`.
+
+The literal kill gate (zero accepted swaps) is *not* triggered, but the
+gate's intent — "if pair-swap is the move type that escapes CD's per-axis
+fixed point, the score moves" — clearly is. CD's plateau is robust to pair
+swaps the same way it was robust to single-axis destroy/reinsert and SDF
+jitter: the swap candidates that look promising on the connectivity graph
+turn out not to be the ones the proxy actually wants moved. **Status
+flipped to `falsified`.** Kept on disk as evidence for the writeup's
+"different move type, but still inside CD's reach" lesson.
 
 ## Pointers
 - Code: `code/cd_pair_swap.py`.

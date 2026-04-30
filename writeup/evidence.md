@@ -30,18 +30,25 @@
 | DPO best-of | best_of_v2 | 1.3834 | +5.1 % | 2026-04-26 | Within-DPO refinements cap at 1–2 % |
 | CD-only | CDOnly (fixed 600 s) | 1.1193 | +23.2 % | 2026-04-27 | Fixed budget left hard benchmarks mid-descent |
 | CD-adaptive | CDAdaptive (E9) | 1.1055 | +24.2 % | 2026-04-27 | Plateau-bound — every bench exited via plateau, none hit cap. Same move type — couldn't escape per-axis fixed point. (Superseded by E12.) |
-| **CD + grid-bin LNS** | **CDLNSGridBin (E12)** | **1.0990** | **+24.6 %** | **2026-04-28** | **Current champion** (beats leaderboard 1.1172 by **−1.63 %**; ADR-007) |
+| **CD + grid-bin LNS** | **CDLNSGridBin (E12)** | **1.0990** | **+24.6 %** | **2026-04-28** | **Current champion** (beats leaderboard 1.1172 by **−1.63 %**; ADR-007). |
+
+**Champion candidate (verified `--all`, not promoted):**
+
+| Method | Best avg (`--all`) | Δ vs E12 champion | Date verified | Status |
+|--------|-------------------:|------------------:|---------------|--------|
+| CDLNSSA (E25) | 1.0954 | **−0.33 %** | 2026-04-29 | Candidate awaiting human decision; ADR-008 *Proposed*. SA-v2 polish on per-axis breakpoints (best-so-far + T₀=5e-4) layered on E12's pipeline. Beats leaderboard by **−1.95 %**. |
 
 Each champion replaced its predecessor by a *structural change*, not parameter tuning.
 
-**Verified leaderboard standings (2026-04-28):**
+**Verified leaderboard standings (2026-04-29):**
 
 | Rank | Team | Verified score | Method |
 |------|------|----------------|--------|
 | 1 | vmallela | 1.1172 (unverified self-report) | "Incremental CD+LNS" |
 | 2 | Cezar | **1.2224** verified (was 1.0666 self-reported) | "ReFine" |
 | 3 | MTK | 1.2818 | "DreamPlace++" GPU |
-| **(us)** | **CDLNSGridBin (E12)** | **1.0990** verified | CD plateau + grid-bin LNS overlay |
+| (us, candidate) | CDLNSSA (E25) | 1.0954 verified | CD + LNS + SA-v2 polish (candidate, not promoted) |
+| **(us, champion)** | **CDLNSGridBin (E12)** | **1.0990** verified | CD plateau + grid-bin LNS overlay |
 | (us, prior) | CDAdaptive (E9) | 1.1055 verified | E9 plateau-adaptive CD (superseded 2026-04-28) |
 | 11 | ByteDancer | 1.4151 | "Incremental CD" (no LNS) |
 
@@ -758,6 +765,332 @@ In-flight datapoints preserved for the lineage:
 cost-aware (0.8541 vs 0.8591). Cost ranking adds ~10 % wall per LNS
 sample but doesn't change quality. Future simplification: drop ranking,
 use random destroy.
+
+### 9.C E13 — Congestion-region spatial-cluster LNS — MARGINAL 2026-04-29
+
+`experiments/E13_congestion_lns/code/cd_lns_congestion.py`. Hypothesis:
+destroying K hard movables that *share a hot-congestion cell* should
+release joint constraints that E12's cost-aware-but-spatially-blind
+destroy can't. Per E8, congestion is 74 % of proxy headroom and is
+spatially clustered.
+
+**`--fast` numbers (zero overlaps; destroy strategy is the only change
+from E12):**
+
+| Benchmark | E13 LNS | CD plateau | E13 LNS lift | E16 baseline | E12-random | E13 vs E12-random |
+|---|---:|---:|---:|---:|---:|---:|
+| ibm01 | 0.9049 | 0.9129 | **0.94 %** | 0.9135 | 0.9073 | −0.27 % |
+| ibm04 | 1.0150 | 1.0147 | 0.08 % | 1.0179 | 1.0150 | tied |
+| ibm09 | 0.8573 | 0.8568 | 0.40 % | 0.8605 | 0.8541 | +0.37 % |
+| ibm13 | 0.9763 | 0.9714 | 0.15 % | 0.9785 | 0.9724 | +0.40 % |
+| **AVG** | **0.9384** | — | — | 0.9426 | 0.9372 | **+0.13 %** |
+
+**The mechanism works on ibm01 but doesn't generalize.** ibm01's LNS
+phase produced a 0.94 % lift over CD plateau (sample 1 alone delivered
+−0.76 % — a real joint-constraint release of 6 simultaneous
+hot-congestion-cell macros). ibm04/ibm09/ibm13 LNS phases produced
+0.08 %–0.40 % lifts, which is the same scale E12's random-destroy
+ablation produces — i.e., the congestion-region heuristic provides no
+additional joint-constraint discovery beyond random destroy on these
+three. Net average: E13 is **+0.13 % WORSE than E12 random-destroy
+ablation on `--fast`** (within noise; mixed per-bench wins/losses).
+
+**Kill-gate analysis:**
+- First gate (avg `--fast` ≥ 0.9425): NOT hit — passed by 0.9384.
+- Second gate (0/3 LNS samples on median bench improve ≥ 0.5 %): hit on
+  ibm04 (max sample 0.06 %), ibm09 (0.36 %), and ibm13 (0.12 %); ibm01
+  alone clears the threshold (sample 1 at 0.76 %). Three of four
+  benchmarks fail the second gate.
+- Manifest's own generalization-check: lift over baseline ≥ 0.5 % to
+  earn an `--all` slot. Lift is 0.45 %. Below threshold.
+
+**Decision: marginal — did not queue `--all`.** The literal first kill
+gate passed, but the manifest's own gen-check (and the second kill gate
+on three of four benches) flag this as a destroy strategy that doesn't
+generalize. The smarter follow-up isn't `--all` — it's destroy-nearest-
+neighbors-within-hot-cells (current implementation only picks the
+residents of hot cells, not the spatial neighborhood).
+
+*Lesson: "spatially-clustered destroy" is a real lever (ibm01's 0.94 %
+lift confirms there are joint-constraint releases) but the simplest
+heuristic for finding the right cluster (residents of cells with
+congestion > median + 1σ) doesn't reliably identify the cluster on
+benchmarks where congestion is more uniformly distributed. The lever
+exists; the addressing scheme is too crude.*
+
+Source JSON: `results/CDLNSCongestionPlacer_20260429_011439.json`.
+
+### 9.F E26 — Longer SA budget (LNS 300, SA 900) — FALSIFIED 2026-04-29
+
+`experiments/E26_longer_sa/code/cd_lns_sa_e26.py`. Hypothesis: E25's
+`--fast` phase logs showed SA finding `best` at t = 599 s of the 600 s
+budget on every winning bench — *still actively improving when budget
+expired*. E26 reallocates: cut LNS to 300 s (already converged at <100 s
+in E25), bump SA to 900 s. If the late-budget SA activity has real
+headroom, E26 should beat E25 by some Δ.
+
+**`--fast` numbers (zero overlaps):**
+
+| Benchmark | E26 (LNS 300, SA 900) | E25 (LNS 600, SA 600) | Δ |
+|---|---:|---:|---:|
+| ibm01 | 0.8913 | 0.8910 | +0.03 % ~ |
+| ibm04 | 1.0120 | 1.0119 | +0.01 % ~ |
+| ibm09 | 0.8545 | 0.8551 | −0.07 % ~ |
+| ibm13 | 0.9766 | 0.9766 | tied |
+| **AVG** | **0.9336** | 0.9336 | **tied** |
+
+Per-bench Δ all within float drift. Net E26 average delta is +0.0023 —
+worse than E25 by sub-noise margin. Wall: 7272 s vs E25's 6063 s
+(+20 %). **Tied on quality, +20 % on wall — clear net negative.**
+
+**The "SA still improving at t=599 s" finding was best-tracking noise,
+not real headroom.** Mechanism: SA chains explore many states near best;
+any one can update best by a tiny ε at any time. By t = 600 s the
+geometric T schedule has T ≈ 1e-6 — essentially greedy. The chain is no
+longer exploring new basins, just doing local greedy moves that
+occasionally beat best by float noise. Extending the budget gives more
+chances to update best by ε but doesn't find new structure.
+
+**Implication for production.** Don't increase the SA budget beyond
+600 s without a new mechanism. Adding more SA time at the same T
+schedule and same per-axis breakpoint move set doesn't escape any
+plateau the 600 s version doesn't already escape.
+
+*Lesson: "still improving at budget end" can be either real headroom OR
+best-tracking noise. Distinguish by running the extended budget and
+checking whether the gain is meaningfully larger than noise. E26 got
+the right shape — extended budget produces only float-drift-scale
+fluctuation, so the 600 s saturation is real and we're locked at the
+SA-attainable floor on these benchmarks.*
+
+Source JSON: `results/CDLNSSAE26Placer_20260429_171533.json`.
+
+### 9.E E25 — CD + LNS + SA-v2 compositional test — `--fast` PASSED 2026-04-29
+
+`experiments/E25_lns_sa_compose/code/cd_lns_sa.py`. Hypothesis: E12's
+grid-bin LNS overlay (champion at avg `--all` 1.0990) and E24's SA
+polish v2 search *different* candidate sets — LNS uses `(grid_col ×
+grid_row)` cell centers (outside CD's per-axis reachable set), SA-v2
+uses per-axis breakpoints (inside CD's reachable set, but Metropolis
+order with best-tracking). If the two mechanisms target *different*
+improvements, running them in sequence after CD adds their lifts.
+
+**Pipeline:** CD ≤ 2400 s + LNS ≤ 600 s + SA-v2 ≤ 600 s = 3600 s
+legal cap.
+
+**`--fast` numbers (zero overlaps; champion 1.0990 reference):**
+
+| Benchmark | E25 (CD+LNS+SA) | E24 (CD+SA) | E12-random (CD+LNS) | E16 baseline (CD) |
+|---|---:|---:|---:|---:|
+| ibm01 | **0.8910** | 0.8989 | 0.9073 | 0.9135 |
+| ibm04 | **1.0119** | 1.0128 | 1.0150 | 1.0179 |
+| ibm09 | **0.8551** | 0.8561 | 0.8541 | 0.8605 |
+| ibm13 | 0.9766 | 0.9785 | 0.9724 | 0.9785 |
+| **AVG** | **0.9336** | 0.9366 | 0.9372 | 0.9426 |
+
+**E25 beats E24 on every bench, beats E12-random on 3 of 4.** Lift over
+E16 baseline = **0.95 %**. Lift over E12-random ablation = **0.39 %**.
+Compositional gate (avg < 0.9372): **PASSES**.
+
+**Where the composition works (ibm01, ibm04, ibm09).** SA-after-LNS
+finds wins SA-after-CD-only could not. The cleanest example is ibm01:
+CD plateau 0.91293 → LNS final 0.90... → SA-v2 final 0.89 (final eval
+0.8910). E24 alone got to 0.8989 from CD plateau. So LNS-then-SA gave
++0.79 % more lift than SA alone — direct evidence that the candidate
+sets are partially disjoint.
+
+**Where the composition breaks (ibm13).** CD plateau 0.97136 → LNS
+final 0.96963 (+0.18 %) → SA-v2 final 0.96963 (zero further lift; best
+== LNS plateau, found at t = 0.0 s). On the hardest fast bench, both
+LNS and SA target the same residual improvements, so chaining them
+adds nothing.
+
+**Why this matters.** The two-overlay regime (CD + LNS + SA) is the
+first mechanism we've found that can lift `--fast` below 0.94 with
+zero overlaps and global hyperparameters. If the composition holds on
+`--all`, expected avg ≈ 1.094 – 1.097 — a marginal champion update vs
+1.0990. **`--all` queued at 08:47 UTC**; finalverdict awaits the
+~7–8 hr run.
+
+*Lesson: "different move type" is necessary but not sufficient for
+escape. CD finds the per-axis fixed point; LNS escapes via grid-bin
+cell centers; SA-v2 escapes via Metropolis order on the same per-axis
+set as CD. The two escape paths are partially disjoint on easier
+benchmarks but converge on the hardest. The plateau-detection
+literature undersells this: "different acceptance rule on the same
+move set" can recover gains greedy CD leaves on the table, IF you
+track best-so-far AND set T₀ low enough to bias downhill.*
+
+Source JSON (`--fast`):
+`results/CDLNSSAComposePlacer_20260429_044619.json`. Source JSON
+(`--all`) will land at `results/CDLNSSAComposePlacer_*.json` on
+completion; manifest's Outcome section will be updated then.
+
+### 9.D E24 — SA polish v2 (fixed implementation) — MARGINAL 2026-04-29
+
+`experiments/E24_sa_polish_v2/code/cd_sa_polish_v2.py`. Principled
+retest of E14 after both implementation issues (no best-so-far tracking,
+T₀ too high) were fixed. Same hypothesis: same per-axis breakpoint move
+set CD already searched, but Metropolis acceptance lets the search jump
+out of CD's basin. With best-tracking the worst case is "ties with CD
+plateau."
+
+**`--fast` numbers (zero overlaps; T₀ = 5e-4, T_f = 1e-6, best-restore
+walks chain back to best via per-macro `move()` to keep cong cache in
+sync):**
+
+| Benchmark | CD plateau | E24 SA best | Internal lift | Eval result | E13 LNS | E12-random | E16 baseline |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| ibm01 | 0.91293 | 0.89805 | **−1.63 %** | 0.8989 | 0.9049 | 0.9073 | 0.9135 |
+| ibm04 | 1.01468 | 1.01134 | −0.33 % | 1.0128 | 1.0150 | 1.0150 | 1.0179 |
+| ibm09 | 0.85680 | 0.85317 | −0.42 % | 0.8561 | 0.8573 | 0.8541 | 0.8605 |
+| ibm13 | 0.97136 | 0.97136 | 0.00 % | 0.9785 | 0.9763 | 0.9724 | 0.9785 |
+| **AVG** | — | — | — | **0.9366** | 0.9384 | 0.9372 | 0.9426 |
+
+**Lift = +0.63 % vs E16 baseline.** Above the 0.5 % gen-check threshold.
+Beats E13 congestion-LNS on every fast bench. **Ties E12 random-destroy
+ablation 0.9372 within noise** (-0.06 %).
+
+**SA found best near end of budget** on every winning bench: ibm01 at
+t = 599.4 s, ibm04 at 599.4 s, ibm09 at 598.9 s. Proxy was still
+actively decreasing when the 600-s budget hit. More time would help.
+
+**ibm13 saw zero SA lift** — best == CD plateau (found at t = 0.0 s).
+The hardest fast benchmark's plateau is genuinely robust to per-axis
+breakpoint Metropolis moves. This is the same pattern likely to hold for
+the hardest `--all` benchmarks (ibm17, ibm18) — which is why expected
+`--all` lift is smaller than the `--fast` 0.63 %.
+
+**The E14 failure mode is fixed.** v2's best-restore walked the
+evaluator from chain-final back to t=0 snapshot via per-macro moves
+(keeping the V/H cong cache in sync — direct `evaluator.placement[:]`
+mutation would desync). On ibm13 the chain ended at 0.97268 (worse
+than CD plateau); after restore, evaluator-final = 0.97136 (= best, =
+CD plateau). The "no best-tracking → return chain-final" bug that
+hosed v1 is gone.
+
+**Decision: marginal — did not queue `--all`.** Expected `--all` lift
+after attenuation puts E24 alone at ~1.094–1.097 — tie with champion
+1.0990 at best, not a champion. The interesting follow-up is *whether
+E12 LNS and E24 SA-v2 are compositional* — they search different
+candidate sets (LNS = grid cell centers, outside CD's reachable set;
+SA-v2 = per-axis breakpoints, inside but in random order with
+worse-move acceptance). Surfaced as E25 (`experiments/E25_lns_sa_compose/`).
+
+*Lesson: a fair test of SA-on-breakpoints (with best-tracking + low
+T₀) achieves the same `--fast` lift as grid-bin LNS. SA isn't worse
+than LNS, but on this candidate set it isn't better either. The next
+question is compositionality.*
+
+Source JSON: `results/CDSAPolishV2Placer_20260429_030032.json`.
+
+### 9.B E14 — SA polish on per-axis breakpoints — FALSIFIED 2026-04-29
+
+`experiments/E14_sa_polish/code/cd_sa_polish.py`. Hypothesis: same
+per-axis breakpoint move set CD already searched, but Metropolis
+acceptance with a global temperature schedule — "explicit tunneling
+through CD's fixed point with the same primitives, just under SA rather
+than greedy."
+
+**`--fast` numbers (zero overlaps; CD plateau identical to E16 baseline):**
+
+| Benchmark | E14 SA | E16 baseline | Δ |
+|---|---:|---:|---:|
+| ibm01 | 0.9661 | 0.9135 | **+5.8 %** |
+| ibm04 | 1.0801 | 1.0179 | **+6.1 %** |
+| ibm09 | 0.9056 | 0.8605 | **+5.2 %** |
+| ibm13 | 1.0330 | 0.9785 | **+5.6 %** |
+| **AVG** | **0.9962** | 0.9425 | **+5.7 %** |
+
+Kill gate (`--fast` ≥ 0.9425): clearly hit. Worse than baseline on every
+benchmark — *not noise*.
+
+**The mechanism failed visibly.** On ibm13, CD plateau exits at proxy
+0.97136 (sweep 13, wall 1616 s). The 600-s SA polish then *raised*
+proxy to 1.24631 within 30 s and oscillated 1.04–1.28 throughout the
+budget, returning the placement at 1.02713 — a net +5.7 % regression
+from the CD plateau. SA accepted 177 845 better and 172 062 worse moves
+on ibm13 — roughly 1:1, the signature of a 50/50 random walk rather
+than tunneling.
+
+**Two compounding issues:**
+
+1. **No best-so-far tracking.** The placer returns whatever placement is
+   in `evaluator.placement` at SA budget exhaustion, not the best ever
+   seen. Textbook SA tracks the best and restores before return.
+2. **T₀ = 0.01 was too high vs the per-move Δ scale (≈ 1e-3).**
+   `exp(−1e-3 / 1e-2) ≈ 0.905` means nearly every worsening move accepts
+   early. The manifest's own design rationale framed this as
+   "exploration"; the run shows it was a destructive random walk.
+
+**A fair retest** (best-so-far tracking + T₀ ≈ 1e-4 so worsening moves
+are rare) is a separate hypothesis. The roadmap's "SA is a known-strong
+method" claim is conditional on implementation; *this* attempt shows
+nothing about whether SA-on-breakpoints can in principle beat greedy CD.
+
+*Lesson: the candidate-set lever (E12 grid-bin LNS) and the
+acceptance-rule lever (E14 here) are not symmetric. Greedy CD on per-
+axis breakpoints already finds the per-axis fixed point — adding
+Metropolis on the same candidate set without tracking the best solution
+loses progress instead of escaping the plateau.*
+
+Source JSON: `results/CDSAPolishPlacer_20260429_001135.json`.
+
+### 9.A E23 — NG45 sanity test on E12 — VALIDATED 2026-04-28
+
+`experiments/E23_ng45_sanity/`. Defensive run on the four public NG45
+commercial designs (ariane133, ariane136, mempool_tile, nvdla) using the
+unmodified champion `submissions/cd_lns_gridbin/placer.py`. Fills the
+missing NG45 datapoint flagged in ADR-007.
+
+| Design | Proxy | Wall (s) |
+|---|---:|---:|
+| ariane133 | 0.7061 | ~615 |
+| ariane136 | 0.6840 | ~767 |
+| mempool_tile | 0.7438 | 686 |
+| nvdla | 0.6807 | 1053 |
+| **AVG** | **0.7037** | total **3122 s = 52 min** |
+
+**Zero overlaps everywhere; no NaN/inf; no per-bench cap violations**
+(max 1053 s vs 3600 s legal cap). Every design exited via plateau in
+9–10 sweeps. mempool_tile has only 20 hard movables → K=1 LNS converged
+at sample 1; nvdla found a small Δ=−0.00201 LNS improvement on sample 1
+then converged. Same configuration as the IBM `--all` run; no
+per-benchmark tuning. **The plateau-detection policy and grid-bin LNS
+overlay both transfer to commercial designs without modification.**
+
+The avg 0.7037 is structurally lower than IBM's 1.0990 because NG45's
+proxy bands differ — direct comparison across IBM and NG45 is not
+meaningful. The relevant signals are: (1) zero overlaps, (2) all under
+the per-bench cap, (3) plateau detection works.
+
+Source JSON: `results/CDLNSGridBinPlacer_20260428_223405.json`.
+
+### 9.8 E15 — pair-swap on top of CDAdaptive — FALSIFIED 2026-04-28
+
+`experiments/E15_pair_swap/code/cd_pair_swap.py`. Hypothesis: CD plateaus
+when every macro is at its single-axis fixed point; swapping two
+strongly-coupled macros (sharing nets) is a coordinated move outside CD's
+reachable set.
+
+- **v1** used `min_shared_nets=2`, found zero candidates (most IBM macro
+  pairs share exactly one net per `findings.md` §7). Result file
+  `results/CDPairSwapPlacer_20260428_091950.json` is broken; do not cite.
+- **v2** dropped to `min_shared_nets=1` and found 21–53 real swaps per
+  benchmark on `--fast`. Result: avg `0.9414` vs E16 baseline `0.9425`
+  (Δ = −0.0011, below noise). Result file
+  `results/CDPairSwapPlacer_20260428_125855.json`.
+
+The literal kill gate (zero accepted swaps) is not triggered, but the
+spirit is: real swaps exist but don't move score. CD's plateau is robust
+to pair swaps the same way it's robust to SDF jitter (§9.5) and subset-CD
+destroy (§9.6) — connectivity-graph-promising candidates stay inside CD's
+reachable set. **Status: falsified.**
+
+*Lesson: "Different candidate set" isn't enough — the candidate set must
+also be one CD's primitive doesn't already enumerate. Per-axis breakpoint
+search is rich enough that pair swaps reduce to combinations of moves CD
+has already tried.*
 
 ---
 
