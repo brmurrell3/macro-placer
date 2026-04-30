@@ -23,7 +23,13 @@ hypothesis across all runs (`fast`, `all`, or `single` benchmark).
 | DPO best-of | `best_of_v2` | 1.3834 | 2026-04-26 | Best-of(SDF, DPO) per benchmark |
 | CD-only | `cd_only_all_10min` (CDOnly) | 1.1193 | 2026-04-27 03:50 | Matches leaderboard 1.1172 within 0.18% |
 | CD-adaptive | `e9_adaptive_all` (CDAdaptive) | 1.1055 | 2026-04-27 13:22 | Beat leaderboard by -1.05%; plateau-bound (every bench exited via plateau) |
-| **CD + grid-bin LNS** | **`e12_gridbin_lns`** (CDLNSGridBin) | **1.0990** | **2026-04-28 15:57** | **BEATS leaderboard 1.1172 by -1.63%; ADR-007** |
+| **CD + grid-bin LNS** | **`e12_gridbin_lns`** (CDLNSGridBin) | **1.0990** | **2026-04-28 15:57** | **CURRENT CHAMPION; beats leaderboard 1.1172 by -1.63%; ADR-007.** |
+
+### Champion candidate (verified, not promoted)
+
+| Era | Candidate | Best Avg (--all) | Date | Notes |
+|---|---|---|---|---|
+| CD + LNS + SA-v2 | `e25_lns_sa_compose` (CDLNSSA) | 1.0954 | 2026-04-29 15:13 | Verified −0.33% vs E12 champion, −1.95% vs leaderboard. ADR-008 *Proposed*; awaiting human decision. SA-v2 polish on per-axis breakpoints (best-so-far + T₀=5e-4) finds breakpoint wins CD-greedy missed and LNS can't reach. Code at `submissions/cd_lns_sa/placer.py`. |
 
 Lineage: each champion replaced the prior by a structural change, not parameter
 tuning.
@@ -34,10 +40,17 @@ tuning.
 
 | ID | Hypothesis | Files | Best | Mode | Status |
 |---|---|---|---|---|---|
-| E1 | Incremental proxy evaluator | `macro_place/incremental_evaluator.py`, `test/test_incremental_evaluator.py`, `scripts/bench_incremental.py` | 4657× speedup, bit-for-bit parity | infrastructure | **VALIDATED** — load-bearing for E2/E9/E12 |
+| E1 | Incremental proxy evaluator | `macro_place/incremental_evaluator.py`, `test/test_incremental_evaluator.py`, `scripts/bench_incremental.py` | 4657× speedup, bit-for-bit parity | infrastructure | **VALIDATED** — load-bearing for E2/E9/E12/E25 |
 | E2 | Full-proxy CD on ibm10 (40 min) | `scripts/cd_ibm10_diagnostic.py` | 1.0632 (ibm10 single) | single | **VALIDATED** — sparked CDOnly |
-| E9 | Adaptive per-bench plateau detection | `submissions/cd_adaptive/placer.py` | 1.1055 (--all) | all | **prior champion** (superseded 2026-04-28 by E12) |
+| E9 | Adaptive per-bench plateau detection | `submissions/cd_adaptive/placer.py` | 1.1055 (--all) | all | **prior champion²** (superseded 2026-04-28 by E12) |
 | E12 | CD plateau + grid-bin LNS overlay | `submissions/cd_lns_gridbin/placer.py`, `experiments/E12_grid_bin_lns/` | **1.0990 (--all)** | all | **CHAMPION** (graduated 2026-04-28; ADR-007) |
+| E25 | CD plateau + grid-bin LNS + SA-v2 polish (compositional) | `submissions/cd_lns_sa/placer.py`, `experiments/E25_lns_sa_compose/` | 1.0954 (--all) | all | **champion candidate** (verified 2026-04-29; ADR-008 *Proposed*; not promoted) |
+| E13 | Congestion-region spatial-cluster LNS (destroy K macros sharing a hot cell instead of cost-ranked individuals) | `experiments/E13_congestion_lns/code/cd_lns_congestion.py`, manifest | 0.9384 (--fast); -0.45 % vs E16 baseline 0.9426 | fast | **MARGINAL 2026-04-29** — passes first kill gate, fails generalization-check threshold (lift 0.45 % < 0.5 %). Mechanism works on ibm01 (0.94 % LNS lift) but doesn't generalize to ibm04/ibm09/ibm13. +0.13 % worse than E12-random-destroy ablation. Did not queue `--all`. |
+| ~~E14~~ | ~~SA polish on CD output (Metropolis acceptance over per-axis breakpoints)~~ | `experiments/E14_sa_polish/code/cd_sa_polish.py`, manifest | 0.9962 (--fast); +5.7 % vs E16 baseline 0.9425 | fast | **FALSIFIED 2026-04-29** — SA wandered proxy upward (CD plateau 0.971 → SA-final 1.027 on ibm13). Two issues: (1) no best-so-far tracking, (2) T₀ = 0.01 too high → 50/50 random walk. Kill gate hit on every benchmark. |
+| E23 | NG45 sanity test on E12 champion (defensive — fills ADR-007's missing NG45 datapoint) | `experiments/E23_ng45_sanity/`, run.log | **0.7037 (--ng45 4 designs)** | ng45 | **VALIDATED 2026-04-28** — zero overlaps; max per-bench wall 1053 s vs 3600 s cap; plateau detection transfers to commercial designs |
+| E24 | SA polish v2 — principled retest of E14 with best-so-far tracking + T₀ = 5e-4 (fair test of "Metropolis escapes CD basin") | `experiments/E24_sa_polish_v2/code/cd_sa_polish_v2.py`, manifest | 0.9366 (--fast); +0.63 % vs E16 baseline 0.9426 | fast | **MARGINAL 2026-04-29** — passes gen-check; ties E12 random-destroy ablation 0.9372; ibm13 saw zero SA lift (best == CD plateau). Compositionality test E25 launched. |
+| E25 | Compositional CD + LNS + SA-v2 → **champion candidate** | `submissions/cd_lns_sa/placer.py`, `experiments/E25_lns_sa_compose/` | **1.0954 (--all)**; -0.33 % vs E12 1.0990; -1.95 % vs leaderboard 1.1172 | fast→all | **VERIFIED 2026-04-29; CHAMPION CANDIDATE** (ADR-008 *Proposed*; not promoted). Wins on 11/17, ties on 4/17, sub-noise regression on 2/17. Wall 10.33 hr (+2.5 hr vs E12, well within 17-hr cap). |
+| ~~E26~~ | ~~Longer SA budget (LNS 300 s, SA 900 s) — tests if SA's "best at t≈599s" had real headroom~~ | `experiments/E26_longer_sa/code/cd_lns_sa_e26.py`, manifest | 0.9336 (--fast); **tied with E25 0.9336** | fast | **FALSIFIED 2026-04-29** — extending SA produces only float-drift-scale fluctuation. The "SA still improving" was best-tracking noise, not headroom. +20 % wall for zero quality gain. 600 s SA saturation is real. |
 
 ---
 
@@ -61,11 +74,12 @@ tuning.
 | cw_{050,075,100,125,150} | Congestion-weight sweep | `submissions/dpo/ablation_cw{N}.py` | 1.2081-1.2382 (fast) | superseded | cw=0.50 best on fast; doesn't generalize |
 | v2_steps_restore | Restored v2 step count | `submissions/dpo/ablation_v2_steps.py` | 1.1749 (fast), 1.3888 (--all) | superseded | Not better than best_of_v2 |
 
-### Falsified extension hypotheses (E5, E10, E11)
+### Falsified extension hypotheses (E5, E10, E11, E15)
 
 | ID | Hypothesis | Files | Best | Status | Lesson |
 |---|---|---|---|---|---|
 | **E5** | Massively parallel DPO seeds (best-of-N at scale) | `submissions/dpo/batched_seeds_placer.py` (679L), `batched_seeds_b1.py` | 1.1638 (fast), 1.1698 (B=64 fast) | **FALSIFIED 2026-04-26** | B=64 wall = 8.9× B=1 (RUDY congestion kernel scales 27× on MPS). All 64 seeds collapse to same basin (sigma=0.04·canvas). Best-of-N within a single basin doesn't help. |
+| **E15** | Pair-swap (swap two macros sharing ≥1 net) on top of CDAdaptive | `experiments/E15_pair_swap/code/cd_pair_swap.py`, manifest | 0.9414 (--fast) vs E16 baseline 0.9425 | **FALSIFIED 2026-04-28** | v2 finds 21–53 real swaps per benchmark on `--fast` but Δ = −0.0011 vs baseline (below noise). CD's plateau is robust to pair swaps too — connectivity-graph-promising candidates aren't the ones the proxy actually wants moved. Same lesson as SDF jitter and subset-CD destroy: swap targets that look right by graph topology stay inside CD's reachable set. |
 | **E10** | Congestion-only refinement on DPO output | `submissions/dpo/congestion_refine_placer.py`, `_e10_sweep_{mild,aggressive}.py` | 1.1636 (fast) `mild`, 1.3788 (--all) | **MARGINAL/FALSIFIED** | Mild config gained 1.0% on fast set; only -0.33% on --all. **ibm02 got WORSE +2.3%** — basin-locked benchmarks regressed. |
 | **E11** | DPO from diverse priors (SDF + Will + greedy + random) | `submissions/dpo/diverse_priors_placer.py`, `init_strategies.py`, `e11_sdf_only.py`, `e11_sdf_random.py` | 1.1659 (fast 2-prior), 1.3839 (--all) | **FALSIFIED 2026-04-27** | Fast-set -0.8% didn't scale to --all (FLAT +0.04%). ibm02/ibm12 got WORSE — alternative priors land in deeper basins for high-density benchmarks. |
 | **E3 v1** | LNS rip-up-and-reinsert (full-canvas search) | (deleted from active tree in commit 44efd16; preserved at `writeup/archive/submissions/lns.py`, `writeup/archive/submissions/cd_lns_placer.py`) | 1.3846 (ibm17 single) | **FALSIFIED 2026-04-27** | Full-canvas 2244 grid candidates × ~100ms each = 200s+ per macro reinsertion. 1 LNS iteration in 428s. Final ibm17 = 1.3846 vs CDOnly 1.3830 (flat). |

@@ -1,7 +1,7 @@
 # Roadmap
 
-Last updated: 2026-04-28
-Competition deadline: May 21, 2026 (~23 days)
+Last updated: 2026-04-29
+Competition deadline: May 21, 2026 (~22 days)
 
 ---
 
@@ -10,6 +10,7 @@ Competition deadline: May 21, 2026 (~23 days)
 | Entry | Avg Proxy (--all) | vs Leaderboard 1.1172 | vs RePlAce 1.4578 |
 |-------|-------------------|------------------------|--------------------|
 | **CDLNSGridBin (E12, CHAMPION)** | **1.0990** | **-1.63%** | **-24.6%** |
+| CDLNSSA (E25, candidate, not promoted) | 1.0954 | -1.95% | -24.9% |
 | CDAdaptive (E9, prior, superseded) | 1.1055 | -1.05% | -24.2% |
 | CDOnly (prior-prior, superseded) | 1.1193 | +0.18% | -23.2% |
 | DPO best-of-v2 (prior, superseded) | 1.3834 | +23.8% | -5.1% |
@@ -19,6 +20,7 @@ Competition deadline: May 21, 2026 (~23 days)
 - **Beats the leaderboard "Incremental CD+LNS" (vmallela 1.1172) by -1.63%** with zero overlaps on all 17 IBM benchmarks.
 - Total runtime 28 256 s (7.85 hr) — within the 17-hr competition envelope (17 × 1 hr per-bench cap), with reduced margin vs CDAdaptive's 4.85 hr.
 - Champion configuration: full-proxy coordinate descent on incremental evaluator with per-benchmark plateau detection (CD ≤ 3 000 s) followed by grid-bin LNS escape phase (LNS ≤ 600 s). ADR-007.
+- **Champion candidate (verified, not promoted):** CDLNSSA (E25) at **1.0954** (−0.33 % vs E12, −1.95 % vs leaderboard). Adds an SA-v2 polish phase on per-axis breakpoints (best-so-far tracking + T₀ = 5e-4). Code at `submissions/cd_lns_sa/placer.py`; ADR-008 *Proposed*; awaiting human decision.
 
 ---
 
@@ -33,6 +35,7 @@ Competition deadline: May 21, 2026 (~23 days)
 | **CD-only** | CDOnly | 1.1193 | 2026-04-27 (am) | Fixed 600s budget left hard benchmarks mid-descent |
 | **CD-adaptive** | CDAdaptive (E9, superseded) | 1.1055 | 2026-04-27 (pm) | Plateau-bound: every bench exited via plateau, none hit cap. Same move type — couldn't escape per-axis fixed point. |
 | **CD + grid-bin LNS** | **CDLNSGridBin (E12)** | **1.0990** | **2026-04-28** | (current — ADR-007) |
+| CD + LNS + SA-v2 (candidate) | CDLNSSA (E25) | 1.0954 | 2026-04-29 (verified) | Verified -0.33 % over E12; ADR-008 *Proposed*; not promoted. SA-v2 on per-axis breakpoints (best-so-far + T₀=5e-4) extracts wins LNS-alone misses on easier benches. Hardest benches tie with E12. |
 
 Each transition was structural, not parameter tuning. See `docs/experiment_index.md` for the full catalog including failed attempts.
 
@@ -74,13 +77,13 @@ The 2026-04-26 LP-HPWL diagnostic decomposed proxy as **6% WL, 20% density, 74% 
 |---|---|---|
 | Submission package (placer + reproducibility) | this branch | Ready — `submissions/cd_lns_gridbin/placer.py` is the entry |
 | Writeup (innovation prize report) | parallel agent (`writeup/`) | In progress — must include process AND failures |
-| NG45 hidden-test robustness check | tbd | Verify zero overlaps, plateau detection on commercial designs |
+| NG45 hidden-test robustness check | E23 | **DONE 2026-04-28.** Zero overlaps on 4 designs; plateau detection transfers; avg 0.7037, max per-bench wall 1053 s vs 3600 s cap. |
 
 ### Optional polish (24 days available)
 
 | Lever | Expected | Effort | Notes |
 |---|---|---|---|
-| NG45 datapoint for E12 | Confirm transfer | 1-2 hr per design | ADR-007 needs its own NG45 result before treating LNS-overlay transfer as confirmed |
+| ~~NG45 datapoint for E12~~ | DONE | E23 | **CLOSED 2026-04-28**: avg 0.7037 across 4 designs, zero overlaps, plateau detection transfers. ADR-007 transfer claim now empirically supported. |
 | Drop cost-aware destroy ranking | flat (already verified on `--fast`) | 30 min | Saves ~10 % wall per LNS sample at no quality cost; defer until post-deadline |
 | Cluster-level LNS (joint reinsertion of K>1 macros) | Speculative | 1 week | Different again from grid-bin; could compose on top of E12 |
 | **GPU-batched CD via conflict-graph coloring (E4)** | 5-20× speedup | 3-4 days | Useful only if E12 wall risks the 1-hr-per-bench cap on NG45; currently 7.85 hr / 17 hr envelope on IBM |
@@ -202,6 +205,13 @@ baseline → kill.
 **Wall:** ~3 hr (build + --fast eval).
 **Why higher than E15:** SA is a known-strong method; this is the version
 that didn't lock the ibm02 basin in our prior DPO experiments.
+**Status:** **FALSIFIED 2026-04-29.** v1 implementation hit the kill gate
+hard (avg `--fast` 0.9962 vs baseline 0.9426 = +5.7 % WORSE on every
+benchmark). Two compounding bugs: no best-so-far tracking + T₀ = 0.01 too
+high (50/50 random walk, not tunneling). Net SA Δ on ibm13 was *positive*
+(+0.05578). See `experiments/E14_sa_polish/manifest.md` and
+`writeup/evidence.md` §9.B. **E24 (sa_polish_v2)** is the principled retest
+with both fixes; manifest at `experiments/E24_sa_polish_v2/manifest.md`.
 
 #### E15. 2-macro pair swap moves
 **Hypothesis:** CD plateaus when each macro is at its single-macro fixed
@@ -230,6 +240,11 @@ discrepancy. We need to confirm no analogous problem in our pipeline.
 **Kill gate:** N/A — diagnostic only. Failure → fix bugs.
 **Wall:** ~30 min.
 **Output:** confirmation + any latent bugs surfaced.
+**Status:** **VALIDATED 2026-04-28.** Run on E12 champion across 4 NG45
+designs (ariane133/136, mempool_tile, nvdla); avg 0.7037, zero overlaps,
+max per-bench wall 1053 s vs 3600 s cap. Plateau detection transfers
+unchanged. ADR-007's missing NG45 datapoint filled. See
+`experiments/E23_ng45_sanity/manifest.md` and `writeup/evidence.md` §9.A.
 
 ### Tier 2 — medium-EV, build-if-Tier-1-mixed
 
@@ -239,6 +254,14 @@ cells with congestion > median + 1σ. Different from E12 (which destroys
 cost-aware random); E13 destroys spatial neighbors, releasing joint
 constraints.
 **Wall:** ~3 hr after E12 framework exists.
+**Status:** **MARGINAL 2026-04-29.** avg `--fast` 0.9384 (lift 0.45 % over
+E16 baseline 0.9426 — below the 0.5 % gen-check threshold). Mechanism works
+on ibm01 (single LNS sample lifted 0.76 %) but doesn't generalize to
+ibm04/ibm09/ibm13. +0.13 % worse than E12 random-destroy ablation. Did not
+queue `--all`. Possible follow-up: destroy nearest-neighbors *within* hot
+cells, not just residents (current heuristic). See
+`experiments/E13_congestion_lns/manifest.md` and
+`writeup/evidence.md` §9.C.
 
 #### E17. Random-uniform init + CD (true diversification)
 Replace SDF with random uniform legal placement. Test if SDF basin is
@@ -300,15 +323,18 @@ Carried forward from the retired `experiments_overnight.md`.
 
 Carried forward from the retired `findings.md` and `experiments_overnight.md`.
 
-- **NG45 sanity test** — we don't have the public NG45 designs locally;
-  obtain or simulate "NG45-like" designs.
+- ~~**NG45 sanity test**~~ — **CLOSED 2026-04-28 by E23.** Public NG45 designs
+  are present locally at `benchmarks/processed/public/{ariane133,ariane136,
+  mempool_tile,nvdla}_ng45.pt` (the prior "we don't have them locally" note
+  was stale). E12 ran clean on all 4: avg 0.7037, zero overlaps, max
+  per-bench wall 1053 s vs 3600 s cap.
 - **ORFS local integration** — multi-day project; the actual path to the
   $20K Tier-2 grand prize. Should be its own multi-day track.
 - **Verify zero overlaps preserved through legalization on E12 final
   placement** — should be enforced by `compute_overlap_metrics` raise in
   placer; verify against the full --all result.
-- **Tier 2 robustness check on E12** — verify behavior generalizes beyond
-  IBM. Need NG45 access for this.
+- ~~**Tier 2 robustness check on E12**~~ — **CLOSED 2026-04-28 by E23.** E12
+  generalizes to NG45 commercial designs without modification.
 - **Multi-seed variance report** — produce a writeup figure showing
   CDAdaptive's variance across seeds on each benchmark (innovation-award
   material).

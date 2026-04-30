@@ -1,6 +1,6 @@
 # Results
 
-Last updated: 2026-04-28
+Last updated: 2026-04-29
 
 Operational doc — current champion only. Historical per-benchmark
 tables for DPO / Polyhedra / Overnight Sweep / Miftari live in
@@ -21,11 +21,53 @@ tables for DPO / Polyhedra / Overnight Sweep / Miftari live in
 | Hypothesis | Status | Best Avg Proxy | Notes |
 |------------|--------|----------------|-------|
 | **CDLNSGridBinPlacer (E12)** | **CHAMPION** | **1.0990** | **Beats leaderboard 1.1172 by -1.63%; -24.6% vs RePlAce; CD plateau + grid-bin LNS overlay (ADR-007). Promoted 2026-04-28.** |
+| CDLNSSAPlacer (E25) | champion candidate | 1.0954 | **Verified −0.33% lift over E12, −1.95% vs leaderboard; not promoted.** Adds SA-v2 polish on per-axis breakpoints with best-so-far tracking + T₀=5e-4. Code at `submissions/cd_lns_sa/placer.py`; ADR-008 *Proposed* (awaiting human decision). |
 | CDAdaptivePlacer (E9) | superseded | 1.1055 | Was champion 2026-04-27; -0.59% lift from E12 LNS overlay. Plateau-bound: every bench exited via plateau, none hit cap. |
 | CDOnlyPlacer | superseded | 1.1193 | Was champion 2026-04-27 (am); -1.23% lift from E9 adaptive budget |
 | DPO best-of-v2 | superseded | 1.3834 | Was champion 2026-04-26; -19.1% vs CDOnly. Details in `writeup/historical_results.md`. |
 | Polyhedra Navigation | superseded | 1.4867 | At ceiling; replaced by DPO. Details in `writeup/historical_results.md`. |
 | SDF Density | init only | 1.5002 | Now used as init for both CD placers |
+
+## CDLNSSAPlacer --- Champion Candidate (2026-04-29)
+
+**Status: CANDIDATE — not promoted.** Verified avg proxy **1.0954** on --all (**24.9% better than RePlAce**, **beats leaderboard 1.1172 by -1.95%**, **−0.33% better than current E12 champion**, zero overlaps everywhere). Awaiting human decision; ADR-008 status *Proposed*.
+
+Configuration: `submissions/cd_lns_sa/placer.py` (full-proxy CD on `IncrementalProxyEvaluator` with per-benchmark plateau detection, grid-bin LNS overlay, SA-v2 polish on per-axis breakpoints with best-so-far tracking, SDF init). Total runtime 37 188 s = 10.33 hr.
+
+Time-budget split per benchmark: CD ≤ 2 400 s + LNS ≤ 600 s + SA ≤ 600 s = 3 600 s total (matches the contest 1-hour-per-bench cap). Plateau-detection params for CD: `min_time_s=300, hard_cap_s=2400, patience=3, plateau_threshold=0.001`. LNS: `destroy_frac=0.05, destroy_cap=30, destroy_strategy='cost_aware', lns_budget_s=600`. SA-v2: `T0=5e-4, Tf=1e-6, sa_budget_s=600, sa_breakpoint_budget=12, sa_seed=42`.
+
+### How it differs from CDLNSGridBin (E12)
+
+E12 is *budget-bound on the LNS phase plateau*: LNS converged in <100 s on every fast benchmark, leaving most of the 600 s budget unused. The destroy/reinsert mechanism saturated quickly because cost-aware destroy targets a small set of high-cost candidates. SA-v2 layered on top extracts wins LNS-alone misses by exploring per-axis breakpoint moves with Metropolis acceptance and best-so-far tracking — a candidate set CD's greedy sweep order missed. The wins concentrate on easier benches (ibm01 −1.58%, ibm10 −0.97%, ibm08 −0.69%, ibm09 −0.68%) where neither LNS nor SA alone saturate; the hardest benches (ibm14, ibm15, ibm17) tie with E12 — both pipelines hit the same floor on those.
+
+### Per-benchmark (--all, zero overlaps everywhere)
+
+| Benchmark | E25 (candidate) | E12 (champion) | Δ |
+|---|---:|---:|---:|
+| ibm01 | 0.8902 | 0.9045 | **−1.58 %** |
+| ibm02 | 1.1310 | 1.1340 | −0.26 % |
+| ibm03 | 0.9831 | 0.9886 | −0.56 % |
+| ibm04 | 1.0102 | 1.0150 | −0.47 % |
+| ibm06 | 1.1549 | 1.1583 | −0.29 % |
+| ibm07 | 1.0982 | 1.1021 | −0.35 % |
+| ibm08 | 1.1112 | 1.1190 | **−0.69 %** |
+| ibm09 | 0.8533 | 0.8591 | −0.68 % |
+| ibm10 | 1.0459 | 1.0562 | **−0.97 %** |
+| ibm11 | 0.9136 | 0.9136 | tied |
+| ibm12 | 1.2079 | 1.2076 | +0.02 % ~ |
+| ibm13 | 0.9766 | 0.9766 | tied |
+| ibm14 | 1.2205 | 1.2205 | tied |
+| ibm15 | 1.1797 | 1.1797 | tied |
+| ibm16 | 1.1547 | 1.1573 | −0.22 % |
+| ibm17 | 1.3311 | 1.3299 | +0.09 % ~ |
+| ibm18 | 1.3595 | 1.3603 | −0.06 % |
+| **AVG** | **1.0954** | 1.0990 | **−0.33 %** |
+
+Wins on 11/17, ties on 4/17 (ibm11/13/14/15), sub-noise regression on 2/17 (ibm12 +0.02%, ibm17 +0.09% — both within float drift between incremental and reference evaluators).
+
+Source JSON: `results/CDLNSSAComposePlacer_20260429_151328.json`.
+
+---
 
 ## CDLNSGridBinPlacer --- Champion Result (2026-04-28)
 
@@ -67,6 +109,31 @@ All 17 benchmarks improved over E9 CDAdaptive. No regressions. Biggest wins on b
 ### Random-destroy ablation (cost-aware ranking is NOT load-bearing)
 
 The cost-aware destroy step in the LNS phase scores each candidate macro by its proxy delta when temporarily moved to canvas center, then picks the K most costly. An ablation `cd_lns_gridbin_random.py` (kept at `experiments/E12_grid_bin_lns/code/`) replaces this with uniform random destroy. On `--fast` (ibm01/04/09/13), random destroy averaged 0.9372 — matching cost-aware within noise. On ibm09, random destroy (0.8541) actually *beat* cost-aware (0.8591). Cost ranking adds ~10% wall per LNS sample but does not change quality. Future simplification: drop the ranking, use random. Stays cost-aware in the production placer for now to avoid mid-deadline changes.
+
+### NG45 commercial-design transfer (E23, 2026-04-28)
+
+Defensive run of the same `submissions/cd_lns_gridbin/placer.py` on the
+four public NG45 designs. Zero overlaps everywhere. Plateau-detection
+exits in 9–10 sweeps per design; max per-bench wall 1053 s vs the 3600 s
+legal cap.
+
+| Design | Proxy | WL | Density | Congestion | Overlaps | Wall (s) |
+|---|---:|---:|---:|---:|---:|---:|
+| ariane133 | 0.7061 | 0.064 | 0.525 | 0.759 | 0 | ~615 |
+| ariane136 | 0.6840 | 0.060 | 0.540 | 0.708 | 0 | ~767 |
+| mempool_tile | 0.7438 | 0.066 | 0.653 | 0.704 | 0 | 686 |
+| nvdla | 0.6807 | 0.069 | 0.510 | 0.712 | 0 | 1053 |
+| **AVG** | **0.7037** | 0.065 | 0.557 | 0.721 | **0** | total **3122** |
+
+The avg 0.7037 is structurally lower than IBM's 1.0990 because the proxy
+bands differ across benchmark sets — direct comparison across IBM and
+NG45 is not meaningful. The relevant signals are: (1) zero overlaps,
+(2) all under the per-bench cap, (3) plateau detection works without
+per-bench tuning. Closes the Tier-2 robustness check follow-up.
+
+Source JSON: `results/CDLNSGridBinPlacer_20260428_223405.json`. Full
+analysis: `experiments/E23_ng45_sanity/manifest.md` and
+`writeup/evidence.md` §9.A.
 
 ---
 

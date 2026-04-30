@@ -11,6 +11,14 @@ benchmarks). Beats public leaderboard 1.1172 by -1.63%, beats RePlAce 1.4578
 by -24.6%, zero overlaps. Entry: `submissions/cd_lns_gridbin/placer.py`.
 Prior champion: CDAdaptive (E9) at 1.1055.
 
+**Champion candidate (awaiting human decision):** CDLNSSA (E25) at 1.0954
+(−0.33% vs E12, −1.95% vs leaderboard). Verified `--all`, zero overlaps.
+Code at `submissions/cd_lns_sa/placer.py`; ADR draft at
+`docs/decisions/008_cd_lns_sa_promotion.md` (status Proposed).
+Pipeline: CD plateau (≤2400s) + grid-bin LNS overlay (≤600s) + SA-v2
+polish on per-axis breakpoints with best-so-far tracking, T₀=5e-4 (≤600s).
+Promotion gated on human review; ADR-008 not yet accepted.
+
 Reference baselines: RePlAce 1.4578, Will's pre-fork seed 1.5338, leaderboard
 target 1.1172.
 
@@ -53,7 +61,7 @@ uv run evaluate <placer.py> -b ibm01
    - **fast_gate fail** → tweak parameters, try next variant.
    - **fast_gate pass** → run `--all --json`.
    - **avg < 1.12** → likely noise; verify carefully.
-   - **avg < 1.099 (at-or-below champion)** → STOP. Surface to human (current champion E12 is 1.0990).
+   - **avg < 1.099 (at-or-below champion)** → STOP. Surface to human (current champion E12 is 1.0990; E25 candidate at 1.0954 is awaiting promotion decision).
    - **avg < 1.05** → STOP immediately. New champion territory.
 
 4. **If killed:** Set the manifest's `status: falsified`, fill `decided`
@@ -126,7 +134,8 @@ experiments only need a manifest. ADRs are reserved for things like
 | `macro_place/incremental_evaluator.py` | E1 — 4657× speedup; load-bearing for CD |
 | `macro_place/benchmark.py` | Benchmark dataclass (PyTorch tensors) |
 | `macro_place/sdf_init.py` | SDF initialization (used by every champion) |
-| `submissions/cd_lns_gridbin/placer.py` | **CHAMPION** — E12 CD + grid-bin LNS overlay, 1.0990 |
+| `submissions/cd_lns_gridbin/placer.py` | **CHAMPION** — E12 CD + grid-bin LNS, 1.0990 |
+| `submissions/cd_lns_sa/placer.py` | Champion candidate — E25 CD + LNS + SA-v2, 1.0954 (not yet promoted) |
 | `submissions/cd_adaptive/placer.py` | Prior champion — E9 CDAdaptive, 1.1055 |
 | `submissions/cd_only/placer.py` | Prior-prior — CDOnly fixed-budget, 1.1193 |
 | `submissions/examples/` | Reference placers (greedy, random) |
@@ -169,4 +178,5 @@ See `SETUP.md` for the full API (Benchmark fields, compute_proxy_cost, validatio
 
 M3 Max (36GB unified, MPS/PyTorch). Fast subset: ~10s. Full --all: ~40s.
 Champion (`submissions/cd_lns_gridbin/placer.py`) takes ~7.85 hr on --all (CD plateau + LNS overlay).
+Champion candidate (`submissions/cd_lns_sa/placer.py`, E25, not promoted) takes ~10.3 hr on --all.
 Cloud not needed for development. The bottleneck is thinking, not compute.
