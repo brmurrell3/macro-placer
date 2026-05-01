@@ -107,9 +107,10 @@ def run_super_block_lns(
             f"|super_macros|={len(candidate_supers)}, seed={seed}"
         )
 
-    # Grid for candidate centroids.
-    grid_x = np.linspace(0, canvas_w, top_M)
-    grid_y = np.linspace(0, canvas_h, top_M)
+    # Per-super-macro candidate grids are computed inside the loop —
+    # centered on current centroid with range bounded by feasibility
+    # (so the block never leaves the canvas). An absolute grid over
+    # [0, canvas] would reject most candidates as out-of-bounds.
 
     t_start = time.perf_counter()
     blocks_tried = 0
@@ -149,6 +150,35 @@ def run_super_block_lns(
 
             best_target: Optional[Tuple[float, float]] = None
             best_proxy = baseline_proxy
+
+            # Compute per-block feasible translation range.
+            block_xs = [s[0] for s in saved_xy]
+            block_ys = [s[1] for s in saved_xy]
+            block_half_w = [float(macro_sizes_np[m, 0]) / 2.0 for m in movable]
+            block_half_h = [float(macro_sizes_np[m, 1]) / 2.0 for m in movable]
+            # Per-member feasible Δ: [hw - x, canvas_w - hw - x] for x-axis,
+            # similarly for y. Block-wide feasible Δ is the intersection.
+            dx_min = max(
+                bhw - bx for bx, bhw in zip(block_xs, block_half_w)
+            )
+            dx_max = min(
+                canvas_w - bhw - bx for bx, bhw in zip(block_xs, block_half_w)
+            )
+            dy_min = max(
+                bhh - by for by, bhh in zip(block_ys, block_half_h)
+            )
+            dy_max = min(
+                canvas_h - bhh - by for by, bhh in zip(block_ys, block_half_h)
+            )
+            # If the block is already at canvas boundary on every side,
+            # dx_min > dx_max — no movement possible.
+            if dx_min > dx_max or dy_min > dy_max:
+                continue
+
+            grid_dx = np.linspace(dx_min, dx_max, top_M)
+            grid_dy = np.linspace(dy_min, dy_max, top_M)
+            grid_x = baseline_centroid_x + grid_dx
+            grid_y = baseline_centroid_y + grid_dy
 
             for tx in grid_x:
                 for ty in grid_y:
