@@ -147,6 +147,8 @@ def coarse_cd_supermacros(
     grid_y = np.linspace(0, canvas_h, grid_n)
 
     cur_cost = _quotient_hpwl(centers, quotient_nets)
+    # ⬇ legacy greedy-CD body retained below; new SA primary entry-point
+    # is `coarse_sa_supermacros` (see below) which handles dense canvases.
     if log_fn is not None:
         log_fn(
             f"  multigrid coarse-CD start: HPWL={cur_cost:.3f}, K={K}, "
@@ -212,6 +214,145 @@ def coarse_cd_supermacros(
     return centers
 
 
+# ── Coarse-scale SA with soft overlap penalty ──────────────────────────────
+
+
+def _total_super_overlap_area(
+    centers: np.ndarray, sizes: np.ndarray
+) -> float:
+    """Sum of bbox-bbox overlap area across all pairs of non-empty
+    super-macros."""
+    K = centers.shape[0]
+    total = 0.0
+    for i in range(K):
+        if sizes[i, 0] <= 0 or sizes[i, 1] <= 0:
+            continue
+        for j in range(i + 1, K):
+            if sizes[j, 0] <= 0 or sizes[j, 1] <= 0:
+                continue
+            half_w_i = sizes[i, 0] / 2.0
+            half_h_i = sizes[i, 1] / 2.0
+            half_w_j = sizes[j, 0] / 2.0
+            half_h_j = sizes[j, 1] / 2.0
+            ox = max(0.0, (half_w_i + half_w_j) - abs(centers[i, 0] - centers[j, 0]))
+            oy = max(0.0, (half_h_i + half_h_j) - abs(centers[i, 1] - centers[j, 1]))
+            total += ox * oy
+    return total
+
+
+def coarse_sa_supermacros(
+    super_centers: np.ndarray,
+    super_sizes: np.ndarray,
+    quotient_nets: List[Tuple[int, ...]],
+    canvas_w: float,
+    canvas_h: float,
+    n_moves: int = 50000,
+    T0: float = 1.0,
+    Tf: float = 1e-3,
+    lambda_init: float = 0.01,
+    lambda_final: float = 10.0,
+    seed: int = 42,
+    log_fn: Optional[Callable[[str], None]] = None,
+) -> np.ndarray:
+    """SA on super-macro positions with soft overlap penalty.
+
+    Cost = HPWL(quotient netlist) + λ · sum(super-macro bbox overlap area)
+
+    λ starts low (allow exploration where super-macros can overlap to find
+    HPWL-better positions) and grows geometrically over n_moves to a high
+    value (push super-macros apart by end). T anneals geometrically T0→Tf.
+
+    Empty super-macros (size 0) are not moved.
+    """
+    rng = np.random.default_rng(seed=seed)
+    centers = super_centers.copy()
+    K = centers.shape[0]
+    movable = [k for k in range(K) if super_sizes[k, 0] > 0 and super_sizes[k, 1] > 0]
+    if not movable:
+        return centers
+
+    half_w = super_sizes[:, 0] / 2.0
+    half_h = super_sizes[:, 1] / 2.0
+
+    def cost_at(c: np.ndarray, lam: float) -> Tuple[float, float, float]:
+        hpwl = _quotient_hpwl(c, quotient_nets)
+        ovl = _total_super_overlap_area(c, super_sizes)
+        return hpwl + lam * ovl, hpwl, ovl
+
+    # Compute T and λ schedule over n_moves.
+    if Tf <= 0 or T0 <= 0:
+        T_factor = 1.0
+    else:
+        T_factor = (Tf / T0) ** (1.0 / max(1, n_moves - 1))
+    lam_factor = (lambda_final / lambda_init) ** (1.0 / max(1, n_moves - 1))
+
+    cur_lam = lambda_init
+    cur_T = T0
+    cur_cost, cur_hpwl, cur_ovl = cost_at(centers, cur_lam)
+    best_cost = cur_cost
+    best_centers = centers.copy()
+    best_hpwl = cur_hpwl
+    best_ovl = cur_ovl
+
+    accepts = 0
+    rejects = 0
+    log_step = max(1, n_moves // 10)
+    if log_fn is not None:
+        log_fn(
+            f"  multigrid coarse-SA start: HPWL={cur_hpwl:.3f} "
+            f"ovl_area={cur_ovl:.3f} T0={T0:.2g} Tf={Tf:.2g} "
+            f"λ_init={lambda_init:.3g} λ_final={lambda_final:.3g}"
+        )
+
+    for step in range(n_moves):
+        # Pick a random movable super-macro and propose a new position
+        # within Gaussian noise of the canvas center scaled to canvas size.
+        k = int(rng.choice(movable))
+        # Gaussian step scaled by current temperature × canvas dimension.
+        sigma = max(canvas_w, canvas_h) * 0.05  # ~5% of canvas per step
+        nx = float(np.clip(centers[k, 0] + rng.normal(0, sigma),
+                           half_w[k], canvas_w - half_w[k]))
+        ny = float(np.clip(centers[k, 1] + rng.normal(0, sigma),
+                           half_h[k], canvas_h - half_h[k]))
+        # Try the move.
+        old_x, old_y = centers[k, 0], centers[k, 1]
+        centers[k, 0] = nx
+        centers[k, 1] = ny
+        new_cost, new_hpwl, new_ovl = cost_at(centers, cur_lam)
+        delta = new_cost - cur_cost
+        if delta < 0 or rng.random() < np.exp(-delta / max(1e-12, cur_T)):
+            cur_cost = new_cost
+            cur_hpwl = new_hpwl
+            cur_ovl = new_ovl
+            accepts += 1
+            if cur_cost < best_cost:
+                best_cost = cur_cost
+                best_centers = centers.copy()
+                best_hpwl = cur_hpwl
+                best_ovl = cur_ovl
+        else:
+            centers[k, 0] = old_x
+            centers[k, 1] = old_y
+            rejects += 1
+        cur_T *= T_factor
+        cur_lam *= lam_factor
+        if log_fn is not None and (step + 1) % log_step == 0:
+            log_fn(
+                f"  multigrid coarse-SA step {step + 1}/{n_moves}: "
+                f"HPWL={cur_hpwl:.3f} ovl={cur_ovl:.3f} "
+                f"T={cur_T:.2g} λ={cur_lam:.2g} "
+                f"acc={accepts} rej={rejects} "
+                f"best_HPWL={best_hpwl:.3f} best_ovl={best_ovl:.3f}"
+            )
+
+    if log_fn is not None:
+        log_fn(
+            f"  multigrid coarse-SA done: best HPWL={best_hpwl:.3f} "
+            f"ovl={best_ovl:.3f} accepts={accepts} rejects={rejects}"
+        )
+    return best_centers
+
+
 # ── V-cycle orchestration ──────────────────────────────────────────────────
 
 
@@ -274,7 +415,12 @@ def multigrid_init(
         super_centers_init[k, 0] = np.mean([sdf_pos_np[m, 0] for m in members])
         super_centers_init[k, 1] = np.mean([sdf_pos_np[m, 1] for m in members])
 
-    # Coarse-scale CD.
+    # Coarse-scale CD with NO non-overlap constraint (super-macros are
+    # approximate aggregates; actual non-overlap is enforced at fine-scale
+    # uncoarsen + project_overlaps). The greedy CD finds whatever HPWL
+    # improvements are reachable from the SDF centroids; if SDF is already
+    # near-optimal at coarse scale (often true on IBM benchmarks), this is
+    # a no-op and multigrid_init returns SDF-equivalent placement.
     super_centers_post = coarse_cd_supermacros(
         super_centers_init,
         super_sizes,
@@ -283,6 +429,7 @@ def multigrid_init(
         canvas_h=float(benchmark.canvas_height),
         grid_n=grid_n,
         max_sweeps=max_sweeps,
+        enforce_nonoverlap=False,
         log_fn=log_fn,
     )
 

@@ -48,43 +48,50 @@ SDF (just at a deeper proxy point). Multigrid attacks BOTH classes:
   pipeline.
 
 ## Method
-Hierarchical (V-cycle) placement on top of E41's primitives:
+**Pivot 2026-04-30 22:30:** Phase 2 evidence on ibm10 showed SDF init is
+already near-optimal at the coarse scale. Coarse CD on super-macros
+moves only 1/21 super-macros under non-overlap constraint, and removing
+the constraint just collapses super-macros onto each other. Pure init
+replacement doesn't yield a breakthrough — SDF basin already encompasses
+the cluster-level optimum on IBM benchmarks.
 
-1. **Coarse-scale formulation (per benchmark, build-time):**
-   - Build macro-macro graph: edges between macros sharing ≥ 1 net,
-     weight = sum of `1 / max(1, net_size - 1)` over shared nets
-     (consistent with the K-joint adjacency score).
-   - Partition into K = round(sqrt(num_hard_macros)) super-macros via
-     pymetis (METIS graph partitioner; clique-expansion of the
-     hypergraph).
-   - For each super-macro: bounding box = sum of constituent areas
-     packed at the average aspect ratio of the canvas.
-   - Quotient netlist: each net's pin set is reduced from macros to
-     super-macros (drop self-edges within a super-macro).
+The new design uses super-macro structure as a **multi-macro MOVE TYPE**
+added to the E41 pipeline AFTER the K=3 K-joint phase. Block moves of
+30-100 macros simultaneously (vs E41's K=3 macro joint moves) explore a
+fundamentally new reachable set:
 
-2. **Coarse-scale placement (~minutes):**
-   - Build a synthetic Benchmark wrapper for the coarse problem.
-   - Place super-macros via E12 CD plateau + grid-bin LNS.
-   - Output: super-macro centers and bounding-box dimensions.
+1. **Phase 1 (unchanged):** Cluster hard macros into K = round(sqrt(N))
+   super-macros via pymetis. Output: cluster_ids, super_members.
 
-3. **Uncoarsening (one level):**
-   - For each super-macro, the placement region is `(super_macro_center
-     ± half_super_bbox)`.
-   - Build sub-Benchmark for each super-macro: hard macros are its
-     constituents; canvas is the super-macro's region; soft macros and
-     fixed macros from the original benchmark that fall inside the
-     region (pinned at original positions if fixed).
-   - Place each sub-benchmark via E12 CD + grid-bin LNS.
-   - Aggregate per-super-macro placements back to global coordinates.
+2. **NEW Phase 2: Super-macro block LNS, runs after E41's K-joint phase.**
+   For each super-macro k:
+   - Save current placement of all constituents.
+   - Compute current centroid of constituents.
+   - Sample target centroids on a grid (M=8 per axis = 64 candidates).
+   - For each target, propose a rigid translation of all constituents by
+     (target − current_centroid). Check:
+     - All constituents stay in canvas.
+     - No constituent overlaps a non-cluster macro at the proposed position
+       (use eps=1e-9 strict separation, like K-joint fix).
+   - If valid: apply moves, evaluate proxy via incremental evaluator.
+   - Revert all constituents to saved positions.
+   - Track the best-improving target across all candidates.
+   - Commit the best block move if it improves baseline by > 1e-7.
 
-4. **Post-smoother (full E41 pipeline):**
-   - The aggregated placement is the multigrid output.
-   - Run as INIT replacement in the E41 pipeline (DPO replaced by
-     multigrid output): project_overlaps → CD plateau → grid-bin LNS
-     → SA-v2 polish → K-joint LNS K=3 → validate.
+3. **Multiple passes** until no super-macro produces an improving move
+   in a full pass, OR budget exhausted.
 
-All hyperparameters global. No per-benchmark tuning. K (number of
-super-macros) is the round-sqrt of macro count — a global rule.
+K (super-macros), top_M (candidate targets per super-macro =
+default 8), block_lns_budget_s (default 600 s), block_lns_seed (=42).
+All hyperparameters global; no per-benchmark tuning.
+
+The full pipeline becomes:
+   DPO best_of_v2 init -> project_overlaps -> CD -> LNS -> SA-v2 ->
+   K=3 K-joint -> **NEW: super-macro block LNS** -> validate
+
+The super-macro block-LNS is the post-smoother that exploits the
+multigrid structure — single- and 2- and 3-macro mechanisms can't move
+aggregate mass; block-LNS does.
 
 ## Kill gate
 - **Regression on --fast:** if avg --fast > E41 fast 0.92178 + 0.5 %
