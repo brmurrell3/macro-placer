@@ -171,7 +171,11 @@ def super_macro_geometry(
         super_members[c].append(i)
 
     canvas_aspect = float(benchmark.canvas_width) / float(benchmark.canvas_height)
-    SLACK = 1.1
+    # SLACK budgets ROOM FOR GAPS between constituents inside the super-macro
+    # bbox. Macros pack at ~50-60 % density typically; 2.0× area gives the
+    # super-macro bbox enough room for the constituent's actual spread under
+    # SDF init.
+    SLACK = 2.0
     super_sizes = np.zeros((K, 2), dtype=np.float64)
     for k in range(K):
         if super_areas[k] <= 0:
