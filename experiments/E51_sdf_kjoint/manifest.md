@@ -1,13 +1,14 @@
 ---
 id: E51
 name: sdf_kjoint
-status: in_progress
+status: marginal
 parent: E41
 created: 2026-04-30
-decided: null
+decided: 2026-05-01
 champion_at_time: 1.0990 (E12; E41 1.0848 strongest verified candidate; ADR-010 *Proposed*)
-outcome: null
-champion_delta: null
+fast_outcome: 0.9308 (--fast); -0.30 % vs E25 fast 0.9336; +0.97 % vs E41 fast 0.92178. Per-bench: ibm01 0.8917 (tied with E25), ibm04 1.0127 (tied with E25), ibm09 0.8503 (-0.56 % vs E25), ibm13 0.9650 (-1.18 % vs E25). K-joint on SDF basin lifts on bigger/more-structured benches (ibm09/13) but ties on smaller ones (ibm01/04). Net just at gen-check threshold (0.30 %).
+outcome: marginal — E51 never wins per-bench in best-of-{E25, E41, E51} hybrid (always tied with E25 or dominated by E41). Doesn't extend the hybrid composition E48 already captures with {E25, E41} alone. **Key analytical finding:** decomposition of E41's lift over E25 = -1.27 % vs E25 fast: DPO basin alone (E18) = -0.88 %, K-joint alone on SDF (E51) = -0.30 %, sum-of-parts = -1.18 %, synergy = +0.09 %. **70 % of E41's lift = DPO basin choice; 24 % = K-joint mechanism.** Confirms breakthrough direction is BASIN SEARCH, not move-type variants.
+champion_delta: -0.30 % --fast
 graduated_to: null
 superseded_by: null
 ---

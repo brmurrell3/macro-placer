@@ -1,13 +1,13 @@
 ---
 id: E45
 name: multigrid
-status: in_progress
+status: falsified
 parent: E41
 created: 2026-04-30
-decided: null
+decided: 2026-04-30
 champion_at_time: 1.0990 (E12; E41 1.0848 strongest verified candidate; ADR-010 *Proposed*)
-outcome: null
-champion_delta: null
+outcome: falsified — block-LNS produces 0 commits on every benchmark tested. ibm01 single-bench (1391s wall): 0 commits, final 0.92003 ≈ E41 ibm01 within DPO seed-noise. ibm10 single-bench (3756s wall): 0 commits in 0.3s wall (converged immediately), final 1.0157 vs E41 ibm10 --all 1.0096 = +0.61% (pure DPO noise; block-LNS was a no-op). Block-LNS hypothesis FALSIFIED: rigid block translations don't escape the post-K-joint local minimum. The bounds/overlap checks reject most candidates and the few that pass don't improve proxy. The SDF/DPO + CD + LNS + SA + K-joint pipeline is locally optimal for block translations.
+champion_delta: 0.0 (block-LNS no-op)
 graduated_to: null
 superseded_by: null
 ---
