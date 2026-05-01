@@ -5,12 +5,9 @@ status: in_progress
 parent: E48, E52
 created: 2026-05-01
 decided: null
-champion_at_time: 1.0990 (E12; E41 1.0848 strongest verified candidate; E48 hybrid --fast 0.9202 — first lift above E41 saturation)
-outcome: null
-champion_delta: null
-graduated_to: null
-superseded_by: null
----
+champion_at_time: 1.0990 (E12; E48 hybrid 1.08151 strongest verified candidate after --all lift, ADR-011 *Proposed*)
+fast_outcome: **0.91128 (--fast); -0.97 % vs E48 fast 0.92024; -1.14 % vs E41 fast 0.92178; -2.39 % vs E25 fast 0.9336; -3.32 % vs E12 fast 0.9426.** Per-bench: ibm01 0.8923 (E25), ibm04 0.9839 (E41 seed=1 wins, beat seed=42 by 1.79%), ibm09 0.8390 (E41 seed=42), ibm13 0.92993 (E41 seed=1 wins, beat seed=42 by 1.93%). Wall 6.8 hr. Multi-seed mechanism captures real wins where DPO seed-luck differs per bench. THIS IS THE SECOND BREAKTHROUGH TODAY.
+all_outcome: in flight 2026-05-01 18:40 (--jobs 4 parallel; ETA ~7-8 hr; projected avg ~1.072 if -0.97% lift from E48 --fast carries to --all)
 
 # E53: multiseed_hybrid
 
