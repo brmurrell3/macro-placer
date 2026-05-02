@@ -121,22 +121,30 @@ def run_replica_exchange_sa_v2(
     plc,
     hard_movable: List[int],
     time_budget_s: float,
-    T0_list: List[float] = (5e-4, 5e-3, 5e-2, 5e-1),
-    Tf: float = 1e-6,
+    T_list: List[float] = (5e-4, 1e-3, 2e-3, 5e-3),
+    Tf: float = 1e-6,  # ignored in fixed-T mode; kept for compat
     seed: int = 42,
     breakpoint_budget: int = 12,
     moves_per_round: int = 200,
+    swap_every_n_rounds: int = 4,
     log_fn: Optional[Callable[[str], None]] = None,
 ) -> tuple:
     """Replica-exchange parallel tempering SA on per-axis breakpoints.
 
-    Each chain k runs at its own (annealed) temperature T_k. Round-robin:
-    every chain advances `moves_per_round` moves; then a random adjacent
-    pair (k, k+1) attempts a temperature swap via Metropolis.
+    FIXED-T variant (standard PT): each chain k runs at constant T_k for
+    the duration. Round-robin: every chain advances `moves_per_round`
+    moves; every `swap_every_n_rounds`, attempt one swap between a
+    random adjacent pair (k, k+1) via Metropolis. T is SWAPPED on
+    accept, not state — equivalent dynamics with cheaper bookkeeping.
+
+    T_list spacing recommendation: geometric factor ~2 between adjacent
+    chains (default [5e-4, 1e-3, 2e-3, 5e-3]). Wider spacing causes
+    aggressive swaps that disrupt cold-chain descent.
 
     Returns (best_placement, stats_dict).
     """
-    K = len(T0_list)
+    T0_list = list(T_list)  # alias for backwards compat in stats
+    K = len(T_list)
     rng_global = np.random.default_rng(seed=seed)
     chain_rngs = [
         np.random.default_rng(seed=seed + 1000 * k) for k in range(K)
@@ -164,8 +172,9 @@ def run_replica_exchange_sa_v2(
         )
         chain_evaluators.append(ev)
 
-    chain_T = list(T0_list)
-    chain_T_active = list(T0_list)  # current T (may be swapped)
+    # FIXED temperature schedule per chain INDEX. Chain k always anneals
+    # from T_list[k] to Tf over the full budget. Swaps exchange chain
+    # state (evaluator, proxy, RNG, best) — NOT temperatures.
     chain_proxies = [ev.current_cost()["proxy"] for ev in chain_evaluators]
     chain_best_proxy = list(chain_proxies)
     chain_best_placement = [
@@ -173,12 +182,11 @@ def run_replica_exchange_sa_v2(
     ]
     init_proxies = list(chain_proxies)
 
-    log_ratio = math.log(Tf / max(T0_list))  # use the hottest chain to set log_ratio reference
-
     if log_fn is not None:
         log_fn(
             f"  replica-SA budget={time_budget_s:.0f}s K={K} "
-            f"T0={T0_list} Tf={Tf:.2e} N={moves_per_round} "
+            f"T_fixed={T_list} N={moves_per_round} "
+            f"swap_every={swap_every_n_rounds} rounds "
             f"|H|={len(hard_movable)} init_proxies={[f'{p:.5f}' for p in init_proxies]}"
         )
 
@@ -196,18 +204,16 @@ def run_replica_exchange_sa_v2(
             break
 
         rounds += 1
-        # Each round: advance every chain by moves_per_round at its current T.
+        # Each round: advance every chain by moves_per_round at its
+        # annealed T (per fixed chain INDEX). T_k(t) = T_list[k] * exp(
+        # log(Tf/T_list[k]) * t/total_time).
         for k in range(K):
             elapsed_now = time.perf_counter() - t_start
             if elapsed_now >= time_budget_s:
                 break
-            # Compute annealed T for chain k based on round-fraction.
-            # Use the chain's CURRENT T (chain_T_active[k]) as its T0; anneal
-            # geometrically based on overall elapsed fraction.
             frac = elapsed_now / time_budget_s
-            T = chain_T_active[k] * math.exp(
-                math.log(Tf / chain_T_active[k]) * frac
-            ) if chain_T_active[k] > Tf else Tf
+            T0_k = T_list[k]
+            T = T0_k * math.exp(math.log(Tf / T0_k) * frac) if T0_k > Tf else Tf
 
             (
                 new_proxy, p, ab, aw, r, s,
@@ -228,28 +234,41 @@ def run_replica_exchange_sa_v2(
                 chain_best_proxy[k] = best_proxy_in_chunk
                 chain_best_placement[k] = best_placement_in_chunk
 
-        # After all chains advanced, attempt one swap between a random
-        # adjacent pair (k, k+1). Probability uses CURRENT chain_T_active.
-        if K >= 2:
+        # Every swap_every_n_rounds, attempt one swap between a random
+        # adjacent pair (k, k+1). Standard PT: SWAP STATES (evaluators,
+        # proxies, RNGs, best-tracking) — temperatures stay fixed at
+        # their indices. Acceptance uses CURRENT annealed T values.
+        if K >= 2 and rounds % swap_every_n_rounds == 0:
             k = int(rng_global.integers(0, K - 1))
-            T_k = chain_T_active[k]
-            T_kp1 = chain_T_active[k + 1]
+            frac = (time.perf_counter() - t_start) / time_budget_s
+            T_k = T_list[k] * math.exp(math.log(Tf / T_list[k]) * frac) if T_list[k] > Tf else Tf
+            T_kp1 = T_list[k + 1] * math.exp(math.log(Tf / T_list[k + 1]) * frac) if T_list[k + 1] > Tf else Tf
             E_k = chain_proxies[k]
             E_kp1 = chain_proxies[k + 1]
-            # Replica-exchange acceptance:
-            # P(accept) = min(1, exp((1/T_k - 1/T_{k+1}) * (E_k - E_{k+1})))
-            # Note: we want to swap WHEN chain k+1 (hotter) has stumbled onto
-            # a state that chain k (colder) would benefit from. So accept iff
-            # the swap would be accepted by both Metropolis criteria.
+            # Standard replica-exchange acceptance:
+            # P(accept) = min(1, exp((β_k - β_{k+1}) * (E_k - E_{k+1})))
             beta_diff = (1.0 / max(T_k, 1e-12)) - (1.0 / max(T_kp1, 1e-12))
             energy_diff = E_k - E_kp1
             log_p = beta_diff * energy_diff
             swap_attempts += 1
             if log_p >= 0 or rng_global.random() < math.exp(log_p):
-                # Accept: swap temperatures (equivalent to swap placements
-                # but doesn't require evaluator state migration).
-                chain_T_active[k], chain_T_active[k + 1] = (
-                    chain_T_active[k + 1], chain_T_active[k]
+                # Accept: swap entire chain state. Each chain is now
+                # operating on the OTHER chain's prior placement, but at
+                # its own (fixed) annealing schedule.
+                chain_evaluators[k], chain_evaluators[k + 1] = (
+                    chain_evaluators[k + 1], chain_evaluators[k]
+                )
+                chain_proxies[k], chain_proxies[k + 1] = (
+                    chain_proxies[k + 1], chain_proxies[k]
+                )
+                chain_rngs[k], chain_rngs[k + 1] = (
+                    chain_rngs[k + 1], chain_rngs[k]
+                )
+                chain_best_proxy[k], chain_best_proxy[k + 1] = (
+                    chain_best_proxy[k + 1], chain_best_proxy[k]
+                )
+                chain_best_placement[k], chain_best_placement[k + 1] = (
+                    chain_best_placement[k + 1], chain_best_placement[k]
                 )
                 swap_accepts += 1
 
@@ -276,7 +295,7 @@ def run_replica_exchange_sa_v2(
             f"proposed={proposed_total} better={accepted_better_total} "
             f"worse={accepted_worse_total} rejected={rejected_total} "
             f"skipped={skipped_total} init_proxies={[f'{p:.5f}' for p in init_proxies]} "
-            f"final_best={best_proxy:.5f} (chain {best_k} of {K}, T0={T0_list[best_k]:.2e})"
+            f"final_best={best_proxy:.5f} (chain index {best_k} of {K}, T0={T_list[best_k]:.2e})"
         )
 
     return best_placement, {

@@ -1,15 +1,15 @@
 ---
 id: E60
 name: replica_sa
-status: in_progress
+status: falsified
 parent: E25
 created: 2026-05-02
-decided: null
+decided: 2026-05-02
 champion_at_time: 1.0990 (E12; E48 hybrid 1.08151 strongest verified candidate; ADR-011 *Proposed*)
-outcome: null
-champion_delta: null
+outcome: falsified — replica exchange targets "SA stuck at single basin" but our SA-v2 isn't actually stuck. The post-LNS state's energy landscape is too steep: with K=4 chains at T_list=[5e-4, 1e-3, 2e-3, 5e-3], swap acceptance was 0/21 over 84 rounds (state-swap PT with annealing per chain index). Energy gap between chains (~0.05+ at our scale) gives swap log-prob of ~-1000, never accepts. Wider spacing [5e-4, 5e-3, 5e-2, 5e-1] gave 27% swap acceptance but cold-chain disrupted; took 250s to recover from hot-chain noise to find first improvement (-0.001). Either way replica exchange is much slower than baseline single-chain SA-v2 (which finds -0.014 in 600s on same init). **The breakthrough lever is BASIN CHOICE, not SA dynamics.** Pivoted to E61 GA crossover.
+champion_delta: never lifted past init proxy in any test
 graduated_to: null
-superseded_by: null
+superseded_by: E61 (right attack point — basin choice, not SA mechanism)
 ---
 
 # E60: replica_sa (replica exchange SA-v2)

@@ -67,11 +67,12 @@ class CDLNSReplicaSAPlacer:
         lns_destroy_strategy: str = "cost_aware",
         lns_seed: int = 42,
         sa_budget_s: float = 600.0,
-        sa_T0_list: list = (5e-4, 5e-3, 5e-2, 5e-1),
+        sa_T0_list: list = (5e-4, 1e-3, 2e-3, 5e-3),
         sa_Tf: float = 1e-6,
         sa_seed: int = 42,
         sa_breakpoint_budget: int = 12,
         sa_moves_per_round: int = 200,
+        sa_swap_every_n_rounds: int = 4,
         verbose: bool = True,
     ):
         self.cd_min_time_s = cd_min_time_s
@@ -89,6 +90,7 @@ class CDLNSReplicaSAPlacer:
         self.sa_seed = int(sa_seed)
         self.sa_breakpoint_budget = int(sa_breakpoint_budget)
         self.sa_moves_per_round = int(sa_moves_per_round)
+        self.sa_swap_every_n_rounds = int(sa_swap_every_n_rounds)
         self.verbose = bool(verbose)
 
     def _log(self, msg: str) -> None:
@@ -158,7 +160,7 @@ class CDLNSReplicaSAPlacer:
         )
         cd_proxy = evaluator.current_cost()["proxy"]
         self._log(
-            f"  CD done: sweeps={cd_stats['n_sweeps']}, "
+            f"  CD done: sweeps={cd_stats['sweeps']}, "
             f"exit={cd_stats['exit_reason']}, proxy={cd_proxy:.5f}"
         )
 
@@ -172,14 +174,14 @@ class CDLNSReplicaSAPlacer:
             time_budget_s=self.lns_budget_s,
             destroy_frac=self.lns_destroy_frac,
             destroy_cap=self.lns_destroy_cap,
-            destroy_strategy=self.lns_destroy_strategy,
             seed=self.lns_seed,
             log_fn=self._log if self.verbose else None,
         )
         lns_proxy = evaluator.current_cost()["proxy"]
         self._log(
             f"  LNS done: samples={lns_stats['samples']}, "
-            f"Δ={lns_stats['delta']:+.5f}, wall={lns_stats['wall_total_s']:.1f}s, "
+            f"Δ={lns_stats['total_improvement']:+.5f}, "
+            f"wall={lns_stats['wall_total_s']:.1f}s, "
             f"proxy={lns_proxy:.5f}"
         )
 
@@ -196,11 +198,12 @@ class CDLNSReplicaSAPlacer:
             plc=plc,
             hard_movable=hard_movable,
             time_budget_s=self.sa_budget_s,
-            T0_list=self.sa_T0_list,
+            T_list=self.sa_T0_list,
             Tf=self.sa_Tf,
             seed=self.sa_seed,
             breakpoint_budget=self.sa_breakpoint_budget,
             moves_per_round=self.sa_moves_per_round,
+            swap_every_n_rounds=self.sa_swap_every_n_rounds,
             log_fn=self._log if self.verbose else None,
         )
         # Replace evaluator's state with the best placement found across chains.
