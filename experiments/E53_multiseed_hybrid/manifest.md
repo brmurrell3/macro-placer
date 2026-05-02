@@ -1,13 +1,16 @@
 ---
 id: E53
 name: multiseed_hybrid
-status: in_progress
+status: marginal
 parent: E48, E52
 created: 2026-05-01
-decided: null
+decided: 2026-05-02
 champion_at_time: 1.0990 (E12; E48 hybrid 1.08151 strongest verified candidate after --all lift, ADR-011 *Proposed*)
 fast_outcome: **0.91128 (--fast); -0.97 % vs E48 fast 0.92024; -1.14 % vs E41 fast 0.92178; -2.39 % vs E25 fast 0.9336; -3.32 % vs E12 fast 0.9426.** Per-bench: ibm01 0.8923 (E25), ibm04 0.9839 (E41 seed=1 wins, beat seed=42 by 1.79%), ibm09 0.8390 (E41 seed=42), ibm13 0.92993 (E41 seed=1 wins, beat seed=42 by 1.93%). Wall 6.8 hr. Multi-seed mechanism captures real wins where DPO seed-luck differs per bench. THIS IS THE SECOND BREAKTHROUGH TODAY.
-all_outcome: in flight 2026-05-01 18:40 (--jobs 4 parallel; ETA ~7-8 hr; projected avg ~1.072 if -0.97% lift from E48 --fast carries to --all)
+all_outcome: **1.08128 (--all); -0.021 % vs E48 1.08151 (essentially tied within noise); -0.32 % vs E41 1.0848; -1.61 % vs E12 1.0990; -3.22 % vs leaderboard 1.1172.** Wall 137418 s aggregate / ~10.3 hr wall-clock under --jobs 4. Per-bench: E25 wins same 5/17 as E48 (ibm01, 06, 07, 17, 18); E41 (whichever seed was luckier) wins same 12/17. Adding seed=1 helped on a few benches (ibm02, ibm03, ibm15 by sub-noise margins; ibm16 worse on s1) — net cancellation. Both seeds tied on most benches.
+
+outcome: marginal — adding E41 seed=1 to the hybrid gives essentially no incremental lift over E48 on --all (0.021 %, within DPO seed-noise). The --fast big lifts (ibm04 -1.79 %, ibm13 -1.93 %) were sample-size outliers; in --all both seeds tied on those benches. **Multi-seed within DPO is a dead-end for breakthrough.** The productive direction for further lifts is NEW MOVE TYPES (E54 congestion-destroy compositional best-of: 0.91708 fast, -0.31 % vs E48) or NEW INIT CLASSES (RePlAce/learned/etc.), not seed perturbation.
+champion_delta: -0.021 % vs E48 (sub-noise marginal)
 
 # E53: multiseed_hybrid
 
