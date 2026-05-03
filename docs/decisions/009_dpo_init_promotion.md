@@ -1,13 +1,16 @@
 # ADR-009: Promote DPO init + CD + LNS + SA-v2 as champion (E18 → 1.08979)
 
-**Status:** **Proposed** — awaiting human decision. The verified `--all` result
-(1.08979, zero overlaps, 11/17 wins) clears all decision-rule thresholds and
-beats both the current champion E12 (1.0990, ADR-007) and the prior candidate
-E25 (1.0954, ADR-008 *Proposed*). `--ng45` confirms the lift transfers to
-commercial designs (0.69193, −1.67 % vs E12 0.7037, 4/4 per-design wins).
-Champion remains E12 (ADR-007); E18 code stays at
-`experiments/E18_dpo_init/code/cd_lns_sa_dpo_init.py` until promotion.
-**Date:** 2026-04-30 (proposed)
+**Status:** **Superseded by ADR-011** 2026-05-02. Never reached *Accepted*.
+The verified `--all` result (1.08979, zero overlaps, 11/17 wins) cleared
+all decision-rule thresholds at 2026-04-30 and `--ng45` 0.69193 confirmed
+DPO-basin lift transfers to commercial designs. E41 (ADR-010, K-joint
+extension) and E48 hybrid (ADR-011, best-of-{E25, E41}) each improved
+further; E48 1.08151 = −0.76 % vs E18, and E18 is **strictly dominated
+per-bench** by max(E25, E41) — never wins inside the hybrid. ADR-011
+is the accepted promotion. E18 code remains at
+`experiments/E18_dpo_init/code/cd_lns_sa_dpo_init.py`; E41 (and through
+E41, E48) reuses E18's `_best_of_v2_init` helper for DPO initialization.
+**Date:** 2026-04-30 (proposed) → 2026-05-02 (superseded by ADR-011)
 **Deciders:** project owner
 
 ## Context

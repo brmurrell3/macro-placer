@@ -1,22 +1,19 @@
 # Roadmap
 
-Last updated: 2026-04-30 09:30 EDT
-Competition deadline: May 21, 2026 (~21 days)
+Last updated: 2026-05-02 (post-E48 promotion)
+Competition deadline: May 21, 2026 (~19 days)
 
 ## TL;DR
 
-- **Champion:** E12 CDLNSGridBin (1.0990, ADR-007). Submission-ready.
-- **STRONGEST verified candidate, awaiting promotion:** **E41 CDLNSSADPOKJoint at 1.0848 --all** (**−1.29 % vs E12**, −2.90 % vs leaderboard, 14/17 IBM wins). DPO basin + K=3 K-joint composes basin shift + 3-coupled joint-move escape — the multi-mechanism plateau on ibm11/14/15 finally breaks (−4.06 % / −1.73 % / −1.24 % vs E25). NG45 0.69022 (−1.91 % vs E12). Wall 13.58 hr. ADR-010 *Proposed*. Code at `experiments/E41_dpo_kjoint/code/cd_lns_sa_dpo_kjoint.py`.
-- **Prior candidate (superseded by E41):** E18 CDLNSSADPOInit at 1.08979 (−0.84 % vs E12, 4/4 NG45 wins). ADR-009 *Proposed* (mark *Superseded* on ADR-010 accept).
-- **Older candidate (superseded by E18 + E41):** E25 CDLNSSA at 1.0954 (−0.33 % vs E12). ADR-008 *Proposed* (same).
-- **K-joint variants tested 2026-04-30 (all fell short of E41):**
-  - **E42 K=4** (DPO + K=4 K-joint): `--fast` marginal (-0.35 %), but NG45 catastrophic (+3.57 % regression on ariane133). **Falsified.** K=4's per-K-tuple cost (5×) starves the budget at the wrong margin.
-  - **E43 longer K-joint budget (1200 s)**: `--fast` -0.33 % (right at gen-check threshold). **Marginal**, skipped --ng45. K-joint saturation-bound on small benches, marginally budget-bound on large (ibm13: 72 commits in pass 1).
-  - **E44 spatial K-tuple selection**: `--fast` +0.63 % regression — kill gate fired. **Falsified.** Spatial K-tuples are myopic; netlist-adjacency selection is load-bearing.
-  - **Conclusion:** E41 K=3 with 600 s budget IS the K-joint saturation floor. Further K-joint variants don't lift; need a structurally different mechanism (MIQP joint, hierarchical/multigrid, or hybrid pipeline best-of) to push past 1.0848.
-- **Falsified earlier:** E17 random init, E26 longer SA, E32 SAM-CD, E42 K=4, E44 spatial.
-- **Marginal:** E40 multi-SA-seed (within-basin), E27 basin-persistence (originally insufficient diversity from BestOfV2Placer bug — fixed 2026-04-30; DPO trajectory rerun confirms DPO basin is -3-5 % below SDF basin on every hard bench).
-- **Submission:** E12 locked in if no further work lands. NG45 transfer verified for E12 (E23), E18, E41. 3.4 hr safety margin on the 17-hr cap if we ship E41.
+- **CHAMPION:** **E48 CDLNSSAHybrid at 1.08151 --all** (**−1.59 % vs E12**, **−3.21 % vs leaderboard**, −0.30 % vs E41). Per-bench best-of-{E25, E41} hybrid (E25 wins 5/17 — ibm01/06/07/17/18 — basins where SDF beats DPO; E41 wins 12/17 — rest). NG45 0.6922 (−1.66 % vs E12). Wall ~7 hr `--jobs 4`. **PROMOTED 2026-05-02 (ADR-011 *Accepted*)**; supersedes ADR-007/008/009/010. Entry: `submissions/cd_lns_sa_hybrid/placer.py`.
+- **Prior champion (now baseline):** E12 CDLNSGridBin (1.0990, ADR-007). Code remains at `submissions/cd_lns_gridbin/placer.py` as a baseline reference.
+- **Components called by the hybrid (load-bearing):** E25 (`submissions/cd_lns_sa/placer.py`) is lane 1; E41 (`experiments/E41_dpo_kjoint/code/cd_lns_sa_dpo_kjoint.py`) is lane 2. Both stay in tree.
+- **Overnight 2026-05-01 → 02 — three follow-ups, NONE lifted past E48:**
+  - **E53 GPU DPO basin polish** (multi-restart full-pose Adam on smooth proxy after CD-LNS-SA): `--fast` 0.9254, **0/350 GPU restarts accepted** at full budgets. Smooth-proxy gradient cannot escape fully-converged CD-LNS-SA. **FALSIFIED.** Lesson: GPU must replace CD's basin-crossing role, not polish after it.
+  - **E53m multi-seed hybrid** (3-way: E25 + E41 seed=42 + E41 seed=1): `--fast` 0.91128 (−0.97 % vs E48 — sample-size outlier on 4 small benches); `--all` 1.08128 (essentially tied with E48 by −0.02 %); `--ng45` 0.6938 (+0.23 %). **MARGINAL.** Multi-seed within DPO is dead-end at --all aggregate scale.
+  - **E54 congestion-targeted destroy** (engages E8 6/20/74 % proxy decomposition; rank LNS-destroy by abu-top-5 % cell contribution): `--fast` 0.9222 tied; `--all` 1.08568 (+0.39 %); **`--ng45` 0.7022 with ariane133 +5.14 % catastrophic regression**. **FALSIFIED.** Joins E42/E43/E44 in the IBM-aware/NG45-blind failure class.
+- **The structural finding from the night:** Five experiments (E42 K=4, E43 longer K-joint, E44 spatial K-tuple, E54 congestion-destroy, plus the partially-IBM-aware E53m) all show the same pattern — IBM-fast lift that doesn't transfer to NG45 commercial designs. **ariane133 is the consistent failure point**; its sparser packing (133 hard macros on 1433 × 1433 canvas vs IBM 246-760 hard macros on 23-73 canvas) breaks structurally-aligned destroy/K-tuple heuristics that depend on dense macro packing.
+- **Submission status:** E48 hybrid locked in; submission-ready as of 2026-05-02. 3.4 hr safety margin on the 17-hr `--all` cap. NG45 transfer verified at 0.6922 (zero overlaps).
 
 ---
 
@@ -24,19 +21,22 @@ Competition deadline: May 21, 2026 (~21 days)
 
 | Entry | Avg Proxy (--all) | vs Leaderboard 1.1172 | vs RePlAce 1.4578 |
 |-------|-------------------|------------------------|--------------------|
-| **CDLNSGridBin (E12, CHAMPION)** | **1.0990** | **−1.63 %** | **−24.6 %** |
-| CDLNSSA (E25, candidate, not promoted) | 1.0954 | −1.95 % | −24.9 % |
+| **CDLNSSAHybrid (E48, CHAMPION)** | **1.08151** | **−3.21 %** | **−25.8 %** |
+| CDLNSSAMultiseedHybrid (E53m, marginal) | 1.08128 | −3.24 % | −25.8 % |
+| CDLNSSADPOKJoint (E41, hybrid component) | 1.0848 | −2.90 % | −25.6 % |
+| CDLNSSADPOKJointCongDestroy (E54, falsified NG45) | 1.08568 | −2.83 % | −25.5 % |
+| CDLNSSADPOInit (E18, ADR-009 superseded) | 1.08979 | −2.45 % | −25.2 % |
+| CDLNSSA (E25, hybrid component) | 1.0954 | −1.95 % | −24.9 % |
+| CDLNSGridBin (E12, prior champion) | 1.0990 | −1.63 % | −24.6 % |
 | CDAdaptive (E9, prior, superseded) | 1.1055 | −1.05 % | −24.2 % |
 | CDOnly (prior-prior, superseded) | 1.1193 | +0.18 % | −23.2 % |
 | DPO best-of-v2 (prior, superseded) | 1.3834 | +23.8 % | −5.1 % |
 | RePlAce baseline | 1.4578 | +30.5 % | — |
 | SA baseline | 2.1251 | +90.2 % | +45.8 % |
 
-- E12 beats the leaderboard's "Incremental CD+LNS" (vmallela) entry by −1.63 % with zero overlaps on all 17 IBM benchmarks.
-- E12 wall: 28 256 s (7.85 hr) on `--all` — within the 17-hr competition envelope (17 × 1 hr cap), reduced margin vs CDAdaptive's 4.85 hr.
-- E25 wall: 37 189 s (10.33 hr) on `--all` — still within envelope, +2.5 hr vs E12.
-- Champion config: full-proxy CD on the incremental evaluator with per-benchmark plateau detection (CD ≤ 3000 s) followed by grid-bin LNS escape (LNS ≤ 600 s). ADR-007.
-- Candidate config: same as E12 plus an SA-v2 polish phase on per-axis breakpoints with best-so-far tracking and T₀ = 5e-4 (≤ 600 s). ADR-008 *Proposed*.
+- **E48 beats the leaderboard's "Incremental CD+LNS" (vmallela) entry by −3.21 %** with zero overlaps on all 17 IBM benchmarks.
+- E48 wall: ~7 hr `--jobs 4` (88 452 s aggregate CPU-time across workers); each bench runs E25 then E41 sequentially. Within the 17-hr competition envelope.
+- Champion config: per-bench `min(E25_pipeline_output, E41_pipeline_output)`. E25 = SDF init → CD plateau → grid-bin LNS → SA-v2. E41 = DPO best_of_v2 init → CD plateau → grid-bin LNS → SA-v2 → K-joint K=3 top_N=5. **No per-benchmark hardcoded logic** — winner determined by proxy value. ADR-011 *Accepted* 2026-05-02.
 
 ### Champion lineage
 
@@ -48,8 +48,10 @@ Competition deadline: May 21, 2026 (~21 days)
 | DPO v2/v3/v2-steps | best_of_v2 | 1.3834 | 2026-04-26 | Within-DPO refinements cap at 1–2 % |
 | **CD-only** | CDOnly | 1.1193 | 2026-04-27 (am) | Fixed 600 s budget left hard benchmarks mid-descent |
 | **CD-adaptive** | CDAdaptive (E9) | 1.1055 | 2026-04-27 (pm) | Plateau-bound: every bench exited via plateau, none hit cap |
-| **CD + grid-bin LNS** | **CDLNSGridBin (E12)** | **1.0990** | **2026-04-28** | (current — ADR-007) |
-| CD + LNS + SA-v2 *(candidate)* | CDLNSSA (E25) | 1.0954 | 2026-04-29 | Verified −0.33 % over E12; ADR-008 *Proposed*; not promoted |
+| CD + grid-bin LNS | CDLNSGridBin (E12) | 1.0990 | 2026-04-28 | Superseded 2026-05-02 by E48 hybrid (ADR-007 superseded by ADR-011) |
+| CD + LNS + SA-v2 *(component)* | CDLNSSA (E25) | 1.0954 | 2026-04-29 | Now lane 1 of E48 hybrid; standalone score did not promote |
+| DPO init + CD + LNS + SA-v2 + K-joint *(component)* | CDLNSSADPOKJoint (E41) | 1.0848 | 2026-04-30 | Now lane 2 of E48 hybrid; standalone score did not promote (ADR-010 superseded by ADR-011) |
+| **Per-bench best-of-{E25, E41} hybrid** | **CDLNSSAHybrid (E48)** | **1.08151** | **2026-05-02** | (**current — ADR-011**) |
 
 Each transition was structural, not parameter tuning. See `docs/experiment_index.md` for the full catalog including failures.
 
@@ -129,7 +131,294 @@ Six tactical experiments + one diagnostic + one combo decided overnight. Summary
 
 ---
 
-## 5. Open hypothesis queue
+## 4.5 Post-E48 wave 2026-05-01 → 02 outcomes (3 falsifications, 1 marginal)
+
+After E48 hybrid (1.08151) was verified, three orthogonal escape directions
+were tested overnight. **None lifted past E48.** The pattern across all three is
+itself the load-bearing finding for the path forward.
+
+| ID | Hypothesis | --fast | --all | NG45 | Status |
+|---|---|---|---|---|---|
+| ~~E53~~ | GPU DPO basin polish (multi-restart full-pose Adam on smooth proxy after CD-LNS-SA) | 0.9254 (+0.36 %) | — | — | **FALSIFIED** — 0/350 GPU restarts accepted at full budgets. Smooth-proxy gradient cannot escape fully-converged CD-LNS-SA local optimum. |
+| E53m | Multi-seed hybrid: 3-way best-of-{E25, E41 seed=42, E41 seed=1} | 0.91128 (−0.97 %) | 1.08128 (−0.02 %) | 0.6938 (+0.23 %) | **MARGINAL** — `--fast` lift was sample-size outlier on 4 small benches; --all aggregates dampen DPO seed-noise to noise-floor. |
+| ~~E54~~ | Congestion-targeted destroy ranking (engages E8 6/20/74 % proxy decomposition; rank LNS-destroy by abu-top-5 % cell contribution) | 0.9222 (tied) | 1.08568 (+0.39 %) | **0.7022 (+1.45 %)** | **FALSIFIED** — ariane133 +5.14 % catastrophic regression. Joins E42/E43/E44 in the IBM-aware/NG45-blind failure class. |
+
+### The structural finding: IBM-aware mechanisms break on ariane133
+
+Five experiments now show the same pattern: lift on IBM (often --fast)
+that doesn't transfer to NG45 commercial designs, with **ariane133 as the
+consistent failure point** (regression magnitudes +3.57 % to +5.14 %).
+
+| ID | Mechanism | --fast Δ vs E41 | NG45 ariane133 Δ vs E41 |
+|---|---|---:|---:|
+| E42 | K-joint K=4 | −0.35 % | **+3.57 %** |
+| E43 | Longer K-joint (1200 s) | −0.33 % | +4.10 % |
+| E44 | Spatial K-tuple selection | +0.63 % (kill gate) | n/a (skipped) |
+| E54 | Congestion-targeted destroy | tied | **+5.14 %** (vs E48) |
+
+ariane133 has 133 hard macros on a 1433 × 1433 canvas (sparse: ~1/15.5 macros/sq-micron),
+vs IBM's 246-760 hard macros on 23-73 canvas (dense: ~10-20 macros/sq-micron).
+**Conjecture (not yet formally verified):** structurally-aligned destroy and
+K-tuple heuristics depend on dense macro packing; they degrade on sparse
+commercial layouts because the cells they target (top-congestion, spatial
+neighbors) don't match the structural-coupling clusters that K-joint exploits.
+
+### Verdict synthesis
+
+- **Cost-aware destroy + netlist-adjacency K-tuple ranking** are the safe
+  baselines. Engaging proxy structure (E54) or geometric structure (E44)
+  in the destroy/K-joint phases consistently breaks NG45 transfer.
+- **Multi-seed within DPO is dead-end at --all aggregate scale.** Seed
+  variation captures real per-bench variance (E52 confirmed) but
+  averages out across 17 benches.
+- **GPU acceleration as an *additive* polish phase on top of fully-converged
+  CPU CD-LNS-SA is dead-end.** The basin local optimum smooth-proxy
+  gradient finds is at-or-above the breakpoint-enumeration optimum CD-LNS
+  finds.
+
+---
+
+## 4.6 Path forward — global topology navigation (REFRAMED 2026-05-02 16:10)
+
+After the 2026-05-01 → 02 wave, the project's open-question structure
+is sharper. **The bottleneck is global topology navigation**, not
+within-basin polish. All within-basin mechanisms (CD per-axis, LNS
+gridbin, SA-v2, K-joint K=3) saturate at ~1.082-1.085 on --all
+across multiple inits. Independent basin sampling (E62 WillSeed,
+E53m multi-seed, E61 GA crossover-with-broken-repair) has high
+variance and most third-basin candidates are *worse* than the
+existing two.
+
+To break out, we need an algorithm that explicitly NAVIGATES across
+many topologies, exploiting the structure of the topology landscape
+rather than randomly sampling it. Four directions, ordered by
+implementation cost × research value:
+
+### 4.6.A — LP-bounded beam K-joint (E64 — multi-day dev)
+
+K=10 macros forming a structurally-coupled cluster, beam search over
+top-3 candidates per macro (3¹⁰=59049 raw combos), pruned by
+**LP-relaxation lower bound** on each branch. The LP-HPWL component
+gives a globally-aware lower bound that prevents the IBM-overfit
+failure mode of E42 K=4 / E43 longer-K-joint / E44 spatial.
+
+*Why this matters:* All current K-joint failures share a structural
+flaw — the heuristic that picks K-tuples and prunes branches uses
+**local benchmark structure** (adjacency density, congestion peaks,
+spatial neighbors), and that local structure differs between IBM
+and NG45 ariane133. An LP relaxation is **benchmark-blind** — the
+same LP works on any netlist; only the bound's tightness varies.
+
+*Implementation notes:* Requires reconstructing the polyhedra LP
+infrastructure (HiGHS solver + assignment extraction + dual
+extraction + cascade overlap repair) deleted in cleanup commit
+44efd16. See `writeup/archive/submissions/cd_lns_placer.py` for
+historic reference. Estimated 2-3 days dev.
+
+*Status:* **scaffolded as E64 manifest; not yet implemented.**
+
+### 4.6.B — Spectral / quadratic init as orthogonal basin seed (E63 — tonight)
+
+The netlist hypergraph's graph Laplacian L = D − A has eigenvectors
+encoding global connectivity modes. Use top-k smallest non-trivial
+eigenvectors as (x, y) coordinates for macros (Gordian-style quadratic
+placement). Provably orthogonal to SDF (analytical density spread) and
+DPO (gradient-descent topology) basins.
+
+*Why this matters:* Spectral coords encode the netlist's global
+graph structure, which is invariant under any benchmark (IBM or NG45).
+The basin landed by CD on a spectral init reflects netlist topology,
+not local density patterns. NG45 ariane133's sparser layout would
+produce a different spectral embedding but the *mechanism* (eigenvector
+init) is benchmark-blind.
+
+*Implementation notes:* `scipy.sparse.linalg.eigsh` for top-k
+eigenvectors of the netlist Laplacian. Construction: each net of
+≥2 pins contributes 1/(|pins|-1) edge weight to each pin pair (clique
+expansion with normalization). Estimated 4 hours dev + 2-3 hr --fast.
+
+*Status:* **scaffolding + launching tonight as E63.**
+
+### 4.6.C — Population-based search with topology-distance diversity penalty (future)
+
+Maintain N placements (population), evolve via crossover + mutation,
+add a **topology-distance penalty** that pushes population apart in
+L/R/A/B-assignment space. Topology distance = Hamming distance over
+pairwise relations.
+
+*Why this matters:* Forces explicit exploration of MANY topologies,
+not local polish of one. Crossover with proper LP feasibility
+projection (E61's missing piece) ensures legal offspring.
+
+*Implementation notes:* Multi-day dev. Reuses E61 GA crossover
+infrastructure but adds (a) topology-distance metric, (b) diversity
+penalty in selection, (c) LP-projection repair for crossover.
+
+*Status:* **roadmap-only; future research direction.**
+
+### 4.6.D — Score-based diffusion sampling of basins (future, paper)
+
+Train a small score network on the ~60 converged placements from this
+project's experiment_log. Sample from the learned distribution to get
+diverse globally-consistent placements; refine each via CD-LNS-SA.
+
+*Why this matters:* The model learns the project's empirical basin
+landscape directly, no hand-designed mechanism. Multi-week dev,
+high-variance, worth a paper independent of competition lift.
+
+*Status:* **roadmap-only; post-deadline research.**
+
+### 4.6 Pre-deadline execution plan (REVISED 2026-05-02 22:15)
+
+1. ~~E63 spectral init~~ — **BLOCKED on legalization design**.
+   Eigendecomposition of netlist Laplacian works (~0.2 s on ibm01,
+   eigenvalues 1e-9, 0.219, 0.358), but three legalization approaches
+   tonight all failed: (a) linear rescaling + project_overlaps =
+   270 residual overlaps; (b) rank mapping + greedy_legalize = O(N³)
+   timeout (2+ hr without completing on ibm01); (c) SDF baseline +
+   spectral permutation = 78 overlaps because permuting macros across
+   SDF positions ignores per-macro size constraints. **The conceptual
+   mechanism is sound but legalization needs proper design — Hungarian
+   assignment with size-aware cost, or a custom row-based legal placer
+   that respects spectral ordering, or a target-aware SDF variant
+   (modify SDF init to pull toward spectral coords as targets).**
+   Estimated additional dev: 2-4 hours focused work. Manifest at
+   `experiments/E63_spectral_init/manifest.md` documents the three
+   failed approaches.
+2. **E64 LP-bounded beam K-joint** — **scaffolded** at
+   `experiments/E64_lp_beam_kjoint/manifest.md`. Implementation gates:
+   (a) reconstruct polyhedra LP infrastructure from
+   `writeup/archive/submissions/cd_lns_placer.py`
+   (`assignment.py` / `lp.py` deleted in commit 44efd16); (b) HiGHS
+   solver wrapper (`highspy` available in env); (c) beam search runtime
+   ~200 lines; (d) cluster selection via LP-dual values. **Estimated
+   2-3 days focused dev.** Smoke on ibm10 (E41's biggest hard-plateau
+   win) before --fast. *This is the most direct extension of K-joint
+   that should NG45-transfer because the LP relaxation is benchmark-
+   structure-blind.*
+3. **POST-DEADLINE research:** E65 population-based diversity-search
+   (4.6.C). E66 diffusion sampling (4.6.D).
+
+**Tonight's lessons:**
+- Spectral init's legalization is the bottleneck, not the
+  eigendecomposition. The 1980s-era spectral placement papers used
+  custom legalizers we haven't ported.
+- LP-bounded beam K-joint needs the deleted polyhedra LP machinery;
+  reconstruction is a real dev cycle, not a one-off code edit.
+- E62 WillSeed falsification + E63 spectral implementation difficulty
+  + E61 GA crossover repair-failure all point at the same structural
+  finding: **placement legalization is harder than placement
+  optimization**. Any new mechanism that produces invalid intermediate
+  placements needs a robust repair step, and `project_overlaps`
+  (50-iter cap) is not it.
+
+**Hard constraint (still):** every promotion candidate MUST verify on
+NG45 ariane133. The E42/E43/E44/E54/E62 falsification record is the
+strongest signal in the project — IBM-overfit mechanisms break on
+sparse commercial designs.
+
+---
+
+## 4.6-OLD Path forward — escape the IBM/NG45 transfer-failure class (PRE-2026-05-02 16:10)
+
+[Content below preserved for reference; superseded by §4.6 above.]
+
+### 4.6.1 Tier A — non-DPO inits (PARTIALLY FALSIFIED 2026-05-02)
+
+Original hypothesis: a third independent basin (Will's seed, RePlAce
+output, greedy) would extend E48's best-of-2 monotonically. The first
+test refuted the hypothesis as written.
+
+| Init | Standalone | Polished --fast | Status |
+|---|---|---|---|
+| SDF | ~1.50 | 1.0954 (E25) | E48 lane 1 |
+| DPO best_of_v2 | 1.3834 | 1.0848 (E41) | E48 lane 2 |
+| **WillSeed v4** | 1.5338 | **0.9335 (E62, +1.44 % vs E48)** | **FALSIFIED 2026-05-02** — loses every fast bench |
+| RePlAce | 1.4578 | not tested | requires RePlAce setup to extract placement |
+| Greedy | ~2.20 | not tested (low EV given WillSeed failure) | deprioritized |
+
+**Structural lesson from E62**: standalone init quality does not predict
+polished basin quality. WillSeed's GPU-legalized starting state lands
+CD in a structurally inferior basin to SDF or DPO inits, even though
+WillSeed init proxy (1.5338) is between SDF and DPO. The basin
+geometry that CD walks toward depends on the init's local-density /
+pin-cluster structure, not just its global proxy.
+
+**Remaining Tier A action item**: RePlAce-as-init is the only candidate
+plausibly distinct from both SDF (analytical density spread) and DPO
+(gradient-descent topology). It requires running RePlAce on each
+benchmark to extract placement positions (not just proxy baselines that
+are already cached in `REPLACE_BASELINES`). Setup work: 1-2 days of
+RePlAce build + per-bench runs + position extraction. EV per WillSeed
+result: ≤30 %. **Deprioritize Tier A; redirect to Tier B/C below.**
+
+### 4.6.2 Tier B — GPU replacing CD entirely (architectural)
+
+E53 falsified GPU as a *polish* phase. The complement is GPU *replacing*
+CD entirely:
+
+- **GPU-batched CD via conflict-graph coloring (E4 in old roadmap).**
+  CD is sequential; macros that don't share a net can update in parallel.
+  Color the macro adjacency graph; macros in the same color update
+  jointly each sweep. Could 5-20× speedup CD itself, freeing wall budget
+  for more LNS / K-joint cycles or more diverse inits.
+- **GPU-DPO replaces CD with explicit topology-jumps.** Augment the
+  smooth-proxy gradient with discrete topology-flip moves (e.g.,
+  net-bbox edge-flip moves). Hybrid gradient-plus-discrete-jumps could
+  escape the basin lock that pure smooth-proxy gradient hits.
+
+EV: high variance. Architectural changes risk breaking basin properties
+that current pipeline depends on. 1-2 weeks dev each.
+
+### 4.6.3 Tier C — OOD-aware mechanisms (structural defenses)
+
+Since IBM-aware mechanisms break on ariane133, what would a mechanism
+that's robust on BOTH look like?
+
+- **Use both IBM and NG45 in development**, not just IBM-fast for
+  iteration speed. Each `--fast` test would also gate-check ariane133
+  before promotion.
+- **Density-targeted destroy** (analog of E54 but targeting the 20 %
+  density component instead of 74 % congestion). Density depends less
+  on net structure and may be more transferable. Speculative.
+- **Adaptive destroy strategy** that switches between cost-aware and
+  congestion-aware based on benchmark-local congestion concentration.
+  Also speculative; would be the first per-benchmark-adaptive mechanism
+  in the codebase (CLAUDE.md says no per-bench tuning, but adaptive on
+  measurable benchmark properties is allowed).
+
+### 4.6.4 Recommended order — REVISED 2026-05-02 16:05
+
+1. ~~**NOW (one shift, ~7 hr wall):** add Will's seed as a 3rd basin lane.~~
+   **Done 2026-05-02 — FALSIFIED**: E62 --fast 0.9335 (+1.44 % vs E48,
+   loses on every fast bench).
+2. ~~**NEXT (overnight, ~12-14 hr wall):** add RePlAce output as a 4th
+   basin lane.~~ **Deprioritized**: requires RePlAce setup (1-2 days)
+   and EV is reduced after E62 failure pattern.
+3. **PIVOT — wait for other Claude's E61 GA crossover result.** GA
+   crossover *mixes* the SDF and DPO basins from E25/E41 outputs at
+   the placement level rather than introducing a third independent
+   basin. Different mechanism than Tier A; may succeed where
+   independent-basin extension failed. ETA: in flight 2026-05-02 14:24.
+4. **IF E61 also fails:** Tier B (GPU-replaces-CD architectural) becomes
+   the highest-EV next move. ~1-2 weeks dev; high variance.
+5. **PARALLEL** (anytime, low compute): writeup. Falsification record
+   now includes E62; structural lesson "standalone init quality doesn't
+   predict polished basin quality" added to §8.5.2 (DPO basin) /
+   contributions §15.
+
+**Hard constraint:** every promotion candidate MUST verify on NG45
+ariane133. The six-experiment pattern (E42/E43/E44/E54/E53m/E62) is the
+strongest signal in the project.
+
+---
+
+## 5. Open hypothesis queue (DEPRECATED — pre-E48)
+
+[The hypotheses below were drafted during the E25 (1.0954) era, before
+E48 hybrid (1.08151) was verified. They are kept for historical reference
+and writeup material but are SUPERSEDED as a forward-looking plan by §4.6
+above. Most assume the "E25 frontier" framing that E48 has now closed.]
 
 Hypotheses are sorted by expected value × tractability. Ones already in flight are linked back to §4. None of the items below has been started unless the status column says otherwise.
 

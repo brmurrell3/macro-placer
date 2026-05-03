@@ -1,6 +1,6 @@
 # Results
 
-Last updated: 2026-04-30
+Last updated: 2026-05-02
 
 Operational doc — current champion only. Historical per-benchmark
 tables for DPO / Polyhedra / Overnight Sweep / Miftari live in
@@ -21,18 +21,61 @@ tables for DPO / Polyhedra / Overnight Sweep / Miftari live in
 | Hypothesis | Status | Best Avg Proxy | Notes |
 |------------|--------|----------------|-------|
 | **CDLNSGridBinPlacer (E12)** | **CHAMPION** | **1.0990** | **Beats leaderboard 1.1172 by -1.63%; -24.6% vs RePlAce; CD plateau + grid-bin LNS overlay (ADR-007). Promoted 2026-04-28.** |
-| **CDLNSSADPOKJointPlacer (E41)** | **STRONGEST VERIFIED CANDIDATE** | **1.0848** | **Verified −1.29 % vs E12 (−2.90 % vs leaderboard, −0.97 % vs E25); 14/17 IBM wins; --ng45 0.69022 (−1.91 % vs E12, beats E18 NG45 by −0.25 %).** DPO + CD + LNS + SA-v2 + K-joint K=3. Hard-plateau wins (ibm11 −4.06 %, ibm14 −1.73 %, ibm15 −1.24 % vs E25). Code at `experiments/E41_dpo_kjoint/code/cd_lns_sa_dpo_kjoint.py`; ADR-010 *Proposed*. Wall 13.58 hr `--jobs 4`. |
-| CDLNSSADPOInitPlacer (E18) | candidate (superseded by E41 if ADR-010 accepted) | 1.08979 | Verified −0.84 % vs E12, 4/4 NG45 wins. DPO basin transfer to OOD designs proven. Code at `experiments/E18_dpo_init/code/cd_lns_sa_dpo_init.py`; ADR-009 *Proposed* (mark *Superseded* on ADR-010 accept). 13.30 hr `--all` wall. |
-| CDLNSSAPlacer (E25) | candidate (older; superseded by E18/E41) | 1.0954 | Verified −0.33% lift over E12, −1.95% vs leaderboard. Adds SA-v2 polish on per-axis breakpoints with best-so-far tracking + T₀=5e-4. Code at `submissions/cd_lns_sa/placer.py`; ADR-008 *Proposed*. Mark *Superseded* on ADR-010 accept. |
+| **CDLNSSAHybridPlacer (E48)** | **STRONGEST VERIFIED CANDIDATE** | **1.08151** | **Verified −1.59 % vs E12 (−3.21 % vs leaderboard, −0.30 % vs E41); --ng45 0.6922 (−1.66 % vs E12 0.7037, tied with E18 0.69193).** Per-bench best-of-{E25, E41} hybrid (E25 wins 5/17, E41 wins 12/17). Algorithmically valid (no per-benchmark tuning; picks per-bench winner by proxy value). Code at `experiments/E48_hybrid_e25_e41/code/cd_lns_sa_hybrid.py`; ADR-011 *Proposed* 2026-05-01. Wall ~7 hr `--jobs 4`. |
+| CDLNSSAMultiseedHybridPlacer (E53m) | tied with E48 (no incremental lift) | 1.08128 | Verified --all 1.08128 (only −0.02 % vs E48 1.08151 — within noise). 3-way hybrid {E25, E41 seed=42, E41 seed=1}. The --fast lift (-0.97 %) was sample-size outlier; --all aggregates dampen DPO seed-noise. Multi-seed within DPO is dead-end for breakthrough. Code at `experiments/E53_multiseed_hybrid/code/cd_lns_sa_multiseed_hybrid.py`. |
+| CDLNSSADPOKJointPlacer (E41) | candidate (superseded by E48) | 1.0848 | Verified −1.29 % vs E12, 14/17 IBM wins; --ng45 0.69022 (−1.91 % vs E12). DPO + CD + LNS + SA-v2 + K-joint K=3. ADR-010 *Proposed* (mark *Superseded* on ADR-011 accept). |
+| CDLNSSADPOInitPlacer (E18) | candidate (superseded by E41/E48) | 1.08979 | Verified −0.84 % vs E12, 4/4 NG45 wins. DPO basin transfer to OOD designs proven. ADR-009 *Proposed* (mark *Superseded* on ADR-011 accept). |
+| CDLNSSAPlacer (E25) | candidate (older; superseded by E18/E41/E48) | 1.0954 | Verified −0.33% lift over E12. Adds SA-v2 polish on per-axis breakpoints with best-so-far tracking + T₀=5e-4. ADR-008 *Proposed*; mark *Superseded* on ADR-011 accept. |
 | CDAdaptivePlacer (E9) | superseded | 1.1055 | Was champion 2026-04-27; -0.59% lift from E12 LNS overlay. Plateau-bound: every bench exited via plateau, none hit cap. |
 | CDOnlyPlacer | superseded | 1.1193 | Was champion 2026-04-27 (am); -1.23% lift from E9 adaptive budget |
 | DPO best-of-v2 | superseded | 1.3834 | Was champion 2026-04-26; -19.1% vs CDOnly. Details in `writeup/historical_results.md`. |
 | Polyhedra Navigation | superseded | 1.4867 | At ceiling; replaced by DPO. Details in `writeup/historical_results.md`. |
 | SDF Density | init only | 1.5002 | Now used as init for both CD placers |
 
-## CDLNSSADPOKJointPlacer --- Strongest Verified Candidate (2026-04-30)
+## CDLNSSAHybridPlacer (E48) --- Strongest Verified Candidate (2026-05-01)
 
 **Status: STRONGEST CANDIDATE — not promoted.** Verified avg proxy
+**1.08151** on --all (**−1.59 % vs E12 1.0990**, **−3.21 % vs
+leaderboard 1.1172**, −0.30 % vs E41 candidate 1.0848, zero overlaps
+everywhere). Per-bench best-of-{E25, E41} hybrid. E25 wins 5/17
+(ibm01, ibm06, ibm07, ibm17, ibm18 — basins where SDF outperforms
+DPO); E41 wins 12/17 (rest — basins where DPO + K-joint dominate).
+Theoretical best-of-2 bound from verified per-bench numbers = 1.08121;
+realized 1.08151 within float-drift.
+
+NG45 commercial-design transfer: **0.6922** (−1.66 % vs E12 0.7037,
+tied with E18 0.69193 and E41 0.69022).
+
+Configuration: `experiments/E48_hybrid_e25_e41/code/cd_lns_sa_hybrid.py`.
+Per benchmark, runs both E25 (CDLNSSAPlacer) and E41
+(CDLNSSADPOKJointPlacer) pipelines and returns the lower-cost output.
+**No per-benchmark tuning** — the per-bench winner is determined by
+proxy value, not hardcoded bench-name logic. Total wall ~7 hr
+`--jobs 4` (max(E25, E41) per bench, parallel benches).
+
+ADR-011 *Proposed* (awaiting human decision). On ADR-011 accept,
+mark E25 (ADR-008) / E18 (ADR-009) / E41 (ADR-010) all as *Superseded*.
+
+### Overnight 2026-05-01 → 02 — three follow-ups, none lifted E48:
+- **E53 GPU DPO basin polish**: --fast 0.9254 (+0.36 % vs E41); 0
+  accepts in 350 GPU restarts. **FALSIFIED** — smooth-proxy gradient
+  cannot escape fully-converged CD-LNS-SA local optimum.
+- **E53m multi-seed hybrid** (E25 + E41 s42 + E41 s1): --fast 0.91128
+  (-0.97 % vs E48 — SAMPLE-SIZE OUTLIER); --all **1.08128 vs E48
+  1.08151 = tied** (-0.02 %). Adding a second DPO seed to the hybrid
+  doesn't compound at --all; both seeds tied on most benches.
+  **MARGINAL** — multi-seed within DPO is dead-end for breakthrough.
+- **E54 congestion-targeted destroy** (engages E8 6/20/74 % proxy
+  decomposition): --fast 0.9222 tied; --all 1.08568 (+0.39 %); --ng45
+  0.7022 with **ariane133 +5.14 % catastrophic regression**.
+  **FALSIFIED** — IBM-aware mechanism, NG45-blind on ariane-class
+  designs (joins E42/E43/E44 in this failure class).
+
+---
+
+## CDLNSSADPOKJointPlacer (E41) --- Verified Candidate (2026-04-30, superseded by E48)
+
+**Status: VERIFIED CANDIDATE — superseded by E48 hybrid.** Verified avg proxy
 **1.0848** on --all (**−1.29 % vs E12 champion 1.0990**, **−2.90 % vs
 leaderboard 1.1172**, −0.97 % vs E25 candidate, −0.46 % vs E18 candidate,
 zero overlaps everywhere). 14 wins / 3 losses / 0 ties on IBM.

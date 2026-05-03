@@ -1,13 +1,15 @@
 # ADR-008: Promote CD + LNS + SA-v2 as champion (E25 → 1.0954)
 
-**Status:** **Proposed** — awaiting human decision. The verified `--all` result
-(1.0954, zero overlaps, 11/17 wins, 4/17 ties, 2/17 sub-noise regression) clears
-all decision-rule thresholds, but the human elected to flag E25 as a champion
-*candidate* rather than auto-promote on 2026-04-29. Champion remains E12
-(ADR-007); E25 code stays at `submissions/cd_lns_sa/placer.py` as a candidate.
-This ADR captures the analysis for the eventual promotion decision but does
-NOT itself supersede ADR-007 until accepted.
-**Date:** 2026-04-29 (proposed)
+**Status:** **Superseded by ADR-011** 2026-05-02. Never reached *Accepted*.
+The verified `--all` result (1.0954, zero overlaps, 11/17 wins, 4/17 ties,
+2/17 sub-noise regression) cleared all decision-rule thresholds at
+2026-04-29, but the human elected to flag E25 as a champion *candidate*
+rather than auto-promote. Subsequent candidates E18 (ADR-009) at 1.08979,
+E41 (ADR-010) at 1.0848, and finally E48 hybrid (ADR-011) at **1.08151**
+each strictly improved on E25, and ADR-011 is the accepted promotion.
+E25 code remains at `submissions/cd_lns_sa/placer.py` because E48 calls
+it as a component pipeline (one of two best-of lanes).
+**Date:** 2026-04-29 (proposed) → 2026-05-02 (superseded by ADR-011)
 **Deciders:** project owner
 
 ## Context
