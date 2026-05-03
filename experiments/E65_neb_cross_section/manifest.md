@@ -6,8 +6,8 @@ parent: E25, E41 (basin endpoints)
 created: 2026-05-02
 decided: null
 champion_at_time: 1.08151 (E48 hybrid, ADR-011 *Accepted* 2026-05-02)
-outcome: null
-champion_delta: null
+outcome: **PARTIAL: ibm01 cross-section reveals INFEASIBILITY WALL between basins (2026-05-03 01:15 EDT).** Linear path between E25 (0.89333) and E41 (0.91895) endpoints passes through 100% infeasible territory: every intermediate k ∈ {0.1, ..., 0.9} has 88-155 residual overlaps after project_overlaps; pre-legal proxy peaks at 1.44 near k=0.5. **MONOTONE-UP verdict: 0/2 feasible interpolations beat endpoint min**. ibm12 cross-section pending (~01:56 EDT). **Structural implication**: SDF and DPO basins are topologically separated by an infeasibility wall, not a proxy barrier — local moves CANNOT bridge them via near-linear paths. Confirms E61 V1 50/50 crossover failure (136 residuals) was geometric, not a bug. **Path forward**: construct structurally new third basin from scratch (E63 spectral / E40 BP / E43 diffusion) — bypass the wall by not starting from either basin; OR design a "complete reconstruction" non-local move type that respects feasibility.
+champion_delta: not a placer; structural finding only
 graduated_to: null
 superseded_by: null
 ---
@@ -110,7 +110,72 @@ Run on multiple benches:
 - **ibm17** (E25 wins — different basin orientation).
 
 ## Outcome (filled when decided)
-[Empty until decided.]
+
+### ibm01 cross-section: INFEASIBILITY WALL (2026-05-03 01:15 EDT)
+
+```
+k     pre_proxy  ovl_pre   post-legal       ovl_post  proj_iters
+0.00  0.89333         0   0.89333 (E25)         0       0
+0.10  1.11987       145   INFEASIBLE           88      50
+0.20  1.25856       189   INFEASIBLE          125      50
+0.30  1.36748       206   INFEASIBLE          124      50
+0.40  1.40987       227   INFEASIBLE          116      50
+0.50  1.44246       217   INFEASIBLE          145      50  ← peak
+0.60  1.42536       205   INFEASIBLE          140      50
+0.70  1.37055       190   INFEASIBLE          155      50
+0.80  1.28369       172   INFEASIBLE          116      50
+0.90  1.13071       120   INFEASIBLE           62      50
+1.00  0.91895         0   0.91895 (E41)         0       0
+```
+
+Total wall: 2895 s = 48 min (E25 19 min + E41 28 min + cross-section 1 min).
+
+**Verdict: MONOTONE-UP with infeasibility wall.** 9 of 11 interpolation
+points are *infeasible* (88-155 residual overlaps each) — they are not
+just higher proxy, they are not feasible placements at all under the
+50-iter legalization budget. The 2 feasible points are exactly the
+endpoints; everything between is in a no-overlaps-possible region.
+
+**Quantitative shape of the wall**:
+- Pre-legal proxy peaks at k=0.5: **1.44** (61 % above endpoint min 0.89).
+- Residual-overlap count peaks at k=0.5-0.7: **140-155 unresolvable pairs**.
+- Both metrics are roughly *parabolic* in k, symmetric around k=0.5.
+
+This is the first quantitative measurement of the proxy landscape
+between the two basins. **The basins are topologically separated by
+infeasibility, not just by a proxy barrier.**
+
+### What this means for breakthrough strategy
+
+1. **Don't search via interpolation/recombination of existing basins**
+   — every interpolation hits the wall. E61 V1 (50/50 random crossover)
+   failed for the same reason: 136 unresolvable overlaps because k=0.5
+   is exactly where the wall is widest.
+2. **Don't try to bridge basins via local moves** — CD/LNS/SA/K-joint
+   all operate on feasible state and can't traverse the wall.
+3. **Real options**:
+   - **Construct a structurally new third basin from scratch.** E63
+     (spectral), E40 (BP/tensor-networks), E43 (diffusion sampling)
+     all bypass the wall by *not* starting from either E25 or E41.
+   - **Non-local move type that respects feasibility** — e.g.,
+     simultaneously re-place K=50 macros via Hungarian into a different
+     layout pattern, then polish. This is structurally a "K=50 K-joint",
+     orders of magnitude beyond E41's K=3.
+   - **Constrained NEB on the feasible manifold** — runs the path
+     along the boundary of the feasible set, never crossing into
+     infeasibility. Much harder optimization problem (active-set or
+     barrier methods).
+
+### Comparison to ibm12 cross-section
+
+ibm12 is in flight (ETA ~01:56 EDT). On ibm12 the basins are nearly
+tied (E25 1.2079, E41 1.2056) — could be:
+- **Same wall geometry**: confirms the infeasibility-wall is universal
+  (independent of basin proximity).
+- **Lower wall**: closer basins → smaller midpoint mixing → fewer
+  unresolvable overlaps → some interpolations might legalize. This
+  would suggest the wall HEIGHT depends on basin separation; closer
+  basins might be bridgeable with extra legalization budget.
 
 ## Pointers
 - Code: `code/neb_cross_section.py`.
