@@ -178,21 +178,46 @@ neighbors) don't match the structural-coupling clusters that K-joint exploits.
 
 ---
 
-## 4.6 Path forward — global topology navigation (REFRAMED 2026-05-02 16:10)
+## 4.6 Path forward — global topology navigation (REFRAMED 2026-05-03 07:35)
 
-After the 2026-05-01 → 02 wave, the project's open-question structure
-is sharper. **The bottleneck is global topology navigation**, not
-within-basin polish. All within-basin mechanisms (CD per-axis, LNS
-gridbin, SA-v2, K-joint K=3) saturate at ~1.082-1.085 on --all
-across multiple inits. Independent basin sampling (E62 WillSeed,
-E53m multi-seed, E61 GA crossover-with-broken-repair) has high
-variance and most third-basin candidates are *worse* than the
-existing two.
+### Overnight 2026-05-02 → 03 hardened the framing
+
+E65 NEB cross-section (graduated 2026-05-03) confirmed the structural
+finding: **the SDF (E25) and DPO (E41) basins are separated by an
+INFEASIBILITY WALL, not a proxy barrier.** Two cross-sections (ibm01
+and ibm12) both showed 0/9 intermediate k-values legalize on a linear
+interpolation between the two basins. Wall residuals ranged 88-155 hard
+overlaps; on ibm12 the endpoints differ by only 0.2 % in proxy yet are
+separated by a 233-residual feasibility gap. **The wall is a function
+of spatial-configuration distance, not proxy distance.** This rules out
+any mechanism that bridges basins at the *solution* level
+(interpolation, blending, macro-level crossover).
+
+E61_v2 spatial-block GA crossover (graduated marginal 2026-05-03)
+threaded through the wall by operating at the BLOCK level:
+2×2-quadrant chunks of macros from each parent are internally feasible,
+so block-level recombination stays close to the feasible manifold. Got
+**verified --all 1.08083 (−0.07 % vs E48 — marginal)** and **--ng45
+0.6908 (−0.20 %; ariane133 0.6760, −1.47 % — first break of the
+ariane133 failure point** that killed E42/E43/E44/E54/E62). Best-of-2
+{E48, E61_v2} = 1.08025 (−0.12 % vs E48); best-of-3 with E53m = 1.07995
+(−0.14 %). Strong hybrid contribution; standalone champion margin too
+small to promote.
+
+E63 spectral init V2/V3 (still blocked, 2026-05-03): Hungarian-on-slot-grid
+solves in 0.02 s but ibm01 fits only 28 max-size slots vs 246 hard
+movables; row-packing is correct but doesn't avoid fixed macros
+pre-placed on canvas (111 residuals). **Both algorithms work for
+movable-only sub-problems**; what's needed is row-packing AROUND fixed
+macros (subtract fixed regions from row x-spans).
+
+**The bottleneck remains global topology navigation.** Updated
+direction map below reflects the post-overnight reality.
 
 To break out, we need an algorithm that explicitly NAVIGATES across
 many topologies, exploiting the structure of the topology landscape
-rather than randomly sampling it. Four directions, ordered by
-implementation cost × research value:
+rather than randomly sampling it. The infeasibility wall finding shapes
+which mechanisms are even possible:
 
 ### 4.6.A — LP-bounded beam K-joint (E64 — multi-day dev)
 
@@ -268,54 +293,68 @@ high-variance, worth a paper independent of competition lift.
 
 *Status:* **roadmap-only; post-deadline research.**
 
-### 4.6 Pre-deadline execution plan (REVISED 2026-05-02 22:15)
+### 4.6 Pre-deadline execution plan (REVISED 2026-05-03 07:35)
 
-1. ~~E63 spectral init~~ — **BLOCKED on legalization design**.
-   Eigendecomposition of netlist Laplacian works (~0.2 s on ibm01,
-   eigenvalues 1e-9, 0.219, 0.358), but three legalization approaches
-   tonight all failed: (a) linear rescaling + project_overlaps =
-   270 residual overlaps; (b) rank mapping + greedy_legalize = O(N³)
-   timeout (2+ hr without completing on ibm01); (c) SDF baseline +
-   spectral permutation = 78 overlaps because permuting macros across
-   SDF positions ignores per-macro size constraints. **The conceptual
-   mechanism is sound but legalization needs proper design — Hungarian
-   assignment with size-aware cost, or a custom row-based legal placer
-   that respects spectral ordering, or a target-aware SDF variant
-   (modify SDF init to pull toward spectral coords as targets).**
-   Estimated additional dev: 2-4 hours focused work. Manifest at
-   `experiments/E63_spectral_init/manifest.md` documents the three
-   failed approaches.
-2. **E64 LP-bounded beam K-joint** — **scaffolded** at
-   `experiments/E64_lp_beam_kjoint/manifest.md`. Implementation gates:
-   (a) reconstruct polyhedra LP infrastructure from
-   `writeup/archive/submissions/cd_lns_placer.py`
-   (`assignment.py` / `lp.py` deleted in commit 44efd16); (b) HiGHS
-   solver wrapper (`highspy` available in env); (c) beam search runtime
-   ~200 lines; (d) cluster selection via LP-dual values. **Estimated
-   2-3 days focused dev.** Smoke on ibm10 (E41's biggest hard-plateau
-   win) before --fast. *This is the most direct extension of K-joint
-   that should NG45-transfer because the LP relaxation is benchmark-
-   structure-blind.*
-3. **POST-DEADLINE research:** E65 population-based diversity-search
-   (4.6.C). E66 diffusion sampling (4.6.D).
+1. **DECIDE on E61_v2 promotion** (today, ~30 min review):
+   - Standalone --all 1.08083 vs E48 1.08151 = −0.07 % (marginal,
+     within noise — fails the −0.30 % promotion threshold).
+   - --ng45 0.6908 (−0.20 %), **ariane133 0.6760 (−1.47 % LIFT)** —
+     first NG45-positive mechanism since E18.
+   - best-of-{E48, E61_v2} = 1.08025 (−0.12 % over E48 standalone);
+     best-of-3 with E53m = 1.07995 (−0.14 %).
+   - Recommendation: ADR-012 *Proposed* either way; promotion question
+     is whether NG45 lift + per-bench hybrid contribution outweighs
+     the marginal --all standalone delta.
+   - If promote: extend `cd_lns_sa_hybrid/` to 3-lane
+     {E25 SDF, E41 DPO, E61_v2 spatial-block crossover}, sharing the
+     E25/E41 internal placers between lanes (no redundant work).
+2. **Finish E63 legalization** (~2-4 hr): row-pack with fixed-region
+   subtraction. The V3 row-packing algorithm is correct for movable
+   macros; need to (a) compute per-row x-span available given fixed
+   macros' bboxes intersecting that row, (b) skip x-positions inside
+   fixed bboxes during pack, OR (c) post-pack greedy displacement of
+   movables overlapping fixed macros to nearest free spot. Manifest
+   at `experiments/E63_spectral_init/manifest.md` has full V2/V3
+   diagnosis.
+3. **E64 LP-bounded beam K-joint** — still scaffolded at
+   `experiments/E64_lp_beam_kjoint/manifest.md`; implementation gates
+   unchanged (reconstruct polyhedra LP from
+   `writeup/archive/submissions/cd_lns_placer.py`; ~2-3 days dev).
+   Now lower priority than E61_v2 promotion + E63 legalization fix
+   given E65's wall finding suggests local-move escapes are blocked.
+4. **POST-DEADLINE research:** Tier 0a structural reframings (BP /
+   tensor-networks, multigrid, symmetry quotient, diffusion sampling)
+   per `memory/tier_0a_structural_reframings.md`; specifically the
+   directions E65 manifest suggests still work — (i) constructing
+   structurally new third basin from scratch via BP / diffusion;
+   (ii) K=50 Hungarian re-pack non-local moves; (iii) constrained
+   NEB on the feasible manifold (active-set / barrier methods on
+   the no-overlap region).
 
-**Tonight's lessons:**
-- Spectral init's legalization is the bottleneck, not the
-  eigendecomposition. The 1980s-era spectral placement papers used
-  custom legalizers we haven't ported.
-- LP-bounded beam K-joint needs the deleted polyhedra LP machinery;
-  reconstruction is a real dev cycle, not a one-off code edit.
-- E62 WillSeed falsification + E63 spectral implementation difficulty
-  + E61 GA crossover repair-failure all point at the same structural
-  finding: **placement legalization is harder than placement
-  optimization**. Any new mechanism that produces invalid intermediate
-  placements needs a robust repair step, and `project_overlaps`
-  (50-iter cap) is not it.
+**Overnight lessons (2026-05-02 → 03):**
+- **The infeasibility wall is the dominant structural feature** of
+  the SDF↔DPO basin pair. Linear interpolation between basins doesn't
+  legalize, regardless of proxy gap. Bridging mechanisms must operate
+  at granularity coarser than per-macro (E61_v2 spatial blocks work)
+  or use non-local moves that don't pass through the wall (NEB
+  constrained to feasible manifold, K=50 Hungarian re-pack).
+- **Spatial-block crossover threads the needle** but only delivers
+  marginal --all lift (sample-size effect on small benches collapses
+  at scale). Real value is on tied-parent benches (ibm12/14/15)
+  where neither parent dominates and selective swap finds new basin.
+- **Spectral init has correct algorithm but stumbles on legalization**.
+  The 1980s-era spectral placement papers used custom legalizers we
+  haven't ported. V3 row-pack with fixed-region awareness is the
+  shortest path to a working spectral basin lane.
+- **Placement legalization is harder than placement optimization** —
+  this is the meta-lesson from E61 V1, E62 WillSeed, E63 V2/V3, and
+  E65 NEB. Any new mechanism producing invalid intermediate
+  placements needs first-class legalization design, not
+  `project_overlaps` afterthought.
 
 **Hard constraint (still):** every promotion candidate MUST verify on
-NG45 ariane133. The E42/E43/E44/E54/E62 falsification record is the
-strongest signal in the project — IBM-overfit mechanisms break on
-sparse commercial designs.
+NG45 ariane133. E61_v2 is the FIRST mechanism since E18 to clear that
+bar with positive lift; E42/E43/E44/E54/E62 all failed it.
 
 ---
 

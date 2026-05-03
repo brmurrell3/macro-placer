@@ -509,6 +509,120 @@ tested overnight 2026-05-01 → 02. **None lifted past E48.**
 
 ---
 
+## 8.7.5 The Infeasibility Wall — E65 Cross-Section (~1 page, structural finding, 2026-05-03)
+
+**Source material:** `experiments/E65_neb_cross_section/manifest.md`,
+`memory/e65_infeasibility_wall.md`.
+
+After the May 1-2 falsifications (E53/E53m/E54), the open question
+was: *what bridges the SDF and DPO basins*? The natural family of
+mechanisms — interpolation, blending, macro-level crossover — were
+either falsified (E61 V1: 136 unrecoverable overlaps) or stuck on
+implementation (E63 V2/V3 legalization issues).
+
+E65 NEB cross-section measures the proxy and feasibility along a
+**linear path between two converged placements** — E25 (SDF basin)
+and E41 (DPO basin). For each k ∈ {0.1, 0.2, …, 0.9}, the placement
+`(1−k)·E25 + k·E41` is computed, and `project_overlaps` runs to
+attempt legalization.
+
+> **TODO(prose):** Frame the structural finding. Two cross-sections
+> (ibm01, ibm12) tested. **Both yielded 0/9 feasible interpolations.**
+> Wall residuals 88-155 hard overlaps per intermediate k-value, peak
+> 145 at k=0.5 (ibm01). On ibm12 the cross-section endpoints differ
+> by only 0.2 % in proxy yet are separated by a 233-residual feasibility
+> gap. **The wall is a function of spatial-configuration distance,
+> not proxy distance.**
+>
+> **What this rules out for the field:** any mechanism that bridges
+> macro placement basins at the *solution* level via per-element
+> recombination. This is a stronger claim than "DPO seeds collapse
+> to byte-identical placements" (E5) — it says the *space between*
+> any two converged placements is overwhelmingly infeasible, even if
+> the basin endpoints are nearly proxy-equivalent.
+>
+> **What this rules in:** mechanisms that operate at coarser
+> granularity than per-element (E61 V2 spatial blocks succeed because
+> blocks are internally feasible), non-local feasibility-respecting
+> moves (K=N Hungarian re-pack, with N → all hard movables), or
+> constrained NEB that follows the feasible manifold rather than
+> a Euclidean line.
+>
+> Connection to ML "out-of-distribution" / "manifold hypothesis"
+> literature is worth flagging — the feasible region of placements is
+> an extremely thin manifold in R^{2N} space.
+
+> **TODO(figure):** Cross-section plot. X-axis = k ∈ [0, 1]. Two
+> y-axes: pre-legal proxy (left), residual overlap count (right).
+> Show ibm01 + ibm12 cross-sections in two panels.
+
+> **TODO(data):** ibm01 + ibm12 cross-section CSVs in
+> `experiments/E65_neb_cross_section/results/`.
+
+---
+
+## 8.7.6 Spatial-Block GA Crossover — E61 V2 Threads the Wall (~1.5 pages, candidate, 2026-05-03)
+
+**Source material:** `experiments/E61_ga_crossover/manifest.md`,
+`experiments/E61_ga_crossover/results/best_of_analysis.md`,
+`docs/decisions/012_e61v2_spatial_block_crossover_promotion.md` (ADR
+*Proposed*).
+
+E61 tested whether GA crossover between E25 (SDF basin) and E41 (DPO
+basin) outputs could find a basin neither parent reaches alone.
+
+> **TODO(prose):**
+> **V1 (per-macro Bernoulli)**: each hard macro takes its position
+> independently from E25 or E41 (Bernoulli p=0.5). **Falsified** —
+> 136 unrecoverable overlaps per crossover attempt; project_overlaps
+> caps at 50 iters and never legalizes. Direct empirical
+> consequence of the §8.7.5 infeasibility wall.
+>
+> **V2 (spatial-block 2×2)**: the canvas is divided into four
+> quadrants (top-left / top-right / bottom-left / bottom-right);
+> each quadrant takes ALL its hard macros from one parent (Bernoulli
+> per-quadrant). Block boundaries align with mid-canvas; macros
+> straddling boundaries assigned to whichever side their center
+> falls. The four-block crossover produces a placement where each
+> 2×2 region is internally feasible; only block-boundary
+> interactions need overlap repair, which `project_overlaps`
+> handles in <50 iters.
+>
+> **Why this works (mechanism):** spatial blocks are coarser than
+> per-macro but finer than full-canvas. Block-internal topology is
+> preserved from one parent; block-boundary topology is mixed but
+> small in extent. The key insight: **the infeasibility wall is
+> avoided not by smoothing the recombination but by choosing a
+> recombination granularity at which both parents are individually
+> close to feasible**.
+
+### 8.7.6.1 V2 results (verified)
+
+| Mode | Avg | Δ vs E48 | Notes |
+|------|----:|---------:|-------|
+| --fast | 0.91342 | **−0.74 %** | sample-size lift on 4 small benches |
+| --all | 1.08083 | **−0.07 %** | marginal at aggregate; fails standalone promotion threshold |
+| --ng45 | **0.6908** | **−0.20 %** | **first NG45-positive mechanism since E18** |
+| ariane133 | 0.6760 | **−1.47 %** | **breaks the consistent ariane133 failure point** (E42/E43/E44/E54/E62 all regressed there) |
+
+Per-bench --all: 6 wins / 5 losses / 6 ties vs E48. Big wins on
+**tied-parent benches** (ibm12 −0.68 %, ibm14 −0.47 %, ibm15
+−0.29 %) — exactly the benches where E25 and E41 are within ~1.7 %
+of each other. On benches where one parent dominates (ibm04 E41 by
+−2.7 %, ibm17 E25 by +0.7 %), polish reverts to the dominant parent.
+
+### 8.7.6.2 Hybrid extension
+
+> **TODO(prose):** best-of-{E48, E61_v2} per-bench = **1.08025**
+> (−0.12 % vs E48). Best-of-3 with E53m = 1.07995 (−0.14 %).
+> Hybrid contribution is the strongest argument for ADR-012
+> promotion. Connect to §8.6 hybrid mechanism.
+
+> **TODO(figure):** Per-bench bar chart E48 / E53m / E61_v2 / best-of-3.
+> Use `experiments/E61_ga_crossover/results/best_of_analysis.md` data.
+
+---
+
 ## 8.8 The IBM/NG45 Transfer-Failure Pattern (~0.75 pages, structural finding)
 
 **Source material:** `docs/roadmap.md` §4.5; per-experiment manifests
@@ -568,11 +682,16 @@ benchmark structure data.
 | DPO init + CD + LNS + SA-v2 *(component)* | CDLNSSADPOInit (E18) | 1.08979 | +25.2 % | 2026-04-30 |
 | DPO init + CD + LNS + SA-v2 + K-joint *(component)* | CDLNSSADPOKJoint (E41) | 1.0848 | +25.6 % | 2026-04-30 |
 | **Per-bench best-of-{E25, E41} hybrid** | **CDLNSSAHybrid (E48)** | **1.08151** | **+25.8 %** | **2026-05-02** |
+| Spatial-block GA crossover (E25 ⊗ E41 outputs) *(candidate)* | CDLNSGACrossoverPlacer (E61_v2) | 1.08083 | +25.9 % | 2026-05-03 |
+| **3-lane best-of-{E48, E61_v2}** *(if ADR-012 accepted)* | (3-lane hybrid extension) | **1.08025** | **+25.9 %** | TBD |
 
 Each champion replaced its predecessor by a *structural change*, not
 parameter tuning. The May 2026 entries (E18 / E25 / E41) appear as
 *components* of the E48 hybrid — none promoted standalone, but each
-contributes lanes the hybrid picks per-bench.
+contributes lanes the hybrid picks per-bench. E61_v2 (spatial-block
+crossover) is a candidate for the same role at one level higher: a
+crossover-of-hybrid-outputs mechanism that threads through the
+infeasibility wall identified in §8.7.5.
 
 ### 9.2 Per-benchmark champion table
 
@@ -609,11 +728,24 @@ contributes lanes the hybrid picks per-bench.
 | **E53** GPU DPO basin polish (multi-restart MPS Adam) | 0.9254 (--fast); 0/350 GPU restarts accepted at full budgets | **falsified** | Smooth-proxy gradient cannot escape fully-converged CD-LNS-SA local optimum |
 | **E53m** Multi-seed hybrid (3-way w/ E41 seed=1) | 0.91128 (--fast outlier); 1.08128 (--all tied with E48) | marginal | Multi-seed within DPO averages out at --all aggregate scale |
 | **E54** Congestion-targeted LNS destroy | 0.9222 (--fast tied); 0.7022 (--ng45 +1.45 %) | **falsified on NG45** | ariane133 +5.14 %; mechanism-aligned destroy is IBM-aware/NG45-blind |
+| **E60** Replica-exchange SA-v2 (parallel tempering) | 0/21 swap accepts at narrow temp spacing | falsified | Energy gap between chains ≥0.05 → swap log-prob ≈ −1000; SA isn't basin-stuck, basin choice is the bottleneck |
+| **E61 V1** Per-macro Bernoulli GA crossover | 136 unrecoverable overlaps per attempt | falsified | Per-macro recombination falls inside the infeasibility wall (§8.7.5); fixed by V2 spatial-block at coarser granularity |
+| **E62** WillSeed init lane (E41 backbone) | --fast 0.9335 (+1.44 % vs E48; loses every fast bench) | falsified | Standalone init quality (1.5338) doesn't predict basin quality; CD lands worse fixed point from WillSeed than from SDF or DPO |
+| **E63** Spectral / quadratic init (V2 Hungarian / V3 row-pack) | implementation blocked: V2 28 max-size slots vs 246 macros; V3 111 fixed-macro residuals | implementation incomplete | Eigendecomposition works in 0.2 s; legalization is the hard step. Needs row-pack with fixed-region awareness (~2-4 hr dev). |
 
 The bottom block (E42 / E43 / E44 / E54) reveals a structural failure
 class: heuristics that engage the proxy's component decomposition
 (6 % WL / 20 % density / 74 % congestion) lift on dense IBM layouts but
 break on sparse commercial designs (ariane133 specifically). See §8.8.
+
+E60 / E61 V1 / E62 / E63 reveal an orthogonal structural finding: the
+SDF↔DPO basin pair is separated by an **infeasibility wall** in
+spatial-configuration space (§8.7.5). Mechanisms that bridge basins at
+the *solution* level via per-element recombination fall inside the
+wall; mechanisms operating at coarser granularity (E61 V2 spatial
+blocks, §8.7.6) thread through. E63 spectral and E64 LP-bounded beam
+K-joint remain candidates for "construct a third basin without
+bridging" — both still under development.
 
 ### 9.5 Generalization & robustness
 

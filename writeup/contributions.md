@@ -560,6 +560,91 @@ record: `e53_gpu_dpo_falsification.md`.
 
 ---
 
+## 19. The infeasibility-wall finding (E65 NEB cross-section)
+
+**Claim (TODO prose):** Two converged macro placements that are
+proxy-near (within 0.2 %) can be separated by a thick infeasibility
+wall in spatial-configuration space. Linear interpolation between
+SDF (E25) and DPO (E41) basins on ibm01 and ibm12 yielded **0/9
+feasible intermediate placements**, with residual overlap counts
+88-155 (peak 145 at k=0.5 on ibm01). The wall is a function of
+spatial-configuration distance, not proxy distance — ibm12 endpoints
+differ by 0.2 % in proxy yet are separated by a 233-residual feasibility
+gap.
+
+> **TODO(prose):** This is a structural finding about the geometry
+> of the macro-placement feasible region — it is an **extremely thin
+> manifold** in R^{2N}, and even *proxy-equivalent* basins are
+> disconnected on it. Connect to ML "out-of-distribution" / "manifold
+> hypothesis" literature; placement may be the rare combinatorial
+> problem where the manifold structure is empirically measurable
+> via the proxy + overlap-projection oracle.
+>
+> **What this rules out for the field:** mechanisms that bridge
+> placement basins at the *solution* level via per-element
+> recombination (E61 V1, in-place blending). The natural fix is
+> coarser granularity (E61 V2 spatial blocks succeed) or non-local
+> moves that don't pass through the wall.
+
+**What's novel:** First (in our exploration) to *quantify* the
+infeasibility-wall structure of the placement feasible region as a
+scalar (residual overlap count vs interpolation parameter k). The
+NEB / string-method framework is well-known in chemistry, but its
+direct application to *measuring* basin-pair feasibility geometry in
+combinatorial placement is, as far as we can tell, novel.
+
+**Evidence:** `experiments/E65_neb_cross_section/manifest.md`,
+`memory/e65_infeasibility_wall.md`. Cross-section data: ibm01
+(0/9 feasible, 88-155 overlaps), ibm12 (0/9 feasible, 89-233
+overlaps). Connects to the E61 V1 falsification (136 unrecoverable
+overlaps from per-macro Bernoulli crossover) — same wall, measured
+two ways.
+
+---
+
+## 20. Spatial-block GA crossover threads the infeasibility wall (E61 V2)
+
+**Claim (TODO prose):** A 2×2-quadrant spatial-block crossover between
+two converged placements (E25 SDF basin, E41 DPO basin) succeeds
+where per-macro Bernoulli crossover (E61 V1) fails — because **block-
+internal feasibility is preserved from each parent** and only block-
+boundary effects need projection repair.
+
+> **TODO(prose):** Frame as an existence proof of basin bridging at
+> the *right granularity*. The §19 infeasibility wall implies
+> per-macro recombination is geometrically blocked; spatial-block
+> recombination operates above the wall. Quantitatively: block-level
+> crossover preserves O(N) macros' relative positions per parent
+> (within a block); per-macro recombination preserves O(1).
+>
+> **Verified results:** --all 1.08083 (−0.07 % vs E48; standalone
+> marginal); --ng45 0.6908 (−0.20 %; **ariane133 0.6760 = −1.47 %
+> LIFT — first NG45-positive mechanism since E18**); per-bench
+> best-of-{E48, E61_v2} = 1.08025 (−0.12 % vs E48); best-of-3 with
+> E53m = 1.07995 (−0.14 %). Wall 26.6 hr CPU / ~6.7 hr `--jobs 4`.
+>
+> **Mechanism interpretation:** crossover wins concentrate on
+> tied-parent benches (ibm12 / ibm14 / ibm15 — within 1.7 % between
+> E25 and E41); polish reverts to dominant parent on
+> basin-asymmetric benches. Expected by the geometry: tied-parent
+> benches have low effective basin-pair distance, so block
+> crossover lands closer to the feasible manifold.
+
+**What's novel:** Spatial-block GA crossover is standard in some
+combinatorial domains, but its application to placement at this
+specific granularity (2×2 quadrants on a finite canvas) and its
+analytical motivation by the §19 wall measurement is, in our
+exploration, novel. The connection between basin-pair proximity and
+crossover effectiveness is also empirically demonstrated for the
+first time here.
+
+**Evidence:** `experiments/E61_ga_crossover/manifest.md`,
+`experiments/E61_ga_crossover/results/best_of_analysis.md`,
+`docs/decisions/012_e61v2_spatial_block_crossover_promotion.md`
+(ADR *Proposed*).
+
+---
+
 ## Explicitly excluded
 
 The following topics from `theory.md` (in this writeup directory)

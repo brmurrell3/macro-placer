@@ -20,9 +20,10 @@ tables for DPO / Polyhedra / Overnight Sweep / Miftari live in
 
 | Hypothesis | Status | Best Avg Proxy | Notes |
 |------------|--------|----------------|-------|
-| **CDLNSGridBinPlacer (E12)** | **CHAMPION** | **1.0990** | **Beats leaderboard 1.1172 by -1.63%; -24.6% vs RePlAce; CD plateau + grid-bin LNS overlay (ADR-007). Promoted 2026-04-28.** |
-| **CDLNSSAHybridPlacer (E48)** | **STRONGEST VERIFIED CANDIDATE** | **1.08151** | **Verified −1.59 % vs E12 (−3.21 % vs leaderboard, −0.30 % vs E41); --ng45 0.6922 (−1.66 % vs E12 0.7037, tied with E18 0.69193).** Per-bench best-of-{E25, E41} hybrid (E25 wins 5/17, E41 wins 12/17). Algorithmically valid (no per-benchmark tuning; picks per-bench winner by proxy value). Code at `experiments/E48_hybrid_e25_e41/code/cd_lns_sa_hybrid.py`; ADR-011 *Proposed* 2026-05-01. Wall ~7 hr `--jobs 4`. |
-| CDLNSSAMultiseedHybridPlacer (E53m) | tied with E48 (no incremental lift) | 1.08128 | Verified --all 1.08128 (only −0.02 % vs E48 1.08151 — within noise). 3-way hybrid {E25, E41 seed=42, E41 seed=1}. The --fast lift (-0.97 %) was sample-size outlier; --all aggregates dampen DPO seed-noise. Multi-seed within DPO is dead-end for breakthrough. Code at `experiments/E53_multiseed_hybrid/code/cd_lns_sa_multiseed_hybrid.py`. |
+| **CDLNSSAHybridPlacer (E48)** | **CHAMPION** | **1.08151** | **Verified −1.59 % vs E12 (−3.21 % vs leaderboard, −0.30 % vs E41); --ng45 0.6922.** Per-bench best-of-{E25, E41} hybrid (E25 wins 5/17, E41 wins 12/17). No per-benchmark tuning (picks per-bench winner by proxy value). Code at `submissions/cd_lns_sa_hybrid/placer.py`; **ADR-011 *Accepted* 2026-05-02**. Wall ~7 hr `--jobs 4`. |
+| CDLNSGridBinPlacer (E12) | prior champion | 1.0990 | Was champion 2026-04-28 → 2026-05-02 (ADR-007 superseded by ADR-011). Still the safe baseline reference; CD plateau + grid-bin LNS overlay. |
+| CDLNSGACrossoverPlacer (E61_v2) | strongest verified candidate; ADR-012 *Proposed* | 1.08083 | **Marginal --all (−0.07 % vs E48); KEY result: --ng45 0.6908 (−0.20 % vs E48, ariane133 0.6760 = −1.47 % LIFT — first NG45-positive mechanism since E18).** Spatial-block 2×2 GA crossover between E25/E41 outputs, polish via CD+LNS+SA-v2. Wins 6/17 vs E48 on --all (concentrated on tied-parent benches: ibm12 −0.68 %, ibm14 −0.47 %, ibm15 −0.28 %). Best-of-{E48, E61_v2} = 1.08025 (−0.12 % over E48 standalone); best-of-3 with E53m = 1.07995 (−0.14 %). Code at `experiments/E61_ga_crossover/code/cd_lns_ga_crossover.py`; ADR-012 *Proposed* 2026-05-03. Wall 26.6 hr CPU / ~6.7 hr `--jobs 4`. |
+| CDLNSSAMultiseedHybridPlacer (E53m) | tied with E48 (no incremental lift) | 1.08128 | Verified --all 1.08128 (−0.02 % vs E48; within noise). 3-way hybrid {E25, E41 s42, E41 s1}. --fast lift (−0.97 %) was sample-size outlier; --all aggregates dampen DPO seed-noise. Multi-seed within DPO is dead-end for breakthrough on its own. |
 | CDLNSSADPOKJointPlacer (E41) | candidate (superseded by E48) | 1.0848 | Verified −1.29 % vs E12, 14/17 IBM wins; --ng45 0.69022 (−1.91 % vs E12). DPO + CD + LNS + SA-v2 + K-joint K=3. ADR-010 *Proposed* (mark *Superseded* on ADR-011 accept). |
 | CDLNSSADPOInitPlacer (E18) | candidate (superseded by E41/E48) | 1.08979 | Verified −0.84 % vs E12, 4/4 NG45 wins. DPO basin transfer to OOD designs proven. ADR-009 *Proposed* (mark *Superseded* on ADR-011 accept). |
 | CDLNSSAPlacer (E25) | candidate (older; superseded by E18/E41/E48) | 1.0954 | Verified −0.33% lift over E12. Adds SA-v2 polish on per-axis breakpoints with best-so-far tracking + T₀=5e-4. ADR-008 *Proposed*; mark *Superseded* on ADR-011 accept. |
@@ -32,16 +33,40 @@ tables for DPO / Polyhedra / Overnight Sweep / Miftari live in
 | Polyhedra Navigation | superseded | 1.4867 | At ceiling; replaced by DPO. Details in `writeup/historical_results.md`. |
 | SDF Density | init only | 1.5002 | Now used as init for both CD placers |
 
-## CDLNSSAHybridPlacer (E48) --- Strongest Verified Candidate (2026-05-01)
+## CDLNSSAHybridPlacer (E48) --- CHAMPION (2026-05-02)
 
-**Status: STRONGEST CANDIDATE — not promoted.** Verified avg proxy
-**1.08151** on --all (**−1.59 % vs E12 1.0990**, **−3.21 % vs
-leaderboard 1.1172**, −0.30 % vs E41 candidate 1.0848, zero overlaps
-everywhere). Per-bench best-of-{E25, E41} hybrid. E25 wins 5/17
-(ibm01, ibm06, ibm07, ibm17, ibm18 — basins where SDF outperforms
-DPO); E41 wins 12/17 (rest — basins where DPO + K-joint dominate).
-Theoretical best-of-2 bound from verified per-bench numbers = 1.08121;
-realized 1.08151 within float-drift.
+**Status: CHAMPION — promoted 2026-05-02 via ADR-011 *Accepted*.**
+Verified avg proxy **1.08151** on --all (**−1.59 % vs E12 1.0990**,
+**−3.21 % vs leaderboard 1.1172**, −0.30 % vs E41 candidate 1.0848,
+zero overlaps everywhere). Per-bench best-of-{E25, E41} hybrid. E25
+wins 5/17 (ibm01, ibm06, ibm07, ibm17, ibm18 — basins where SDF
+outperforms DPO); E41 wins 12/17 (rest — basins where DPO + K-joint
+dominate). Theoretical best-of-2 bound from verified per-bench numbers
+= 1.08121; realized 1.08151 within float-drift.
+
+### Strongest verified candidate (CDLNSGACrossoverPlacer, E61_v2) — ADR-012 *Proposed* 2026-05-03
+
+Verified `--all` **1.08083** (−0.07 % vs E48 — *marginal*, fails the
+−0.30 % promotion threshold by ~5×). Verified `--ng45` **0.6908**
+(−0.20 % vs E48 0.6922) with **ariane133 0.6760 (−1.47 % LIFT vs E48
+0.6861)** — the first mechanism since E18 to break the consistent
+ariane133 failure point that killed E42/E43/E44/E54/E62. Per-bench
+on --all: **6 wins / 5 losses / 6 ties vs E48**. Big wins concentrated
+on tied-parent benches (ibm12 −0.68 %, ibm14 −0.47 %, ibm15 −0.28 %)
+where neither E25 SDF basin nor E41 DPO basin dominates. Mechanism
+verified: spatial-block 2×2-quadrant crossover threads through the
+infeasibility wall that blocks per-macro crossover (E61 V1 was
+falsified, 136 unrecoverable overlaps; V2 succeeds because spatial
+blocks preserve internal feasibility).
+
+**Best-of hybrid:** combining E48 + E61_v2 per-bench = **1.08025
+(−0.12 % vs E48)**; adding E53m = 1.07995 (−0.14 %). The hybrid
+contribution is the strongest argument for ADR-012 promotion;
+standalone --all delta isn't.
+
+Code at `experiments/E61_ga_crossover/code/cd_lns_ga_crossover.py`;
+best-of analysis at `experiments/E61_ga_crossover/results/best_of_analysis.md`.
+Wall 26.6 hr CPU / ~6.7 hr `--jobs 4`. Awaiting promotion decision.
 
 NG45 commercial-design transfer: **0.6922** (−1.66 % vs E12 0.7037,
 tied with E18 0.69193 and E41 0.69022).
