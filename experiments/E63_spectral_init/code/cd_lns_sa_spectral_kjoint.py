@@ -242,6 +242,392 @@ def _row_pack_legalize_spectral(
     return pos_np
 
 
+def _row_pack_legalize_spectral_fixed_aware(
+    spectral_xy: np.ndarray,
+    sizes_np: np.ndarray,
+    fixed_mask: np.ndarray,
+    original_positions: np.ndarray,
+    n_hard: int,
+    canvas_w: float,
+    canvas_h: float,
+    log_fn: Optional[Callable[[str], None]] = None,
+) -> np.ndarray:
+    """V4 — row-pack legalizer that AVOIDS hard FIXED macros.
+
+    V3 (`_row_pack_legalize_spectral`) packs movables L→R top-down by
+    spectral_y but ignores fixed-macro positions, producing
+    movable↔fixed overlaps that project_overlaps can't fully repair
+    (E63 manifest 2026-05-03: 111 residuals on ibm01).
+
+    V4 algorithm:
+      1. Pre-compute hard FIXED macro bboxes for collision queries.
+         (Soft macros, n_macros > n_hard, can overlap per problem spec.)
+      2. Sort movable hard macros by (spectral_y desc, spectral_x asc).
+      3. For each movable, attempt placement at (cur_x, row_top - h):
+         a. If cand_right > canvas_w: advance row
+            (row_top ← row_top - row_max_h, cur_x ← 0).
+         b. If candidate bbox overlaps any fixed macro: jump cur_x past
+            the rightmost conflicting fixed-macro right edge.
+         c. Otherwise, place: pos[m] = (cur_x + w/2, row_top - h/2);
+            advance cur_x += w; track row_max_h.
+      4. Clip to canvas bounds.
+
+    No-overlap-by-construction for hard movable↔movable AND
+    movable↔fixed pairs. Subsequent project_overlaps handles only
+    edge cases (vertical-overflow pile-up at canvas bottom).
+    """
+    half_w = sizes_np[:, 0] / 2.0
+    half_h = sizes_np[:, 1] / 2.0
+
+    fixed_h = fixed_mask[:n_hard]
+    fixed_h_idx = np.where(fixed_h)[0]
+    n_fixed = len(fixed_h_idx)
+
+    if n_fixed > 0:
+        fix_cx = original_positions[fixed_h_idx, 0]
+        fix_cy = original_positions[fixed_h_idx, 1]
+        fix_hw = sizes_np[fixed_h_idx, 0] / 2.0
+        fix_hh = sizes_np[fixed_h_idx, 1] / 2.0
+        fix_l = fix_cx - fix_hw
+        fix_b = fix_cy - fix_hh
+        fix_r = fix_cx + fix_hw
+        fix_t = fix_cy + fix_hh
+    else:
+        fix_l = fix_b = fix_r = fix_t = np.array([], dtype=np.float64)
+
+    movable_h_idx = np.where(~fixed_h)[0]
+    n_movable = len(movable_h_idx)
+
+    if log_fn is not None:
+        log_fn(
+            f"  v4 row_pack: {n_movable} movables, {n_fixed} fixed, "
+            f"canvas={canvas_w:.1f}x{canvas_h:.1f}"
+        )
+
+    # Sort by (spectral_y desc, spectral_x asc, area desc).
+    sort_keys = np.column_stack([
+        -spectral_xy[movable_h_idx, 1],
+        spectral_xy[movable_h_idx, 0],
+        -sizes_np[movable_h_idx, 0] * sizes_np[movable_h_idx, 1],
+    ])
+    sort_order = np.lexsort(sort_keys.T[::-1])
+
+    pos_np = original_positions.copy()
+
+    # Small gap between adjacent macros to prevent float32-precision-induced
+    # overlap artifacts. EPS = 1e-3 micron is below any meaningful placement
+    # scale but well above float32 rounding noise.
+    EPS = 1e-3
+
+    # Sort by (spectral_y desc, spectral_x asc, area desc).
+    sort_keys = np.column_stack([
+        -spectral_xy[movable_h_idx, 1],
+        spectral_xy[movable_h_idx, 0],
+        -sizes_np[movable_h_idx, 0] * sizes_np[movable_h_idx, 1],
+    ])
+    sort_order = np.lexsort(sort_keys.T[::-1])
+
+    row_top = canvas_h
+    cur_x = 0.0
+    row_max_h = 0.0
+    n_rows = 1
+    n_jumps = 0
+    n_unplaced = 0
+    abort_pack = False
+
+    n_rows_pack = 1  # for log-message compatibility
+    row_h = 0.0
+
+    for k in sort_order:
+        if abort_pack:
+            n_unplaced += 1
+            continue
+
+        m = int(movable_h_idx[k])
+        w = float(sizes_np[m, 0])
+        h = float(sizes_np[m, 1])
+
+        placed = False
+        for _ in range(200):
+            cand_b = row_top - h
+            cand_t = row_top
+            cand_l = cur_x
+            cand_r = cur_x + w
+
+            # Horizontal overflow — advance to next row (only if cur row has
+            # at least one macro placed).
+            if cand_r > canvas_w and (cur_x > 0.0 or row_max_h > 0.0):
+                new_row_top = row_top - (max(row_max_h, h) + EPS)
+                if new_row_top - h < 0:
+                    # Vertical overflow — abort packing. Remaining macros
+                    # stay at original positions; project_overlaps + jitter
+                    # has a chance to repair.
+                    abort_pack = True
+                    n_unplaced += 1
+                    break  # break inner while, outer for handles abort_pack
+                row_top = new_row_top
+                cur_x = 0.0
+                row_max_h = 0.0
+                n_rows += 1
+                continue
+
+            # Fixed-macro collision check.
+            if n_fixed > 0:
+                y_overlap = (fix_b < cand_t + EPS) & (fix_t > cand_b - EPS)
+                x_overlap = (fix_l < cand_r + EPS) & (fix_r > cand_l - EPS)
+                conflicts = y_overlap & x_overlap
+                if conflicts.any():
+                    rightmost = float(fix_r[conflicts].max()) + EPS
+                    if rightmost > cur_x:
+                        cur_x = rightmost
+                        n_jumps += 1
+                        continue
+
+            # No conflict — place.
+            pos_np[m, 0] = cur_x + w / 2.0
+            pos_np[m, 1] = row_top - h / 2.0
+            cur_x += (w + EPS)
+            row_max_h = max(row_max_h, h)
+            placed = True
+            break
+
+        if not placed and not abort_pack:
+            # Inner-loop max_attempts exhausted (rare).
+            n_unplaced += 1
+    n_rows_pack = n_rows
+    row_h = row_max_h
+
+    pos_np[:n_hard, 0] = np.clip(
+        pos_np[:n_hard, 0], half_w[:n_hard], canvas_w - half_w[:n_hard]
+    )
+    pos_np[:n_hard, 1] = np.clip(
+        pos_np[:n_hard, 1], half_h[:n_hard], canvas_h - half_h[:n_hard]
+    )
+
+    if log_fn is not None:
+        msg = (
+            f"  v4 row_pack: placed {n_movable - n_unplaced}/{n_movable} "
+            f"into ~{n_rows} rows, {n_jumps} fixed-jumps"
+        )
+        if n_unplaced > 0:
+            msg += f", UNPLACED={n_unplaced} (vertical-overflow abort)"
+        log_fn(msg)
+
+    return pos_np
+
+
+def _tetris_legalize_with_row_spanning(
+    spectral_xy: np.ndarray,
+    sizes_np: np.ndarray,
+    fixed_mask: np.ndarray,
+    original_positions: np.ndarray,
+    n_hard: int,
+    canvas_w: float,
+    canvas_h: float,
+    log_fn: Optional[Callable[[str], None]] = None,
+) -> np.ndarray:
+    """V5 — Tetris-style legalizer with row-spanning for tall macros.
+
+    Generalizes V4's row-pack to handle the failure case where a single
+    macro h > canvas_h / target_rows. V4 packed all macros in same-h rows
+    by tracking row_max_h dynamically; on dense benches with one tall
+    macro (e.g. ibm13: 11.68-tall on 56-tall canvas), row_max_h dominates
+    drops and forces vertical overflow.
+
+    V5 algorithm (Spindler-Schlichtmann 2008 Abacus, simplified):
+      1. Pre-allocate `target_rows = ceil(total_widths / canvas_w * 1.10)`
+         row tracks of uniform height `row_h = canvas_h / target_rows`.
+         row_tops[r] = canvas_h - r * row_h.
+      2. Each macro with height h spans `n_spanned = ceil(h / row_h)` rows.
+      3. For each macro (sorted by spectral_y desc, area desc):
+         - Compute target row from spectral_y.
+         - Try placement at (max cur_x over spanned rows, row_tops[r0] - h/2).
+         - Spiralling through rows from target outward until placement
+           succeeds horizontally + respects fixed macros.
+         - On placement, update cur_x for ALL spanned rows.
+      4. Clip to canvas.
+
+    No-overlap-by-construction since row tracks are non-overlapping y-bands
+    and macros within or spanning rows are placed past previously-claimed
+    cur_x. Tall macros span multiple tracks; subsequent placements in
+    those tracks must be to the RIGHT of the tall macro.
+    """
+    half_w = sizes_np[:, 0] / 2.0
+    half_h = sizes_np[:, 1] / 2.0
+
+    fixed_h = fixed_mask[:n_hard]
+    fixed_h_idx = np.where(fixed_h)[0]
+    n_fixed = len(fixed_h_idx)
+
+    if n_fixed > 0:
+        fix_cx = original_positions[fixed_h_idx, 0]
+        fix_cy = original_positions[fixed_h_idx, 1]
+        fix_hw = sizes_np[fixed_h_idx, 0] / 2.0
+        fix_hh = sizes_np[fixed_h_idx, 1] / 2.0
+        fix_l = fix_cx - fix_hw
+        fix_b = fix_cy - fix_hh
+        fix_r = fix_cx + fix_hw
+        fix_t = fix_cy + fix_hh
+    else:
+        fix_l = fix_b = fix_r = fix_t = np.array([], dtype=np.float64)
+
+    movable_h_idx = np.where(~fixed_h)[0]
+    n_movable = len(movable_h_idx)
+
+    if n_movable == 0:
+        return original_positions.copy()
+
+    EPS = 1e-3
+
+    movable_widths = sizes_np[movable_h_idx, 0]
+    movable_heights = sizes_np[movable_h_idx, 1]
+    total_w = float(movable_widths.sum())
+    max_h_movable = float(movable_heights.max())
+    median_h = float(np.median(movable_heights))
+
+    # Choose row count: enough for horizontal slack + tall-macro span.
+    target_rows = max(1, int(np.ceil(total_w / canvas_w * 1.10)))
+    # Cap rows so row_h ≥ median_h (don't fragment too finely).
+    max_rows_by_median = max(1, int(np.floor(canvas_h / max(median_h, 0.1))))
+    target_rows = min(target_rows, max_rows_by_median)
+    target_rows = max(target_rows, 1)
+    row_h = canvas_h / target_rows
+
+    if log_fn is not None:
+        log_fn(
+            f"  v5 tetris: {n_movable} movables, {n_fixed} fixed, "
+            f"canvas={canvas_w:.1f}x{canvas_h:.1f}, "
+            f"target_rows={target_rows} row_h={row_h:.2f} max_h={max_h_movable:.2f}"
+        )
+
+    row_tops = np.array(
+        [canvas_h - r * row_h for r in range(target_rows)], dtype=np.float64
+    )
+    row_cur_x = np.zeros(target_rows, dtype=np.float64)
+
+    # Map spectral_y to row index.
+    spec_y = spectral_xy[movable_h_idx, 1]
+    sy_min = float(spec_y.min())
+    sy_max = float(spec_y.max())
+    if sy_max - sy_min < 1e-12:
+        sy_max = sy_min + 1.0
+
+    def target_row_for(k_idx_in_movable: int) -> int:
+        sy = float(spec_y[k_idx_in_movable])
+        frac = (sy_max - sy) / (sy_max - sy_min)
+        return max(0, min(target_rows - 1, int(round(frac * (target_rows - 1)))))
+
+    # Sort by (spectral_y desc, area desc — anchor with tall/wide macros).
+    sort_keys = np.column_stack([
+        -spectral_xy[movable_h_idx, 1],
+        -movable_widths * movable_heights,
+        spectral_xy[movable_h_idx, 0],
+    ])
+    sort_order = np.lexsort(sort_keys.T[::-1])
+
+    pos_np = original_positions.copy()
+    n_unplaced = 0
+    n_jumps = 0
+    n_row_skips = 0
+
+    for k in sort_order:
+        m = int(movable_h_idx[k])
+        w = float(sizes_np[m, 0])
+        h = float(sizes_np[m, 1])
+
+        if w > canvas_w:
+            # Macro wider than canvas — can't legalize. Leave at original.
+            n_unplaced += 1
+            continue
+
+        n_spanned = max(1, int(np.ceil(h / row_h)))
+
+        target_r = target_row_for(k)
+        placed = False
+        attempted = set()
+
+        # Spiral from target row outward.
+        for offset in range(target_rows + 1):
+            for sign in (1, -1) if offset > 0 else (1,):
+                r0 = target_r + sign * offset
+                if r0 in attempted:
+                    continue
+                if r0 < 0 or r0 + n_spanned > target_rows:
+                    continue
+                attempted.add(r0)
+
+                # Macro top edge at row_tops[r0].
+                cand_t = row_tops[r0]
+                cand_b = cand_t - h
+
+                spanned_cur_x = float(np.max(row_cur_x[r0:r0 + n_spanned]))
+                cand_x = spanned_cur_x
+
+                # Fixed-macro avoidance: jump cand_x past any conflicting fixed
+                # macro's right edge.
+                inner_attempts = 0
+                fits = False
+                while inner_attempts < 200:
+                    inner_attempts += 1
+                    cand_l = cand_x
+                    cand_r_x = cand_x + w
+                    if cand_r_x > canvas_w:
+                        break  # row r0 is full
+                    if n_fixed > 0:
+                        y_overlap = (fix_b < cand_t + EPS) & (fix_t > cand_b - EPS)
+                        x_overlap = (fix_l < cand_r_x + EPS) & (fix_r > cand_l - EPS)
+                        conflicts = y_overlap & x_overlap
+                        if conflicts.any():
+                            rightmost = float(fix_r[conflicts].max()) + EPS
+                            if rightmost > cand_x:
+                                cand_x = rightmost
+                                n_jumps += 1
+                                continue
+                    fits = True
+                    break
+
+                if not fits:
+                    continue  # try next row
+
+                # Place macro.
+                pos_np[m, 0] = cand_x + w / 2.0
+                pos_np[m, 1] = cand_t - h / 2.0
+                # Update cur_x for all spanned rows (this macro now blocks them).
+                new_x = cand_x + w + EPS
+                for r in range(r0, r0 + n_spanned):
+                    row_cur_x[r] = new_x
+
+                placed = True
+                if r0 != target_r:
+                    n_row_skips += 1
+                break
+
+            if placed:
+                break
+
+        if not placed:
+            n_unplaced += 1
+
+    pos_np[:n_hard, 0] = np.clip(
+        pos_np[:n_hard, 0], half_w[:n_hard], canvas_w - half_w[:n_hard]
+    )
+    pos_np[:n_hard, 1] = np.clip(
+        pos_np[:n_hard, 1], half_h[:n_hard], canvas_h - half_h[:n_hard]
+    )
+
+    if log_fn is not None:
+        msg = (
+            f"  v5 tetris: placed {n_movable - n_unplaced}/{n_movable}, "
+            f"{n_jumps} fixed-jumps, {n_row_skips} row-skips, "
+            f"max_cur_x={float(row_cur_x.max()):.1f}/canvas_w={canvas_w:.1f}"
+        )
+        if n_unplaced > 0:
+            msg += f", UNPLACED={n_unplaced}"
+        log_fn(msg)
+
+    return pos_np
+
+
 def _hungarian_legalize_spectral(
     spectral_xy: np.ndarray,
     sizes_np: np.ndarray,
@@ -423,11 +809,14 @@ def _spectral_init(
     sizes_full = sizes_np
 
     orig_pos_np = benchmark.macro_positions.cpu().numpy().astype(np.float64)
-    # Row-packing legalizer: standard EDA technique, no-overlap by
-    # construction for hard movables, handles arbitrary macro sizes.
-    # Hungarian-on-slot-grid only works on benches with low macro
-    # density (canvas/max_macro_size² ≥ n_macros).
-    pos = _row_pack_legalize_spectral(
+    # V4 row-pack legalizer (EPS-gap fixed-aware): works on 11/17 IBM
+    # benches as of 2026-05-03 (ibm01/04/06/07/08/09/14/15/16/17/18 OK;
+    # ibm02/03/10/11/12/13 fail with vertical-overflow abort). Returns
+    # placement that may have UNPLACED macros at original positions on
+    # the failing benches; project_overlaps + jitter loop tries repair.
+    # V5 Tetris-with-row-spanning attempted but produces worse results;
+    # left in module as scaffolding for future fix.
+    pos = _row_pack_legalize_spectral_fixed_aware(
         spectral_xy=spectral_xy,
         sizes_np=sizes_full,
         fixed_mask=fixed_mask_np,

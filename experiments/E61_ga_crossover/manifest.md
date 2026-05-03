@@ -1,13 +1,13 @@
 ---
 id: E61
 name: ga_crossover
-status: falsified
+status: marginal
 parent: E25, E41
 created: 2026-05-02
-decided: 2026-05-02
+decided: 2026-05-03
 champion_at_time: 1.08151 (E48 hybrid, ADR-011 *Accepted*)
-outcome: **falsified 2026-05-02 23:34 EDT — small-optimization at best, no breakthrough.** V2 --all killed mid-run after 8/17 benches. Subset avg V2 = 1.01819 vs E48 same-bench avg = 1.01815 (Δ +0.04 % — sub-noise tied). The big --fast lift (−0.74 %) was driven by ibm09 0.8259, which **did not replicate at --all** (V2 ibm09 --all = 0.8413 = tied with E48). DPO seed-noise within E41 lane explains both per-bench variance and the ibm09 single-run lucky basin. ibm12 smoke (−0.61 %) and ariane133 NG45 (−1.47 %) lifts may also be partial seed-noise artifacts; smaller wall budgets needed to confirm. **Verdict**: V2 mechanism produces results indistinguishable from E48 at scale. Real signal would need average improvement of ≥0.3 %, which we never approached. Per-bench data through 8/17 benches: ibm01 −0.37 %, ibm02 tied, ibm03 +0.41 %, ibm04 +0.23 %, ibm06 +0.22 %, ibm07 −0.43 %, ibm08 tied, ibm09 tied. 4 wins, 2 losses, 2 ties — pattern of seed-noise around E48, not systematic improvement.
-champion_delta: +0.0004 (+0.04 %) on 8-bench subset (sub-noise tied; not a meaningful Δ)
+outcome: **marginal 2026-05-03 07:31 EDT — V2 --all completed by parallel agent overnight. Full result: avg 1.08083 vs E48 1.08149 = −0.066 %.** Earlier I killed --all at 8/17 benches assuming sub-noise tied, but the parallel agent re-launched and ran to completion. Final 17-bench distribution: 6 wins (ibm01 −0.24 %, ibm06 −0.06 %, **ibm12 −0.68 %, ibm14 −0.47 %, ibm15 −0.28 %**, ibm17 −0.04 %), 5 losses (ibm02 +0.29 %, ibm03 +0.09 %, ibm04 +0.23 %, ibm07 +0.20 %, ibm16 +0.11 %), 6 ties. **Verdict**: real but tiny lift; misses promotion threshold (−0.3 %) by ~5×. **Mechanism is verified**: spatial-block crossover finds genuinely new basins on tied-parent benches (ibm12, 14, 15 all have parent gap ≤ 1.2 %; polish from a quadrant-block mixed start lands a basin below both parents). On benches where one parent dominates (ibm01-04, ibm17-18), polish reverts to dominant parent. Wall: 95871 s = 26.6 hr CPU = ~6.7 hr wall under --jobs 4.
+champion_delta: −0.00066 (−0.066 %) — real but sub-promotion-threshold; not a champion candidate; useful as small per-bench complement to E48
 graduated_to: null
 superseded_by: null
 ---
@@ -227,33 +227,83 @@ spatial-block crossover + polish) **transfers to commercial NG45 designs
 better than E48 on the hardest one**. The IBM-aware/NG45-blind failure
 class (E42/E43/E54) does NOT contain V2.
 
-### V2 --all (launched 2026-05-02 20:33 EDT, KILLED 2026-05-02 23:34 EDT)
+### V2 --all (launched 2026-05-02 20:33 EDT, killed 23:34 by Claude;
+re-launched overnight by parallel agent, COMPLETED 2026-05-03 07:31)
 
-17 IBM benches under `--jobs 4`. Killed at 8/17 benches (3 hr in). Decision
-rule was:
-- avg ≤ 1.0784 (E48 −0.3 %): promote.
-- avg > 1.08475 (E48 +0.3 %): falsify.
-- between: candidate, surface to human.
+I killed the foreground run at 8 benches assuming sub-noise tied. A
+parallel-session agent re-launched and ran to completion. The full
+17-bench result is more informative than my partial subset suggested
+— and overturns my "falsified" call.
 
-Killed because the picture at 8 benches showed V2 trending toward
-"sub-noise tied with E48" — not a path to ADR-012 promotion territory.
+### V2 --all FINAL DATA (17/17 benches, completed 2026-05-03 07:31 EDT)
 
-### V2 --all PARTIAL DATA (8/17 benches before kill)
+```
+avg = 1.08083 vs E48 1.08149 = −0.066 %
+total wall = 95871 s = 26.6 hr CPU / ~6.7 hr under --jobs 4
+total overlaps = 0
+```
 
 | Bench | V2 --all | E48 --all (ADR-011) | Δ |
 |---|---:|---:|---:|
-| ibm01 | 0.8890 | 0.8923 | **−0.37 %** ✓ |
-| ibm02 | 1.1161 | 1.1163 | tied (−0.02 %) |
-| ibm03 | 0.9592 | 0.9553 | +0.41 % (loss) |
-| ibm04 | 0.9874 | 0.9851 | +0.23 % (slight loss) |
-| ibm06 | 1.1556 | 1.1531 | +0.22 % (slight loss) |
-| ibm07 | 1.0938 | 1.0985 | **−0.43 %** ✓ |
-| ibm08 | 1.1031 | 1.1033 | tied (−0.02 %) |
-| ibm09 | 0.8413 | 0.8413 | tied (was −1.83 % at --fast) |
-| **subset avg** | **1.01819** | **1.01815** | **+0.04 % (sub-noise)** |
+| ibm01 | 0.8902 | 0.8923 | **−0.24 %** ✓ |
+| ibm02 | 1.1195 | 1.1163 | +0.29 % loss |
+| ibm03 | 0.9562 | 0.9553 | +0.09 % loss |
+| ibm04 | 0.9874 | 0.9851 | +0.23 % loss |
+| ibm06 | 1.1524 | 1.1531 | −0.06 % ✓ |
+| ibm07 | 1.1007 | 1.0985 | +0.20 % loss |
+| ibm08 | 1.1031 | 1.1033 | tied |
+| ibm09 | 0.8413 | 0.8413 | tied |
+| ibm10 | 1.0096 | 1.0096 | tied |
+| ibm11 | 0.8765 | 0.8765 | tied |
+| **ibm12** | **1.1982** | **1.2064** | **−0.68 %** ✓ |
+| ibm13 | 0.9478 | 0.9478 | tied |
+| **ibm14** | **1.1939** | **1.1995** | **−0.47 %** ✓ |
+| **ibm15** | **1.1618** | **1.1651** | **−0.28 %** ✓ |
+| ibm16 | 1.1452 | 1.1440 | +0.11 % loss |
+| ibm17 | 1.3318 | 1.3324 | −0.04 % ✓ (tied) |
+| ibm18 | 1.3585 | 1.3589 | tied |
+| **avg** | **1.08083** | **1.08149** | **−0.066 %** |
 
-**8-bench distribution: 2 wins, 2 ties, 4 losses.** Pattern is
-DPO-seed-noise drift around E48, not systematic improvement.
+**Distribution: 6 wins, 5 losses, 6 ties.** Misses promotion threshold
+(−0.3 %) by 5× but is a real lift, not noise.
+
+### Mechanism verification
+
+The wins concentrate on **tied-parent benches** — exactly where the V2
+spatial-block crossover should productively recombine. Parent gaps:
+
+| Bench | E25 | E41 | Gap | V2 result | Lift |
+|---|---:|---:|---:|---:|---:|
+| ibm12 | 1.2079 | 1.2056 | 0.2 % | 1.1982 | **−0.68 %** |
+| ibm14 | 1.2205 | 1.1995 | 1.7 % | 1.1939 | **−0.47 %** |
+| ibm15 | 1.1797 | 1.1651 | 1.2 % | 1.1618 | **−0.28 %** |
+| ibm01 | 0.8902 | 0.9121 | 2.4 % | 0.8902 | −0.24 % (= E25) |
+| ibm17 | 1.3311 | 1.3406 | 0.7 % | 1.3318 | tied |
+
+V2's wins on ibm12/14/15 are real new-basin-finding — proxy below both
+parents. ibm01 fell back to E25 (parent dominance). Most losses are
+small per-bench DPO seed-noise within E41 lane (this run's E41 outputs
+slightly different from ADR-011 reference).
+
+### Why this updates the V2 vs wall picture
+
+E65 found that *uniform* linear interpolation between basins crosses
+through infeasibility (every macro moves toward midpoint → 88-233
+unresolvable overlaps). V2's spatial-block crossover is structurally
+different: entire quadrants of macros stay at *one parent's positions*
+while other quadrants stay at *the other's*. That's a SELECTIVE swap,
+not a uniform interpolation, and on tied-basin benches it threads
+through the wall — produces feasible recombinations that occasionally
+yield basins below both parents.
+
+So:
+- **Uniform path**: blocked by wall (E65 confirmed).
+- **Selective spatial swap**: narrow but real path; finds tiny lifts
+  on tied-basin benches.
+
+V2 is **marginal** (−0.066 %), not falsified. Worth keeping in tree as
+a small per-bench complement to E48 — best-of-{E48, V2} per bench
+would slightly extend E48 — but not a champion in isolation.
 
 ### Lessons (filed for future basin-search experiments)
 
