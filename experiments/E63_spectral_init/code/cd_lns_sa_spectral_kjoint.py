@@ -115,6 +115,133 @@ def _build_netlist_laplacian(
     return L
 
 
+def _row_pack_legalize_spectral(
+    spectral_xy: np.ndarray,
+    sizes_np: np.ndarray,
+    fixed_mask: np.ndarray,
+    original_positions: np.ndarray,
+    n_hard: int,
+    canvas_w: float,
+    canvas_h: float,
+    log_fn: Optional[Callable[[str], None]] = None,
+) -> np.ndarray:
+    """Standard EDA row-packing legalizer that respects spectral 2D order.
+
+    Algorithm:
+    1. Sort hard movable macros by (spectral_y_desc, spectral_x_asc).
+       This bucketing places macros with similar spectral_y into the
+       same row, ordered L→R within the row.
+    2. Greedy-pack rows top-down, left-to-right:
+       - cur_y starts at canvas_top - max_h/2.
+       - cur_x starts at max_half_w.
+       - For each macro in sort order:
+         - If macro doesn't fit in current row's remaining x: new row
+           (cur_y -= max(row macros' heights), cur_x = max_half_w).
+         - Place at (cur_x + macro.w/2, cur_y).
+         - cur_x += macro.w.
+       - Within each row, max_h tracks the tallest macro to set
+         next row's cur_y drop.
+
+    Output is no-overlap-by-construction for hard movable macros (their
+    row edges abut, but don't overlap). Fixed macros stay at original
+    positions; project_overlaps cleanup handles any fixed↔movable
+    boundary effects.
+
+    O(N log N) for sort + O(N) for pack — orders of magnitude faster
+    than O(N²·R²) greedy_legalize, and handles arbitrary macro size
+    distributions (no max-size slot grid required).
+    """
+    n_macros = len(sizes_np)
+    half_w = sizes_np[:, 0] / 2.0
+    half_h = sizes_np[:, 1] / 2.0
+
+    # Hard movable indices.
+    fixed_h = fixed_mask[:n_hard]
+    movable_h_idx = np.where(~fixed_h)[0]
+    n_movable = len(movable_h_idx)
+
+    if log_fn is not None:
+        log_fn(
+            f"  row_pack: {n_movable} hard movables, "
+            f"canvas={canvas_w:.1f}×{canvas_h:.1f}"
+        )
+
+    # Sort by (spectral_y descending, spectral_x ascending). Tie-breaking
+    # by macro size descending (place larger first).
+    sort_keys = np.column_stack([
+        -spectral_xy[movable_h_idx, 1],          # primary: y desc
+        spectral_xy[movable_h_idx, 0],            # secondary: x asc
+        -sizes_np[movable_h_idx, 0] * sizes_np[movable_h_idx, 1],  # tertiary: area desc
+    ])
+    sort_order = np.lexsort(sort_keys.T[::-1])  # lexsort is reverse-priority
+
+    # Greedy row pack. Initialize from original positions — preserves
+    # SOFT macros (n_macros > n_hard) at their canonical placement and
+    # FIXED hard macros at their pinned positions. Only hard MOVABLE
+    # macros get overwritten by the row-pack assignment below.
+    pos_np = original_positions.copy()
+
+    # Standard EDA row packing convention: rows fill from top to bottom.
+    # Each row has a fixed `row_top_y` (= top edge). Macros sit with their
+    # top edges aligned to row_top_y, centers at (cur_x + w/2, row_top_y - h/2).
+    # cur_x = next-available left-edge x-coordinate within current row.
+    # When row is full (cur_x + w > canvas_w), drop row_top_y by row_max_h.
+    row_top_y = canvas_h
+    cur_x = 0.0
+    row_max_h = 0.0
+    row_started = False
+    n_rows_used = 0
+
+    for k in sort_order:
+        m = int(movable_h_idx[k])
+        w = float(sizes_np[m, 0])
+        h = float(sizes_np[m, 1])
+
+        if not row_started:
+            # First macro of the very first row.
+            row_top_y = canvas_h
+            cur_x = 0.0
+            row_max_h = h
+            row_started = True
+            n_rows_used += 1
+        elif cur_x + w > canvas_w:
+            # Doesn't fit in current row → start new row below.
+            row_top_y -= row_max_h
+            cur_x = 0.0
+            row_max_h = h
+            n_rows_used += 1
+            if row_top_y - h < 0:
+                # Out of canvas vertically. Wrap to bottom (rare; signals
+                # canvas too small for total macro area).
+                if log_fn is not None:
+                    log_fn(
+                        f"  row_pack WARN: ran out of canvas vertically "
+                        f"after {n_rows_used} rows; macros pile up at bottom"
+                    )
+                row_top_y = h
+        else:
+            row_max_h = max(row_max_h, h)
+
+        # Place macro: center = (cur_x + w/2, row_top_y - h/2).
+        pos_np[m, 0] = cur_x + w / 2.0
+        pos_np[m, 1] = row_top_y - h / 2.0
+
+        cur_x += w  # advance left-edge past this macro's right edge
+
+    # Clip to canvas (defensive, should already be in bounds).
+    pos_np[:n_hard, 0] = np.clip(
+        pos_np[:n_hard, 0], half_w[:n_hard], canvas_w - half_w[:n_hard]
+    )
+    pos_np[:n_hard, 1] = np.clip(
+        pos_np[:n_hard, 1], half_h[:n_hard], canvas_h - half_h[:n_hard]
+    )
+
+    if log_fn is not None:
+        log_fn(f"  row_pack: packed {n_movable} macros into {n_rows_used} rows")
+
+    return pos_np
+
+
 def _hungarian_legalize_spectral(
     spectral_xy: np.ndarray,
     sizes_np: np.ndarray,
@@ -215,14 +342,10 @@ def _hungarian_legalize_spectral(
             f"(matched {len(row_ind)} of {n_movable} movables)"
         )
 
-    # Build placement.
-    pos_np = np.full((n_macros, 2), canvas_w / 2.0, dtype=np.float64)
-    pos_np[:, 1] = canvas_h / 2.0
-
-    # Place fixed macros at original positions.
-    for i in range(n_macros):
-        if bool(fixed_mask[i]):
-            pos_np[i] = original_positions[i]
+    # Build placement. Initialize from original positions — preserves
+    # SOFT macros at their canonical placement and FIXED macros at
+    # pinned positions. Hard movables are overwritten via Hungarian below.
+    pos_np = original_positions.copy()
 
     # Place movables according to Hungarian assignment.
     for ii, slot_idx in zip(row_ind, col_ind):
@@ -300,7 +423,11 @@ def _spectral_init(
     sizes_full = sizes_np
 
     orig_pos_np = benchmark.macro_positions.cpu().numpy().astype(np.float64)
-    pos = _hungarian_legalize_spectral(
+    # Row-packing legalizer: standard EDA technique, no-overlap by
+    # construction for hard movables, handles arbitrary macro sizes.
+    # Hungarian-on-slot-grid only works on benches with low macro
+    # density (canvas/max_macro_size² ≥ n_macros).
+    pos = _row_pack_legalize_spectral(
         spectral_xy=spectral_xy,
         sizes_np=sizes_full,
         fixed_mask=fixed_mask_np,
