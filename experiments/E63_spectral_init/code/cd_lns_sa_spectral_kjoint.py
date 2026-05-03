@@ -27,6 +27,7 @@ from pathlib import Path
 from typing import Callable, List, Optional
 
 import numpy as np
+import scipy.optimize
 import scipy.sparse
 import scipy.sparse.linalg
 import torch
@@ -114,6 +115,128 @@ def _build_netlist_laplacian(
     return L
 
 
+def _hungarian_legalize_spectral(
+    spectral_xy: np.ndarray,
+    sizes_np: np.ndarray,
+    fixed_mask: np.ndarray,
+    original_positions: np.ndarray,
+    n_hard: int,
+    canvas_w: float,
+    canvas_h: float,
+    log_fn: Optional[Callable[[str], None]] = None,
+) -> np.ndarray:
+    """Fast Hungarian assignment of spectral coords to a row-aligned grid.
+
+    Replaces greedy_legalize (O(N²·R²) per macro) with O(N³) Hungarian
+    on a grid sized by max-macro footprint. By construction:
+    - All slots are ≥ max_w apart in x and ≥ max_h apart in y.
+    - Each macro's actual size ≤ max size, so adjacent slots fit any
+      pair of macros without overlap.
+    - Hungarian assignment minimizes sum of squared distances from
+      spectral coord to slot center → preserves spectral 2D structure.
+
+    Output is no-overlap by construction (modulo fixed macros, which
+    we re-set after assignment). Subsequent project_overlaps handles
+    any residual fixed/movable conflicts.
+    """
+    n_macros = len(sizes_np)
+    movable_h_idx = np.where(~fixed_mask[:n_hard])[0]
+    n_movable = len(movable_h_idx)
+
+    # Use max sizes for slot grid so any pair of macros fits without overlap.
+    half_w = sizes_np[:, 0] / 2.0
+    half_h = sizes_np[:, 1] / 2.0
+    max_w = float(sizes_np[movable_h_idx, 0].max()) if n_movable > 0 else 1.0
+    max_h = float(sizes_np[movable_h_idx, 1].max()) if n_movable > 0 else 1.0
+
+    # Slot grid covering full canvas, slot size = max macro size.
+    n_cols = max(1, int(np.floor(canvas_w / max_w)))
+    n_rows = max(1, int(np.floor(canvas_h / max_h)))
+    n_slots = n_cols * n_rows
+
+    if n_slots < n_movable:
+        # Slots too coarse; need finer grid. Use mean instead of max.
+        # This relaxes the no-overlap-by-construction guarantee, but
+        # project_overlaps cleans up.
+        mean_w = float(sizes_np[movable_h_idx, 0].mean())
+        mean_h = float(sizes_np[movable_h_idx, 1].mean())
+        # 1.1× slack so we have at least n_movable slots.
+        target_slots = int(n_movable * 1.15)
+        # Scale n_cols × n_rows ≈ target_slots while preserving aspect.
+        aspect = canvas_w / canvas_h
+        n_rows = max(1, int(np.sqrt(target_slots / aspect)))
+        n_cols = max(1, int(target_slots / max(n_rows, 1)) + 1)
+        n_slots = n_cols * n_rows
+        if log_fn is not None:
+            log_fn(
+                f"  hungarian: max-size slots ({n_slots}) < n_movable ({n_movable}), "
+                f"falling back to finer grid {n_cols}×{n_rows}={n_slots}"
+            )
+
+    # Slot centers (uniform on canvas).
+    col_centers = np.linspace(canvas_w / (2 * n_cols), canvas_w - canvas_w / (2 * n_cols), n_cols)
+    row_centers = np.linspace(canvas_h / (2 * n_rows), canvas_h - canvas_h / (2 * n_rows), n_rows)
+    slots = np.zeros((n_slots, 2), dtype=np.float64)
+    for r in range(n_rows):
+        for c in range(n_cols):
+            slots[r * n_cols + c, 0] = col_centers[c]
+            slots[r * n_cols + c, 1] = row_centers[r]
+
+    # Normalize spectral coords (movable only) to canvas range.
+    s_x = spectral_xy[movable_h_idx, 0]
+    s_y = spectral_xy[movable_h_idx, 1]
+    sx_lo, sx_hi = float(s_x.min()), float(s_x.max())
+    sy_lo, sy_hi = float(s_y.min()), float(s_y.max())
+    if sx_hi - sx_lo < 1e-12:
+        sx_hi = sx_lo + 1.0
+    if sy_hi - sy_lo < 1e-12:
+        sy_hi = sy_lo + 1.0
+    s_x_norm = (s_x - sx_lo) / (sx_hi - sx_lo) * canvas_w
+    s_y_norm = (s_y - sy_lo) / (sy_hi - sy_lo) * canvas_h
+    spectral_norm = np.column_stack([s_x_norm, s_y_norm])
+
+    # Cost matrix: squared distances from each movable's spectral pos
+    # to each slot. Shape (n_movable, n_slots).
+    if log_fn is not None:
+        log_fn(
+            f"  hungarian: cost matrix {n_movable} × {n_slots} "
+            f"(grid {n_cols}×{n_rows}, max_macro={max_w:.2f}×{max_h:.2f})"
+        )
+    diff = spectral_norm[:, None, :] - slots[None, :, :]
+    cost = (diff ** 2).sum(axis=2)
+
+    # Solve assignment. linear_sum_assignment handles non-square (more
+    # slots than macros) — returns optimal injection.
+    t_h0 = time.perf_counter()
+    row_ind, col_ind = scipy.optimize.linear_sum_assignment(cost)
+    if log_fn is not None:
+        log_fn(
+            f"  hungarian: assignment solved in {time.perf_counter() - t_h0:.2f}s "
+            f"(matched {len(row_ind)} of {n_movable} movables)"
+        )
+
+    # Build placement.
+    pos_np = np.full((n_macros, 2), canvas_w / 2.0, dtype=np.float64)
+    pos_np[:, 1] = canvas_h / 2.0
+
+    # Place fixed macros at original positions.
+    for i in range(n_macros):
+        if bool(fixed_mask[i]):
+            pos_np[i] = original_positions[i]
+
+    # Place movables according to Hungarian assignment.
+    for ii, slot_idx in zip(row_ind, col_ind):
+        macro_idx = int(movable_h_idx[ii])
+        pos_np[macro_idx, 0] = slots[slot_idx, 0]
+        pos_np[macro_idx, 1] = slots[slot_idx, 1]
+
+    # Clip to canvas given each macro's size.
+    pos_np[:n_hard, 0] = np.clip(pos_np[:n_hard, 0], half_w[:n_hard], canvas_w - half_w[:n_hard])
+    pos_np[:n_hard, 1] = np.clip(pos_np[:n_hard, 1], half_h[:n_hard], canvas_h - half_h[:n_hard])
+
+    return pos_np
+
+
 def _spectral_init(
     benchmark: Benchmark,
     plc,
@@ -167,97 +290,83 @@ def _spectral_init(
     x_coord = vecs[:, 1].astype(np.float64)
     y_coord = vecs[:, 2].astype(np.float64)
 
-    # **Approach: linearly rescale spectral coords to canvas, then
-    # extended-iter push-apart projection.** Project_overlaps from
-    # cd_core caps at 50 iters which is too few for spectral inputs;
-    # we reimplement here with max_iters=500 and vectorized push.
+    # Hungarian assignment to a max-size slot grid. Linearly rescaling +
+    # iterative push-apart didn't converge (spectral coords cluster
+    # connected macros tightly; push cycles oscillate). Hungarian gives
+    # us min-distortion assignment to a NO-OVERLAP-BY-CONSTRUCTION grid
+    # in O(N³) instead of O(N²·R²) per macro.
     fixed_mask_np = benchmark.macro_fixed.cpu().numpy()
-    movable_idx = np.where(~fixed_mask_np)[0]
+    spectral_xy = np.column_stack([x_coord, y_coord])
+    sizes_full = sizes_np
 
-    max_hw = float(half_w.max())
-    max_hh = float(half_h.max())
-    x_lo, x_hi = float(x_coord.min()), float(x_coord.max())
-    y_lo, y_hi = float(y_coord.min()), float(y_coord.max())
-    if x_hi - x_lo < 1e-12: x_hi = x_lo + 1.0
-    if y_hi - y_lo < 1e-12: y_hi = y_lo + 1.0
+    orig_pos_np = benchmark.macro_positions.cpu().numpy().astype(np.float64)
+    pos = _hungarian_legalize_spectral(
+        spectral_xy=spectral_xy,
+        sizes_np=sizes_full,
+        fixed_mask=fixed_mask_np,
+        original_positions=orig_pos_np,
+        n_hard=benchmark.num_hard_macros,
+        canvas_w=cw,
+        canvas_h=ch,
+        log_fn=log_fn,
+    )
 
-    target = np.zeros((n, 2), dtype=np.float64)
-    orig_pos = benchmark.macro_positions.cpu().numpy().astype(np.float64)
-    for i in range(n):
-        if bool(fixed_mask_np[i]):
-            target[i, 0] = orig_pos[i, 0]
-            target[i, 1] = orig_pos[i, 1]
-        else:
-            target[i, 0] = max_hw + (cw - 2 * max_hw) * (x_coord[i] - x_lo) / (x_hi - x_lo)
-            target[i, 1] = max_hh + (ch - 2 * max_hh) * (y_coord[i] - y_lo) / (y_hi - y_lo)
-    target[:, 0] = np.clip(target[:, 0], half_w, cw - half_w)
-    target[:, 1] = np.clip(target[:, 1], half_h, ch - half_h)
-
-    # Vectorized iterative push-apart with high iter cap. For each
-    # iteration: identify all overlapping pairs, push each by half the
-    # overlap on the smaller axis, clamp to canvas. Convergence
-    # detected when no overlaps remain among hard macros.
-    n_hard = benchmark.num_hard_macros
-    pos = target.copy()
-    half_w_h = half_w[:n_hard]
-    half_h_h = half_h[:n_hard]
-    fixed_h = fixed_mask_np[:n_hard]
-    if log_fn is not None:
-        log_fn(f"  spectral: projecting overlaps (max 500 iters, vectorized)")
-
-    converged = False
-    for it in range(500):
-        dx = pos[:n_hard, 0:1] - pos[:n_hard, 0:1].T
-        dy = pos[:n_hard, 1:2] - pos[:n_hard, 1:2].T
-        adx = np.abs(dx)
-        ady = np.abs(dy)
-        min_dx = half_w_h[:, None] + half_w_h[None, :]
-        min_dy = half_h_h[:, None] + half_h_h[None, :]
-        ovl = (adx < min_dx - 1e-9) & (ady < min_dy - 1e-9)
-        np.fill_diagonal(ovl, False)
-        pairs = np.argwhere(np.triu(ovl))
-        if len(pairs) == 0:
-            converged = True
-            break
-        # Apply pushes pair-by-pair (sequential to avoid cascading
-        # bugs; with vectorized push, two macros pushed in different
-        # directions could leave both still overlapping after one
-        # iter).
-        for a, b in pairs:
-            mov_a = not bool(fixed_h[a])
-            mov_b = not bool(fixed_h[b])
-            if not (mov_a or mov_b):
-                continue
-            dxv = float(min_dx[a, b] - adx[a, b]) + 1e-3
-            dyv = float(min_dy[a, b] - ady[a, b]) + 1e-3
-            if dxv < dyv:
-                sgn = 1.0 if pos[a, 0] < pos[b, 0] else -1.0
-                if mov_a and mov_b:
-                    pos[a, 0] -= sgn * dxv / 2
-                    pos[b, 0] += sgn * dxv / 2
-                elif mov_a:
-                    pos[a, 0] -= sgn * dxv
-                else:
-                    pos[b, 0] += sgn * dxv
-            else:
-                sgn = 1.0 if pos[a, 1] < pos[b, 1] else -1.0
-                if mov_a and mov_b:
-                    pos[a, 1] -= sgn * dyv / 2
-                    pos[b, 1] += sgn * dyv / 2
-                elif mov_a:
-                    pos[a, 1] -= sgn * dyv
-                else:
-                    pos[b, 1] += sgn * dyv
-        pos[:n_hard, 0] = np.clip(pos[:n_hard, 0], half_w_h, cw - half_w_h)
-        pos[:n_hard, 1] = np.clip(pos[:n_hard, 1], half_h_h, ch - half_h_h)
-
-    if log_fn is not None:
-        log_fn(
-            f"  spectral: project ended at iter {it+1}, "
-            f"converged={converged}, residual_pairs={0 if converged else len(pairs)}"
-        )
-
+    # Multi-pass project_overlaps with jitter-on-stall: cd_core's project
+    # caps at 50 iters; after Hungarian on a coarse-grid fallback, residual
+    # overlaps can stall in cycles (a pushes b, b pushes a, repeat). When
+    # progress stalls (residual unchanged across passes), jitter the
+    # overlapping macros to break cycles, then continue.
     placement = torch.tensor(pos, dtype=torch.float32)
+    rng = np.random.default_rng(seed=seed)
+    half_w_t = sizes_np[:, 0] / 2.0
+    half_h_t = sizes_np[:, 1] / 2.0
+    fixed_mask_t = benchmark.macro_fixed.cpu().numpy()
+    n_hard = benchmark.num_hard_macros
+    last_residual = None
+    stall_count = 0
+    for legal_pass in range(20):
+        placement, proj_iters = project_overlaps(placement, benchmark)
+        ovl = compute_overlap_metrics(placement, benchmark)["overlap_count"]
+        if log_fn is not None:
+            log_fn(
+                f"  spectral legalize pass {legal_pass + 1}: project_overlaps "
+                f"{proj_iters} iters, residual={ovl}"
+            )
+        if ovl == 0:
+            break
+        if last_residual is not None and ovl >= last_residual:
+            stall_count += 1
+        else:
+            stall_count = 0
+        last_residual = ovl
+
+        if stall_count >= 1:
+            # Jitter all hard movable macros by std=0.5 × min macro half-size.
+            # Breaks symmetric pushing cycles.
+            min_half_w = float(half_w_t[:n_hard].min())
+            min_half_h = float(half_h_t[:n_hard].min())
+            jitter_std_x = 0.5 * min_half_w
+            jitter_std_y = 0.5 * min_half_h
+            pos_np_iter = placement.cpu().numpy().astype(np.float64).copy()
+            jitter_x = rng.normal(0.0, jitter_std_x, n_hard)
+            jitter_y = rng.normal(0.0, jitter_std_y, n_hard)
+            for i in range(n_hard):
+                if not bool(fixed_mask_t[i]):
+                    pos_np_iter[i, 0] += jitter_x[i]
+                    pos_np_iter[i, 1] += jitter_y[i]
+            pos_np_iter[:n_hard, 0] = np.clip(
+                pos_np_iter[:n_hard, 0], half_w_t[:n_hard], cw - half_w_t[:n_hard]
+            )
+            pos_np_iter[:n_hard, 1] = np.clip(
+                pos_np_iter[:n_hard, 1], half_h_t[:n_hard], ch - half_h_t[:n_hard]
+            )
+            placement = torch.tensor(pos_np_iter, dtype=torch.float32)
+            if log_fn is not None:
+                log_fn(
+                    f"  spectral legalize: stall detected (residual {ovl} "
+                    f"unchanged), jittered movables and retrying"
+                )
+            stall_count = 0
 
     if log_fn is not None:
         log_fn(
