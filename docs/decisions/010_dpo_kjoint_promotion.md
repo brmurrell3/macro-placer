@@ -1,16 +1,15 @@
 # ADR-010: Promote DPO init + CD + LNS + SA-v2 + K-joint as champion (E41)
 
-**Status:** **Proposed** — awaiting human decision. E41 `--all` final
-landed 2026-04-30 09:13: avg **1.0848**, zero overlaps, 13.58 hr wall
-(`--jobs 4` parallel). Beats E25 candidate by −0.97 %, E18 candidate
-by −0.46 %, E12 champion by **−1.29 %**, leaderboard 1.1172 by
-**−2.90 %**. The verified result clears all decision-rule thresholds
-but the human elected to flag E41 as champion *candidate* rather than
-auto-promote (matches the pattern set by ADR-007/008/009). Champion
-remains E12; E41 code stays at `experiments/E41_dpo_kjoint/code/
-cd_lns_sa_dpo_kjoint.py`. Mark ADR-008 (E25) and ADR-009 (E18) as
-*Superseded* on this ADR's accept.
-**Date:** 2026-04-30 (proposed)
+**Status:** **Superseded by ADR-011** 2026-05-02. Never reached *Accepted*.
+E41 `--all` 1.0848 verified 2026-04-30 cleared all decision-rule
+thresholds, but ADR-011 hybrid (best-of-{E25, E41}, 1.08151) lifted
+further by −0.30 % at the same NG45 tier (0.6922 vs E41 0.69022).
+ADR-011 is the accepted promotion. E41 code stays at
+`experiments/E41_dpo_kjoint/code/cd_lns_sa_dpo_kjoint.py` because E48
+calls `CDLNSSADPOKJointPlacer` as one of its two best-of lanes —
+E41 is a load-bearing **component** of the new champion, just not the
+top-level placer.
+**Date:** 2026-04-30 (proposed) → 2026-05-02 (superseded by ADR-011)
 **Deciders:** project owner
 
 ## Context

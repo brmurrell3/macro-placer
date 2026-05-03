@@ -1,15 +1,16 @@
 # ADR-011: Promote hybrid best-of-{E25, E41} as champion (E48 → 1.08151)
 
-**Status:** **Proposed** — awaiting human decision. E48 `--all` final
+**Status:** **Accepted** 2026-05-02. E48 `--all` final
 landed 2026-05-01 16:26: avg **1.08151**, zero overlaps, ~7 hr wall-clock
 (`--jobs 4` parallel; 88452 s aggregate CPU-time across workers).
 Beats E41 candidate by −0.30 %, E18 candidate by −0.76 %, E25 candidate
 by −1.27 %, E12 champion by **−1.59 %**, leaderboard 1.1172 by **−3.21 %**.
-The verified result clears all decision-rule thresholds. Champion
-remains E12; E48 code stays at `experiments/E48_hybrid_e25_e41/code/
-cd_lns_sa_hybrid.py`. Mark ADR-008 (E25), ADR-009 (E18), and ADR-010
-(E41) as *Superseded* on this ADR's accept.
-**Date:** 2026-05-01 (proposed)
+Three follow-up overnight experiments 2026-05-01 → 02 (E53 GPU DPO basin
+polish, E53m multi-seed hybrid, E54 congestion-targeted destroy) all
+failed to lift further at verified scale; E48 stands as the strongest
+verified result. Supersedes ADR-008 (E25), ADR-009 (E18), and ADR-010
+(E41) — all formerly *Proposed* — as the champion-bearing decision.
+**Date:** 2026-05-01 (proposed) → 2026-05-02 (accepted)
 **Deciders:** project owner
 
 ## Context

@@ -6,32 +6,27 @@ Partcl/HRT Macro Placement Challenge. Place 200-537 rectangular macros on a 2D
 chip canvas to minimize proxy cost (wirelength + density + congestion) with zero
 overlaps. Prize: $29K+. Deadline: May 21, 2026.
 
-**Current champion:** CDLNSGridBin (E12), avg proxy 1.0990 on --all (17 IBM
-benchmarks). Beats public leaderboard 1.1172 by -1.63%, beats RePlAce 1.4578
-by -24.6%, zero overlaps. Entry: `submissions/cd_lns_gridbin/placer.py`.
-Prior champion: CDAdaptive (E9) at 1.1055.
+**Current champion (PROMOTED 2026-05-02 via ADR-011):** CDLNSSAHybrid (E48),
+avg proxy **1.08151** on --all (17 IBM benchmarks). Beats public leaderboard
+1.1172 by **−3.21%**, beats RePlAce 1.4578 by −25.8%, zero overlaps everywhere.
+NG45 commercial transfer **0.6922** (−1.66 % vs E12, tied with E18 0.69193).
+Entry: `submissions/cd_lns_sa_hybrid/placer.py`. Per-bench best-of-{E25, E41}
+pipeline (E25 wins 5/17 — ibm01, 06, 07, 17, 18 — basins where SDF beats DPO;
+E41 wins 12/17 — rest). Wall ~7 hr `--jobs 4` parallel (under 17-hr cap).
+ADR-011 *Accepted*.
 
-**STRONGEST VERIFIED CANDIDATE (awaiting human decision):** CDLNSSAHybrid
-(E48) at **1.08151** on --all (**−1.59% vs E12 1.0990**, **−3.21% vs
-leaderboard 1.1172**, −0.30% vs E41 candidate, −0.76% vs E18 candidate).
-**Per-bench best-of-{E25, E41} pipeline.** E25 wins 5/17 (ibm01, 06,
-07, 17, 18 — basins where SDF outperforms DPO); E41 wins 12/17 (rest).
-Zero overlaps everywhere. Wall 7 hr wall-clock under --jobs 4 parallel
-(under 17-hr cap). Code at `experiments/E48_hybrid_e25_e41/code/cd_lns_sa_hybrid.py`;
-ADR-011 needed (in progress).
+**Champion lineage:**
+- E12 CDLNSGridBin (1.0990) — prior champion (ADR-007); CD plateau + grid-bin LNS overlay.
+- E48 CDLNSSAHybrid (1.08151) — current champion (ADR-011); per-bench best-of-{E25, E41}.
 
-**Prior candidate (superseded by E48 if ADR-011 accepted):** CDLNSSADPOKJoint
-(E41) at 1.0848 (−1.29% vs E12). 14 wins / 3 losses vs E25; biggest
-hard-plateau wins (ibm11 −4.06%, ibm14 −1.73%, ibm15 −1.24%). NG45
-0.69022. Code at `experiments/E41_dpo_kjoint/code/cd_lns_sa_dpo_kjoint.py`;
-ADR-010 *Proposed* (mark *Superseded* on ADR-011 acceptance).
+**Component placers (called by the E48 hybrid; not separate champions):**
+- E25 CDLNSSA (`submissions/cd_lns_sa/placer.py`) — SDF init pipeline used by E48 lane 1.
+- E41 CDLNSSADPOKJoint (`experiments/E41_dpo_kjoint/code/cd_lns_sa_dpo_kjoint.py`) — DPO init + K-joint pipeline used by E48 lane 2.
 
-**Older candidate:** CDLNSSADPOInit (E18) at 1.08979 (−0.84% vs E12, 4/4
-NG45 wins). ADR-009 *Proposed* (mark *Superseded* on ADR-011).
-
-**Oldest candidate:** CDLNSSA (E25) at 1.0954 (−0.33% vs E12). Code at
-`submissions/cd_lns_sa/placer.py`. ADR-008 *Proposed* (mark *Superseded*
-on ADR-011).
+**Overnight 2026-05-01 → 02 — three follow-ups, none lifted past E48:**
+- E53 GPU DPO basin polish — falsified (0/350 GPU restarts accepted at full budgets).
+- E53m multi-seed hybrid (E25 + E41 s42 + E41 s1) — marginal (--all tied at 1.08128, --ng45 +0.23 %).
+- E54 congestion-targeted destroy — falsified (--ng45 0.7022, ariane133 +5.14 %).
 
 Reference baselines: RePlAce 1.4578, Will's pre-fork seed 1.5338, leaderboard
 target 1.1172.
@@ -75,7 +70,7 @@ uv run evaluate <placer.py> -b ibm01
    - **fast_gate fail** → tweak parameters, try next variant.
    - **fast_gate pass** → run `--all --json`.
    - **avg < 1.12** → likely noise; verify carefully.
-   - **avg < 1.099 (at-or-below champion)** → STOP. Surface to human (current champion E12 is 1.0990; E25 candidate at 1.0954 is awaiting promotion decision).
+   - **avg < 1.082 (at-or-below champion)** → STOP. Surface to human (current champion E48 hybrid is 1.08151).
    - **avg < 1.05** → STOP immediately. New champion territory.
 
 4. **If killed:** Set the manifest's `status: falsified`, fill `decided`
@@ -148,8 +143,9 @@ experiments only need a manifest. ADRs are reserved for things like
 | `macro_place/incremental_evaluator.py` | E1 — 4657× speedup; load-bearing for CD |
 | `macro_place/benchmark.py` | Benchmark dataclass (PyTorch tensors) |
 | `macro_place/sdf_init.py` | SDF initialization (used by every champion) |
-| `submissions/cd_lns_gridbin/placer.py` | **CHAMPION** — E12 CD + grid-bin LNS, 1.0990 |
-| `submissions/cd_lns_sa/placer.py` | Champion candidate — E25 CD + LNS + SA-v2, 1.0954 (not yet promoted) |
+| `submissions/cd_lns_sa_hybrid/placer.py` | **CHAMPION** — E48 hybrid best-of-{E25, E41}, 1.08151 (ADR-011) |
+| `submissions/cd_lns_gridbin/placer.py` | Prior champion — E12 CD + grid-bin LNS, 1.0990 (ADR-007) |
+| `submissions/cd_lns_sa/placer.py` | Component of E48 hybrid (lane 1, SDF basin) — E25 CDLNSSA, 1.0954 standalone |
 | `submissions/cd_adaptive/placer.py` | Prior champion — E9 CDAdaptive, 1.1055 |
 | `submissions/cd_only/placer.py` | Prior-prior — CDOnly fixed-budget, 1.1193 |
 | `submissions/examples/` | Reference placers (greedy, random) |
@@ -191,6 +187,5 @@ See `SETUP.md` for the full API (Benchmark fields, compute_proxy_cost, validatio
 ## Hardware
 
 M3 Max (36GB unified, MPS/PyTorch). Fast subset: ~10s. Full --all: ~40s.
-Champion (`submissions/cd_lns_gridbin/placer.py`) takes ~7.85 hr on --all (CD plateau + LNS overlay).
-Champion candidate (`submissions/cd_lns_sa/placer.py`, E25, not promoted) takes ~10.3 hr on --all.
+Champion (`submissions/cd_lns_sa_hybrid/placer.py`, E48) takes ~7 hr on --all under `--jobs 4` parallel (88 452 s aggregate CPU-time across workers); each bench runs E25 then E41 sequentially within a worker. Prior champion E12 (`submissions/cd_lns_gridbin/placer.py`) was ~7.85 hr.
 Cloud not needed for development. The bottleneck is thinking, not compute.

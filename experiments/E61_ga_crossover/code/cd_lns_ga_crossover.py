@@ -119,18 +119,40 @@ class CDLNSGACrossoverPlacer:
             f"wall={time.perf_counter() - t_e41:.1f}s"
         )
 
-        # 3. Crossover: per-hard-macro Bernoulli pick.
+        # 3. Crossover: spatial-block 2×2 quadrants of canvas. Quadrant
+        # assignment by E25 macro center (canonical). Bernoulli pick per
+        # quadrant: take all macros in that quadrant from E25 or E41.
+        # V1 (per-macro Bernoulli) produced unrecoverable overlaps from
+        # mixing two structurally different basins; spatial-block preserves
+        # local clusters within a quadrant (fewer overlaps to legalize).
         rng = np.random.default_rng(seed=self.crossover_seed)
         n_hard = benchmark.num_hard_macros
-        crossover_mask = rng.random(n_hard) < 0.5  # True = pick from E25
-        crossover_placement = e41_placement.detach().clone().to(torch.float64)
+        canvas_w = float(benchmark.canvas_width)
+        canvas_h = float(benchmark.canvas_height)
+        mid_x, mid_y = canvas_w / 2.0, canvas_h / 2.0
         e25_pos = e25_placement.detach().to(torch.float64)
+        e25_pos_np = e25_pos.cpu().numpy()
+        # Quadrant 0=BL, 1=BR, 2=TL, 3=TR (by E25 center).
+        quadrant = (
+            (e25_pos_np[:n_hard, 0] >= mid_x).astype(int)
+            + 2 * (e25_pos_np[:n_hard, 1] >= mid_y).astype(int)
+        )
+        quadrant_pick_e25 = rng.random(4) < 0.5  # per-quadrant Bernoulli
+        # If all 4 picks land on same parent, force one flip for non-degenerate test.
+        if quadrant_pick_e25.all() or (~quadrant_pick_e25).all():
+            flip_idx = int(rng.integers(4))
+            quadrant_pick_e25[flip_idx] = not quadrant_pick_e25[flip_idx]
+        crossover_placement = e41_placement.detach().clone().to(torch.float64)
+        n_from_e25 = 0
         for i in range(n_hard):
-            if crossover_mask[i]:
+            if quadrant_pick_e25[quadrant[i]]:
                 crossover_placement[i] = e25_pos[i]
-        n_from_e25 = int(crossover_mask.sum())
+                n_from_e25 += 1
+        quadrant_counts = [int((quadrant == q).sum()) for q in range(4)]
         self._log(
-            f"  crossover: {n_from_e25}/{n_hard} hard macros from E25, "
+            f"  crossover (spatial-block 2×2): quadrant_pick_e25={quadrant_pick_e25.tolist()}, "
+            f"quadrant_counts={quadrant_counts}, "
+            f"{n_from_e25}/{n_hard} hard macros from E25, "
             f"{n_hard - n_from_e25} from E41 (seed={self.crossover_seed})"
         )
 

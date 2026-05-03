@@ -424,6 +424,142 @@ envelope with ~9 hr of headroom.
 
 ---
 
+## 14. K-macro joint LNS (E39 / E41 — different move type at K=3)
+
+**Claim (TODO prose):** Beyond E12's grid-bin LNS (single-macro joint
+reinsertion at full canvas-grid candidates), a third move type — *jointly*
+reinserting K=3 macros via brute-force enumeration of `top_N^K = 5³ = 125`
+candidate combinations per K-tuple — extracts an additional −0.001 to
+−0.005 lift per benchmark on top of CD-LNS-SA-v2 polished states. K=3 is
+the saturation point: K=4 (E42) and longer-budget K=3 (E43) both fail
+NG45 transfer, and spatial K-tuple ranking (E44) is dominated by
+netlist-adjacency. Composing K-joint with DPO basin shift (E18) gives
+E41 = 1.0848 standalone.
+
+> **TODO(prose):** Frame this as the third escape mechanism after CD's
+> per-axis (every-pair-of-coords single-macro) and E12's grid-bin LNS
+> (single-macro 2D). K-joint is the K-macro 2D move that catches
+> structurally-correlated multi-macro local minima the previous two miss.
+> Document the eps=1e-9 strict-separation pairwise legality fix
+> (`kjoint_overlap_eps_gotcha.md`) — important for any reproducer.
+
+**Evidence:** `experiments/E39_kmacro_joint_lns/`, `experiments/E41_dpo_kjoint/`,
+ADR-010 (Superseded by ADR-011). Falsified variants: E42 K=4, E43 longer
+budget, E44 spatial — all NG45-blind in the same way.
+
+---
+
+## 15. DPO best_of_v2 init unlocks a structurally distinct basin (E18)
+
+**Claim (TODO prose):** SDF init is contractive within its basin (CD's
+fixed point is unique given SDF init); DPO best_of_v2 init produces a
+*different* CD fixed point that is, on average, **−0.51 % deeper** than
+SDF's on `--all` and **−1.67 % deeper** on NG45. The basin difference is
+verified empirically (E18 outperforms E25 on 11/17 benches) and resolves
+the basin-diversity question E27 was designed to answer. **Diverse priors
+within DPO refinement (E11) had failed because the refinement step is
+basin-locked; using DPO output as init for a CD-LNS-SA pipeline avoids
+the lock.**
+
+> **TODO(prose):** Frame the empirical proof of multi-basin: 4 seeds of
+> DPO produce *byte-identical* ibm02 (basin lock for DPO-as-refinement),
+> but DPO output as *init for CD* produces a different CD fixed point
+> than SDF init. The basin you converge to depends on the init class,
+> not the seed within an init class.
+
+**Evidence:** `experiments/E18_dpo_init/`, ADR-009 (Superseded by ADR-011).
+E18 NG45 0.69193 (4/4 wins) confirms basin lift transfers to commercial
+designs.
+
+---
+
+## 16. Per-bench best-of hybrid champion (E48 — current, 1.08151)
+
+**Claim (TODO prose):** Different mechanisms win on different benchmarks
+because basin choice is design-class-dependent. Per-bench best-of-{E25
+SDF basin, E41 DPO basin} hybrid extracts an additional −0.30 % over
+E41 standalone by exploiting across-benchmark heterogeneity. Within the
+4-bench --fast set the lift can be sample-size-amplified (E53m 3-way
+hit −0.97 % --fast); at --all aggregate scale the lift collapses
+toward the realistic per-bench-best-of-2 saturation (~−0.30 %).
+Algorithmically valid (no per-benchmark tuning; per-bench winner determined
+by proxy value, not bench-name lookup).
+
+> **TODO(prose):** Frame as the "compositional" / "meta-algorithmic" level
+> — the hybrid doesn't introduce a new mechanism, it recognizes that
+> *which mechanism is best* varies across the benchmark set, and exploits
+> that. Connect to ensemble learning literature.
+>
+> The contribution to the field: **cross-benchmark per-bench best-of
+> with no per-benchmark tuning is a valid and effective composition
+> primitive for macro placement** — not just an ad-hoc trick. Verified
+> at the −0.30 % level over the strongest single-pipeline candidate.
+
+**Evidence:** `submissions/cd_lns_sa_hybrid/placer.py`. Verified `--all`
+1.08151, `--ng45` 0.6922 (zero overlaps everywhere, ~7 hr wall under
+`--jobs 4`). ADR-011 *Accepted* 2026-05-02. Per-bench breakdown in
+`docs/decisions/011_hybrid_e25_e41_promotion.md`.
+
+---
+
+## 17. The IBM/NG45 transfer-failure pattern — falsification record as a finding
+
+**Claim (TODO prose):** Five experiments (E42 K=4, E43 longer K-joint,
+E44 spatial K-tuple, E54 congestion-targeted destroy, plus partial E53m
+multi-seed) lifted on IBM `--fast` but failed to transfer to NG45
+ariane133 (regressions +3.57 % to +5.14 %). The structural commonality:
+**heuristics that engage the proxy's component decomposition (6 % WL /
+20 % density / 74 % congestion), or the geometric structure of the
+placement, depend on dense macro packing and degrade on sparse
+commercial layouts**. ariane133 has 133 hard macros on a 1433 × 1433
+canvas (~1/15.5 macros per square micron) vs IBM's 246-760 hard macros
+on 23-73 canvases (~10-20 per square micron).
+
+> **TODO(prose):** Build out the structural argument. Per-design
+> `n_hard / canvas_area` ratio table; correlate with IBM-vs-NG45 lift
+> magnitude. The negative result is the contribution: **mechanism-aligned
+> destroy/K-joint ranking is overfit to dense-IBM benchmark structure,
+> and cost-aware (topology-blind) ranking remains the safe baseline.**
+>
+> This is a generalization-failure finding worth a paper section
+> independent of any positive result. The OOD-generalization framing
+> places the work in conversation with the broader ML
+> robustness/distribution-shift literature.
+
+**Evidence:** Manifests at `experiments/E42_kjoint_k4/`,
+`experiments/E43_kjoint_longer/`, `experiments/E44_kjoint_spatial/`,
+`experiments/E54_congestion_destroy/`, `experiments/E53_multiseed_hybrid/`.
+NG45 verified results in `results/experiment_log.jsonl` (hypotheses
+`E42_*_ng45`, `E43_*_ng45`, `E54_ng45`, `E53_multiseed_hybrid_ng45`).
+Memory entry: `e54_congestion_destroy.md` (feedback type — rule for
+future destroy-ranking experiments).
+
+---
+
+## 18. GPU acceleration as a *polish* phase fails (E53)
+
+**Claim (TODO prose):** GPU DPO basin polish — multi-restart full-pose
+Adam on the smooth proxy + overlap penalty, layered AFTER fully-converged
+CD-LNS-SA — produces 0 accepts in 350 GPU restarts at production
+budgets (only ~−2 % lift on shortened-budget smoke where prior phases
+hadn't converged). The smooth-proxy gradient cannot escape the local
+optimum that breakpoint-enumeration CD + grid-bin LNS + breakpoint
+Metropolis SA already reach. **GPU acceleration must replace CD's
+basin-crossing role architecturally, not act as a polish phase after
+CD.**
+
+> **TODO(prose):** Frame the negative GPU result. The MPS device
+> ran the smooth proxy 100x faster than CPU CD per step, but at the
+> wrong granularity — settling within a basin, not crossing basins.
+> Useful for the field: not all "GPU speedups for placement" are
+> equivalent; the placement of the GPU phase in the pipeline matters
+> as much as raw speed.
+
+**Evidence:** `experiments/E53_dpo_basin_eval/manifest.md`. Falsification
+record: `e53_gpu_dpo_falsification.md`.
+
+---
+
 ## Explicitly excluded
 
 The following topics from `theory.md` (in this writeup directory)

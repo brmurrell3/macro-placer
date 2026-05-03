@@ -1,7 +1,7 @@
 ---
 id: E48
 name: hybrid_e25_e41
-status: champion_candidate
+status: graduated
 parent: E25, E41
 created: 2026-04-30
 decided: 2026-05-01
@@ -11,7 +11,7 @@ ng45_outcome: 0.6922 (--ng45); +0.29 % vs E41 ng45 0.69022, +0.04 % vs E18 ng45 
 all_outcome: **1.08151 (--all); -0.30 % vs E41 1.0848; -0.76 % vs E18 1.08979; -1.27 % vs E25 1.0954; -1.59 % vs E12 1.0990; -3.21 % vs leaderboard 1.1172.** Wall 88452 s CPU-time aggregate (~7 hr wall-clock under --jobs 4). Per-bench: E25 wins 5/17 (ibm01 0.8923, ibm06 1.1531, ibm07 1.0985, ibm17 1.3324, ibm18 1.3589), E41 wins 12/17 (rest). Captures the per-bench best-of pattern perfectly — matches the theoretical bound (1.08121) within float-drift. This is the FIRST verified result above E41's saturation floor on --all. The mechanism works: hybrid runs both pipelines, picks lower-cost output per bench, deterministically by proxy value (no per-benchmark hardcoded logic).
 outcome: 1.08151 (--all); STRONGEST VERIFIED CANDIDATE 2026-05-01. ADR-011 *Proposed* needed.
 champion_delta: -0.0033 (-0.30 %) vs E41; -0.0083 (-0.76 %) vs E18; -0.0175 (-1.59 %) vs E12
-graduated_to: null
+graduated_to: submissions/cd_lns_sa_hybrid/placer.py
 superseded_by: null
 ---
 
