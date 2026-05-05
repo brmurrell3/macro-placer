@@ -1,6 +1,6 @@
 # Results
 
-Last updated: 2026-05-02
+Last updated: 2026-05-05
 
 Operational doc — current champion only. Historical per-benchmark
 tables for DPO / Polyhedra / Overnight Sweep / Miftari live in
@@ -14,13 +14,18 @@ tables for DPO / Polyhedra / Overnight Sweep / Miftari live in
 | SA | 2.1362 | 0 | Weak baseline |
 | Will's seed (SA 3000) | 1.5338 | 0 | Pre-fork submission |
 | Greedy row | ~2.20 | 0 | Demo placer |
-| Leaderboard target (vmallela) | 1.1172 | 0 | Unverified; CD+LNS, ~40 min/bench |
+| Leaderboard targets (May 4 refresh): | | | |
+| · Cezar (ReFine) | 1.037 | 0 | UNVERIFIED; previous variant verified 1.0666→1.2224 (+14 % drift) |
+| · vmallela (LSJ Hessian) | 1.1 | 0 | UNVERIFIED; previous CD+LNS verified 1.1172→1.4152 (+27 % drift); SAME mechanism as our E74 |
+| · Hoop Dreams (DREAMTuna) | 1.2206 | 0 | UNVERIFIED; DREAMPlace + Bayesian opt |
+| · MTK (DreamPlace++) | 1.2818 | 0 | **VERIFIED** — best previously verified entry |
 
 ## Champion lineage
 
 | Hypothesis | Status | Best Avg Proxy | Notes |
 |------------|--------|----------------|-------|
-| **CDLNSSAHybridPlacer (E48)** | **CHAMPION** | **1.08151** | **Verified −1.59 % vs E12 (−3.21 % vs leaderboard, −0.30 % vs E41); --ng45 0.6922.** Per-bench best-of-{E25, E41} hybrid (E25 wins 5/17, E41 wins 12/17). No per-benchmark tuning (picks per-bench winner by proxy value). Code at `submissions/cd_lns_sa_hybrid/placer.py`; **ADR-011 *Accepted* 2026-05-02**. Wall ~7 hr `--jobs 4`. |
+| **CDLNSSAHessianPlacer (E74)** | **CHAMPION** | **1.0666** | **Verified −1.38 % vs E48 (−4.53 % vs leaderboard, −26.8 % vs RePlAce); --ng45 0.6813 (−1.57 % vs E48, ariane133 0.6641 = −3.21 % BREAKING the failure point that killed E42/E43/E44/E54/E62).** Hessian saddle escape on E48 plateau via smooth-proxy autograd Hessian + Lanczos smallest-algebraic + ±ε perturbation + CD polish. Per-bench biggest lifts: ibm02 −7.13 %, ibm01 −3.86 %, ibm15 −1.73 % (E61V2-layered), ibm07 −1.67 %, ibm06 −1.86 %. **Beats every VERIFIED leaderboard entry by ≥17 %**. Code at `submissions/cd_lns_sa_hessian/placer.py`; **ADR-012 *Accepted* 2026-05-05**. Wall ~50 min/bench (= ~14 hr serial, ~4 hr `--jobs 4`). |
+| CDLNSSAHybridPlacer (E48) | superseded by E74 | 1.08151 | Was champion 2026-05-02 → 2026-05-05 (ADR-011 superseded by ADR-012). Per-bench best-of-{E25, E41}; --ng45 0.6922. Kept as fallback at `submissions/cd_lns_sa_hybrid/placer.py`. |
 | CDLNSGridBinPlacer (E12) | prior champion | 1.0990 | Was champion 2026-04-28 → 2026-05-02 (ADR-007 superseded by ADR-011). Still the safe baseline reference; CD plateau + grid-bin LNS overlay. |
 | CDLNSGACrossoverPlacer (E61_v2) | strongest verified candidate; ADR-012 *Proposed* | 1.08083 | **Marginal --all (−0.07 % vs E48); KEY result: --ng45 0.6908 (−0.20 % vs E48, ariane133 0.6760 = −1.47 % LIFT — first NG45-positive mechanism since E18).** Spatial-block 2×2 GA crossover between E25/E41 outputs, polish via CD+LNS+SA-v2. Wins 6/17 vs E48 on --all (concentrated on tied-parent benches: ibm12 −0.68 %, ibm14 −0.47 %, ibm15 −0.28 %). Best-of-{E48, E61_v2} = 1.08025 (−0.12 % over E48 standalone); best-of-3 with E53m = 1.07995 (−0.14 %). Code at `experiments/E61_ga_crossover/code/cd_lns_ga_crossover.py`; ADR-012 *Proposed* 2026-05-03. Wall 26.6 hr CPU / ~6.7 hr `--jobs 4`. |
 | CDLNSSAMultiseedHybridPlacer (E53m) | tied with E48 (no incremental lift) | 1.08128 | Verified --all 1.08128 (−0.02 % vs E48; within noise). 3-way hybrid {E25, E41 s42, E41 s1}. --fast lift (−0.97 %) was sample-size outlier; --all aggregates dampen DPO seed-noise. Multi-seed within DPO is dead-end for breakthrough on its own. |

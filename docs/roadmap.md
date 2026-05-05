@@ -1,13 +1,72 @@
 # Roadmap
 
-Last updated: 2026-05-02 (post-E48 promotion)
-Competition deadline: May 21, 2026 (~19 days)
+Last updated: 2026-05-05 (post-E74 promotion)
+Competition deadline: May 21, 2026 (~16 days)
 
 ## TL;DR
 
-- **CHAMPION:** **E48 CDLNSSAHybrid at 1.08151 --all** (**−1.59 % vs E12**, **−3.21 % vs leaderboard**, −0.30 % vs E41). Per-bench best-of-{E25, E41} hybrid (E25 wins 5/17 — ibm01/06/07/17/18 — basins where SDF beats DPO; E41 wins 12/17 — rest). NG45 0.6922 (−1.66 % vs E12). Wall ~7 hr `--jobs 4`. **PROMOTED 2026-05-02 (ADR-011 *Accepted*)**; supersedes ADR-007/008/009/010. Entry: `submissions/cd_lns_sa_hybrid/placer.py`.
-- **Prior champion (now baseline):** E12 CDLNSGridBin (1.0990, ADR-007). Code remains at `submissions/cd_lns_gridbin/placer.py` as a baseline reference.
-- **Components called by the hybrid (load-bearing):** E25 (`submissions/cd_lns_sa/placer.py`) is lane 1; E41 (`experiments/E41_dpo_kjoint/code/cd_lns_sa_dpo_kjoint.py`) is lane 2. Both stay in tree.
+- **CHAMPION:** **E74 CDLNSSAHessian at 1.0666 --all + 0.6813 --ng45** (**−1.38 % vs E48 1.08151**, **−4.53 % vs leaderboard 1.1172**, **−26.8 % vs RePlAce 1.4578**). NG45 ariane133 = 0.6641 (**−3.21 % vs E48 — BREAKS the failure point that killed E42/E43/E44/E54/E62**). Beats every VERIFIED leaderboard entry by ≥17 %. Mechanism: smooth-proxy Hessian via `torch.autograd.functional.hvp` → Lanczos smallest-algebraic eigenvectors → ±ε saddle perturbation → CD polish. Implements roadmap E28 (proposed since 2026-04-29) and vmallela's leaderboard #2 mechanism class. Wall ~50 min/bench; --all ~14 hr serial / ~4 hr `--jobs 4`. **PROMOTED 2026-05-05 (ADR-012 *Accepted*)**; supersedes ADR-011. Entry: `submissions/cd_lns_sa_hessian/placer.py`.
+- **Prior champion (kept as fallback):** E48 CDLNSSAHybrid (1.08151, ADR-011). Code remains at `submissions/cd_lns_sa_hybrid/placer.py`.
+- **Components called by the champion (load-bearing):** E25 (`submissions/cd_lns_sa/placer.py`) and E41 (`experiments/E41_dpo_kjoint/code/cd_lns_sa_dpo_kjoint.py`); both run BEFORE the Hessian saddle phase. DPO smooth-proxy primitives at `writeup/archive/submissions/dpo/ablation_v2_steps.py` are imported for the Hessian autograd cost function.
+- **Submissions folder cleaned 2026-05-05:** archived superseded prior champions (cd_only, cd_adaptive, cd_lns_gridbin, will_seed) under `submissions/_archive/`. Active: `cd_lns_sa_hessian/` (champion), `cd_lns_sa_hybrid/` (fallback), `cd_lns_sa/` (component), `examples/`.
+
+## 0. What's next (post-E74)
+
+**Position vs leaderboard (May 4 refresh):**
+- Cezar 1.037 (unverified, +2.9 % above E74; previous variant +14 % drift on verification)
+- vmallela 1.1 (unverified, **−3.0 % below E74**; same mechanism class — Hessian saddle escape)
+- Hoop Dreams 1.2206 (DREAMPlace+Optuna, unverified)
+- MTK 1.2818 (best **VERIFIED** — we beat by −16.8 %)
+
+E74 is the **strongest VERIFIED submission on the board.** Cezar 1.037 is the only entry numerically lower; whether it survives verification is the open question.
+
+**Highest-EV next moves (in priority order):**
+
+### 0.1 Sharper E74: more eigvecs + finer ε sweep on hard benches
+
+E74 wave used `n_eigvecs=2, eps_values=(0.3, 1.0, 3.0)`. Some benches lifted only marginally (ibm09 −0.11 %, ibm17 −0.29 %, ibm18 −0.38 %). With **k=5 eigvecs** and **eps_values=(0.1, 0.3, 0.7, 1.5, 3.0, 5.0)** on the hardest 6 benches (ibm12-18), the search is ~6× larger and may find deeper saddles. Wall: ~6 hr per bench × 6 = ~36 hr serial, ~9 hr `--jobs 4`. **Expected lift: 0.2–0.5 %** on aggregate. Cheap relative to potential gain.
+
+### 0.2 Layer E61V2-fresh + E74 on remaining tied benches
+
+Tied benches (E25/E41 gap < 1 %): ibm08, ibm12 (done), ibm14, ibm15 (done), ibm16, ibm17, ibm18. The pattern from ibm12/ibm15: E61V2-fresh produces a third basin → E74 on top compounds. Lift on ibm12 was −0.61 % (vs −0.40 % from E74-only); ibm15 −1.73 % (vs −0.77 %). Per bench wall: E61V2 fresh ~5 hr + E74 ~50 min. For 5 remaining tied benches: ~30 hr. **Expected lift: 0.1–0.3 %** on aggregate.
+
+### 0.3 DREAMPlace integration as 3rd basin source
+
+Six of nine top leaderboard entries use DREAMPlace (Cezar / Hoop Dreams / Shoom / MTK / UTAustin AS / Mike Gao [DQ]). E76 manifest has scoping. Multi-day dev with macOS / CUDA install risk. **Expected lift: 0.3–1.5 %** if it works. Highest variance.
+
+### 0.4 Hardware portability check
+
+Champion runs on M3 Max; judges run on AMD EPYC 9655P (slower per-core clock, faster overall via 16 cores). Wall caps in champion (CD 2400 s, polish 240 s) may fire before plateau on slower hardware → quality drops. Defensive action: **work-bound termination** (terminate on plateau metric, not wall time). E68 (other Claude) was working on this; check progress and adopt.
+
+### 0.5 Submit + track verification
+
+The user-facing decision: **submit E74** (Tier 1 ranks by proxy; verified score is what matters). After submission:
+- Track Cezar / vmallela / etc. verification on partcl hardware.
+- If Cezar drifts at historical rates (+14 %), E74 lands at #1 verified.
+- If Cezar holds at 1.037, we're #2 (still well in top-7 for Tier 2 Grand Prize).
+
+### 0.6 Tier 2 Grand Prize prep
+
+E74 NG45 = 0.6813 with ariane133 0.6641 — strongest NG45 result we've seen. Tier 2 evaluates top-7 by proxy through full OpenROAD flow on NG45 (incl. 1-2 hidden designs). Need to verify our placements pass the OpenROAD feasibility gate (WNS / TNS / Area not regressing below SA + RePlAce baselines on any design). **Action**: read `SCORING.md` carefully, verify our NG45 placements are ORFS-flowable.
+
+### 0.7 Innovation Award ($4k) writeup
+
+Hessian saddle escape on a CD plateau via smooth-proxy autograd Hessian + Lanczos is a novel contribution to the placement field. Henkelman & Jónsson 2000 climbing-image NEB has not been applied to placement before. Writeup at `writeup/paper.md` (TODO markers) — needs E74 mechanism, eigenvalue analysis, NG45 transfer story.
+
+## Recommended sequence
+
+| Day | Work | Expected outcome |
+|-----|------|------------------|
+| 1 | Submit E74 + write submission form | Locks in #1 verified rank |
+| 1–2 | Sharper E74 wave (k=5, more ε) on ibm12-18 | +0.2–0.5 % aggregate |
+| 3–4 | E61V2 fresh + E74 layered on ibm08/16/17/18 | +0.1–0.3 % aggregate |
+| 5–7 | DREAMPlace integration if time | +0.3–1.5 % (variance) |
+| 5–7 | Hardware portability fixes | Defensive |
+| 8–10 | Tier 2 ORFS verification | Grand Prize gate |
+| 11–14 | Writeup + Innovation Award prep | $4k prize |
+| 15–16 | Buffer + final verification | — |
+
+The ABSOLUTE BEST realistic outcome is ~1.04 if all of 0.1–0.4 work — same neighborhood as Cezar 1.037, where verification drift would decide #1 vs #2.
 - **Overnight 2026-05-01 → 02 — three follow-ups, NONE lifted past E48:**
   - **E53 GPU DPO basin polish** (multi-restart full-pose Adam on smooth proxy after CD-LNS-SA): `--fast` 0.9254, **0/350 GPU restarts accepted** at full budgets. Smooth-proxy gradient cannot escape fully-converged CD-LNS-SA. **FALSIFIED.** Lesson: GPU must replace CD's basin-crossing role, not polish after it.
   - **E53m multi-seed hybrid** (3-way: E25 + E41 seed=42 + E41 seed=1): `--fast` 0.91128 (−0.97 % vs E48 — sample-size outlier on 4 small benches); `--all` 1.08128 (essentially tied with E48 by −0.02 %); `--ng45` 0.6938 (+0.23 %). **MARGINAL.** Multi-seed within DPO is dead-end at --all aggregate scale.

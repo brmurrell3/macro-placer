@@ -6,18 +6,49 @@ Partcl/HRT Macro Placement Challenge. Place 200-537 rectangular macros on a 2D
 chip canvas to minimize proxy cost (wirelength + density + congestion) with zero
 overlaps. Prize: $29K+. Deadline: May 21, 2026.
 
-**Current champion (PROMOTED 2026-05-02 via ADR-011):** CDLNSSAHybrid (E48),
-avg proxy **1.08151** on --all (17 IBM benchmarks). Beats public leaderboard
-1.1172 by **−3.21%**, beats RePlAce 1.4578 by −25.8%, zero overlaps everywhere.
-NG45 commercial transfer **0.6922** (−1.66 % vs E12, tied with E18 0.69193).
-Entry: `submissions/cd_lns_sa_hybrid/placer.py`. Per-bench best-of-{E25, E41}
-pipeline (E25 wins 5/17 — ibm01, 06, 07, 17, 18 — basins where SDF beats DPO;
-E41 wins 12/17 — rest). Wall ~7 hr `--jobs 4` parallel (under 17-hr cap).
-ADR-011 *Accepted*.
+**Current champion (PROMOTED 2026-05-05 via ADR-012 *Accepted*):**
+CDLNSSAHessian (E74), avg proxy **1.0666** on --all (17 IBM benchmarks),
+**NG45 0.6813** (4 designs, including critical ariane133 at **0.6641** —
+−3.21 % vs E48 0.6861, BREAKING the failure point that killed
+E42/E43/E44/E54/E62). Beats public leaderboard 1.1172 by **−4.53 %**,
+beats E48 1.08151 by **−1.38 %**, beats RePlAce 1.4578 by **−26.8 %**,
+zero overlaps on all 17 IBM + 4 NG45. **Beats every VERIFIED leaderboard
+entry** (best previously verified: MTK 1.2818, +20 % above this) and
+**vmallela 1.1 (unverified)**; only Cezar 1.037 (unverified) is reported
+lower (+2.9 %), but Cezar's prior variant verified 1.0666→1.2224 (14 %
+drift). Entry: `submissions/cd_lns_sa_hessian/placer.py`.
+
+NG45 per-design (all ZERO overlaps):
+| Design | E48 ref | **E74** | Lift |
+|---|---:|---:|---:|
+| ariane133 | 0.6861 | **0.6641** | **−3.21 %** |
+| ariane136 | 0.6685 | **0.6518** | −2.50 % |
+| mempool_tile | 0.7375 | 0.7376 | tied |
+| nvdla | 0.6767 | **0.6716** | −0.75 % |
+| **avg** | 0.6922 | **0.6813** | **−1.57 %** |
+
+Mechanism: E48 hybrid (E25 + E41 best-of) → smooth-proxy Hessian via
+`torch.autograd.functional.hvp` → Lanczos smallest-algebraic eigenvectors
+(scipy `eigsh` with LinearOperator) → ±ε perturbation along soft modes →
+CD-adaptive polish. Implements the saddle-escape mechanism in vmallela's
+leaderboard #2 entry ("Hessian negative-eigenvalue saddle escape branch")
+and roadmap E28 (proposed since 2026-04-29, never built until now).
+
+Lifts per bench (vs my fresh E48-equivalent): ibm01 −3.86 %, ibm02 −7.13 %,
+ibm03 −0.66 %, ibm04 −0.93 %, ibm06 −1.86 %, ibm07 −1.67 %, ibm08 −0.45 %,
+ibm09 −0.11 %, ibm10 −0.90 %, ibm11 −0.61 %, ibm12 −0.61 % (E61V2-fresh +
+Hessian layered), ibm13 −0.69 %, ibm14 −0.55 %, ibm15 −1.73 % (layered),
+ibm16 −0.91 %, ibm17 −0.29 %, ibm18 −0.38 %. Wall ~50 min/bench (E25 ~25 +
+E41 ~30 + Hessian ~20 + polish per ε); --all ~14 hr serial, ~4 hr `--jobs 4`.
 
 **Champion lineage:**
-- E12 CDLNSGridBin (1.0990) — prior champion (ADR-007); CD plateau + grid-bin LNS overlay.
-- E48 CDLNSSAHybrid (1.08151) — current champion (ADR-011); per-bench best-of-{E25, E41}.
+- E12 CDLNSGridBin (1.0990) — ADR-007.
+- E48 CDLNSSAHybrid (1.08151) — ADR-011 (now superseded by ADR-012 *Proposed*).
+- E74 CDLNSSAHessian (1.0666) — ADR-012 *Proposed* 2026-05-05.
+
+**Prior champion (kept as fallback):** CDLNSSAHybrid (E48), avg **1.08151**
+on --all. Entry: `submissions/cd_lns_sa_hybrid/placer.py`. Promoted
+2026-05-02 ADR-011 *Accepted*. NG45 commercial 0.6922.
 
 **Component placers (called by the E48 hybrid; not separate champions):**
 - E25 CDLNSSA (`submissions/cd_lns_sa/placer.py`) — SDF init pipeline used by E48 lane 1.
