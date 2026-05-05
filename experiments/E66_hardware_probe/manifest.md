@@ -6,7 +6,7 @@ parent: E48 (champion)
 created: 2026-05-03
 decided: 2026-05-03
 champion_at_time: 1.08151 (E48 hybrid, ADR-011 *Accepted* 2026-05-02)
-outcome: **PARTCL REGRESSION RISK SUBSTANTIALLY DE-RISKED 2026-05-03 16:48 EDT.** Two probes under thread-limit (OMP/MKL/OPENBLAS/VECLIB/NUMEXPR=1) produced **better** scores than historic --jobs 4 baselines: ibm01 0.89004 vs 0.89234 (−0.26 % LIFT), ibm10 1.00408 vs 1.00961 (−0.55 % LIFT). **Critically, ibm10 (a CD cap-hitter under --jobs 4) plateau-exited CD at 1829s instead of hitting the 2400s cap** — same proxy reached (1.0272 vs 1.0274) but with 30 % budget headroom. This means the "5 cap-hitters on E41 lane" risk identified from existing --jobs 4 logs (ibm10/12/14/16/17) was **largely a parallel-contention artifact, not an algorithmic-quality limit**. Under serial execution each CD sweep takes ~160s vs ~218s parallel; plateau detection fires before the cap. **Implication for partcl:** if partcl runs each bench serially (the natural per-bench-1-hr-cap model), our pipeline plateau-exits cleanly with budget margin. The hardware-regression scenario where we run out of budget mid-CD requires partcl's per-core clock to be MORE than 30 % slower than M3 Max (the headroom we measured) AND the slowdown to exceed our budget headroom. **CAVEAT:** thread-limit on M3 Max removes parallel-job thread-contention; it is NOT a faithful "slower per-core server CPU" simulation. A real partcl-class test would require server hardware or `cpulimit`-style throttling. But the existing data shows our pipeline handles serialization well — remaining concern is purely "what if partcl's per-core clock is much slower than M3 Max" which is testable separately.
+outcome: **PARTCL REGRESSION RISK PARTIALLY DE-RISKED — bench-specific pattern (updated 2026-05-03 22:30 EDT after ibm12 probe).** Three probes under thread-limit (OMP/MKL/OPENBLAS/VECLIB/NUMEXPR=1) produced better-or-tied scores than historic --jobs 4 baselines: ibm01 0.89004 vs 0.89234 (−0.26 %), ibm10 1.00408 vs 1.00961 (−0.55 %), ibm12 1.20595 vs 1.20639 (−0.04 %, effectively tied). **The contention-vs-compute boundary is bench-specific.** ibm10 was contention-bound: under thread-limit CD plateau-exits at 1829s (vs cap at 2400s) with 30 % budget headroom recovered. ibm12 is truly compute-bound: under thread-limit CD STILL caps at 2400s on both lanes, last-sweep Δ=+0.00012 (E25) / +0.00019 (E41), still descending when wall fires. Per-sweep wall on ibm12 is ~173 s thread-limited — same scale as ibm10's 166 s thread-limited — but ibm12 needs 14+ sweeps to plateau where ibm10 needed 11. **Implication for partcl:** the "switch to --jobs 1 in production" tradeoff helps contention-bound benches (ibm10-class) but does not buy headroom on truly compute-bound benches (ibm12-class). The complementary defense is the §4.5 work-bounded refactor (E68): looser soft cap (3000s vs 2400s) gives compute-bound benches the 3-4 extra sweeps they need to plateau. **CAVEAT:** thread-limit on M3 Max removes parallel-job thread-contention; it is NOT a faithful "slower per-core server CPU" simulation. A real partcl-class test would require server hardware or `cpulimit`-style throttling. The remaining concern — partcl's per-core clock being significantly slower than M3 Max — is partially addressed by E68's looser caps but ultimately requires AWS c7i / c7g verification before submission.
 champion_delta: not applicable (defensive measurement)
 graduated_to: null
 superseded_by: null
@@ -127,13 +127,36 @@ E41 lane phase exits:
 Source: `results/probe_t1_ibm10.log`,
 `results/CDLNSSAHybridPlacer_20260503_164855.json`.
 
-### Phase 3 — slow-clock simulation (NOT RUN)
+### Phase 3 — second cap-hitter probe ibm12 (completed 2026-05-03 22:28 EDT)
+
+| Lane | Proxy | CD exit | Notable |
+|---|---:|---|---|
+| E25 (SDF init) | 1.20797 | **cap at sweeps=14, 2400s, Δ_last=+0.00012** | LNS plateau (s=4); SA lift +0.00000 |
+| E41 (DPO + K-joint) | **1.20595** | **cap at sweeps=14, 2400s, Δ_last=+0.00019** | LNS plateau (s=5); K-joint 1 pass / 40 commits / Δ=−0.00104 |
+| **E48 = min** | **1.20595** | both lanes capped | Total wall 7031 s |
+
+vs historic E48 ibm12 = 1.20639. **−0.04 % under thread-limit (effectively tied).**
+
+**Pattern reversal vs ibm10.** Where ibm10 plateau-exited at 1829s with
+30 % CD headroom recovered, ibm12 still caps both lanes at 2400s. Per-
+sweep wall is similar (ibm12 ~173 s vs ibm10 ~166 s thread-limited) but
+ibm12 needs more sweeps to reach plateau (last-sweep Δ still above
+plateau threshold even under serial execution). **ibm12 is truly
+compute-bound**, not contention-bound.
+
+Source: `results/probe_t1_ibm12.log`,
+`results/CDLNSSAHybridPlacer_20260503_202832.json`.
+
+### Phase 4 — slow-clock simulation (NOT RUN)
 
 The original Phase 3 plan (mitigation pilot — try higher CD plateau threshold,
-tighter cap, drop K-joint on cap-bound benches) is **not needed**: Phase 2
-showed cap-hitting was the parallel-contention artifact, not a real
-algorithmic-quality limit. The mitigations would have addressed the wrong
-problem.
+tighter cap, drop K-joint on cap-bound benches) was deferred. The ibm12
+probe shows the right defense is **looser soft caps** (per §4.5), not
+aggressive plateau detection — the existing plateau threshold doesn't
+fire on ibm12 even at 14 sweeps because Δ remains above 0.001 longer
+than budget allows. E68 (`experiments/E68_workbounded_refactor/`)
+implements the §4.5 prescription: CD soft cap 2400→3000s, LNS 600→900s,
+SA 600→900s, K-joint 600→900s, with work-bounded primary termination.
 
 The remaining hardware concern — actual slower per-core clock on partcl —
 requires real server hardware or `cpulimit` throttling, neither of which

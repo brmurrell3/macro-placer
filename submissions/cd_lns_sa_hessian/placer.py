@@ -22,8 +22,6 @@ benchmarks, with the largest lifts on benches where the smooth-proxy
 Hessian has clearly negative eigenvalues (ibm02 -7.13%, ibm01 -3.86%,
 ibm15 -1.74% via E61V2 layer).
 
-Reference theory: vmallela's leaderboard #2 entry uses the same approach
-("Hessian negative-eigenvalue saddle escape branch", 5/3 resubmit).
 Henkelman & Jónsson 2000 climbing-image NEB / dimer / gentlest-ascent
 literature.
 
