@@ -102,4 +102,10 @@ src/orfs_integration/
 output/
 BENCHMARK_EVALUATION_RESULTS.md
 NETLIST_CLEANING_SUMMARY.md
+
+# E84 DREAMPlace: don't commit upstream source clone (~2.8 GB) or per-run outputs
+# (the patch is saved as cmakelists_cuda110_patch.diff for reproducibility).
+experiments/E84_dreamplace_saddle/DREAMPlace/
+experiments/E84_dreamplace_saddle/dp_runs/
+experiments/E84_dreamplace_saddle/bookshelf_out/
 MEMORY.md

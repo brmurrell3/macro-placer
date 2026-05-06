@@ -1,0 +1,16 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1a867b9..0d2c21a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -130,7 +130,10 @@ if (CUDA_FOUND)
+       # list(APPEND CMAKE_CUDA_ARCHITECTURES 8.6)
+     endif(${CUDA_VERSION_MAJOR} VERSION_GREATER "10")
+     if (${CUDA_VERSION_MAJOR} VERSION_GREATER_EQUAL "11")
+-      list(APPEND CMAKE_CUDA_ARCHITECTURES 8.6)
++      # arch 8.6 needs CUDA 11.1+; 11.0 only supports up to 8.0
++      if (NOT (${CUDA_VERSION_MAJOR} VERSION_EQUAL "11" AND ${CUDA_VERSION_MINOR} VERSION_EQUAL "0"))
++        list(APPEND CMAKE_CUDA_ARCHITECTURES 8.6)
++      endif()
+     endif(${CUDA_VERSION_MAJOR} VERSION_GREATER_EQUAL "11")
+     if (${CUDA_VERSION_MAJOR} VERSION_GREATER_EQUAL "12")
+       list(APPEND CMAKE_CUDA_ARCHITECTURES 8.9 9.0)

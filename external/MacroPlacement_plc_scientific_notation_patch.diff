@@ -1,0 +1,20 @@
+diff --git a/CodeElements/Plc_client/plc_client_os.py b/CodeElements/Plc_client/plc_client_os.py
+index 665b4b6..7ff0dc6 100644
+--- a/CodeElements/Plc_client/plc_client_os.py
++++ b/CodeElements/Plc_client/plc_client_os.py
+@@ -238,7 +238,14 @@ class PlacementCost(object):
+ 
+                             # advance, expect value item
+                             line = fp.readline()
+-                            line_item = re.findall(r'\-*\w+\.*\/{0,1}\w*[\w+\/{0,1}\w*]*', line)
++                            # Try scientific notation first (-1.42109e-15), then
++                            # fall back to the original token regex.  Required
++                            # for ibm08/ibm12/etc whose macro_pin offsets use
++                            # tiny exponents.
++                            line_item = re.findall(
++                                r'-?\d+\.\d*[eE][+\-]?\d+|\-*\w+\.*\/{0,1}\w*[\w+\/{0,1}\w*]*',
++                                line,
++                            )
+ 
+                             attr_dict[key] = line_item
+ 
