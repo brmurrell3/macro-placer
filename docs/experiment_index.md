@@ -1,6 +1,6 @@
 # Experiment Index
 
-Last updated: 2026-04-28
+Last updated: 2026-05-06
 
 A rigorous catalog of every experiment run during the Partcl/HRT Macro Placement
 Challenge 2026. Includes the failures alongside the wins — both are part of the
@@ -23,7 +23,9 @@ hypothesis across all runs (`fast`, `all`, or `single` benchmark).
 | DPO best-of | `best_of_v2` | 1.3834 | 2026-04-26 | Best-of(SDF, DPO) per benchmark |
 | CD-only | `cd_only_all_10min` (CDOnly) | 1.1193 | 2026-04-27 03:50 | Matches leaderboard 1.1172 within 0.18% |
 | CD-adaptive | `e9_adaptive_all` (CDAdaptive) | 1.1055 | 2026-04-27 13:22 | Beat leaderboard by -1.05%; plateau-bound (every bench exited via plateau) |
-| **CD + grid-bin LNS** | **`e12_gridbin_lns`** (CDLNSGridBin) | **1.0990** | **2026-04-28 15:57** | **CURRENT CHAMPION; beats leaderboard 1.1172 by -1.63%; ADR-007.** |
+| CD + grid-bin LNS | `e12_gridbin_lns` (CDLNSGridBin) | 1.0990 | 2026-04-28 15:57 | beats leaderboard 1.1172 by -1.63%; ADR-007. Superseded by E48 2026-05-02. |
+| Best-of-{E25, E41} hybrid | `e48_hybrid_e25_e41` (CDLNSSAHybridPlacer) | **1.08151** | 2026-05-02 | beats leaderboard by -3.21 %; ADR-011 *Accepted*. Superseded by E74 2026-05-05. |
+| **E48 hybrid + Hessian saddle escape** | **`e74_hessian_saddle` (CDLNSSAHessianPlacer)** | **1.0666** | **2026-05-05** | **CURRENT CHAMPION; beats leaderboard by -4.53 %, beats E48 by -1.38 %, ADR-012 *Accepted*. Wall ~96 min/bench on hard benches — over 60-min hard timeout. Subject of §Derisk wall-budget work in 2026-05-05/06 wave (E79-E83).** |
 
 ### Champion candidate (verified, not promoted)
 
@@ -93,6 +95,47 @@ Three orthogonal K-joint variants tested to determine if E41 K=3 with 600 s budg
 | ~~E60~~ | ~~Replica exchange / parallel tempering SA-v2 (K=4 chains at T₀ ∈ {5e-4 … 5e-3 or 5e-1})~~ | `experiments/E60_replica_sa/code/replica_sa.py`, manifest | falsified pre-fast (no lift over baseline SA on ibm01 smoke) | smoke | **FALSIFIED 2026-05-02** — wrong attack point. Energy gap between chains too large (Δproxy ≥ 0.05) → swap log-prob ≈ −1000 → 0/21 swaps accept at narrow spacing; wider spacing (×10) gave 27 % accepts but cold chain disrupted by hot-chain noise (took 250 s to recover, vs single-chain SA finding −0.014 in 600 s). **Replica exchange targets "SA stuck at single basin" — but our SA-v2 isn't actually stuck; the bottleneck is BASIN CHOICE upstream (CD/LNS), not SA dynamics.** Pivoted to E61 (basin-choice attack via crossover). |
 | E61 | Genetic-algorithm crossover between E25 and E41 outputs (V1 per-macro Bernoulli falsified; V2 spatial-block 2×2 quadrants); polish via CD+LNS+SA-v2 | `experiments/E61_ga_crossover/code/cd_lns_ga_crossover.py`, manifest | V1 ibm01: falsified. V2 ibm12 smoke 1.19898 (−0.61 %). V2 --fast 0.91342 (−0.74 %). V2 --ng45 0.69078 (ariane133 0.6760, −1.47 %). **V2 --all 1.08083 (−0.066 % vs E48), 6 wins / 5 losses / 6 ties — wins concentrated on tied-parent benches: ibm12 −0.68 %, ibm14 −0.47 %, ibm15 −0.28 %.** | smoke→fast→ng45→all | **MARGINAL 2026-05-03 07:31** — V1 Bernoulli unrecoverable overlaps. V2 spatial-block produced real but tiny --all lift; misses promotion threshold (−0.3 %) by ~5× but **mechanism verified**: real wins on tied-parent benches (parent gap ≤ 1.7 %), polish reverts to dominant parent on basin-asymmetric benches. **Refines E65 wall finding**: uniform interpolation is blocked, but selective spatial-block swap threads through. Worth keeping in tree as small per-bench complement to E48; not a champion in isolation. (Foreground V2 --all run was killed by Claude at 8/17 benches; parallel agent re-launched and ran to completion overnight at 95871 s = 26.6 hr CPU.) |
 | ~~E62~~ | ~~Will's seed v4 init replaces DPO best_of_v2 in E41 backbone — 3rd basin lane candidate~~ | `experiments/E62_will_seed_init/code/cd_lns_sa_will_kjoint.py`, manifest | **0.93347 (--fast); +1.44 % vs E48 fast 0.92024** | fast (kill gate fired) | **FALSIFIED 2026-05-02 16:02** — loses on every fast bench: ibm01 +1.54 %, ibm04 **+3.35 %**, ibm09 +0.99 %, ibm13 +1.31 %. Zero per-bench wins → no contribution to a hybrid extension. **4th falsification** of the "find a new basin via init class" attack (after E17 random, E32 SAM-CD, E53 GPU DPO polish). The SDF+DPO basin pair is not arbitrary — they're specifically near-optimal for the IBM proxy. **Pivot direction**: refining within the existing 2-basin envelope. NG45 not queued (kill gate on fast pre-empted). |
+
+### §Derisk wave 2026-05-05/06 (post-E74 wall-budget exploration)
+
+E74 graduated as champion at 1.0666 `--all`, but its ~96-min wall on
+canonical bench (ibm01) and ~135-min wall on hardest benches (ibm13)
+exceeds the **1-hour-per-benchmark hard timeout** spelled out in
+`README.md`.  This wave attacks the wall-budget problem.
+
+| ID | Hypothesis | Files | Best | Mode | Status |
+|---|---|---|---|---|---|
+| ~~E77~~ | Sharper Hessian: k=5 eigvecs + finer ε grid {0.1, 0.3, 1.0, 3.0, 10.0} on ibm12-18 | `experiments/E77_sharper_hessian/` | ibm12 1.20980 (≈ tied E74); only eig0 ε=0.1 lifted | single | **MARGINAL 2026-05-05** — k=5 didn't deliver promised +0.2-0.5 % lift; only eig0 with small ε productive. k=2 (E74) already near-optimal. Compute better spent on E80 streaks. |
+| ~~E78~~ | Layered E61V2 plateau + Hessian saddle (vs E74's E48-plateau) on ibm08, 14, 16, 17, 18 | `experiments/E78_layered_e61v2_e74/` | ibm08 1.10131 (small lift; saddle didn't help — E61V2 fell back to E41 via crossover failure) | single | **MARGINAL 2026-05-05** — saddle escape failed to lift E61V2 plateau on ibm08 (zero NEW BEST polishes from 6 trials). The win came from E41 fallback after crossover overlap, not the layering hypothesis. |
+| ~~E79~~ | Parallel E25⊥E41 (subprocess) + compressed Hessian (k=1, polish 180s) + hardware probe — §Derisk Mitigations #1+#2+#5 | `experiments/E79_hardware_portability/` | --fast avg 0.9131 (probe 1.0); ibm13 wall 89 min (over cap) | fast | **SUPERSEDED by E83 2026-05-06** — parallelism saves ~25 min, compressed Hessian saves ~30 min vs E74, but ibm13 still 78-89 min on Windows (over 60-min cap). Probe-floor bug fixed (was inverted, now `wall/baseline` clamped [1.0, 1.5]). |
+| ~~E80~~ | Work-bounded streaks (LNS 5-streak, SA 1000-move) + drop K-joint — §Derisk Mitigations #3+#4 | `experiments/E80_work_bounded_streaks/` | ibm13 0.9586 / 76 min (still over cap; proxy regressed +1.4 % vs E79) | single | **FALSIFIED 2026-05-05** — LNS 5-streak didn't fire on hard benches (LNS hits full 600s budget without 5 consecutive non-improving samples). SA streak saved ~10 min/lane but proxy regressed. Drop K-joint saved 10 min but cost 0.002 lift. Trade-offs canceled. |
+| ~~E81~~ | CD-only plateau + Hessian saddle escape (test if saddle is the lift mechanism, not the plateau depth) | `experiments/E81_cd_only_saddle/` | ibm01 0.91065 / 34 min (≈ E48 baseline, saddle lift only -0.00124 vs E79's -0.030) | single | **FALSIFIED 2026-05-05** — saddle DID lift cheap CD plateau, but ~25× less than on E25/E41's deep plateau. Plateau depth materially affects saddle's negative eigenvalues. Cheap plateau forfeits the saddle's value. |
+| ~~E82~~ | Hybrid dispatcher: E79 path for `num_hard_macros ≤ 350`, E48 hybrid for larger | `experiments/E82_hybrid_dispatcher/` | n/a — never run on `--all` | n/a | **FALSIFIED 2026-05-05 (rule violation)** — `README.md` forbids "hardcoding solutions for specific benchmarks (must be general algorithm)". Per-bench-property dispatch is functionally equivalent. Successor E83 routes on observed elapsed time instead. |
+| **E83** | **Clock-aware single algorithm** — same hyperparameters everywhere; Hessian phase adapts ONLY to remaining wall time (anytime-algorithm design, rule-compliant) | `experiments/E83_clock_aware/` | **--all 1.0859** (-2.80 % vs leaderboard, +0.41 % vs E48, +1.81 % vs E74); 17/17 valid; **17/17 fit 60-min cap on Windows but 5/17 within 1-min margin** | smoke→all | **MARGINAL 2026-05-06** — only candidate with hard wall enforcement. Phase 1+2 cap 37 min (CD 1500s, LNS 360s, SA 360s, K-joint 0); clock-aware Hessian (full ≥ 15 min remaining, minimal ≥ 5 min, skip otherwise). Wall margin too thin for EPYC slowdown (1.2-1.5×). Awaits E83 v2 with tighter budgets, OR explicit wall enforcement inside `_saddle_escape`. |
+
+#### §Derisk supplementary work
+
+| Task | Outcome |
+|---|---|
+| Throttled-CPU verification (`OMP_NUM_THREADS=1` on E79 ibm09) — §Derisk Mitigation #6 | **2026-05-05**: 1.4× single-thread slowdown vs `--jobs 4` sharing. Proxy stable (0.8275 vs 0.8250); wall 67 min vs 83 min (single-job had less contention). Not a clean EPYC predictor. |
+| `plc_client_os.py` scientific-notation parser bug | **Fixed 2026-05-05**. Was crashing on ibm08/12/13 (-1.42109e-15 truncated). Cleared __pycache__ after edit. |
+| Hardware-probe direction bug | **Fixed 2026-05-05**. Was `baseline/wall` (more budget on faster HW); now `wall/baseline` clamped [1.0, 1.5] (more budget on slower HW). |
+| Tier 2 ORFS verification scoping (Task 18) | **Scoped 2026-05-05** at `analysis/tier2_orfs_scoping/notes.md`. Highlights ≥ 12 μm clearance check as cheapest pre-submission validation. |
+
+#### Submission strategy as of 2026-05-06
+
+The 60-min hard timeout (per `README.md`) means **none of E48/E74/E79 can be
+submitted as-is on hard benches** — sequential phases blow the budget.
+**E83 is the only candidate with provable cap fit** but its margin is
+too thin for the EPYC slowdown.  Active decisions:
+
+* Tighten E83 (v2) budgets — phase 1+2 cap to ~28 min, saddle to ~10 min,
+  total ~38 min on M3-equivalent — and re-run `--all` to validate.
+* Optional: explore E84 = DREAMPlace plateau (GPU, sub-minute) + Hessian
+  saddle escape, leveraging the available RTX 6000 Ada 48GB on EPYC.
+  E76 was the original DREAMPlace integration scoping (status: scoping).
+* If neither hits cap reliably, ship E83 v2 with whatever proxy it
+  delivers (likely ~1.09 `--all`) — still beats public leaderboard 1.1172.
 
 ### DPO line (all superseded by CD)
 
