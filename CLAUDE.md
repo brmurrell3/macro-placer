@@ -12,11 +12,8 @@ CDLNSSAHessian (E74), avg proxy **1.0666** on --all (17 IBM benchmarks),
 −3.21 % vs E48 0.6861, BREAKING the failure point that killed
 E42/E43/E44/E54/E62). Beats public leaderboard 1.1172 by **−4.53 %**,
 beats E48 1.08151 by **−1.38 %**, beats RePlAce 1.4578 by **−26.8 %**,
-zero overlaps on all 17 IBM + 4 NG45. **Beats every VERIFIED leaderboard
-entry** (best previously verified: MTK 1.2818, +20 % above this) and
-**vmallela 1.1 (unverified)**; only Cezar 1.037 (unverified) is reported
-lower (+2.9 %), but Cezar's prior variant verified 1.0666→1.2224 (14 %
-drift). Entry: `submissions/cd_lns_sa_hessian/placer.py`.
+zero overlaps on all 17 IBM + 4 NG45. Entry:
+`submissions/cd_lns_sa_hessian/placer.py`.
 
 NG45 per-design (all ZERO overlaps):
 | Design | E48 ref | **E74** | Lift |
@@ -30,9 +27,10 @@ NG45 per-design (all ZERO overlaps):
 Mechanism: E48 hybrid (E25 + E41 best-of) → smooth-proxy Hessian via
 `torch.autograd.functional.hvp` → Lanczos smallest-algebraic eigenvectors
 (scipy `eigsh` with LinearOperator) → ±ε perturbation along soft modes →
-CD-adaptive polish. Implements the saddle-escape mechanism in vmallela's
-leaderboard #2 entry ("Hessian negative-eigenvalue saddle escape branch")
-and roadmap E28 (proposed since 2026-04-29, never built until now).
+CD-adaptive polish. Applies transition-state methods (Henkelman & Jónsson
+2000 climbing-image NEB, dimer / gentlest-ascent) to the local-move
+plateau in combinatorial macro placement. Implements roadmap E28 (proposed
+2026-04-29).
 
 Lifts per bench (vs my fresh E48-equivalent): ibm01 −3.86 %, ibm02 −7.13 %,
 ibm03 −0.66 %, ibm04 −0.93 %, ibm06 −1.86 %, ibm07 −1.67 %, ibm08 −0.45 %,

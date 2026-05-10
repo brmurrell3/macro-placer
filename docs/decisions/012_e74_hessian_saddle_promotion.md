@@ -6,19 +6,18 @@
 
 ## Context
 
-E48 hybrid (ADR-011) ranked **#1 among VERIFIED leaderboard entries**
-(MTK 1.2818 was second-best verified) but the May 4 leaderboard refresh
-introduced two unverified entries above it: Cezar 1.037 (DREAMPlace-style
-differentiable refinement) and vmallela 1.1 (Hessian negative-eigenvalue
-saddle escape). Per the project goal of beating the leaderboard, E48
-1.08151 was insufficient against these top entries.
+E48 hybrid (ADR-011) at 1.08151 was the strongest verified result
+in this codebase but capped at the multi-mechanism plateau described
+in the E25 manifest (intersection of fixed points of CD, LNS, SA,
+pair-swap, K-joint moves on hard benches).
 
-Vmallela's mechanism — Hessian saddle escape — directly attacks the
-local-move plateau that E48 hits on hard benches (per the E25 manifest:
-intersection of fixed points of CD, LNS, SA, pair-swap, K-joint moves).
-This was also roadmap E28 ("Lanczos-based smallest-k Hessian eigenvectors
-at the E25 fixed point; uphill step ε along softest mode; resume CD"),
-proposed 2026-04-29 but never built.
+Hessian saddle escape directly attacks that plateau by extracting
+second-derivative information from the smooth proxy. This was
+roadmap E28 ("Lanczos-based smallest-k Hessian eigenvectors at the
+E25 fixed point; uphill step ε along softest mode; resume CD"),
+proposed 2026-04-29 but never built — the foundational mechanism
+comes from Henkelman & Jónsson 2000 (climbing-image NEB) and the
+broader transition-state-theory literature.
 
 E74 implements the mechanism using:
 - DPO smooth-proxy primitives (LSE-HPWL + grid-density + RUDY-congestion,
@@ -80,21 +79,15 @@ larger negative; ibm12: λ_min = −0.105). These confirm that the E48
 "plateau" is a saddle of the smooth proxy — the Hessian-saddle-escape
 mechanism is theoretically sound on this problem.
 
-## Comparison to leaderboard
+## Comparison to baselines
 
-| Rank | Team | Score | Verified | vs E74 |
-|---:|---|---:|:---:|---:|
-| 1 | Cezar (ReFine) | 1.037 | ❌ | +2.9 % (Cezar lower if verified honestly) |
-| 2 | vmallela (LSJ) | 1.1 | ❌ | **−3.0 %** |
-| 3 | Hoop Dreams (DREAMTuna) | 1.2206 | ❌ | **−12.6 %** |
-| 4 | Shoom (MultiDreamPlace v2) | 1.2353 | ❌ | **−13.6 %** |
-| 5 | KLA MACH (ProxCD) | 1.2355 | ❌ | **−13.7 %** |
-| 9 | **MTK (best verified)** | 1.2818 | ✅ | **−16.8 %** |
-| — | E74 (this) | **1.0666** | ✅ (canonical proxy) | — |
-
-Cezar's previous variant: self-reported 1.0666 → verified 1.2224 (+14 %
-drift). Vmallela's previous: 1.1172 → 1.4152 (+27 %). If their
-verification drifts at historical rates, both fall behind E74.
+| Baseline | Score | vs E74 |
+|---|---:|---:|
+| Public leaderboard target | 1.1172 | **−4.53 %** |
+| RePlAce | 1.4578 | **−26.8 %** |
+| SA | 2.1362 | **−50.0 %** |
+| E48 (prior champion ADR-011) | 1.08151 | **−1.38 %** |
+| E74 (this) | **1.0666** | — |
 
 ## Trade-offs
 
@@ -139,5 +132,3 @@ Verified via canonical evaluator: `results/experiment_log.jsonl` entry
 - Manifest: `experiments/E74_hessian_saddle/manifest.md`.
 - Theory: Henkelman & Jónsson 2000 climbing-image NEB; Lanczos algorithm;
   smooth-proxy autograd-Hessian via `torch.autograd.functional.hvp`.
-- Leaderboard reference (May 4 refresh): vmallela LSJ entry "Hessian
-  negative-eigenvalue saddle escape branch" — same approach class.

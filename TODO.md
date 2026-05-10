@@ -1,168 +1,143 @@
 # TODO — temporary
 
 **Status:** scratch doc, delete after the deadline. Not part of the
-canonical docs (those are `CLAUDE.md`, `docs/roadmap.md`,
-`docs/results.md`, ADRs).
+canonical docs.
 
-## Pinned state — current champion
+Deadline: May 21, 2026 (~11 days).
 
-| | |
-|---|---|
-| Submission | `submissions/cd_lns_sa_hessian/placer.py` — **CDLNSSAHessian (E74)** |
-| ADR | 012 *Accepted* 2026-05-05 (supersedes 011) |
-| Verified `--all` (17 IBM) | **1.0666** = −1.38 % vs E48, −4.53 % vs leaderboard 1.1172, −26.8 % vs RePlAce |
-| Verified `--ng45` (4 designs) | **0.6813** = −1.57 % vs E48 |
-| Critical NG45 bench | ariane133 **0.6641** = −3.21 % vs E48 0.6861 (breaks failure point that killed E42/43/44/54/62) |
-| Mechanism | E48 hybrid plateau → smooth-proxy autograd Hessian via `torch.autograd.functional.hvp` → Lanczos `eigsh(which="SA")` smallest-algebraic eigvecs → ±ε saddle perturbation → CD polish |
-| Biggest lifts (per-bench) | ibm02 −7.13 %, ibm01 −3.86 %, ibm15 −1.73 % (E61V2-layered), ibm07 −1.67 %, ibm06 −1.86 % |
-| Last commits | `2db85de` (E74 promotion), `86eb136` (E67/68/70 abandon-cleanup) on `main` |
-| Memory | `e74_hessian_champion.md` |
+## State
 
-**Submission policy:** E74 IS the submit target. E48 is a fallback only if
-E74 has a regression on partcl hardware that we can't fix in time.
+Two candidates currently in the tree:
 
-## Queue (priority order)
+| Candidate | `--all` | `--ng45` | Wall fits 60-min cap? | Notes |
+|---|---:|---:|---|---|
+| **E74 CDLNSSAHessian** | **1.0666** | **0.6813** | ❌ ~96 min worst-case | Proxy-best but DQs on partcl 1-hr-per-bench cap |
+| **E83 CDLNSSAHessianClock** | 1.0859 | (not run) | ⚠️ 17/17 fit on Windows; 5/17 within 1-min margin | Wall-safe candidate; **+0.41 % worse than E48 prior champion** |
+| E48 CDLNSSAHybrid (prior fallback) | 1.08151 | 0.6922 | ❌ ~130 min sequential | Same wall problem as E74 |
 
-| # | Task | Wall | Expected lift | Notes |
-|---|---|---|---|---|
-| 15 | **E77 sharper E74** (k=5 eigvecs, finer ε on ibm12-18) | ~9 hr `--jobs 4` | +0.2–0.5 % | replace per-bench result if lower |
-| 16 | **E78 layered E61V2 + E74** on remaining tied benches (ibm08, 14, 16, 17, 18) | ~30 hr | +0.1–0.3 % | pattern from ibm12/15 worked |
-| 17 | **Hardware portability** (see §Derisk below) | ~1 day | defensive | must finish before submit |
-| 18 | **Tier 2 ORFS verification** scoping | ~1 day | gates $20k Grand Prize | read SCORING.md |
-| 19 | **Innovation Award writeup** at `writeup/paper.md` | ~3 days | $4k | Henkelman/Jónsson NEB applied to placement is novel |
+**There is no shippable candidate that beats E48 today.** E74 doesn't
+fit the cap; E83 fits the cap but is worse than E48. The 11-day work
+plan below is structured to fix this.
 
-## §Derisk — hardware portability strategy
+## Critical-path open items
 
-**The risk.** Champion runs on M3 Max P-cores (~4 GHz, 16-core). Judges
-evaluate on AMD EPYC 9655P (~3 GHz per-core, 16 cores + 100 GB RAM,
-RTX 6000 Ada GPU available). Per-bench hard cap is **1 hour end-to-end**.
+### 1. **Wall-safe E74 with mid-loop time enforcement** (priority #1)
 
-**Critical concern.** Canonical ibm01 smoke wall = **96 min on M3 Max**
-(E25 ~20 min + E41 ~48 min + Hessian saddle ~28 min). **This is already
-over the 60-min cap.** On slower per-core AMD EPYC the gap widens.
+Modify `submissions/cd_lns_sa_hessian/placer.py` to enforce a hard
+end-to-end deadline inside the Hessian saddle escape loop:
 
-The leaderboard top entries fit in cap (Cezar 55 min/bench, vmallela
-40 min, Shoom 42 min, MTK 37 s on GPU). We need to compress ours.
+- At placer entry, set `deadline = start + budget_seconds` (default
+  3300 s = 55 min, leaves 5 min for harness overhead).
+- Before each ±ε polish trial, check `time.time() < deadline`.
+  If not, return best-so-far without further trials.
+- Inside `run_cd_adaptive` polish, pass through a `deadline` arg
+  so CD exits early on any sweep boundary past the deadline.
+- Also enforce on Phase 1 (E25) and Phase 2 (E41) — currently each
+  has its own multi-step caps that can stack to >60 min before
+  Hessian even starts.
 
-### Mitigations, ordered by impact and cheapness
+Expected: ibm01 96 min → ≤ 55 min by clipping the Hessian trial
+list when budget exhausted. Some benches will see fewer ε trials
+than full E74 run; aggregate proxy will rise slightly but should
+stay well below E48.
 
-#### 1. **Parallelize E25 ⊥ E41** in the placer (highest impact, ~1 day dev)
+Smoke gate: ibm01 + ibm17 (largest) both finish ≤ 55 min with
+proxy within 0.5 % of full E74 cached result.
 
-Currently `cd_lns_sa_hessian/placer.py` runs Phase 1 (E25) sequentially,
-then Phase 2 (E41), then Phase 3 (Hessian). E25 and E41 are independent —
-they can run in parallel via `concurrent.futures.ProcessPoolExecutor` or
-`multiprocessing.Process`. Saves ~25–30 min/bench. Brings ibm01 from 96
-to ~70 min — still tight but feasible if Hessian compresses too.
+Done when: all 17 IBM walls under 55 min on this machine AND
+aggregate proxy ≤ E48 1.08151.
 
-Risk: each subprocess imports torch + DPO smooth proxy, doubling memory
-footprint. ~2× peak (~400 MB → ~800 MB). M3 Max 36 GB and partcl 100 GB
-both handle this trivially.
+### 2. **Throttled-CPU verification** (priority #2 — gates submission)
 
-#### 2. **Compress the Hessian phase** (high impact, ~hours dev)
+Before submitting, simulate slower per-core hardware to confirm
+proxy holds under wall pressure. Two options:
 
-Current: `n_eigvecs=2 × 2 signs × 3 ε values × 240 s polish each = ~48 min`.
-Most lift on ibm01 came from `eig0 sign=-1 eps=1.0` and `eig1 sign=+1 eps=3.0`.
-**Action**: drop to `n_eigvecs=1, eps={0.3, 1.0, 3.0}, polish_budget=180 s`
-= 6 trials × 180 s = **18 min** Hessian. Need to validate this preserves
-most of the −3.86 % ibm01 lift.
-
-Risk: drops some bench-specific lifts. Mitigate by **per-bench cached
-config**: run the full search once (we have the data); for benches where
-the win came from a non-default eigvec / sign / eps, hardcode a per-bench
-list. **Actually do not do this** — competition rules forbid per-benchmark
-hardcoded logic. Instead: the eigsh return is rank-ordered, so eig0 with
-sign sweep covers ~80 % of cases.
-
-#### 3. **Adopt E68 work-bounded termination** (defensive, ~hours dev)
-
-E68 (parallel agent's, abandoned) implements §4.5 of the roadmap: phase
-plateau-/saturation-streaks as primary termination, wall caps as soft
-secondary. **The lane-variance regression E68 saw was a separate issue**
-(seed noise in the lanes); the work-bounded mechanism itself is sound.
-
-Specifically, port these knobs into our champion (NOT the soft-cap
-loosening — keep the same wall caps to stay under 1 hr):
-- LNS: terminate on 5 consecutive non-improving samples (vs current 1)
-- SA-v2: terminate on no improvement in last 1000 moves (vs wall-only)
-- K-joint: terminate on 30 K-tuples with no commits
-
-This protects against slower hardware where the same wall = fewer
-sweeps. The streak metric is hardware-invariant; if we plateau early on
-fast hardware AND late on slow hardware, the streak still fires.
-
-#### 4. **Drop K-joint K=3 phase** in E41 (saves 10 min/bench)
-
-E41 includes a K-joint K=3 polish (~10 min budget). Hessian saddle escape
-finds deeper minima than K-joint K=3 does, so the K-joint phase is
-largely redundant when Hessian comes after. **Action**: smoke-test E41
-without K-joint on ibm01/04/12, verify proxy doesn't regress, drop the
-phase from E41 inside our champion.
-
-Risk: K-joint may help on benches where Hessian doesn't (ibm09 lift was
-small). Test with both configurations.
-
-#### 5. **Hardware-probe at startup** (highest portability, ~1 hr dev)
-
-At placer init, run a fixed-work benchmark (e.g., 1000 incremental-
-evaluator moves on a synthetic placement). Measure wall. Scale internal
-phase budgets inversely:
-
-```python
-calibration_wall = run_calibration_benchmark()  # measure 1k moves
-expected_wall = 5.0  # M3 Max baseline in seconds
-scale = max(0.5, expected_wall / calibration_wall)
-self.cd_budget = 2400 * scale
-self.lns_budget = 600 * scale
-# etc.
-```
-
-This adapts caps to whatever hardware the judges run on. If partcl is
-2× slower per-core, all caps relax to 2× without changing the algorithm.
-
-Risk: scales DOWN on faster hardware too — could under-budget. Cap the
-scale at `[0.5, 1.5]` so we don't over-shrink.
-
-#### 6. **Verify on throttled CPU** (validation, ~hours)
-
-Before submitting, simulate AMD EPYC's slower per-core via:
 ```bash
-OMP_NUM_THREADS=1 nice -n 19 uv run evaluate submissions/cd_lns_sa_hessian/placer.py -b ibm01
-OMP_NUM_THREADS=1 nice -n 19 uv run evaluate submissions/cd_lns_sa_hessian/placer.py -b ibm17  # largest
+# Option A: single thread (forces serial work)
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 nice -n 19 \
+  uv run evaluate submissions/cd_lns_sa_hessian/placer.py --all --json
+
+# Option B (Linux): cpulimit
+cpulimit -l 50 -- uv run evaluate submissions/cd_lns_sa_hessian/placer.py --all
 ```
 
-Alternatively, on a Linux box run via `cpulimit -l 50 -- uv run evaluate`.
+Goal: every bench under 60 min, every bench within 1 % of
+full-power proxy. If proxy regresses > 1 % on any bench, the
+budget caps in (1) are too tight — relax CD plateau patience
+or extend `run_cd_adaptive` `min_time_s` floor.
 
-**Goal**: confirm proxy on throttled run is within 1 % of full-power
-proxy on each bench. If proxy regresses more than that, mitigations
-(1)–(5) need more aggressive tuning.
+### 3. **E80 work-bounded streaks** (priority #3 — defensive)
 
-### Sequence to ship
+`experiments/E80_work_bounded_streaks/` is `in_progress`. Port the
+saturation streak counters into the wall-safe E74 placer from (1):
 
-1. Apply (1) parallelize E25⊥E41.
-2. Apply (2) compress Hessian.
-3. Smoke test on M3 Max — verify total wall ≤ 50 min/bench.
-4. Apply (3) work-bounded streaks.
-5. Apply (5) hardware probe.
-6. Run (6) throttled-CPU verification.
-7. If proxy holds, submit E74.
-8. If proxy regresses, revert to E48 fallback (`submissions/cd_lns_sa_hybrid/placer.py`,
-   verified 1.08151 / 0.6922).
+- LNS: terminate after 5 consecutive non-improving samples
+- SA-v2: terminate after 1000 moves without improvement
+- K-joint: terminate after 30 K-tuples with no commits
 
-Steps 1–2 alone should bring per-bench wall down from ~96 min to ~50 min,
-leaving 10 min headroom for hardware variability. Steps 3–5 are
-belt-and-suspenders.
+This is hardware-invariant — the streak fires whether the platform
+is fast or slow. Composes with (1)'s wall enforcement: phase exits
+on streak OR deadline, whichever first.
 
-## Reusables left in tree (don't re-compute)
+### 4. **NG45 verification of the wall-safe build** (priority #4)
 
-- Cached E25 + E41 placements: `experiments/E69_sequence_pair_search/results/placements/`
-  (ibm01, ibm04, ibm09, ibm12)
-- E61V2-fresh: `experiments/E75_fresh_e61v2_wave/results/` (ibm12, ibm14, ibm15)
-- Per-bench E74 outputs: `experiments/E74_hessian_saddle/results/` (all 17 IBM + layered ibm12/15)
-- Validator (loads cached): `submissions/cd_lns_sa_hessian/loader_placer.py`
+Once (1) and (2) pass IBM, run `--ng45` and confirm:
+
+- All 4 designs ≤ 60 min
+- ariane133 ≤ 0.6900 (current E74 was 0.6641; allow some regression
+  from wall-clipping but must not regress to E48's 0.6861)
+- ariane136, mempool_tile, nvdla ≤ E48 reference
+
+Done when: `--ng45` avg ≤ 0.69 with zero overlaps.
+
+### 5. **Submission package + form** (priority #5)
+
+Once (1)–(4) green:
+- Confirm `submissions/cd_lns_sa_hessian/placer.py` is the entry.
+- Check `SETUP.md` for any submission-format requirements.
+- Fill out the Google form (link in `README.md`).
+- Keep `submissions/cd_lns_sa_hybrid/placer.py` as private fallback.
+
+## Lower-priority / can drop
+
+- **Tier 2 ORFS verification scoping** — if we make top-7 by Tier 1,
+  we're automatically considered for Tier 2 ($20k Grand Prize).
+  Worth reading `SCORING.md` to know what failures look like, but no
+  build work needed. Skip unless time after (1)–(5).
+- **Innovation Award writeup** ($4k) — paper writeup at
+  `writeup/paper.md`. Worth ~3 days end-of-deadline if (1)–(5) ship.
+  Describe the mechanism: smooth-proxy autograd Hessian on the local
+  proxy minimum + Lanczos eigvec + ε-step + CD polish. Frame as
+  applying transition-state methods (well-developed in
+  chemistry/materials) to combinatorial placement; cite Henkelman &
+  Jónsson 2000 NEB literature for the mathematical foundation.
+
+## Settled / no further work
+
+- E77 sharper Hessian — marginal, no incremental lift.
+- E78 layered E61V2+E74 — marginal.
+- E79 hardware_portability — superseded by E83.
+- E81 cd_only_saddle — falsified.
+- E82 hybrid_dispatcher — falsified.
+- E83 clock_aware — marginal at 1.0859; doesn't beat E48 in
+  isolation. Body of work absorbed into the wall-safe E74 plan above.
+
+## Reusables (don't recompute)
+
+- Cached E25 + E41 placements: `experiments/E69_sequence_pair_search/results/placements/` (ibm01/04/09/12).
+- E61V2-fresh outputs: `experiments/E75_fresh_e61v2_wave/results/` (ibm12/14/15).
+- Per-bench E74 outputs (full Hessian wave): `experiments/E74_hessian_saddle/results/` (all 17 IBM + layered ibm12/15).
+- Validator (loads cached): `submissions/cd_lns_sa_hessian/loader_placer.py`.
 
 ## Delete this doc when
 
-- E74 successfully submitted, OR
-- E74 superseded by something even better (E77 / E78 / DREAMPlace / etc.)
+E74 (or its wall-safe successor) is submitted, or May 21 passes.
 
-Whichever comes first.
+## Daily progress log
+
+- 2026-05-05 — E74 promoted (ADR-012); cached wave verified 1.0666
+  `--all`, 0.6813 `--ng45`.
+- 2026-05-05/06 — E77 / E78 / E79 / E80 / E81 / E82 / E83 derisk wave;
+  E83 clock-aware fits 60-min cap (1.0859, marginal).
+- 2026-05-10 — TODO consolidated; wall-safe E74 plan is critical path.
+- (next entries here as work lands)

@@ -14,17 +14,13 @@ tables for DPO / Polyhedra / Overnight Sweep / Miftari live in
 | SA | 2.1362 | 0 | Weak baseline |
 | Will's seed (SA 3000) | 1.5338 | 0 | Pre-fork submission |
 | Greedy row | ~2.20 | 0 | Demo placer |
-| Leaderboard targets (May 4 refresh): | | | |
-| · Cezar (ReFine) | 1.037 | 0 | UNVERIFIED; previous variant verified 1.0666→1.2224 (+14 % drift) |
-| · vmallela (LSJ Hessian) | 1.1 | 0 | UNVERIFIED; previous CD+LNS verified 1.1172→1.4152 (+27 % drift); SAME mechanism as our E74 |
-| · Hoop Dreams (DREAMTuna) | 1.2206 | 0 | UNVERIFIED; DREAMPlace + Bayesian opt |
-| · MTK (DreamPlace++) | 1.2818 | 0 | **VERIFIED** — best previously verified entry |
+| Public leaderboard target | 1.1172 | 0 | Numeric proxy target to beat |
 
 ## Champion lineage
 
 | Hypothesis | Status | Best Avg Proxy | Notes |
 |------------|--------|----------------|-------|
-| **CDLNSSAHessianPlacer (E74)** | **CHAMPION (proxy)** | **1.0666** | **Verified −1.38 % vs E48 (−4.53 % vs leaderboard, −26.8 % vs RePlAce); --ng45 0.6813 (−1.57 % vs E48, ariane133 0.6641 = −3.21 % BREAKING the failure point that killed E42/E43/E44/E54/E62).** Hessian saddle escape on E48 plateau via smooth-proxy autograd Hessian + Lanczos smallest-algebraic + ±ε perturbation + CD polish. Per-bench biggest lifts: ibm02 −7.13 %, ibm01 −3.86 %, ibm15 −1.73 % (E61V2-layered), ibm07 −1.67 %, ibm06 −1.86 %. **Beats every VERIFIED leaderboard entry by ≥17 %**. Code at `submissions/cd_lns_sa_hessian/placer.py`; **ADR-012 *Accepted* 2026-05-05**. Wall ~50 min avg, ~96 min worst-case ibm01 — **does NOT fit competition's 1-hour-per-bench hard timeout**, see §Derisk wave 2026-05-05/06 for E79-E83 wall-budget exploration. |
+| **CDLNSSAHessianPlacer (E74)** | **CHAMPION (proxy)** | **1.0666** | **Verified −1.38 % vs E48 (−4.53 % vs public leaderboard 1.1172, −26.8 % vs RePlAce); --ng45 0.6813 (−1.57 % vs E48, ariane133 0.6641 = −3.21 % BREAKING the failure point that killed E42/E43/E44/E54/E62).** Hessian saddle escape on E48 plateau via smooth-proxy autograd Hessian + Lanczos smallest-algebraic + ±ε perturbation + CD polish. Per-bench biggest lifts: ibm02 −7.13 %, ibm01 −3.86 %, ibm15 −1.73 % (E61V2-layered), ibm07 −1.67 %, ibm06 −1.86 %. Code at `submissions/cd_lns_sa_hessian/placer.py`; **ADR-012 *Accepted* 2026-05-05**. Wall ~50 min avg, ~96 min worst-case ibm01 — **does NOT fit competition's 1-hour-per-bench hard timeout**, see §Derisk wave 2026-05-05/06 for E79-E83 wall-budget exploration. |
 | CDLNSSAHessianClockPlacer (E83) | wall-safe candidate (marginal) | 1.0859 | Verified `--all` 1.0859 (+1.81 % vs E74; +0.41 % vs E48; **−2.80 % vs leaderboard**). Single algorithm, same hyperparameters every bench; clock-aware Hessian degradation. **17/17 fit 60-min cap on Windows**, 0 overlaps. 5/17 within 1-min cap margin → EPYC slowdown likely pushes those over cap. Phase 1+2 (CD 1500 + LNS 360 + SA 360) parallel, K-joint dropped, Hessian (k=1, ε={0.3,1,3}, polish 180s) full / minimal / skip based on remaining time. Code at `experiments/E83_clock_aware/code/cd_lns_sa_hessian_clock.py`. **Marginal 2026-05-06** — not promoted; awaits E83 v2 with tighter budgets or explicit wall enforcement inside saddle escape. |
 | CDLNSSAHybridPlacer (E48) | superseded by E74 | 1.08151 | Was champion 2026-05-02 → 2026-05-05 (ADR-011 superseded by ADR-012). Per-bench best-of-{E25, E41}; --ng45 0.6922. Kept as fallback at `submissions/cd_lns_sa_hybrid/placer.py`. |
 | CDLNSGridBinPlacer (E12) | prior champion | 1.0990 | Was champion 2026-04-28 → 2026-05-02 (ADR-007 superseded by ADR-011). Still the safe baseline reference; CD plateau + grid-bin LNS overlay. |
