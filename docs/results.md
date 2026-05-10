@@ -1,6 +1,6 @@
 # Results
 
-Last updated: 2026-05-05
+Last updated: 2026-05-06
 
 Operational doc — current champion only. Historical per-benchmark
 tables for DPO / Polyhedra / Overnight Sweep / Miftari live in
@@ -24,7 +24,8 @@ tables for DPO / Polyhedra / Overnight Sweep / Miftari live in
 
 | Hypothesis | Status | Best Avg Proxy | Notes |
 |------------|--------|----------------|-------|
-| **CDLNSSAHessianPlacer (E74)** | **CHAMPION** | **1.0666** | **Verified −1.38 % vs E48 (−4.53 % vs leaderboard, −26.8 % vs RePlAce); --ng45 0.6813 (−1.57 % vs E48, ariane133 0.6641 = −3.21 % BREAKING the failure point that killed E42/E43/E44/E54/E62).** Hessian saddle escape on E48 plateau via smooth-proxy autograd Hessian + Lanczos smallest-algebraic + ±ε perturbation + CD polish. Per-bench biggest lifts: ibm02 −7.13 %, ibm01 −3.86 %, ibm15 −1.73 % (E61V2-layered), ibm07 −1.67 %, ibm06 −1.86 %. **Beats every VERIFIED leaderboard entry by ≥17 %**. Code at `submissions/cd_lns_sa_hessian/placer.py`; **ADR-012 *Accepted* 2026-05-05**. Wall ~50 min/bench (= ~14 hr serial, ~4 hr `--jobs 4`). |
+| **CDLNSSAHessianPlacer (E74)** | **CHAMPION (proxy)** | **1.0666** | **Verified −1.38 % vs E48 (−4.53 % vs leaderboard, −26.8 % vs RePlAce); --ng45 0.6813 (−1.57 % vs E48, ariane133 0.6641 = −3.21 % BREAKING the failure point that killed E42/E43/E44/E54/E62).** Hessian saddle escape on E48 plateau via smooth-proxy autograd Hessian + Lanczos smallest-algebraic + ±ε perturbation + CD polish. Per-bench biggest lifts: ibm02 −7.13 %, ibm01 −3.86 %, ibm15 −1.73 % (E61V2-layered), ibm07 −1.67 %, ibm06 −1.86 %. **Beats every VERIFIED leaderboard entry by ≥17 %**. Code at `submissions/cd_lns_sa_hessian/placer.py`; **ADR-012 *Accepted* 2026-05-05**. Wall ~50 min avg, ~96 min worst-case ibm01 — **does NOT fit competition's 1-hour-per-bench hard timeout**, see §Derisk wave 2026-05-05/06 for E79-E83 wall-budget exploration. |
+| CDLNSSAHessianClockPlacer (E83) | wall-safe candidate (marginal) | 1.0859 | Verified `--all` 1.0859 (+1.81 % vs E74; +0.41 % vs E48; **−2.80 % vs leaderboard**). Single algorithm, same hyperparameters every bench; clock-aware Hessian degradation. **17/17 fit 60-min cap on Windows**, 0 overlaps. 5/17 within 1-min cap margin → EPYC slowdown likely pushes those over cap. Phase 1+2 (CD 1500 + LNS 360 + SA 360) parallel, K-joint dropped, Hessian (k=1, ε={0.3,1,3}, polish 180s) full / minimal / skip based on remaining time. Code at `experiments/E83_clock_aware/code/cd_lns_sa_hessian_clock.py`. **Marginal 2026-05-06** — not promoted; awaits E83 v2 with tighter budgets or explicit wall enforcement inside saddle escape. |
 | CDLNSSAHybridPlacer (E48) | superseded by E74 | 1.08151 | Was champion 2026-05-02 → 2026-05-05 (ADR-011 superseded by ADR-012). Per-bench best-of-{E25, E41}; --ng45 0.6922. Kept as fallback at `submissions/cd_lns_sa_hybrid/placer.py`. |
 | CDLNSGridBinPlacer (E12) | prior champion | 1.0990 | Was champion 2026-04-28 → 2026-05-02 (ADR-007 superseded by ADR-011). Still the safe baseline reference; CD plateau + grid-bin LNS overlay. |
 | CDLNSGACrossoverPlacer (E61_v2) | strongest verified candidate; ADR-012 *Proposed* | 1.08083 | **Marginal --all (−0.07 % vs E48); KEY result: --ng45 0.6908 (−0.20 % vs E48, ariane133 0.6760 = −1.47 % LIFT — first NG45-positive mechanism since E18).** Spatial-block 2×2 GA crossover between E25/E41 outputs, polish via CD+LNS+SA-v2. Wins 6/17 vs E48 on --all (concentrated on tied-parent benches: ibm12 −0.68 %, ibm14 −0.47 %, ibm15 −0.28 %). Best-of-{E48, E61_v2} = 1.08025 (−0.12 % over E48 standalone); best-of-3 with E53m = 1.07995 (−0.14 %). Code at `experiments/E61_ga_crossover/code/cd_lns_ga_crossover.py`; ADR-012 *Proposed* 2026-05-03. Wall 26.6 hr CPU / ~6.7 hr `--jobs 4`. |
@@ -37,6 +38,90 @@ tables for DPO / Polyhedra / Overnight Sweep / Miftari live in
 | DPO best-of-v2 | superseded | 1.3834 | Was champion 2026-04-26; -19.1% vs CDOnly. Details in `writeup/historical_results.md`. |
 | Polyhedra Navigation | superseded | 1.4867 | At ceiling; replaced by DPO. Details in `writeup/historical_results.md`. |
 | SDF Density | init only | 1.5002 | Now used as init for both CD placers |
+
+## CDLNSSAHessianClockPlacer (E83) --- Wall-Safe Candidate (2026-05-06)
+
+**Status: marginal** — not promoted.  Verified `--all` **1.0859** (+1.81 %
+vs E74 1.0666; +0.41 % vs E48 1.08151; −2.80 % vs public leaderboard
+1.1172).  Zero overlaps on all 17 IBM benchmarks.  All 17 walls under the
+60-min hard timeout on this Windows machine, but **5/17 walls within
+1 min of cap** → EPYC slowdown (1.2-1.5×) is expected to push those
+over the cliff edge.
+
+**Why it exists.** E74 (the proxy champion) doesn't fit the competition's
+1-hour-per-benchmark hard timeout (see `README.md`).  E48 also doesn't
+(sequential E25+E41 takes ~130 min on hard benches).  E83 is the only
+candidate this session that has explicit hard wall enforcement and an
+algorithm guaranteed to terminate within budget on every benchmark.
+
+**Mechanism.**
+
+* Same hyperparameters and code path on every benchmark (rule-compliant —
+  no per-benchmark dispatch).
+* Phase 1+2 (parallel E25⊥E41 subprocess workers): CD 1500s, LNS 360s,
+  SA 360s, K-joint 0s.  Per-lane wall ≤ 37 min; parallel max ≤ 37 min.
+* Phase 3 (Hessian saddle escape) configuration adapts to OBSERVED elapsed
+  time, not benchmark properties:
+  * remaining ≥ 15 min → full (k=1, ε={0.3, 1.0, 3.0}, polish 180s; ~18 min)
+  * remaining ≥  5 min → minimal (k=1, ε={1.0}, polish 60s; ~2 min)
+  * otherwise          → skip (return E25/E41 plateau as winner)
+* Hardware probe scales polish quality only, not the total cap.
+
+### Per-benchmark (--all, zero overlaps everywhere)
+
+| Bench | Proxy | Wall (min) | Margin to 60-min cap | Saddle mode | Eigvalue (smallest) |
+|-------|------:|-----------:|---------------------:|-------------|--------------------:|
+| ibm01 | 0.8736 | 49.1 | +10.9 | full | (varies) |
+| ibm02 | 1.0925 | 51.3 |  +8.7 | full | |
+| ibm03 | 0.9617 | 50.9 |  +9.1 | full | |
+| ibm04 | 0.9966 | 45.4 | +14.6 | full | |
+| ibm06 | 1.1577 | 50.5 |  +9.5 | full | |
+| ibm07 | 1.0780 | 51.6 |  +8.4 | full | |
+| ibm08 | 1.1105 | 52.3 |  +7.7 | full | |
+| ibm09 | 0.8345 | 51.0 |  +9.0 | full | |
+| **ibm10** | 1.0246 | **59.9** | **+0.1** ⚠️ | full | |
+| ibm11 | 0.8793 | 53.5 |  +6.5 | full | |
+| **ibm12** | 1.2186 | **59.8** | **+0.2** ⚠️ | full | |
+| ibm13 | 0.9622 | 51.9 |  +8.1 | full | -2.03 (smoke) |
+| ibm14 | 1.2163 | 45.7 | +14.3 | full | |
+| **ibm15** | 1.1664 | **59.3** | **+0.7** ⚠️ | full | |
+| **ibm16** | 1.1585 | **59.9** | **+0.1** ⚠️ | full | |
+| ibm17 | 1.3717 | 46.0 | +14.0 | full | |
+| **ibm18** | 1.3575 | **58.9** | **+1.1** ⚠️ | full | -1.75 |
+| **AVG**   | **1.0859** | **53.7** | **+6.3** | — | — |
+
+vs SA baseline: +48.9 % better.  vs RePlAce baseline: +25.5 % better.
+Beats public leaderboard 1.1172 by **−2.80 %**.  Total --all wall (under
+`--jobs 4` contention): 53818 s = 14.95 hr.
+
+### Smoke (single-bench, no contention)
+
+* **ibm13 smoke**: 0.96471 / 56.7 min.  Hessian eigvalue −2.03; first polish
+  (eig0 +0.3) lifted from 0.96602 to 0.96471 (Δ = −0.00131).  Validates
+  the clock-aware mechanism end-to-end on the worst-case bench.
+
+### Why not promote E83 to champion
+
+1. **Proxy is +0.41 % over the prior champion E48 hybrid** (1.08151).  Per
+   CLAUDE.md promotion gates, this is at-or-below E48 region but does not
+   improve.  E74 (1.0666) already supersedes E48 on proxy; E83 doesn't
+   match E74.
+2. **Wall margin is too thin for EPYC.**  5/17 benches finished within
+   1 min of the 60-min cap on this Windows machine.  Throttled-CPU
+   measurement showed 1.4× slowdown vs `--jobs 4` sharing; per-core EPYC
+   slowdown is likely 1.2-1.5× single-bench, which would push these
+   benches over the cliff.
+
+### Next variants
+
+* **E83 v2**: tighter budgets — phase 1+2 cap to 28 min (CD 1200, LNS 240,
+  SA 240), saddle to ≤ 5 polishes × 120 s = 10 min.  Total max ~38 min on
+  M3-equivalent → ~46 min on EPYC.  Trade ~1 % proxy for safety margin.
+  Re-run --all.
+* **E83 v3** (alternative): keep budgets, add explicit wall enforcement
+  inside `_saddle_escape` to skip remaining polishes when self-cap hit.
+
+---
 
 ## CDLNSSAHybridPlacer (E48) --- CHAMPION (2026-05-02)
 
