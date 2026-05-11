@@ -61,44 +61,29 @@ under the 60-min cap.
 
 ---
 
-## PATH B — DREAMPlace exploration *(parallel, lower expected EV)*
+## PATH B — DREAMPlace exploration *(KILLED 2026-05-11 PM)*
 
-**Premise:** Six of nine top leaderboard entries use DREAMPlace. We have a
-mature DP install on cloud A100 + complete subprocess pipeline. Honest data
-says DP basin polishes 10-23% **worse** than cascade on our objective —
-likely because canonical PlacementCost proxy differs from DP's internal
-proxy. But: untested whether **custom DP patches** can align the proxies,
-or whether **multi-seed DP ensemble** finds better basins than any single
-seed.
+**Verdict: FALSIFIED.** Sweep ran 13-25 configs/bench across ibm10/12/14/17
+on cloud A100. Best DP basin proxy per bench (after greedy_legalize):
 
-### B1. Proper hyperparameter sweep + best-of-K ensemble *(1-2 days)*
-- 50-100 DP configs: `target_density × density_weight × iteration × learning_rate × num_bins`
-- Random search across the 5D space, 1 seed per config
-- Per bench: best post-legalize-polish basin → pass to cascade pipeline
-- Integration: extend `experiments/E76_dreamplace_integration/` driver
-- Decision gate: per-bench best-of-K vs cascade b=3000 — if ≥5 of 17 IBM benches show DP basin polishes to ≤ cascade, B is viable
+| Bench | Best DP basin | cascade b=3000 | Gap |
+|-------|--------------:|---------------:|----:|
+| ibm10 | 1.2553 | 1.0775 | **+16.5%** |
+| ibm12 | 1.3712 | 1.3031 | +5.2% |
+| ibm14 | 1.4176 | 1.2919 | +9.7% |
+| ibm17 | 1.5388 | 1.4546 | +5.8% |
 
-### B2. Patch DREAMPlace loss to match canonical proxy *(2-3 days)*
-- DP optimizes: HPWL + density (Gaussian kernel) + RUDY-style congestion **with DP's weights**
-- Canonical PlacementCost: HPWL + top-K density + smoothed RUDY **with TILOS weights**
-- Patch sites: `dreamplace/PlaceObj.py` density weight, congestion formulation
-- Validation: smooth-proxy on patched DP output should correlate >0.95 with PlacementCost.get_cost() across 50 random placements
-- Risk: hard to match without breaking DP's optimizer convergence
+**0/4 hardest benches** have a DP basin within even 5% of cascade after K=25.
+The 5D hyperparameter sweep can't bridge the structural objective mismatch
+between DREAMPlace's loss (HPWL + Gaussian density + RUDY-as-DP-formulates)
+and the canonical PlacementCost proxy (top-K density + TILOS-smoothed RUDY
+with TILOS weights).
 
-### B3. DP-init → cascade pipeline at full budget *(1 day, gated on B1/B2)*
-- If B1 or B2 yields a DP basin competitive with E25/E41, feed it through
-  cascade saddle escape (currently the E48 hybrid plateau)
-- This is what `submissions/cd_lns_sa_hessian_dp/placer.py` was built for
-- Expected: if DP basin is ~5% better than E25/E41 plateau, cascade lifts to ~1.05 IBM
+**Code preserved** at `experiments/E76_dreamplace_integration/` and
+`submissions/cd_lns_sa_hessian_dp/` for reference. The greedy macro
+legalizer (`macro_legalizer.py`) is a reusable utility regardless.
 
-### B4. Decision: keep B or kill *(after B1)*
-- Hard gate: if K=50 sweep produces no DP basin ≤ cascade on majority of benches, kill B and double down on A
-- Resources freed go to A2/A3
-
-**B active code:**
-- `submissions/cd_lns_sa_hessian_dp/placer.py` (E74 + optional DP lane, deadline-enforced)
-- `experiments/E76_dreamplace_integration/code/{tilos_to_bookshelf.py, bookshelf_to_pt.py, macro_legalizer.py}`
-- `/opt/DREAMPlace/install/` on cloud (mpc-cloud, built ABI=1, do not wipe)
+**Resources freed → all-in on PATH A.**
 
 ---
 
