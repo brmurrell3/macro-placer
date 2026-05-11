@@ -1,5 +1,7 @@
 # Research Principles for Breaking the Four Walls
 
+> ⚠️ **HISTORICAL — last updated 2026-05-05/06.** Current plan is in repo-root `TODO.md` (two-path structure: Path A cascade speedup, Path B DREAMPlace exploration). Submission target as of 2026-05-11: `submissions/cd_lns_sa_cascade/placer_adaptive.py`.
+
 Last updated: 2026-05-03
 Author: parent agent (multi-day research synthesis)
 Champion at time of writing: E48 hybrid 1.08151 --all (ADR-011 Accepted); ADR-012

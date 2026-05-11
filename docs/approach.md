@@ -1,5 +1,7 @@
 # Approach
 
+> ⚠️ **HISTORICAL — last updated 2026-05-05/06.** Current plan is in repo-root `TODO.md` (two-path structure: Path A cascade speedup, Path B DREAMPlace exploration). Submission target as of 2026-05-11: `submissions/cd_lns_sa_cascade/placer_adaptive.py`.
+
 Last updated: 2026-04-28
 
 The current approach is **full-proxy coordinate descent on an incremental evaluator with per-benchmark plateau detection, followed by a grid-bin LNS escape phase (E12)**. The CD core superseded the DPO and polyhedra-navigation approaches; the LNS overlay (ADR-007) supersedes plain CDAdaptive (ADR-003) as the champion-bearing decision. The earlier approaches are documented further down — keep them in mind for the writeup, since the failures motivated the architecture that won.

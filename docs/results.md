@@ -1,5 +1,7 @@
 # Results
 
+> ⚠️ **HISTORICAL — last updated 2026-05-05/06.** Current plan is in repo-root `TODO.md` (two-path structure: Path A cascade speedup, Path B DREAMPlace exploration). Submission target as of 2026-05-11: `submissions/cd_lns_sa_cascade/placer_adaptive.py`.
+
 Last updated: 2026-05-06
 
 Operational doc — current champion only. Historical per-benchmark
