@@ -116,6 +116,20 @@ def run_ensemble(
             init = _jittered_sdf_init(benchmark, plc, sigma_frac, seed)
             log(f"  CD polish from jittered init ({init_polish_budget:.0f} s)")
             plateau = _cd_polish(init, benchmark, plc, budget_s=init_polish_budget)
+        elif label == "DREAMPlace_cached":
+            # Load DREAMPlace output (must be produced via E76 cloud workflow).
+            dp_pt = _ROOT / "experiments" / "E76_dreamplace_integration" / "results" / f"dreamplace_{bench_name}.pt"
+            if not dp_pt.exists():
+                log(f"  skipped: no cached DREAMPlace .pt for {bench_name} "
+                    f"(run E76 cloud workflow first)")
+                continue
+            dp = torch.load(dp_pt, weights_only=False)
+            log(f"  DREAMPlace cached proxy={dp['proxy']:.5f}; CD polish to land basin "
+                f"({init_polish_budget:.0f} s)")
+            # The DREAMPlace output is a placement; we polish briefly to land
+            # in a stable basin for the saddle escape.
+            plateau = _cd_polish(dp["placement"].to(torch.float32),
+                                 benchmark, plc, budget_s=init_polish_budget)
         else:
             log(f"  unknown init label: {label}; skipping")
             continue

@@ -1,12 +1,12 @@
 ---
 id: E76
 name: dreamplace_integration
-status: scoping
+status: in_progress
 parent: leaderboard top-9 dominated by DREAMPlace-based approaches
 created: 2026-05-04
 decided: null
 champion_at_time: 1.08151 (E48 hybrid)
-outcome: null
+outcome: **Local prep landed 2026-05-10**: TILOS-protobuf → Bookshelf converter (`code/tilos_to_bookshelf.py`, validated on ibm01: 1140 nodes / 5993 nets / canvas 22.95×23.04 emitted correctly to all 6 Bookshelf files); DREAMPlace `.gp.pl` → our `.pt` reverse converter (`code/bookshelf_to_pt.py`); cloud-side DREAMPlace runner (`cloud/run_dreamplace.sh`) using JSON config + Docker image `limbo018/dreamplace-cuda`; wave converter (`code/convert_all_benches.sh`) for all 17 IBM + 4 NG45; `code/multi_init_ensemble.py` updated with `DREAMPlace_cached` init label so E85 picks up cached `.pt` outputs automatically. Full step-by-step workflow documented in `README.md`. **Awaits cloud GPU provision + DREAMPlace install + run; .pt files expected to drop into `experiments/E76_dreamplace_integration/results/dreamplace_*.pt`.**
 champion_delta: null
 graduated_to: null
 superseded_by: null
