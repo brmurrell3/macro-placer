@@ -77,8 +77,11 @@ def run_dp(bench, plc, config, tmp_root="/tmp/dp_sweep"):
             "stop_overflow": 0.07, "result_dir": str(tmp),
         }))
         t0 = time.time()
-        proc = subprocess.run(["/usr/bin/python3", placer_py, str(cfg_path)],
-            cwd=dp_root, capture_output=True, text=True, timeout=300)
+        try:
+            proc = subprocess.run(["/usr/bin/python3", placer_py, str(cfg_path)],
+                cwd=dp_root, capture_output=True, text=True, timeout=600)
+        except subprocess.TimeoutExpired:
+            return None, time.time() - t0, "timeout"
         wall = time.time() - t0
         if proc.returncode != 0:
             return None, wall, "dp_failed"
