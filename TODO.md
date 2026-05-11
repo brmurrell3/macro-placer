@@ -3,21 +3,81 @@
 **Status:** scratch doc, delete after the deadline. Not part of the
 canonical docs.
 
-Deadline: May 21, 2026 (~11 days).
+Deadline: May 21, 2026 (~10 days).
 
-## State
+## SESSION HANDOFF — 2026-05-11 01:39 PDT
+
+### What's currently running
+
+- **Local M3 Max**: `pid 66167` running ibm01 wall-safe smoke (budget=3300s),
+  log at `/tmp/walltight_smoke/ibm01_b3300.log`. Saddle phase, 1 trial
+  completed (0.87196, NEW BEST vs plateau 0.89614). 11 trials remaining.
+  Expected completion ~22:00 PDT. Final SMOKE_IBM01 line is the result.
+- **Cloud OCI A100** (mpc-cloud / 132.145.135.39): no python processes.
+  Earlier smokes completed. DREAMPlace installed at `/opt/DREAMPlace/install`
+  (built with ABI=1).
+
+### What was verified this session
+
+1. **E84 cascading verified at canonical 1.0612** across 17 IBM, zero
+   overlaps. Loader at `experiments/E84_cascading_saddle/code/loader_placer.py`.
+   Cached .pt files at `experiments/E84_cascading_saddle/results/cascade_ibm*.pt`.
+   Result JSON: `results/CascadingLoader_20260510_205559.json`.
+2. **Wall-safe pipeline works end-to-end** (smoke ibm03 b=600s: 1.00480,
+   598s, zero overlaps, deadline triggered cleanly after 10/12 trials).
+3. **DREAMPlace integration mechanically functional** (subprocess uses
+   `/usr/bin/python3`, integer-scaled Bookshelf, legalize_flag=0). But
+   output has 30-44 overlaps that CD polish (60s) can't fully fix → DP
+   lane skips itself. **Decision: deprioritize DP, focus on cascade.**
+
+### 5 LOCAL COMMITS PENDING PUSH (sandbox blocked `git push`)
+
+```
+76bbca4 DREAMPlace integration: int-scale Bookshelf, system python3, CD polish
+cac929d Cloud driver: set OPENBLAS/OMP/MKL_NUM_THREADS=8
+48348a5 Add wall-safe cascade README + cloud --all driver; update CLAUDE.md
+78d8f81 Wall-safe E74 + cascade variants with budget_seconds enforcement
+8b40bc5 Add cd_lns_sa_hessian_dp — champion + optional DREAMPlace lane
+```
+
+Run `git push origin main` manually to sync to cloud.
+
+### Next session priority order
+
+1. **Verify ibm01 wall-safe smoke result** — read `/tmp/walltight_smoke/ibm01_b3300.log`
+   tail for SMOKE_IBM01 line. Compare to cached E74 0.85527.
+2. **Push commits** (above).
+3. **Kick off cloud --all wave**: `ssh mpc-cloud "bash ~/macro-place-challenge-2026/run_cloud_walltight_all.sh cascade 4 cascade_walltight_$(date +%s)"`
+   — runs wall-safe cascade variant across all 17 IBM with budget=3300s
+   each, jobs=4 parallel, OPENBLAS=8. ~5-6 hr wall.
+4. **Kick off local --all wave** (in parallel): `uv run evaluate submissions/cd_lns_sa_cascade/placer.py --all --jobs 4 --json --hypothesis cascade_walltight_local`. ~5-6 hr wall.
+5. **Compare aggregates**: cascade wall-safe vs E48 baseline 1.08151.
+   If beats E48 → promote E84 cascading via ADR-013 (in `docs/decisions/`).
+6. **NG45 verification**: `uv run evaluate submissions/cd_lns_sa_cascade/placer.py --ng45 --jobs 4 --json`.
+
+## Champion lineage state
+
+Current champion (live): E74 CDLNSSAHessian, 1.0666 verified canonical.
+
+Next champion candidate: **E84 cascading saddle escape, verified canonical 1.0612.**
+Wall-safe variant: `submissions/cd_lns_sa_cascade/placer.py`. budget_seconds=3300s default.
+
+Fallback if cascade fails wall: E48 CDLNSSAHybrid 1.08151.
+
+## State (PRE-SESSION)
 
 Two candidates currently in the tree:
 
 | Candidate | `--all` | `--ng45` | Wall fits 60-min cap? | Notes |
 |---|---:|---:|---|---|
 | **E74 CDLNSSAHessian** | **1.0666** | **0.6813** | ❌ ~96 min worst-case | Proxy-best but DQs on partcl 1-hr-per-bench cap |
-| **E83 CDLNSSAHessianClock** | 1.0859 | (not run) | ⚠️ 17/17 fit on Windows; 5/17 within 1-min margin | Wall-safe candidate; **+0.41 % worse than E48 prior champion** |
+| **E84 cascade (verified)** | **1.0612** | (not yet run) | ❌ 8/17 over 55min unbudgeted; wall-safe variant pending | -0.51% vs E74; needs wall-safe --all validation |
+| **E83 CDLNSSAHessianClock** | 1.0859 | (not run) | ⚠️ 17/17 fit on Windows; 5/17 within 1-min margin | Wall-safe; +0.41% worse than E48 |
 | E48 CDLNSSAHybrid (prior fallback) | 1.08151 | 0.6922 | ❌ ~130 min sequential | Same wall problem as E74 |
 
-**There is no shippable candidate that beats E48 today.** E74 doesn't
-fit the cap; E83 fits the cap but is worse than E48. The 11-day work
-plan below is structured to fix this.
+**E74 wall-safe variant added 2026-05-11**: smoke ibm03 b=600s validated
+1.00480/598s/zero-ovl/deadline-clean. Full ibm01 b=3300s in progress.
+**Cascade wall-safe variant ready** at `submissions/cd_lns_sa_cascade/placer.py`.
 
 ## Critical-path open items
 
