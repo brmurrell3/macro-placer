@@ -97,6 +97,10 @@ def _try_run_dreamplace(
         cw = float(benchmark.canvas_width)
         ch = float(benchmark.canvas_height)
         cfg = tmp / "dreamplace.json"
+        # Disable legalize_flag: our nodes are macros, not standard cells,
+        # and DREAMPlace's abacus_legalize fails on non-row-height nodes.
+        # We use only the global placement output (.gp.pl) and let our own
+        # project_overlaps + CD polish handle legalization downstream.
         cfg.write_text(f"""{{
   "aux_input": "{tmp / (benchmark.name + '.aux')}",
   "target_density": 0.85,
@@ -107,17 +111,29 @@ def _try_run_dreamplace(
      "iteration": 1000, "learning_rate": 0.01,
      "wirelength": "weighted_average", "optimizer": "nesterov"}}
   ],
-  "legalize_flag": 1,
+  "legalize_flag": 0,
   "detailed_place_flag": 0,
   "stop_overflow": 0.07,
   "result_dir": "{tmp}"
 }}""")
 
         log(f"  [DP] invoking DREAMPlace ({placer_py})")
+        # DREAMPlace's .so files are linked against system torch, so we need
+        # the system python interpreter (which also has the deps installed:
+        # shapely, matplotlib, etc.). uv's python doesn't see those.
+        dp_python = os.environ.get("DREAMPLACE_PYTHON", "")
+        if not dp_python:
+            for cand in ("/usr/bin/python3", "/usr/bin/python"):
+                if Path(cand).exists():
+                    dp_python = cand
+                    break
+        if not dp_python:
+            dp_python = sys.executable
+        log(f"  [DP] using interpreter: {dp_python}")
         t0 = time.time()
         try:
             proc = subprocess.run(
-                ["python", str(placer_py), str(cfg)],
+                [dp_python, str(placer_py), str(cfg)],
                 cwd=str(dp_root),
                 capture_output=True,
                 text=True,
@@ -146,20 +162,42 @@ def _try_run_dreamplace(
         log(f"  [DP] parsing {gp_pl}")
         pl_map = _bk_reader.parse_pl(gp_pl)
 
-        # Map back to our placement tensor.
+        # Map back to our placement tensor. DREAMPlace works in the scaled
+        # integer units we wrote in tilos_to_bookshelf.py (SCALE = 1000),
+        # so divide before mapping to centers.
+        SCALE = float(_bk_writer.SCALE)
         n = benchmark.num_macros
         sizes = benchmark.macro_sizes.cpu().numpy()
         placement = benchmark.macro_positions.clone().detach()
         for i in range(n):
             if i in pl_map:
                 llx, lly = pl_map[i]
+                llx /= SCALE
+                lly /= SCALE
                 placement[i, 0] = llx + float(sizes[i, 0]) / 2.0
                 placement[i, 1] = lly + float(sizes[i, 1]) / 2.0
         placement = placement.to(torch.float32)
         placement, _ = project_overlaps(placement, benchmark)
         ovl = compute_overlap_metrics(placement, benchmark)["overlap_count"]
         if ovl > 0:
-            log(f"  [DP] WARN: {ovl} overlaps after project; lane usable but degraded")
+            # Brief CD polish (60s) — DREAMPlace global placement isn't fully
+            # legal; CD's project + cost-aware sweep cleans it up.
+            log(f"  [DP] {ovl} overlaps after project; running brief CD polish")
+            ev = IncrementalProxyEvaluator(benchmark, plc, placement.clone())
+            n_hard = benchmark.num_hard_macros
+            fixed = benchmark.macro_fixed.cpu().numpy()
+            movable_idx = [i for i in range(n_hard) if not bool(fixed[i])]
+            run_cd_adaptive(
+                ev, benchmark, plc, movable_idx,
+                min_time_s=30.0, hard_cap_s=60.0,
+                patience=2, plateau_threshold=0.001, log_fn=None,
+            )
+            placement = ev.placement.detach().clone().to(torch.float32)
+            ovl = compute_overlap_metrics(placement, benchmark)["overlap_count"]
+            log(f"  [DP] after CD polish: {ovl} overlaps")
+            if ovl > 0:
+                log(f"  [DP] unable to legalize fully; skipping DP lane")
+                return None
         return placement
 
 

@@ -36,6 +36,11 @@ from macro_place.bench_paths import find_benchmark_dir
 from macro_place.loader import load_benchmark_from_dir
 
 
+# DREAMPlace's Bookshelf parser is integer-strict. We scale all positions
+# and sizes by SCALE before writing, then divide by SCALE on read-back.
+SCALE = 1000
+
+
 def _node_name(idx: int) -> str:
     """Bookshelf node name. We use a uniform `n<idx>` scheme so the .pl/.nets
     files can reference by index without parsing the original instance names."""
@@ -54,9 +59,10 @@ def _write_nodes(benchmark, out_dir: Path) -> None:
         f.write(f"NumNodes : {num_nodes}\n")
         f.write(f"NumTerminals : {num_terminals}\n")
         for i in range(n):
-            w, h = float(sizes[i, 0]), float(sizes[i, 1])
+            w = max(1, int(round(float(sizes[i, 0]) * SCALE)))
+            h = max(1, int(round(float(sizes[i, 1]) * SCALE)))
             term = " terminal" if bool(fixed[i]) else ""
-            f.write(f"  {_node_name(i)}\t{w:.6f}\t{h:.6f}{term}\n")
+            f.write(f"  {_node_name(i)}\t{w}\t{h}{term}\n")
 
 
 def _write_pl(benchmark, out_dir: Path) -> None:
@@ -70,10 +76,10 @@ def _write_pl(benchmark, out_dir: Path) -> None:
         for i in range(n):
             cx, cy = float(pos[i, 0]), float(pos[i, 1])
             w, h = float(sizes[i, 0]), float(sizes[i, 1])
-            llx = cx - w / 2.0
-            lly = cy - h / 2.0
+            llx = int(round((cx - w / 2.0) * SCALE))
+            lly = int(round((cy - h / 2.0) * SCALE))
             fixed_tag = " /FIXED" if bool(fixed[i]) else ""
-            f.write(f"  {_node_name(i)}\t{llx:.6f}\t{lly:.6f} : N{fixed_tag}\n")
+            f.write(f"  {_node_name(i)}\t{llx}\t{lly} : N{fixed_tag}\n")
 
 
 def _write_nets(benchmark, out_dir: Path) -> None:
@@ -112,20 +118,30 @@ def _write_scl(benchmark, out_dir: Path) -> None:
     row_height = 1.0
     site_width = 1.0
     num_rows = max(1, int(ch / row_height))
+    # DREAMPlace Bookshelf parser is integer-strict. We use the SCALE
+    # factor to map μm → integer units consistent with .nodes/.pl.
+    # Row height = 100 scaled units (= 0.1 μm) — fine grain for placement.
+    # Number of rows covers full canvas height.
+    row_h_int = 100
+    site_w_int = 100
+    cw_int = int(round(cw * SCALE))
+    ch_int = int(round(ch * SCALE))
+    num_rows_int = max(1, ch_int // row_h_int + 1)
+    num_sites_int = max(1, cw_int // site_w_int + 1)
     with open(out_dir / f"{benchmark.name}.scl", "w") as f:
         f.write("UCLA scl 1.0\n")
         f.write("# Uniform-row site definition for macro placement\n\n")
-        f.write(f"NumRows : {num_rows}\n\n")
-        for r in range(num_rows):
-            y = r * row_height
+        f.write(f"NumRows : {num_rows_int}\n\n")
+        for r in range(num_rows_int):
+            y = r * row_h_int
             f.write("CoreRow Horizontal\n")
-            f.write(f"  Coordinate    :  {y:.6f}\n")
-            f.write(f"  Height        :  {row_height:.6f}\n")
-            f.write(f"  Sitewidth     :  {site_width:.6f}\n")
-            f.write("  Sitespacing   :  1.000\n")
+            f.write(f"  Coordinate    :  {y}\n")
+            f.write(f"  Height        :  {row_h_int}\n")
+            f.write(f"  Sitewidth     :  {site_w_int}\n")
+            f.write(f"  Sitespacing   :  {site_w_int}\n")
             f.write("  Siteorient    :  N\n")
             f.write("  Sitesymmetry  :  Y\n")
-            f.write(f"  SubrowOrigin  :  0.000\tNumSites :  {int(cw / site_width)}\n")
+            f.write(f"  SubrowOrigin  :  0\tNumSites :  {num_sites_int}\n")
             f.write("End\n")
 
 
