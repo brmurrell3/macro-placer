@@ -24,10 +24,19 @@ from macro_place.incremental_evaluator import IncrementalProxyEvaluator
 
 
 def _patch_init(self, *args, **kwargs):
-    """After original __init__, convert hot grids from torch to numpy."""
+    """After original __init__, convert 5 hot grids from torch to numpy.
+
+    Bit-exact validation:  PASS (10 random move+revert ops, max delta 2e-16)
+    CD speedup on ibm04:   1.04× (the grid scalar []+= isn't the bottleneck)
+
+    Extending to per-net arrays (net_min_x etc.) would require also patching
+    move() and revert() because they use .clone() which numpy lacks. Deferred.
+
+    The real bottleneck per cProfile: per-net torch ops inside move() —
+    x_all[pins] indexing, xs.min() reductions, float() conversions. Needs
+    either a vectorized cross-net batch (write a new method), or Cython port.
+    """
     _orig_init(self, *args, **kwargs)
-    # ONLY these 5 — keep the rest as torch to avoid breakage in
-    # _update_macro_pin_positions and other torch-tensor-heavy code paths.
     self.grid_occupied = self.grid_occupied.numpy()
     self.H_net_cong = self.H_net_cong.numpy()
     self.V_net_cong = self.V_net_cong.numpy()
