@@ -44,6 +44,28 @@ E41 ~30 + Hessian ~20 + polish per ε); --all ~14 hr serial, ~4 hr `--jobs 4`.
 - E48 CDLNSSAHybrid (1.08151) — ADR-011 (now superseded by ADR-012 *Proposed*).
 - E74 CDLNSSAHessian (1.0666) — ADR-012 *Proposed* 2026-05-05.
 
+**Next champion candidate (verified, awaits wall-safe validation):** E84
+cascading saddle escape, canonical **1.0612 across 17 IBM, zero overlaps**
+(−1.88 % vs E48, −0.51 % vs E74, gap to RePlAce +27.2 %). 8/17 unbudgeted
+walls over 55-min cap; wall-safe variant at `submissions/cd_lns_sa_cascade/
+placer.py` (budget_seconds default 3300s) — runs E25 → E41 → cascading
+saddle escape on plateau with deadline-bound per-phase budgets, validates
+overlaps before return. ADR-013 forthcoming pending wall-safe --all on
+EPYC.
+
+**Wall-safe variants** (all default budget_seconds=3300s = 55 min, fits
+the 1-hr/bench partcl cap):
+- `submissions/cd_lns_sa_hessian/placer.py` — E74 + deadline (smoke ibm03
+  b=600: 1.00480, wall 598s compliant).
+- `submissions/cd_lns_sa_cascade/placer.py` — E48 → E41 → cascading
+  saddle with deadline.
+- `submissions/cd_lns_sa_hessian_dp/placer.py` — E74 + optional
+  DREAMPlace lane (subprocess to `$DREAMPLACE_ROOT/dreamplace/Placer.py`
+  on cloud GPU; skipped if DREAMPLACE_ROOT not set or insufficient time).
+  Cloud: OCI A100-SXM4-40GB at 132.145.135.39 (ssh alias `mpc-cloud`).
+  Built native at /opt/DREAMPlace/install with _GLIBCXX_USE_CXX11_ABI=1
+  (matches system torch 2.7).
+
 **Prior champion (kept as fallback):** CDLNSSAHybrid (E48), avg **1.08151**
 on --all. Entry: `submissions/cd_lns_sa_hybrid/placer.py`. Promoted
 2026-05-02 ADR-011 *Accepted*. NG45 commercial 0.6922.
