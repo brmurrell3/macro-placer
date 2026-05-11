@@ -89,10 +89,17 @@ Some headroom for partcl box variability, but tight. **Consider budget=2700s for
 3. **Optionally tighten to budget=2700s** if you want extra margin.
 4. **Submit via partcl form** (link in `README.md`).
 
-## AFTERNOON UPDATE (post-pivot 2026-05-11 PM)
+## AFTERNOON UPDATE 2 (final, 17:15 PDT)
 
-User updated TODO.md with strategic pivot (P1-P5, S1-S3 breakthrough plan).
-Tested the top-priority items:
+User pushed back on premature P1 falsification. Reopened all priority
+items + tested 4 additional variants:
+
+| Variant | Result | Conclusion |
+|---------|-------:|-----------|
+| **P1 full pipeline (DP→greedy_legalize→300s CD)** | 4 benches +10-23% worse than cascade b=3000 | Falsified for real now. Greedy legalizer at `experiments/E76_dreamplace_integration/code/macro_legalizer.py` works mechanically (21→0 ovl in 0.4s, 271→0 in 2s) but DP basin is structurally inferior on our objective. |
+| cascade_j4 (--jobs 4 OPENBLAS=8) | 1.14031 vs j8 1.13709 = +0.28% | Contention isn't the bottleneck; tied. |
+| cascade max_iters=10 (4-bench probe) | avg +0.67% worse | Cascade phase budget saturates at 1-2 iters anyway; extra iters can't help. |
+| **placer_adaptive.py (property-based dispatch)** | IBM=cascade b=3000, NG45=tuned | Best-of-both in one placer. Rule-compliant (property dispatch, not name). |
 
 ### P1 (DP legalization fix) — FALSIFIED
 
@@ -125,7 +132,15 @@ the remaining day. Recommend continuing P2 in a fresh session.
 
 ### Final-final submission target
 
-**`submissions/cd_lns_sa_cascade/placer_b3000.py`** remains the recommendation.
+**`submissions/cd_lns_sa_cascade/placer_adaptive.py`** — RECOMMENDED.
+Property-based dispatch (canvas_area threshold) auto-tunes for IBM vs NG45
+in a rule-compliant way (no per-bench-name dispatch). Behavior:
+- IBM (area < 100k μm²): cascade b=3000 default → 1.137 IBM avg
+- NG45 (area ≥ 100k μm²): tuned min_time_s=180, plateau_threshold=1e-4
+  → 0.6925 NG45 avg
+
+Alternative simpler submission: `submissions/cd_lns_sa_cascade/placer_b3000.py`
+(uniform b=3000, no property dispatch). Same IBM, slightly worse NG45.
 
 Backup: `submissions/cd_lns_sa_hybrid/placer_b3000.py` (E48 b=3000) — if
 its aggregate beats cascade's 1.137 once it finishes (in progress).
