@@ -7,6 +7,11 @@ set -euo pipefail
 
 export PATH=$HOME/.local/bin:$PATH
 export DREAMPLACE_ROOT=/opt/DREAMPlace/install
+# OpenBLAS defaults to 1 thread on this box → numpy was 9× slower than M3
+# Without these, ibm01 wall-safe takes ~175 min on cloud vs ~55 min on M3.
+export OPENBLAS_NUM_THREADS=8
+export OMP_NUM_THREADS=8
+export MKL_NUM_THREADS=8
 
 cd ~/macro-place-challenge-2026
 
