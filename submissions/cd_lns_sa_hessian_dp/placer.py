@@ -176,75 +176,99 @@ class CDLNSSAHessianDPPlacer:
         n_eigvecs: int = 2,
         eps_values: Tuple[float, ...] = (0.3, 1.0, 3.0),
         polish_budget: float = 240.0,
+        budget_seconds: Optional[float] = 3300.0,
         verbose: bool = True,
     ):
         self.n_eigvecs = n_eigvecs
         self.eps_values = eps_values
         self.polish_budget = polish_budget
+        self.budget_seconds = budget_seconds
         self.verbose = verbose
 
     def place(self, benchmark: Benchmark) -> torch.Tensor:
         log = lambda s: print(s, flush=True) if self.verbose else None
         log(f"=== CDLNSSAHessianDPPlacer ({benchmark.name}) ===")
         t0 = time.time()
+        deadline = t0 + self.budget_seconds if self.budget_seconds else None
 
         bench_dir = find_benchmark_dir(benchmark.name)
         _, plc = load_benchmark_from_dir(str(bench_dir))
 
+        if self.budget_seconds is not None:
+            B = self.budget_seconds
+            e25_kwargs = dict(
+                cd_hard_cap_s=B * 0.20, lns_budget_s=B * 0.06, sa_budget_s=B * 0.06,
+            )
+            e41_kwargs = dict(
+                cd_hard_cap_s=B * 0.20, lns_budget_s=B * 0.05, sa_budget_s=B * 0.05,
+                kjoint_budget_s=B * 0.05,
+            )
+            log(f"  budget enforced: {self.budget_seconds:.0f}s")
+        else:
+            e25_kwargs, e41_kwargs = {}, {}
+
         # 1. E25.
         log("  Phase 1: E25 (CDLNSSAPlacer)")
-        e25 = CDLNSSAPlacer().place(benchmark)
+        e25 = CDLNSSAPlacer(**e25_kwargs).place(benchmark)
         e25_proxy = float(compute_proxy_cost(e25, benchmark, plc)["proxy_cost"])
         log(f"  E25 done: proxy={e25_proxy:.5f} (wall={time.time() - t0:.0f}s)")
 
         # 2. E41.
-        log("  Phase 2: E41 (CDLNSSADPOKJointPlacer)")
-        e41 = CDLNSSADPOKJointPlacer().place(benchmark)
-        e41_proxy = float(compute_proxy_cost(e41, benchmark, plc)["proxy_cost"])
-        log(f"  E41 done: proxy={e41_proxy:.5f} (wall={time.time() - t0:.0f}s)")
-
-        # 3. DREAMPlace (optional).
-        log("  Phase 3: DREAMPlace (optional)")
-        dp = _try_run_dreamplace(benchmark, plc, log)
-        dp_proxy = None
-        if dp is not None:
-            dp_proxy = float(compute_proxy_cost(dp, benchmark, plc)["proxy_cost"])
-            log(f"  DP done: proxy={dp_proxy:.5f} (wall={time.time() - t0:.0f}s)")
+        e41 = None
+        e41_proxy = float("inf")
+        if deadline is not None and (deadline - time.time()) < 400.0:
+            log(f"  Phase 2: SKIPPED ({deadline - time.time():.0f}s left)")
         else:
-            log(f"  DP skipped (not available or failed)")
+            log("  Phase 2: E41 (CDLNSSADPOKJointPlacer)")
+            e41 = CDLNSSADPOKJointPlacer(**e41_kwargs).place(benchmark)
+            e41_proxy = float(compute_proxy_cost(e41, benchmark, plc)["proxy_cost"])
+            log(f"  E41 done: proxy={e41_proxy:.5f} (wall={time.time() - t0:.0f}s)")
 
-        # 4. Hybrid plateau pick: min of {E25, E41, DP if present}.
-        candidates_plateau = [
-            (e25_proxy, e25, "E25"),
-            (e41_proxy, e41, "E41"),
-        ]
+        # 3. DREAMPlace (optional, ~30-300s; only if budget left).
+        dp = None
+        dp_proxy = None
+        if deadline is not None and (deadline - time.time()) < 600.0:
+            log(f"  Phase 3: DP SKIPPED ({deadline - time.time():.0f}s left)")
+        else:
+            log("  Phase 3: DREAMPlace (optional)")
+            dp = _try_run_dreamplace(benchmark, plc, log)
+            if dp is not None:
+                dp_proxy = float(compute_proxy_cost(dp, benchmark, plc)["proxy_cost"])
+                log(f"  DP done: proxy={dp_proxy:.5f} (wall={time.time() - t0:.0f}s)")
+
+        # 4. Hybrid plateau pick.
+        candidates_plateau = [(e25_proxy, e25, "E25")]
+        if e41 is not None:
+            candidates_plateau.append((e41_proxy, e41, "E41"))
         if dp is not None:
             candidates_plateau.append((dp_proxy, dp, "DP"))
         candidates_plateau.sort(key=lambda c: c[0])
         plateau_proxy, plateau, plateau_label = candidates_plateau[0]
         log(f"  hybrid plateau pick: {plateau_label} ({plateau_proxy:.5f})")
 
-        # 5. Hessian saddle escape.
-        log("  Phase 4: Hessian saddle escape")
-        try:
-            saddle_state, saddle_proxy = _saddle_escape(
-                plateau, benchmark, plc,
-                n_eigvecs=self.n_eigvecs,
-                eps_values=self.eps_values,
-                polish_budget=self.polish_budget,
-                log=log if self.verbose else None,
-            )
-        except Exception as exc:
-            log(f"  saddle escape failed: {exc}; falling back to plateau")
-            saddle_state = plateau
-            saddle_proxy = plateau_proxy
+        # 5. Hessian saddle escape with deadline.
+        saddle_state = plateau
+        saddle_proxy = plateau_proxy
+        if deadline is not None and (deadline - time.time()) < 30.0:
+            log(f"  Phase 4: SKIPPED ({deadline - time.time():.0f}s left)")
+        else:
+            log("  Phase 4: Hessian saddle escape")
+            try:
+                saddle_state, saddle_proxy = _saddle_escape(
+                    plateau, benchmark, plc,
+                    n_eigvecs=self.n_eigvecs,
+                    eps_values=self.eps_values,
+                    polish_budget=self.polish_budget,
+                    deadline=deadline,
+                    log=log if self.verbose else None,
+                )
+            except Exception as exc:
+                log(f"  saddle escape failed: {exc}; falling back to plateau")
 
         # 6. Best of all.
-        all_candidates = [
-            (e25_proxy, e25, "E25"),
-            (e41_proxy, e41, "E41"),
-            (saddle_proxy, saddle_state, "saddle"),
-        ]
+        all_candidates = [(e25_proxy, e25, "E25"), (saddle_proxy, saddle_state, "saddle")]
+        if e41 is not None:
+            all_candidates.append((e41_proxy, e41, "E41"))
         if dp is not None:
             all_candidates.append((dp_proxy, dp, "DP"))
         all_candidates.sort(key=lambda c: c[0])

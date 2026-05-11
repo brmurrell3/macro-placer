@@ -184,7 +184,7 @@ def _find_softest_eigvecs(smooth, state, movable_mask, k=2, tol=1e-4, log=None):
 
 def _saddle_escape(state, benchmark, plc, *,
                    n_eigvecs=2, eps_values=(0.3, 1.0, 3.0),
-                   polish_budget=240.0, log=None):
+                   polish_budget=240.0, deadline=None, log=None):
     if log is None:
         log = lambda s: print(s, flush=True)
     smooth = _SmoothProxy(benchmark, plc)
@@ -208,36 +208,50 @@ def _saddle_escape(state, benchmark, plc, *,
     fixed = benchmark.macro_fixed.cpu().numpy()
     movable_idx = [i for i in range(n_macros) if not bool(fixed[i])]
 
-    for k in range(eigvecs.shape[1]):
+    trials = [(k, sign, eps)
+              for k in range(eigvecs.shape[1])
+              for sign in (+1.0, -1.0)
+              for eps in eps_values]
+
+    for trial_idx, (k, sign, eps) in enumerate(trials):
+        if deadline is not None:
+            remaining = deadline - time.time()
+            trials_left = len(trials) - trial_idx
+            if remaining <= 5.0:
+                log(f"  [saddle] deadline reached ({remaining:.0f}s left); "
+                    f"stopping after {trial_idx}/{len(trials)} trials")
+                break
+            this_budget = max(15.0, min(polish_budget, remaining / max(1, trials_left) - 2.0))
+        else:
+            this_budget = polish_budget
+
         v_full = np.zeros(n_dim, dtype=np.float64)
         v_full[mask_flat] = eigvecs[:, k]
         v_2d = v_full.reshape(n_macros, 2)
         v_unit = v_2d / (np.linalg.norm(v_2d) + 1e-12)
-        for sign in [+1.0, -1.0]:
-            for eps in eps_values:
-                pp = state_np + sign * eps * v_unit
-                pp[:, 0] = np.clip(pp[:, 0], hw_np, cw - hw_np)
-                pp[:, 1] = np.clip(pp[:, 1], hh_np, ch - hh_np)
-                p_t = torch.tensor(pp, dtype=torch.float32)
-                p_t[~torch.tensor(movable_np)] = state[~torch.tensor(movable_np)]
-                p_t, _ = project_overlaps(p_t, benchmark)
-                ovl = compute_overlap_metrics(p_t, benchmark)["overlap_count"]
-                if ovl > 0:
-                    continue
-                ev = IncrementalProxyEvaluator(benchmark, plc, p_t.clone())
-                run_cd_adaptive(
-                    ev, benchmark, plc, movable_idx,
-                    min_time_s=30.0, hard_cap_s=polish_budget,
-                    patience=3, plateau_threshold=0.001, log_fn=None,
-                )
-                polished = ev.placement.detach().clone().to(torch.float32)
-                p_proxy = float(compute_proxy_cost(polished, benchmark, plc)["proxy_cost"])
-                p_ovl = compute_overlap_metrics(polished, benchmark)["overlap_count"]
-                if p_ovl == 0 and p_proxy < best_proxy - 1e-7:
-                    best_proxy = p_proxy
-                    best_state = polished.detach().clone()
-                    log(f"  [saddle] eig{k} sign={sign:+.0f} eps={eps:.1f}: "
-                        f"polished {p_proxy:.5f} (NEW BEST, Δ={best_proxy - start_proxy:+.5f})")
+        pp = state_np + sign * eps * v_unit
+        pp[:, 0] = np.clip(pp[:, 0], hw_np, cw - hw_np)
+        pp[:, 1] = np.clip(pp[:, 1], hh_np, ch - hh_np)
+        p_t = torch.tensor(pp, dtype=torch.float32)
+        p_t[~torch.tensor(movable_np)] = state[~torch.tensor(movable_np)]
+        p_t, _ = project_overlaps(p_t, benchmark)
+        ovl = compute_overlap_metrics(p_t, benchmark)["overlap_count"]
+        if ovl > 0:
+            continue
+        ev = IncrementalProxyEvaluator(benchmark, plc, p_t.clone())
+        run_cd_adaptive(
+            ev, benchmark, plc, movable_idx,
+            min_time_s=min(30.0, this_budget * 0.5), hard_cap_s=this_budget,
+            patience=3, plateau_threshold=0.001, log_fn=None,
+        )
+        polished = ev.placement.detach().clone().to(torch.float32)
+        p_proxy = float(compute_proxy_cost(polished, benchmark, plc)["proxy_cost"])
+        p_ovl = compute_overlap_metrics(polished, benchmark)["overlap_count"]
+        if p_ovl == 0 and p_proxy < best_proxy - 1e-7:
+            best_proxy = p_proxy
+            best_state = polished.detach().clone()
+            log(f"  [saddle] eig{k} sign={sign:+.0f} eps={eps:.1f}: "
+                f"polished {p_proxy:.5f} (NEW BEST, Δ={best_proxy - start_proxy:+.5f})")
     return best_state, best_proxy
 
 
@@ -247,6 +261,15 @@ class CDLNSSAHessianPlacer:
     Drop-in replacement for CDLNSSAHybridPlacer with an additional
     saddle-escape phase that delivers consistent lift across most IBM
     benchmarks.
+
+    `budget_seconds` (default 3300s = 55 min) enforces a hard wall
+    deadline. When set:
+      - per-phase budgets are scaled to fit
+      - E41 is skipped if E25 already consumed too much
+      - saddle escape stops mid-trial-list when deadline hits
+      - the last known-good placement is returned
+    Pass `budget_seconds=None` to disable (matches original E74 behavior;
+    use for offline re-runs without the 1-hr-per-bench cap).
     """
 
     def __init__(
@@ -254,69 +277,99 @@ class CDLNSSAHessianPlacer:
         n_eigvecs: int = 2,
         eps_values: Tuple[float, ...] = (0.3, 1.0, 3.0),
         polish_budget: float = 240.0,
+        budget_seconds: Optional[float] = 3300.0,
         verbose: bool = True,
     ):
         self.n_eigvecs = n_eigvecs
         self.eps_values = eps_values
         self.polish_budget = polish_budget
+        self.budget_seconds = budget_seconds
         self.verbose = verbose
 
     def place(self, benchmark: Benchmark) -> torch.Tensor:
         log = lambda s: print(s, flush=True) if self.verbose else None
         log(f"=== CDLNSSAHessianPlacer ({benchmark.name}) ===")
         t0 = time.time()
+        deadline = t0 + self.budget_seconds if self.budget_seconds else None
 
-        # Reload plc.
         bench_dir = find_benchmark_dir(benchmark.name)
         _, plc = load_benchmark_from_dir(str(bench_dir))
 
+        # Phase budget allocation (only when budget_seconds is set).
+        if self.budget_seconds is not None:
+            B = self.budget_seconds
+            # ~33% E25, ~33% E41, ~33% Hessian; within E25/E41, ~60% CD, rest split.
+            e25_kwargs = dict(
+                cd_hard_cap_s=B * 0.20, lns_budget_s=B * 0.06, sa_budget_s=B * 0.06,
+            )
+            e41_kwargs = dict(
+                cd_hard_cap_s=B * 0.20, lns_budget_s=B * 0.05, sa_budget_s=B * 0.05,
+                kjoint_budget_s=B * 0.05,
+            )
+            log(f"  budget enforced: {self.budget_seconds:.0f}s; "
+                f"E25 cap≈{sum(e25_kwargs.values()):.0f}s, "
+                f"E41 cap≈{sum(e41_kwargs.values()):.0f}s, "
+                f"Hessian≈{B * 0.33:.0f}s")
+        else:
+            e25_kwargs, e41_kwargs = {}, {}
+            log(f"  no wall budget (offline mode)")
+
         # 1. E25.
         log("  Phase 1: E25 (CDLNSSAPlacer)")
-        e25 = CDLNSSAPlacer().place(benchmark)
+        e25 = CDLNSSAPlacer(**e25_kwargs).place(benchmark)
         e25_proxy = float(compute_proxy_cost(e25, benchmark, plc)["proxy_cost"])
         log(f"  E25 done: proxy={e25_proxy:.5f} (wall={time.time() - t0:.0f}s)")
 
-        # 2. E41.
-        log("  Phase 2: E41 (CDLNSSADPOKJointPlacer)")
-        e41 = CDLNSSADPOKJointPlacer().place(benchmark)
-        e41_proxy = float(compute_proxy_cost(e41, benchmark, plc)["proxy_cost"])
-        log(f"  E41 done: proxy={e41_proxy:.5f} (wall={time.time() - t0:.0f}s)")
+        # 2. E41 — skip if no time left for it plus a meaningful saddle.
+        e41 = None
+        e41_proxy = float("inf")
+        if deadline is not None and (deadline - time.time()) < 300.0:
+            log(f"  Phase 2: SKIPPED (only {deadline - time.time():.0f}s left; "
+                f"reserving for saddle)")
+        else:
+            log("  Phase 2: E41 (CDLNSSADPOKJointPlacer)")
+            e41 = CDLNSSADPOKJointPlacer(**e41_kwargs).place(benchmark)
+            e41_proxy = float(compute_proxy_cost(e41, benchmark, plc)["proxy_cost"])
+            log(f"  E41 done: proxy={e41_proxy:.5f} (wall={time.time() - t0:.0f}s)")
 
         # 3. E48 hybrid pick: min(E25, E41).
-        if e25_proxy <= e41_proxy:
+        if e41 is None or e25_proxy <= e41_proxy:
             plateau, plateau_label, plateau_proxy = e25, "E25", e25_proxy
         else:
             plateau, plateau_label, plateau_proxy = e41, "E41", e41_proxy
         log(f"  E48 plateau = {plateau_label} ({plateau_proxy:.5f})")
 
-        # 4-7. Saddle escape.
-        log("  Phase 3: Hessian saddle escape")
-        try:
-            saddle_state, saddle_proxy = _saddle_escape(
-                plateau, benchmark, plc,
-                n_eigvecs=self.n_eigvecs,
-                eps_values=self.eps_values,
-                polish_budget=self.polish_budget,
-                log=log if self.verbose else None,
-            )
-        except Exception as exc:
-            log(f"  Hessian saddle escape failed: {exc}; falling back to E48 plateau")
-            saddle_state = plateau
-            saddle_proxy = plateau_proxy
+        # 4-7. Saddle escape — skip entirely if no time for even one trial.
+        saddle_state = plateau
+        saddle_proxy = plateau_proxy
+        if deadline is not None and (deadline - time.time()) < 30.0:
+            log(f"  Phase 3: SKIPPED (deadline {deadline - time.time():.0f}s left)")
+        else:
+            log("  Phase 3: Hessian saddle escape")
+            try:
+                saddle_state, saddle_proxy = _saddle_escape(
+                    plateau, benchmark, plc,
+                    n_eigvecs=self.n_eigvecs,
+                    eps_values=self.eps_values,
+                    polish_budget=self.polish_budget,
+                    deadline=deadline,
+                    log=log if self.verbose else None,
+                )
+            except Exception as exc:
+                log(f"  Hessian saddle escape failed: {exc}; falling back to plateau")
+                saddle_state = plateau
+                saddle_proxy = plateau_proxy
 
         # 8. Best of all.
-        candidates = [
-            (e25_proxy, e25, "E25"),
-            (e41_proxy, e41, "E41"),
-            (saddle_proxy, saddle_state, "saddle"),
-        ]
+        candidates = [(e25_proxy, e25, "E25"), (saddle_proxy, saddle_state, "saddle")]
+        if e41 is not None:
+            candidates.append((e41_proxy, e41, "E41"))
         candidates.sort(key=lambda c: c[0])
         best_proxy, best_placement, best_name = candidates[0]
         log(f"  WINNER: {best_name} proxy={best_proxy:.5f} "
             f"({', '.join(f'{n}={p:.5f}' for p, _, n in candidates)})  "
             f"total wall={time.time() - t0:.0f}s")
 
-        # Validate zero overlap.
         ovl = compute_overlap_metrics(best_placement, benchmark)["overlap_count"]
         if ovl > 0:
             raise RuntimeError(
