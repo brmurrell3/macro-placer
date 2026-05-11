@@ -20,8 +20,17 @@ M3 cores are ~2× faster per-thread; M3 results NOT predictive of partcl.
 
 | Run | Hardware | Budget | IBM avg | NG45 avg | Max wall | Date | Verified by |
 |-----|----------|-------:|--------:|---------:|---------:|------|-------------|
-| **`placer_adaptive.py` ← TARGET** | EPYC cloud | 3000s | **1.137** | **0.6925** | 57min | 2026-05-11 | cascade-IBM + tuned-NG45 audits |
+| **`placer_adaptive.py` ← TARGET** | EPYC cloud | 3000s | **1.137** | **0.6978** | 57min | 2026-05-11 PM | cascade-IBM + adaptive-NG45 direct audit |
 | `placer_b3000.py` (simpler) | EPYC cloud | 3000s | 1.137 | 0.7034 | 57min | 2026-05-11 | overnight |
+
+NG45 audit per-design (placer_adaptive.py, EPYC cloud, 2026-05-11 19:08-19:58):
+| Design | Adaptive proxy | E48 ref | Δ vs E48 |
+|--------|---------------:|--------:|---------:|
+| ariane133 | **0.6638** | 0.6861 | **−3.25%** |
+| ariane136 | 0.6848 | 0.6685 | +2.44% |
+| mempool_tile | 0.7374 | 0.7375 | tied |
+| nvdla | 0.7053 | 0.6767 | +4.23% |
+| **avg** | **0.6978** | 0.6922 | +0.81% |
 
 ---
 
