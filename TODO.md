@@ -1,203 +1,137 @@
-# TODO — temporary
+# TODO — two-path work plan
 
-**Status:** scratch doc, delete after the deadline. Not part of the
-canonical docs.
+**Deadline:** May 21, 2026 (~10 days)
 
-Deadline: May 21, 2026 (~10 days).
+## Current submission floor
 
-## SESSION HANDOFF — 2026-05-11 01:39 PDT
+`submissions/cd_lns_sa_cascade/placer_adaptive.py`
+- IBM avg **1.137** (cloud cascade b=3000, max wall 57 min, safe under 60-min cap)
+- NG45 avg **0.6925** (NG45 lane uses tuned min_time_s=180s)
+- Beats RePlAce 1.4578 by **−22 %**
+- Loses to leaderboard top (~1.01) by **+13 %** — closing this gap is the goal
 
-### What's currently running
+---
 
-- **Local M3 Max**: `pid 66167` running ibm01 wall-safe smoke (budget=3300s),
-  log at `/tmp/walltight_smoke/ibm01_b3300.log`. Saddle phase, 1 trial
-  completed (0.87196, NEW BEST vs plateau 0.89614). 11 trials remaining.
-  Expected completion ~22:00 PDT. Final SMOKE_IBM01 line is the result.
-- **Cloud OCI A100** (mpc-cloud / 132.145.135.39): no python processes.
-  Earlier smokes completed. DREAMPlace installed at `/opt/DREAMPlace/install`
-  (built with ABI=1).
+## PATH A — speed up our champion CD pipeline ★ HIGHEST EV
 
-### What was verified this session
+**Premise:** Cascading saddle escape verified canonical **1.0612 on 17 IBM
+uncapped** (`experiments/E84_cascading_saddle/results/`). Wall-safe variant
+plateaus at 1.137 because **96% of CD time is single-threaded Python**
+(`IncrementalProxyEvaluator.move()` + `revert()`, confirmed by cProfile on
+ibm04: 32s of 33s). 10-30× CD speedup unlocks the cached-quality basin
+under the 60-min cap.
 
-1. **E84 cascading verified at canonical 1.0612** across 17 IBM, zero
-   overlaps. Loader at `experiments/E84_cascading_saddle/code/loader_placer.py`.
-   Cached .pt files at `experiments/E84_cascading_saddle/results/cascade_ibm*.pt`.
-   Result JSON: `results/CascadingLoader_20260510_205559.json`.
-2. **Wall-safe pipeline works end-to-end** (smoke ibm03 b=600s: 1.00480,
-   598s, zero overlaps, deadline triggered cleanly after 10/12 trials).
-3. **DREAMPlace integration mechanically functional** (subprocess uses
-   `/usr/bin/python3`, integer-scaled Bookshelf, legalize_flag=0). But
-   output has 30-44 overlaps that CD polish (60s) can't fully fix → DP
-   lane skips itself. **Decision: deprioritize DP, focus on cascade.**
+### A1. Eliminate `revert()` via pure delta function *(1-2 days)*
+- `search_axis` currently: `move() → cost → revert()` per candidate (96 % of CD)
+- Replace with: `batch_delta_cost(macro_idx, K candidates, current_state) → [K] proxy deltas`
+- Commit only the argmin candidate; no state mutation during probing
+- Expected speedup: ~10× on CD inner loop
 
-### 5 LOCAL COMMITS PENDING PUSH (sandbox blocked `git push`)
+### A2. Cython/Numba port of `move()` *(2-3 days)*
+- Current: ~100 lines of Python dict updates over `affected_nets`,
+  `macro_cong_contrib`, `H_net_cong` etc.
+- Port to native; explicit memory layout for the dict-heavy paths
+- Expected speedup: 20-100× on move/revert
+- Composes with A1 (post-revert-elimination)
 
-```
-76bbca4 DREAMPlace integration: int-scale Bookshelf, system python3, CD polish
-cac929d Cloud driver: set OPENBLAS/OMP/MKL_NUM_THREADS=8
-48348a5 Add wall-safe cascade README + cloud --all driver; update CLAUDE.md
-78d8f81 Wall-safe E74 + cascade variants with budget_seconds enforcement
-8b40bc5 Add cd_lns_sa_hessian_dp — champion + optional DREAMPlace lane
-```
+### A3. Batch candidate eval as tensor op *(2-4 days, optional GPU port)*
+- For macro M, axis A, K candidates → single `[K]` tensor op
+- Reuses `experiments/E87_gpu_cd/` scaffold but targets the **exact** proxy delta
+  (not the smooth proxy approximation E87 currently uses)
+- Blocker to fix first: `_extract_net_data` has an O(N²) hot spot — must profile + rewrite before GPU port helps
 
-Run `git push origin main` manually to sync to cloud.
+### A4. Validate cascade --all under accelerated pipeline *(1 day)*
+- Re-run cloud cascade b=3000 with accelerated CD
+- Target: IBM aggregate ≤ 1.08 (matches uncapped 1.0612 ± wall-cap slop)
+- NG45 aggregate ≤ 0.68
 
-### Next session priority order
+### A5. Final submission packaging + ORFS Tier 2 scoping *(2-3 days)*
+- Form fill, evidence collation, freeze final placer
+- Test ORFS flow locally on one NG45 design to validate Tier 2 readiness
 
-1. **Verify ibm01 wall-safe smoke result** — read `/tmp/walltight_smoke/ibm01_b3300.log`
-   tail for SMOKE_IBM01 line. Compare to cached E74 0.85527.
-2. **Push commits** (above).
-3. **Kick off cloud --all wave**: `ssh mpc-cloud "bash ~/macro-place-challenge-2026/run_cloud_walltight_all.sh cascade 4 cascade_walltight_$(date +%s)"`
-   — runs wall-safe cascade variant across all 17 IBM with budget=3300s
-   each, jobs=4 parallel, OPENBLAS=8. ~5-6 hr wall.
-4. **Kick off local --all wave** (in parallel): `uv run evaluate submissions/cd_lns_sa_cascade/placer.py --all --jobs 4 --json --hypothesis cascade_walltight_local`. ~5-6 hr wall.
-5. **Compare aggregates**: cascade wall-safe vs E48 baseline 1.08151.
-   If beats E48 → promote E84 cascading via ADR-013 (in `docs/decisions/`).
-6. **NG45 verification**: `uv run evaluate submissions/cd_lns_sa_cascade/placer.py --ng45 --jobs 4 --json`.
+**A active code:**
+- `submissions/cd_lns_sa_cascade/{placer.py, placer_b3000.py, placer_adaptive.py, README.md}`
+- `submissions/cd_lns_sa_hessian/placer.py` (E74 single saddle, imported by cascade)
+- `submissions/cd_lns_sa/placer.py` (E25 component)
+- `experiments/E41_dpo_kjoint/code/` (E41 component)
+- `experiments/E74_hessian_saddle/code/` (saddle primitives)
+- `experiments/E84_cascading_saddle/code/` (cascade logic) + `results/` (cached .pt files)
+- `experiments/E87_gpu_cd/code/` (in-progress GPU CD scaffold — A1-A3 work happens here)
+- `macro_place/incremental_evaluator.py`, `macro_place/cd_core.py` (hot paths to optimize)
 
-## Champion lineage state
+---
 
-Current champion (live): E74 CDLNSSAHessian, 1.0666 verified canonical.
+## PATH B — DREAMPlace exploration *(parallel, lower expected EV)*
 
-Next champion candidate: **E84 cascading saddle escape, verified canonical 1.0612.**
-Wall-safe variant: `submissions/cd_lns_sa_cascade/placer.py`. budget_seconds=3300s default.
+**Premise:** Six of nine top leaderboard entries use DREAMPlace. We have a
+mature DP install on cloud A100 + complete subprocess pipeline. Honest data
+says DP basin polishes 10-23% **worse** than cascade on our objective —
+likely because canonical PlacementCost proxy differs from DP's internal
+proxy. But: untested whether **custom DP patches** can align the proxies,
+or whether **multi-seed DP ensemble** finds better basins than any single
+seed.
 
-Fallback if cascade fails wall: E48 CDLNSSAHybrid 1.08151.
+### B1. Proper hyperparameter sweep + best-of-K ensemble *(1-2 days)*
+- 50-100 DP configs: `target_density × density_weight × iteration × learning_rate × num_bins`
+- Random search across the 5D space, 1 seed per config
+- Per bench: best post-legalize-polish basin → pass to cascade pipeline
+- Integration: extend `experiments/E76_dreamplace_integration/` driver
+- Decision gate: per-bench best-of-K vs cascade b=3000 — if ≥5 of 17 IBM benches show DP basin polishes to ≤ cascade, B is viable
 
-## State (PRE-SESSION)
+### B2. Patch DREAMPlace loss to match canonical proxy *(2-3 days)*
+- DP optimizes: HPWL + density (Gaussian kernel) + RUDY-style congestion **with DP's weights**
+- Canonical PlacementCost: HPWL + top-K density + smoothed RUDY **with TILOS weights**
+- Patch sites: `dreamplace/PlaceObj.py` density weight, congestion formulation
+- Validation: smooth-proxy on patched DP output should correlate >0.95 with PlacementCost.get_cost() across 50 random placements
+- Risk: hard to match without breaking DP's optimizer convergence
 
-Two candidates currently in the tree:
+### B3. DP-init → cascade pipeline at full budget *(1 day, gated on B1/B2)*
+- If B1 or B2 yields a DP basin competitive with E25/E41, feed it through
+  cascade saddle escape (currently the E48 hybrid plateau)
+- This is what `submissions/cd_lns_sa_hessian_dp/placer.py` was built for
+- Expected: if DP basin is ~5% better than E25/E41 plateau, cascade lifts to ~1.05 IBM
 
-| Candidate | `--all` | `--ng45` | Wall fits 60-min cap? | Notes |
-|---|---:|---:|---|---|
-| **E74 CDLNSSAHessian** | **1.0666** | **0.6813** | ❌ ~96 min worst-case | Proxy-best but DQs on partcl 1-hr-per-bench cap |
-| **E84 cascade (verified)** | **1.0612** | (not yet run) | ❌ 8/17 over 55min unbudgeted; wall-safe variant pending | -0.51% vs E74; needs wall-safe --all validation |
-| **E83 CDLNSSAHessianClock** | 1.0859 | (not run) | ⚠️ 17/17 fit on Windows; 5/17 within 1-min margin | Wall-safe; +0.41% worse than E48 |
-| E48 CDLNSSAHybrid (prior fallback) | 1.08151 | 0.6922 | ❌ ~130 min sequential | Same wall problem as E74 |
+### B4. Decision: keep B or kill *(after B1)*
+- Hard gate: if K=50 sweep produces no DP basin ≤ cascade on majority of benches, kill B and double down on A
+- Resources freed go to A2/A3
 
-**E74 wall-safe variant added 2026-05-11**: smoke ibm03 b=600s validated
-1.00480/598s/zero-ovl/deadline-clean. Full ibm01 b=3300s in progress.
-**Cascade wall-safe variant ready** at `submissions/cd_lns_sa_cascade/placer.py`.
+**B active code:**
+- `submissions/cd_lns_sa_hessian_dp/placer.py` (E74 + optional DP lane, deadline-enforced)
+- `experiments/E76_dreamplace_integration/code/{tilos_to_bookshelf.py, bookshelf_to_pt.py, macro_legalizer.py}`
+- `/opt/DREAMPlace/install/` on cloud (mpc-cloud, built ABI=1, do not wipe)
 
-## Critical-path open items
+---
 
-### 1. **Wall-safe E74 with mid-loop time enforcement** (priority #1)
+## Archived (do not work on; preserved for reference)
 
-Modify `submissions/cd_lns_sa_hessian/placer.py` to enforce a hard
-end-to-end deadline inside the Hessian saddle escape loop:
+- `submissions/_archive/` — old champions (cd_lns_gridbin E12, cd_adaptive E9, cd_only, will_seed), E48 hybrid (cd_lns_sa_hybrid), falsified wall-safe wrappers (placer_b2800, placer_b3000_e48, placer_maxiter10, placer_ng45)
+- `experiments/_archive/` — 59 prior-generation experiments (E1-E73 minus the active ones, plus E75-E83, E85, E86)
+- `docs/archived/` — one-off handoff docs (MORNING_REPORT_2026-05-11.md)
 
-- At placer entry, set `deadline = start + budget_seconds` (default
-  3300 s = 55 min, leaves 5 min for harness overhead).
-- Before each ±ε polish trial, check `time.time() < deadline`.
-  If not, return best-so-far without further trials.
-- Inside `run_cd_adaptive` polish, pass through a `deadline` arg
-  so CD exits early on any sweep boundary past the deadline.
-- Also enforce on Phase 1 (E25) and Phase 2 (E41) — currently each
-  has its own multi-step caps that can stack to >60 min before
-  Hessian even starts.
+Anything in `_archive/` is **out of scope** until further notice. Don't
+re-evaluate, don't try to revive without explicit reason. They're there as
+historical record so we don't re-walk falsified paths.
 
-Expected: ibm01 96 min → ≤ 55 min by clipping the Hessian trial
-list when budget exhausted. Some benches will see fewer ε trials
-than full E74 run; aggregate proxy will rise slightly but should
-stay well below E48.
+---
 
-Smoke gate: ibm01 + ibm17 (largest) both finish ≤ 55 min with
-proxy within 0.5 % of full E74 cached result.
+## Hardware
 
-Done when: all 17 IBM walls under 55 min on this machine AND
-aggregate proxy ≤ E48 1.08151.
+- **Local M3 Max (16 cores)**: prototype/profile only. Per-core ~2× faster
+  than partcl EPYC; results not predictive of submission performance.
+- **Cloud OCI A100-SXM4-40GB** (`mpc-cloud` / 132.145.135.39, ssh alias):
+  EPYC 9655P + 30 cores + A100 GPU + 216 GB. THIS is the partcl-class
+  hardware. **All claims about "fits 60-min cap" or "beats X under cap"
+  must be measured here**, never on M3.
+- Required cloud env: `OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8 MKL_NUM_THREADS=8`
+  (otherwise numpy defaults to 1 thread → 9× slowdown; see
+  `memory/cloud_openblas_gotcha.md`).
+- DREAMPlace on cloud: `DREAMPLACE_ROOT=/opt/DREAMPlace/install` +
+  `DREAMPLACE_PYTHON=/usr/bin/python3` (system Python has the shapely etc.
+  runtime deps; uv's Python doesn't).
 
-### 2. **Throttled-CPU verification** (priority #2 — gates submission)
+## Verification budget
 
-Before submitting, simulate slower per-core hardware to confirm
-proxy holds under wall pressure. Two options:
-
-```bash
-# Option A: single thread (forces serial work)
-OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 nice -n 19 \
-  uv run evaluate submissions/cd_lns_sa_hessian/placer.py --all --json
-
-# Option B (Linux): cpulimit
-cpulimit -l 50 -- uv run evaluate submissions/cd_lns_sa_hessian/placer.py --all
-```
-
-Goal: every bench under 60 min, every bench within 1 % of
-full-power proxy. If proxy regresses > 1 % on any bench, the
-budget caps in (1) are too tight — relax CD plateau patience
-or extend `run_cd_adaptive` `min_time_s` floor.
-
-### 3. **E80 work-bounded streaks** (priority #3 — defensive)
-
-`experiments/E80_work_bounded_streaks/` is `in_progress`. Port the
-saturation streak counters into the wall-safe E74 placer from (1):
-
-- LNS: terminate after 5 consecutive non-improving samples
-- SA-v2: terminate after 1000 moves without improvement
-- K-joint: terminate after 30 K-tuples with no commits
-
-This is hardware-invariant — the streak fires whether the platform
-is fast or slow. Composes with (1)'s wall enforcement: phase exits
-on streak OR deadline, whichever first.
-
-### 4. **NG45 verification of the wall-safe build** (priority #4)
-
-Once (1) and (2) pass IBM, run `--ng45` and confirm:
-
-- All 4 designs ≤ 60 min
-- ariane133 ≤ 0.6900 (current E74 was 0.6641; allow some regression
-  from wall-clipping but must not regress to E48's 0.6861)
-- ariane136, mempool_tile, nvdla ≤ E48 reference
-
-Done when: `--ng45` avg ≤ 0.69 with zero overlaps.
-
-### 5. **Submission package + form** (priority #5)
-
-Once (1)–(4) green:
-- Confirm `submissions/cd_lns_sa_hessian/placer.py` is the entry.
-- Check `SETUP.md` for any submission-format requirements.
-- Fill out the Google form (link in `README.md`).
-- Keep `submissions/cd_lns_sa_hybrid/placer.py` as private fallback.
-
-## Lower-priority / can drop
-
-- **Tier 2 ORFS verification scoping** — if we make top-7 by Tier 1,
-  we're automatically considered for Tier 2 ($20k Grand Prize).
-  Worth reading `SCORING.md` to know what failures look like, but no
-  build work needed. Skip unless time after (1)–(5).
-- **Innovation Award writeup** ($4k) — paper writeup at
-  `writeup/paper.md`. Worth ~3 days end-of-deadline if (1)–(5) ship.
-  Describe the mechanism: smooth-proxy autograd Hessian on the local
-  proxy minimum + Lanczos eigvec + ε-step + CD polish. Frame as
-  applying transition-state methods (well-developed in
-  chemistry/materials) to combinatorial placement; cite Henkelman &
-  Jónsson 2000 NEB literature for the mathematical foundation.
-
-## Settled / no further work
-
-- E77 sharper Hessian — marginal, no incremental lift.
-- E78 layered E61V2+E74 — marginal.
-- E79 hardware_portability — superseded by E83.
-- E81 cd_only_saddle — falsified.
-- E82 hybrid_dispatcher — falsified.
-- E83 clock_aware — marginal at 1.0859; doesn't beat E48 in
-  isolation. Body of work absorbed into the wall-safe E74 plan above.
-
-## Reusables (don't recompute)
-
-- Cached E25 + E41 placements: `experiments/E69_sequence_pair_search/results/placements/` (ibm01/04/09/12).
-- E61V2-fresh outputs: `experiments/E75_fresh_e61v2_wave/results/` (ibm12/14/15).
-- Per-bench E74 outputs (full Hessian wave): `experiments/E74_hessian_saddle/results/` (all 17 IBM + layered ibm12/15).
-- Validator (loads cached): `submissions/cd_lns_sa_hessian/loader_placer.py`.
-
-## Delete this doc when
-
-E74 (or its wall-safe successor) is submitted, or May 21 passes.
-
-## Daily progress log
-
-- 2026-05-05 — E74 promoted (ADR-012); cached wave verified 1.0666
-  `--all`, 0.6813 `--ng45`.
-- 2026-05-05/06 — E77 / E78 / E79 / E80 / E81 / E82 / E83 derisk wave;
-  E83 clock-aware fits 60-min cap (1.0859, marginal).
-- 2026-05-10 — TODO consolidated; wall-safe E74 plan is critical path.
-- (next entries here as work lands)
+- Canonical proxy via `uv run evaluate <placer> --all --json` — this is
+  what partcl uses; never trust hand-computed proxies.
+- Wall budget claim must be measured under cloud OPENBLAS=8 with
+  `--jobs 1` (one bench at a time, full cores), not under parallel `--jobs N`.

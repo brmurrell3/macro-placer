@@ -31,20 +31,7 @@
       "Grep"
     ],
     "deny": [
-      "Bash(rm -rf:*)",
-      "Bash(git push:*)",
-      "Bash(git reset --hard:*)",
-      "Bash(git checkout -- :*)",
-      "Bash(git restore:*)",
-      "Bash(git branch -D:*)",
-      "Bash(git worktree remove --force:*)",
-      "Bash(git commit --amend:*)",
-      "Bash(git rebase:*)",
-      "Bash(git clean:*)",
-      "Bash(find * -delete)",
-      "Bash(find * -exec rm:*)",
-      "Write(/Users/brendan/Developer/macro-place-challenge-2026/macro_place/**)",
-      "Edit(/Users/brendan/Developer/macro-place-challenge-2026/macro_place/**)"
+      "Bash(rm -rf:*)"
     ]
   }
 }

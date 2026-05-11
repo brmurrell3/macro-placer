@@ -1,4 +1,4 @@
-# CLAUDE.md — Macro Placement Challenge 2026
+# AGENTS.md — Macro Placement Challenge 2026
 
 ## What this project is
 
@@ -6,40 +6,14 @@ Partcl/HRT Macro Placement Challenge. Place 200-537 rectangular macros on a 2D
 chip canvas to minimize proxy cost (wirelength + density + congestion) with zero
 overlaps. Prize: $29K+. Deadline: May 21, 2026.
 
-## TWO-PATH WORK PLAN
-
-See `TODO.md` for the active plan. Two parallel paths:
-
-- **PATH A — speed up cascade pipeline (HIGHEST EV)**. Cascade saddle escape
-  verified canonical **1.0612 uncapped** on 17 IBM; wall-safe variant
-  plateaus at 1.137 because 96% of CD time is single-threaded Python (cProfile
-  on ibm04 confirms `IncrementalProxyEvaluator.move()/revert()` = 32s of 33s).
-  10-30× speedup unlocks cached-quality basin under the 60-min cap.
-- **PATH B — DREAMPlace exploration (parallel, lower EV)**. Mature install
-  on cloud A100, full integration pipeline. Honest data says DP basin
-  polishes 10-23% worse than cascade on our objective; B1 (50-config sweep)
-  is a fair test before killing.
-
-Anything outside these two paths is in `submissions/_archive/` or
-`experiments/_archive/` — do not work on it without explicit redirection.
-
-## Current submission floor
-
-**`submissions/cd_lns_sa_cascade/placer_adaptive.py`** — IBM 1.137 / NG45
-0.6925 expected on partcl EPYC. Max wall 57 min (3-min margin to 60-min cap).
-Beats RePlAce 1.4578 by −22 %. Loses to leaderboard top (~1.01) by +13 % —
-PATH A is the credible path to closing that gap.
-
-## Prior champion lineage (now superseded by cascade)
-
+**Current champion (PROMOTED 2026-05-05 via ADR-012 *Accepted*):**
 CDLNSSAHessian (E74), avg proxy **1.0666** on --all (17 IBM benchmarks),
 **NG45 0.6813** (4 designs, including critical ariane133 at **0.6641** —
 −3.21 % vs E48 0.6861, BREAKING the failure point that killed
 E42/E43/E44/E54/E62). Beats public leaderboard 1.1172 by **−4.53 %**,
 beats E48 1.08151 by **−1.38 %**, beats RePlAce 1.4578 by **−26.8 %**,
 zero overlaps on all 17 IBM + 4 NG45. Entry:
-`submissions/cd_lns_sa_hessian/placer.py`. **Now subsumed by cascade variant**;
-kept active because cascade imports its saddle escape primitives.
+`submissions/cd_lns_sa_hessian/placer.py`.
 
 NG45 per-design (all ZERO overlaps):
 | Design | E48 ref | **E74** | Lift |
@@ -69,28 +43,6 @@ E41 ~30 + Hessian ~20 + polish per ε); --all ~14 hr serial, ~4 hr `--jobs 4`.
 - E12 CDLNSGridBin (1.0990) — ADR-007.
 - E48 CDLNSSAHybrid (1.08151) — ADR-011 (now superseded by ADR-012 *Proposed*).
 - E74 CDLNSSAHessian (1.0666) — ADR-012 *Proposed* 2026-05-05.
-
-**Next champion candidate (verified, awaits wall-safe validation):** E84
-cascading saddle escape, canonical **1.0612 across 17 IBM, zero overlaps**
-(−1.88 % vs E48, −0.51 % vs E74, gap to RePlAce +27.2 %). 8/17 unbudgeted
-walls over 55-min cap; wall-safe variant at `submissions/cd_lns_sa_cascade/
-placer.py` (budget_seconds default 3300s) — runs E25 → E41 → cascading
-saddle escape on plateau with deadline-bound per-phase budgets, validates
-overlaps before return. ADR-013 forthcoming pending wall-safe --all on
-EPYC.
-
-**Wall-safe variants** (all default budget_seconds=3300s = 55 min, fits
-the 1-hr/bench partcl cap):
-- `submissions/cd_lns_sa_hessian/placer.py` — E74 + deadline (smoke ibm03
-  b=600: 1.00480, wall 598s compliant).
-- `submissions/cd_lns_sa_cascade/placer.py` — E48 → E41 → cascading
-  saddle with deadline.
-- `submissions/cd_lns_sa_hessian_dp/placer.py` — E74 + optional
-  DREAMPlace lane (subprocess to `$DREAMPLACE_ROOT/dreamplace/Placer.py`
-  on cloud GPU; skipped if DREAMPLACE_ROOT not set or insufficient time).
-  Cloud: OCI A100-SXM4-40GB at 132.145.135.39 (ssh alias `mpc-cloud`).
-  Built native at /opt/DREAMPlace/install with _GLIBCXX_USE_CXX11_ABI=1
-  (matches system torch 2.7).
 
 **Prior champion (kept as fallback):** CDLNSSAHybrid (E48), avg **1.08151**
 on --all. Entry: `submissions/cd_lns_sa_hybrid/placer.py`. Promoted
@@ -169,7 +121,7 @@ If best score hasn't improved by >2 % after N variants → kill the hypothesis.
 | Any terminal decision | Manifest's `status` / `decided` / `outcome` / `champion_delta` |
 | Falsified | Manifest's `Outcome` section with the killing data |
 | Graduated | Move code to `submissions/<name>/placer.py`; set `graduated_to:` |
-| New champion | CLAUDE.md champion line; `docs/results.md`; `submissions/README.md`; `writeup/evidence.md` §1 |
+| New champion | AGENTS.md champion line; `docs/results.md`; `submissions/README.md`; `writeup/evidence.md` §1 |
 | Structural decision | New ADR in `docs/decisions/NNN_short_name.md` (immutable once accepted) |
 | Paper-relevant finding | `writeup/evidence.md` (the experimental archive) |
 | Always | `docs/experiment_index.md` (status table) |
