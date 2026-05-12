@@ -1262,6 +1262,98 @@ class IncrementalProxyEvaluator:
 
     # ── Move / revert ──────────────────────────────────────────────────────
 
+    def commit(self, macro_idx: int, new_xy) -> None:
+        """Apply a move with no snapshot and no cost recompute.
+
+        Use after :meth:`delta_cost` confirmed the candidate is desirable
+        — typically in accept paths of SA / metropolis loops where the
+        cost was already obtained from the prior peek. Cheaper than
+        :meth:`move` because:
+
+        - No ``_MoveSnapshot`` is built (saves ~0.5 ms on ibm10).
+        - No ``current_cost()`` is computed at the end (saves ~1 ms).
+
+        Side effect: clears ``self._snapshot`` to None. Callers MUST NOT
+        call :meth:`revert` after :meth:`commit` — there's nothing to
+        revert to. Use the normal :meth:`move` / :meth:`revert` pair if
+        you need single-step undo.
+        """
+        bench = self.benchmark
+        if isinstance(new_xy, torch.Tensor):
+            nx, ny = float(new_xy[0]), float(new_xy[1])
+        else:
+            nx, ny = float(new_xy[0]), float(new_xy[1])
+        affected_nets = self.macro_to_nets[macro_idx].tolist()
+
+        # ── Subtract old density / macro-cong / net-cong contributions ──
+        old_density = self.macro_density_contrib[macro_idx]
+        for cell, area in old_density.items():
+            self.grid_occupied[cell] -= area
+        old_macro_cong = self.macro_cong_contrib[macro_idx]
+        for (orient, cell), val in old_macro_cong.items():
+            if orient == 0:
+                self.H_macro_cong[cell] -= val
+            else:
+                self.V_macro_cong[cell] -= val
+        for n in affected_nets:
+            old_contrib = self.net_cong_contrib[n]
+            for (orient, cell), val in old_contrib.items():
+                if orient == 0:
+                    self.H_net_cong[cell] -= val
+                else:
+                    self.V_net_cong[cell] -= val
+        for n in affected_nets:
+            self.total_hpwl -= float(self.net_hpwl[n])
+
+        # ── Update placement + cached pin positions ──
+        self.placement[macro_idx, 0] = nx
+        self.placement[macro_idx, 1] = ny
+        self._update_macro_pin_positions(macro_idx)
+
+        # ── Recompute density / macro-cong contributions for moved macro ──
+        w_size = float(self.macro_sizes[macro_idx, 0])
+        h_size = float(self.macro_sizes[macro_idx, 1])
+        new_density = self._macro_cell_contrib(nx, ny, w_size, h_size)
+        self.macro_density_contrib[macro_idx] = new_density
+        for cell, area in new_density.items():
+            self.grid_occupied[cell] += area
+        if bool(self.is_hard_macro[macro_idx]):
+            new_macro_cong = self._macro_cong_contrib(nx, ny, w_size, h_size)
+        else:
+            new_macro_cong = {}
+        self.macro_cong_contrib[macro_idx] = new_macro_cong
+        for (orient, cell), val in new_macro_cong.items():
+            if orient == 0:
+                self.H_macro_cong[cell] += val
+            else:
+                self.V_macro_cong[cell] += val
+
+        # ── Recompute affected nets: bbox + hpwl + congestion contrib ──
+        x_all, y_all = self._all_pin_positions()
+        for n in affected_nets:
+            pins = self.net_pins[n]
+            xs = x_all[pins]
+            ys = y_all[pins]
+            mnx, mxx = float(xs.min()), float(xs.max())
+            mny, mxy = float(ys.min()), float(ys.max())
+            self.net_min_x[n] = mnx
+            self.net_max_x[n] = mxx
+            self.net_min_y[n] = mny
+            self.net_max_y[n] = mxy
+            wnet = float(self.net_weight[n])
+            self.net_hpwl[n] = wnet * ((mxx - mnx) + (mxy - mny))
+            self.total_hpwl += float(self.net_hpwl[n])
+            new_contrib = self._net_cong_contrib(n)
+            self.net_cong_contrib[n] = new_contrib
+            for (orient, cell), val in new_contrib.items():
+                if orient == 0:
+                    self.H_net_cong[cell] += val
+                else:
+                    self.V_net_cong[cell] += val
+
+        # Prevent stale revert.
+        self._snapshot = None
+
     def move(self, macro_idx: int, new_xy) -> Dict[str, float]:
         """Move macro `macro_idx` to `new_xy` and return updated costs.
 
