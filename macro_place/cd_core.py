@@ -309,11 +309,12 @@ def search_axis(
     )
 
     def evalc(v: float) -> float:
+        # delta_cost peeks at the cost after the hypothetical move without
+        # mutating evaluator state — ~2x faster than (move, cost, revert)
+        # because no _MoveSnapshot is built and no revert pass runs.
         new_xy = list(cur_xy)
         new_xy[axis] = float(v)
-        cost = evaluator.move(macro_idx, tuple(new_xy))["proxy"]
-        evaluator.revert()
-        return cost
+        return evaluator.delta_cost(macro_idx, tuple(new_xy))["proxy"]
 
     if len(candidates) > breakpoint_budget:
         best_v, best_c = golden_section(evalc, lo, hi, n_iters=25)

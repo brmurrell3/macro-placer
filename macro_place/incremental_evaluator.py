@@ -651,14 +651,14 @@ class IncrementalProxyEvaluator:
         """Match plc.get_cost(): hpwl / ((W + H) * net_cnt)."""
         return float(self.total_hpwl / ((self.width + self.height) * self.net_cnt))
 
-    def _density_cost(self) -> float:
-        """Match plc.get_density_cost(): 0.5 * mean(top10% of nonzero cells).
+    def _density_cost_of(self, grid_occupied: torch.Tensor) -> float:
+        """Density cost from an arbitrary grid_occupied tensor.
 
-        plc treats *only nonzero* cells as candidates and takes the top
-        ``floor(num_cells * 0.1)`` of them after a descending sort. Tensor
-        version: select nonzero, sort descending, take top-k mean.
+        Same logic as :meth:`_density_cost`, parameterized on the
+        per-cell area tensor so it can be called with hypothetical state
+        (e.g. by :meth:`delta_cost`).
         """
-        cells = self.grid_occupied / self.grid_area
+        cells = grid_occupied / self.grid_area
         density_cnt = int(math.floor(self.num_cells * 0.1))
         # Drop zeros (plc does `if gc != 0.0`).
         nonzero_mask = cells != 0.0
@@ -673,6 +673,10 @@ class IncrementalProxyEvaluator:
             return 0.0
         topk, _ = torch.topk(occupied, k)
         return 0.5 * float(topk.sum().item() / density_cnt)
+
+    def _density_cost(self) -> float:
+        """Match plc.get_density_cost(): 0.5 * mean(top10% of nonzero cells)."""
+        return self._density_cost_of(self.grid_occupied)
 
     def _smooth(self, raw: torch.Tensor, vertical: bool) -> torch.Tensor:
         """Mirror plc.__smooth_routing_cong on a [num_cells] tensor.
@@ -727,26 +731,38 @@ class IncrementalProxyEvaluator:
             out = ps[hi] - ps[lo]
             return out.reshape(-1)
 
-    def _congestion_cost(self) -> float:
-        """Match plc.get_congestion_cost(): abu(V+H, 0.05) after normalize+smooth+macro-add."""
-        # Normalize
-        V_net_norm = self.V_net_cong / self.grid_v_routes
-        H_net_norm = self.H_net_cong / self.grid_h_routes
-        V_macro_norm = self.V_macro_cong / self.grid_v_routes
-        H_macro_norm = self.H_macro_cong / self.grid_h_routes
-        # Smooth net-routing cong
+    def _congestion_cost_of(
+        self,
+        H_net_cong: torch.Tensor,
+        V_net_cong: torch.Tensor,
+        H_macro_cong: torch.Tensor,
+        V_macro_cong: torch.Tensor,
+    ) -> float:
+        """Congestion cost from explicit raw congestion tensors.
+
+        Same logic as :meth:`_congestion_cost`, parameterized so it can
+        be called with hypothetical state (e.g. by :meth:`delta_cost`).
+        """
+        V_net_norm = V_net_cong / self.grid_v_routes
+        H_net_norm = H_net_cong / self.grid_h_routes
+        V_macro_norm = V_macro_cong / self.grid_v_routes
+        H_macro_norm = H_macro_cong / self.grid_h_routes
         V_smoothed = self._smooth(V_net_norm, vertical=True)
         H_smoothed = self._smooth(H_net_norm, vertical=False)
-        # Add macro routing
         V_total = V_smoothed + V_macro_norm
         H_total = H_smoothed + H_macro_norm
-        # abu with n=0.05
         combined = torch.cat([V_total, H_total])
         cnt = int(math.floor(combined.numel() * 0.05))
         if cnt == 0:
             return float(combined.max().item())
         topk, _ = torch.topk(combined, cnt)
         return float(topk.sum().item() / cnt)
+
+    def _congestion_cost(self) -> float:
+        """Match plc.get_congestion_cost(): abu(V+H, 0.05) after normalize+smooth+macro-add."""
+        return self._congestion_cost_of(
+            self.H_net_cong, self.V_net_cong, self.H_macro_cong, self.V_macro_cong
+        )
 
     def current_cost(self) -> Dict[str, float]:
         wl = self._wirelength_cost()
@@ -758,6 +774,133 @@ class IncrementalProxyEvaluator:
             + self.weights["congestion"] * cong
         )
         return {"wl": wl, "density": density, "congestion": cong, "proxy": proxy}
+
+    # ── Non-mutating cost peek ────────────────────────────────────────────
+
+    def delta_cost(self, macro_idx: int, new_xy) -> Dict[str, float]:
+        """Return the cost dict ``current_cost()`` would yield AFTER
+        ``move(macro_idx, new_xy)``, without mutating evaluator state.
+
+        Replacement for the ``(move → current_cost → revert)`` pattern in
+        coordinate-descent search loops. Cheaper because:
+
+        - No ``_MoveSnapshot`` is built (skips the dict copies of
+          ``net_cong_contrib[n]`` for every affected net — usually the
+          largest term in per-move overhead).
+        - No revert pass (state is reconstructed in local clones rather
+          than restored after the fact).
+
+        On exit, every ``self.*`` field is bit-identical to entry. The
+        method is reentrant within a single thread but is NOT thread-safe
+        — it briefly mutates ``self.pin_x``/``self.pin_y`` for the moving
+        macro's pins inside a ``try/finally`` so that
+        ``_net_cong_contrib`` (which reads them) sees hypothetical
+        positions.
+
+        Returns the same ``{"wl", "density", "congestion", "proxy"}``
+        dict shape as :meth:`current_cost`.
+        """
+        bench = self.benchmark
+        nx, ny = float(new_xy[0]), float(new_xy[1])
+        macro_pins = self.macro_to_pins[macro_idx]
+        affected_nets = self.macro_to_nets[macro_idx].tolist()
+
+        # Briefly retarget this macro's pins so _net_cong_contrib reads
+        # hypothetical pin positions. Restored in `finally`.
+        if len(macro_pins) > 0:
+            saved_pin_x = self.pin_x[macro_pins].clone()
+            saved_pin_y = self.pin_y[macro_pins].clone()
+            self.pin_x[macro_pins] = nx + self.pin_offset_x[macro_pins]
+            self.pin_y[macro_pins] = ny + self.pin_offset_y[macro_pins]
+        else:
+            saved_pin_x = None
+            saved_pin_y = None
+
+        try:
+            # ── Hypothetical wirelength ──
+            x_all, y_all = self.pin_x, self.pin_y  # now reflects hypothetical pins
+            delta_hpwl = 0.0
+            for n in affected_nets:
+                pins = self.net_pins[n]
+                xs = x_all[pins]
+                ys = y_all[pins]
+                mnx, mxx = float(xs.min()), float(xs.max())
+                mny, mxy = float(ys.min()), float(ys.max())
+                wnet = float(self.net_weight[n])
+                new_hpwl_n = wnet * ((mxx - mnx) + (mxy - mny))
+                delta_hpwl += new_hpwl_n - float(self.net_hpwl[n])
+            new_total_hpwl = self.total_hpwl + delta_hpwl
+            new_wl = new_total_hpwl / ((self.width + self.height) * self.net_cnt)
+
+            # ── Hypothetical density: clone grid_occupied + apply macro delta ──
+            w_size = float(self.macro_sizes[macro_idx, 0])
+            h_size = float(self.macro_sizes[macro_idx, 1])
+            old_macro_density = self.macro_density_contrib[macro_idx]
+            new_macro_density = self._macro_cell_contrib(nx, ny, w_size, h_size)
+            new_grid = self.grid_occupied.clone()
+            for cell, area in old_macro_density.items():
+                new_grid[cell] -= area
+            for cell, area in new_macro_density.items():
+                new_grid[cell] += area
+            new_density = self._density_cost_of(new_grid)
+
+            # ── Hypothetical congestion ──
+            new_H_net = self.H_net_cong.clone()
+            new_V_net = self.V_net_cong.clone()
+            new_H_macro = self.H_macro_cong.clone()
+            new_V_macro = self.V_macro_cong.clone()
+
+            # Macro-routing delta (hard macros only contribute)
+            if bool(self.is_hard_macro[macro_idx]):
+                old_macro_cong = self.macro_cong_contrib[macro_idx]
+                for (orient, cell), val in old_macro_cong.items():
+                    if orient == 0:
+                        new_H_macro[cell] -= val
+                    else:
+                        new_V_macro[cell] -= val
+                new_macro_cong = self._macro_cong_contrib(nx, ny, w_size, h_size)
+                for (orient, cell), val in new_macro_cong.items():
+                    if orient == 0:
+                        new_H_macro[cell] += val
+                    else:
+                        new_V_macro[cell] += val
+
+            # Net-routing delta (uses hypothetical self.pin_x/pin_y)
+            for n in affected_nets:
+                old_contrib = self.net_cong_contrib[n]
+                for (orient, cell), val in old_contrib.items():
+                    if orient == 0:
+                        new_H_net[cell] -= val
+                    else:
+                        new_V_net[cell] -= val
+                new_contrib = self._net_cong_contrib(n)
+                for (orient, cell), val in new_contrib.items():
+                    if orient == 0:
+                        new_H_net[cell] += val
+                    else:
+                        new_V_net[cell] += val
+
+            new_cong = self._congestion_cost_of(
+                new_H_net, new_V_net, new_H_macro, new_V_macro
+            )
+
+            new_proxy = (
+                self.weights["wirelength"] * new_wl
+                + self.weights["density"] * new_density
+                + self.weights["congestion"] * new_cong
+            )
+            return {
+                "wl": new_wl,
+                "density": new_density,
+                "congestion": new_cong,
+                "proxy": new_proxy,
+            }
+
+        finally:
+            # Restore pin positions
+            if saved_pin_x is not None:
+                self.pin_x[macro_pins] = saved_pin_x
+                self.pin_y[macro_pins] = saved_pin_y
 
     # ── Move / revert ──────────────────────────────────────────────────────
 
