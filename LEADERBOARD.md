@@ -20,7 +20,8 @@ M3 cores are ~2× faster per-thread; M3 results NOT predictive of partcl.
 
 | Run | Hardware | Budget | IBM avg | NG45 avg | Max wall | Date | Verified by |
 |-----|----------|-------:|--------:|---------:|---------:|------|-------------|
-| **`placer_adaptive.py` ← TARGET** | EPYC cloud | 3000s | **1.137** | **0.6978** | 57min | 2026-05-11 PM | cascade-IBM + adaptive-NG45 direct audit |
+| **`placer_finegrain.py` ← NEW CANDIDATE** | EPYC cloud | 3000s | **TBD** | **TBD** | ~54min | 2026-05-11 22:00 | partial: 4/17 IBM at avg 0.9824 (vs cascade 0.9978, **-1.55%**) |
+| `placer_adaptive.py` (prior target) | EPYC cloud | 3000s | 1.137 | 0.6978 | 57min | 2026-05-11 PM | full audit |
 | `placer_b3000.py` (simpler) | EPYC cloud | 3000s | 1.137 | 0.7034 | 57min | 2026-05-11 | overnight |
 
 NG45 audit per-design (placer_adaptive.py, EPYC cloud, 2026-05-11 19:08-19:58):
