@@ -20,9 +20,20 @@ M3 cores are ~2× faster per-thread; M3 results NOT predictive of partcl.
 
 | Run | Hardware | Budget | IBM avg | NG45 avg | Max wall | Date | Verified by |
 |-----|----------|-------:|--------:|---------:|---------:|------|-------------|
-| **`placer_finegrain.py` ← NEW CANDIDATE** | EPYC cloud | 3000s | **TBD** | **TBD** | ~54min | 2026-05-11 22:00 | partial: 4/17 IBM at avg 0.9824 (vs cascade 0.9978, **-1.55%**) |
-| `placer_adaptive.py` (prior target) | EPYC cloud | 3000s | 1.137 | 0.6978 | 57min | 2026-05-11 PM | full audit |
+| **`placer_finegrain_adaptive.py` ← NEW TARGET** | EPYC cloud | 3000s | **~1.12** (partial 12/17) | **0.6938** | 54.5min | 2026-05-12 00:08 | finegrain --all -0.99% partial + adaptive --ng45 4/4 |
+| `placer_finegrain.py` (IBM-only) | EPYC cloud | 3000s | partial 1.040 (12/17) | 0.6954 | 54.5min | 2026-05-12 | --all in progress, +0.6% ng45 vs adaptive |
+| `placer_adaptive.py` (prior) | EPYC cloud | 3000s | 1.137 | 0.6978 | 57min | 2026-05-11 | prior submission |
 | `placer_b3000.py` (simpler) | EPYC cloud | 3000s | 1.137 | 0.7034 | 57min | 2026-05-11 | overnight |
+| `placer_extended.py` (ceiling) | EPYC cloud | 5400s | partial 1.015 (8/17) | — | 92min ⚠️ | 2026-05-12 | OVERSHOOTS cap, ref only |
+
+NG45 audit per-design (finegrain_adaptive.py, EPYC cloud, 2026-05-12 00:00):
+| Design | Finegrain-adaptive | Prior adaptive | E48 ref | E74 ref |
+|--------|-------------------:|---------------:|--------:|--------:|
+| ariane133 | **0.6518** | 0.6638 | 0.6861 | 0.6641 |
+| ariane136 | 0.6823 | 0.6848 | 0.6685 | 0.6518 |
+| mempool_tile | 0.7374 | 0.7374 | 0.7375 | 0.7376 |
+| nvdla | 0.7036 | 0.7053 | 0.6767 | 0.6716 |
+| **avg** | **0.6938** | 0.6978 | 0.6922 | 0.6813 |
 
 NG45 audit per-design (placer_adaptive.py, EPYC cloud, 2026-05-11 19:08-19:58):
 | Design | Adaptive proxy | E48 ref | Δ vs E48 |
