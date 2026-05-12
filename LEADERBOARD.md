@@ -20,8 +20,9 @@ M3 cores are ~2× faster per-thread; M3 results NOT predictive of partcl.
 
 | Run | Hardware | Budget | IBM avg | NG45 avg | Max wall | Date | Verified by |
 |-----|----------|-------:|--------:|---------:|---------:|------|-------------|
-| **`placer_finegrain_adaptive.py` ← TARGET** | EPYC cloud | 3000s | **1.12189** | **0.6938** | 55.9min | 2026-05-12 02:14 | finegrain --all 17/17 + adaptive --ng45 4/4 |
-| `placer_finegrain_safe.py` (b=2700, safer wall) | EPYC cloud | 2700s | in progress | (TBD via adaptive wrapper) | TBD | 2026-05-12 02:15 | --all running, ETA ~06:00 |
+| **`placer_finegrain_adaptive.py` ← TARGET A (best proxy)** | EPYC cloud | 3000s | **1.12189** | **0.6938** | 55.9min | 2026-05-12 02:14 | full --all + --ng45 audits |
+| `placer_finegrain_safe_adaptive.py` ← TARGET B (safer wall) | EPYC cloud | 2700s | ~1.126 (12/17 at +0.41%) | 0.7037 (+1.4%) | 49.4min | 2026-05-12 05:18 | partial --all + --ng45 4/4 |
+| `placer_extended.py` (ceiling REF) | EPYC cloud | 5400s | **1.10412** | — | 94.4min ⚠️ | 2026-05-12 05:18 | OVERSHOOTS cap; PATH A2 target |
 | `placer_finegrain.py` (IBM-only) | EPYC cloud | 3000s | 1.12189 | 0.6954 | 55.9min | 2026-05-12 | full --all done |
 | `placer_adaptive.py` (prior) | EPYC cloud | 3000s | 1.137 | 0.6978 | 57min | 2026-05-11 | prior submission |
 | `placer_b3000.py` (simpler) | EPYC cloud | 3000s | 1.137 | 0.7034 | 57min | 2026-05-11 | overnight |
