@@ -400,6 +400,89 @@ class IncrementalProxyEvaluator:
 
     # ── Congestion initialization ──────────────────────────────────────────
 
+    def _net_cong_contrib_flat(
+        self, net_idx: int
+    ) -> Tuple[List[int], List[float], List[int], List[float]]:
+        """Same routing as :meth:`_net_cong_contrib` but returns four flat
+        lists ``(h_cells, h_vals, v_cells, v_vals)`` instead of a
+        dict ``{(orient, cell): val}``.
+
+        Hot-path optimization for :meth:`delta_cost_axis_batch`:
+        - Vectorizes pin → gcell computation (single tensor op vs N
+          ``_grid_cell`` calls).
+        - Skips dict construction / lookup overhead (~1.4 M dict ops
+          per 200 axis-searches per cProfile).
+        - Duplicate cells are tolerated; the downstream ``index_put_(
+          accumulate=True)`` in ``delta_cost_axis_batch`` re-aggregates.
+        """
+        pins = self.net_pins[net_idx]
+        h_cells: List[int] = []
+        h_vals: List[float] = []
+        v_cells: List[int] = []
+        v_vals: List[float] = []
+        if len(pins) == 0:
+            return h_cells, h_vals, v_cells, v_vals
+
+        xs = self.pin_x[pins]
+        ys = self.pin_y[pins]
+        cols_t = torch.floor(xs / self.grid_width).clamp_(0, self.grid_col - 1).long().tolist()
+        rows_t = torch.floor(ys / self.grid_height).clamp_(0, self.grid_row - 1).long().tolist()
+        gcells = list(zip(rows_t, cols_t))
+        source_gcell = gcells[0]
+        unique: List[Tuple[int, int]] = []
+        seen = set()
+        for g in gcells:
+            if g not in seen:
+                seen.add(g)
+                unique.append(g)
+        weight = float(self.net_weight[net_idx])
+        gc = self.grid_col
+        n = len(unique)
+
+        if n == 2:
+            sink = unique[1] if unique[0] == source_gcell else unique[0]
+            rmin = source_gcell[0] if source_gcell[0] < sink[0] else sink[0]
+            rmax = source_gcell[0] if source_gcell[0] > sink[0] else sink[0]
+            cmin = source_gcell[1] if source_gcell[1] < sink[1] else sink[1]
+            cmax = source_gcell[1] if source_gcell[1] > sink[1] else sink[1]
+            src_row_base = source_gcell[0] * gc
+            for c in range(cmin, cmax):
+                h_cells.append(src_row_base + c)
+                h_vals.append(weight)
+            sink_col = sink[1]
+            for r in range(rmin, rmax):
+                v_cells.append(r * gc + sink_col)
+                v_vals.append(weight)
+        elif n > 3:
+            src_row_base = source_gcell[0] * gc
+            for sink in unique:
+                if sink == source_gcell:
+                    continue
+                rmin = source_gcell[0] if source_gcell[0] < sink[0] else sink[0]
+                rmax = source_gcell[0] if source_gcell[0] > sink[0] else sink[0]
+                cmin = source_gcell[1] if source_gcell[1] < sink[1] else sink[1]
+                cmax = source_gcell[1] if source_gcell[1] > sink[1] else sink[1]
+                for c in range(cmin, cmax):
+                    h_cells.append(src_row_base + c)
+                    h_vals.append(weight)
+                sink_col = sink[1]
+                for r in range(rmin, rmax):
+                    v_cells.append(r * gc + sink_col)
+                    v_vals.append(weight)
+        elif n == 3:
+            # Fall back to the 3-pin dispatch (rare; uses existing helper).
+            def _add(orient: int, row: int, col: int, w: float) -> None:
+                cell = row * gc + col
+                if orient == 0:
+                    h_cells.append(cell)
+                    h_vals.append(w)
+                else:
+                    v_cells.append(cell)
+                    v_vals.append(w)
+            self._three_pin_routing_dict(source_gcell, unique, weight, _add)
+        # n == 1: no routing.
+        return h_cells, h_vals, v_cells, v_vals
+
     def _net_cong_contrib(self, net_idx: int) -> Dict[Tuple[int, int], float]:
         """Compute per-cell V/H routing congestion increments contributed by one net.
 
@@ -1122,13 +1205,18 @@ class IncrementalProxyEvaluator:
                             V_macro_k.append(k); V_macro_cell.append(cell); V_macro_val.append(val)
 
                 # Net routing add (reads hypothetical pin positions).
+                # Use the flat variant which skips dict allocation and
+                # vectorizes pin → gcell computation.
                 for n in affected_nets:
-                    new_contrib = self._net_cong_contrib(n)
-                    for (orient, cell), val in new_contrib.items():
-                        if orient == 0:
-                            H_net_k.append(k); H_net_cell.append(cell); H_net_val.append(val)
-                        else:
-                            V_net_k.append(k); V_net_cell.append(cell); V_net_val.append(val)
+                    h_c, h_v, v_c, v_v = self._net_cong_contrib_flat(n)
+                    if h_c:
+                        H_net_k.extend([k] * len(h_c))
+                        H_net_cell.extend(h_c)
+                        H_net_val.extend(h_v)
+                    if v_c:
+                        V_net_k.extend([k] * len(v_c))
+                        V_net_cell.extend(v_c)
+                        V_net_val.extend(v_v)
         finally:
             if saved_pin_x is not None:
                 self.pin_x[macro_pins] = saved_pin_x
