@@ -309,9 +309,7 @@ def search_axis(
     )
 
     def evalc(v: float) -> float:
-        # delta_cost peeks at the cost after the hypothetical move without
-        # mutating evaluator state — ~2x faster than (move, cost, revert)
-        # because no _MoveSnapshot is built and no revert pass runs.
+        # Single-candidate delta_cost (golden-section fallback path).
         new_xy = list(cur_xy)
         new_xy[axis] = float(v)
         return evaluator.delta_cost(macro_idx, tuple(new_xy))["proxy"]
@@ -320,13 +318,20 @@ def search_axis(
         best_v, best_c = golden_section(evalc, lo, hi, n_iters=25)
         return best_v, best_c, "gs"
 
+    # Breakpoint mode: evaluate all K candidates in one batched call.
+    # delta_cost_axis_batch amortizes "subtract old contributions" once
+    # and runs density + congestion cost as batched torch ops across the
+    # K hypothetical cell-tensors — much faster than K serial probes.
     best_v = float(evaluator.placement[macro_idx, axis])
     best_c = cur_cost
-    for v in candidates:
-        c = evalc(float(v))
-        if c < best_c:
-            best_c = c
-            best_v = float(v)
+    if len(candidates) > 0:
+        proxies = evaluator.delta_cost_axis_batch(
+            macro_idx, axis, cur_xy, candidates,
+        )
+        for v, c in zip(candidates, proxies):
+            if c < best_c:
+                best_c = c
+                best_v = float(v)
     return best_v, best_c, "bp"
 
 

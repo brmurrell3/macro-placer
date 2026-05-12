@@ -678,6 +678,40 @@ class IncrementalProxyEvaluator:
         """Match plc.get_density_cost(): 0.5 * mean(top10% of nonzero cells)."""
         return self._density_cost_of(self.grid_occupied)
 
+    def _density_cost_of_batched(self, grid_occupied_K: torch.Tensor) -> torch.Tensor:
+        """Batched density cost: input ``[K, num_cells]``, output ``[K]``.
+
+        Same logic as :meth:`_density_cost_of` but evaluates K candidates
+        in a single torch op. Used by :meth:`delta_cost_axis_batch`.
+        """
+        K, num_cells = grid_occupied_K.shape
+        cells = grid_occupied_K / self.grid_area  # [K, num_cells]
+        density_cnt = int(math.floor(num_cells * 0.1))
+
+        if num_cells < 10:
+            nonzero = cells != 0.0
+            counts = nonzero.sum(dim=1).to(torch.float64)
+            sums = (cells * nonzero).sum(dim=1)
+            return torch.where(
+                counts > 0,
+                0.5 * sums / counts,
+                torch.zeros(K, dtype=torch.float64),
+            )
+
+        if density_cnt == 0:
+            return torch.zeros(K, dtype=torch.float64)
+
+        # Mask zeros to -inf so topk picks only nonzero values.
+        neg_inf = torch.full_like(cells, float("-inf"))
+        masked = torch.where(cells != 0.0, cells, neg_inf)
+        topk_vals, _ = torch.topk(masked, density_cnt, dim=1)
+        positive = torch.where(
+            torch.isfinite(topk_vals),
+            topk_vals,
+            torch.zeros_like(topk_vals),
+        )
+        return 0.5 * positive.sum(dim=1) / density_cnt
+
     def _smooth(self, raw: torch.Tensor, vertical: bool) -> torch.Tensor:
         """Mirror plc.__smooth_routing_cong on a [num_cells] tensor.
 
@@ -763,6 +797,67 @@ class IncrementalProxyEvaluator:
         return self._congestion_cost_of(
             self.H_net_cong, self.V_net_cong, self.H_macro_cong, self.V_macro_cong
         )
+
+    def _smooth_batched(self, raw_K: torch.Tensor, vertical: bool) -> torch.Tensor:
+        """Batched version of :meth:`_smooth`. Input/output ``[K, num_cells]``."""
+        sr = self.smooth_range
+        gc = self.grid_col
+        gr = self.grid_row
+        K = raw_K.shape[0]
+        flat = raw_K.reshape(K, gr, gc)
+        if sr == 0:
+            return flat.reshape(K, -1).clone()
+
+        if vertical:
+            cols = torch.arange(gc, dtype=torch.float64)
+            lp = torch.clamp(cols - sr, min=0)
+            rp = torch.clamp(cols + sr, max=gc - 1)
+            window = rp - lp + 1  # [gc]
+            divided = flat / window  # broadcast over [K, gr]
+            ps = torch.zeros((K, gr, gc + 1), dtype=flat.dtype)
+            ps[:, :, 1:] = torch.cumsum(divided, dim=2)
+            ks = torch.arange(gc)
+            lo = torch.clamp(ks - sr, min=0)
+            hi = torch.clamp(ks + sr, max=gc - 1) + 1
+            out = ps[:, :, hi] - ps[:, :, lo]
+            return out.reshape(K, -1)
+        else:
+            rows = torch.arange(gr, dtype=torch.float64)
+            lp = torch.clamp(rows - sr, min=0)
+            up = torch.clamp(rows + sr, max=gr - 1)
+            window = up - lp + 1  # [gr]
+            divided = flat / window.unsqueeze(0).unsqueeze(2)  # [K, gr, gc]
+            ps = torch.zeros((K, gr + 1, gc), dtype=flat.dtype)
+            ps[:, 1:] = torch.cumsum(divided, dim=1)
+            ks = torch.arange(gr)
+            lo = torch.clamp(ks - sr, min=0)
+            hi = torch.clamp(ks + sr, max=gr - 1) + 1
+            out = ps[:, hi] - ps[:, lo]
+            return out.reshape(K, -1)
+
+    def _congestion_cost_of_batched(
+        self,
+        H_net_cong_K: torch.Tensor,
+        V_net_cong_K: torch.Tensor,
+        H_macro_cong_K: torch.Tensor,
+        V_macro_cong_K: torch.Tensor,
+    ) -> torch.Tensor:
+        """Batched congestion cost: each input ``[K, num_cells]``, output ``[K]``."""
+        V_net_norm = V_net_cong_K / self.grid_v_routes
+        H_net_norm = H_net_cong_K / self.grid_h_routes
+        V_macro_norm = V_macro_cong_K / self.grid_v_routes
+        H_macro_norm = H_macro_cong_K / self.grid_h_routes
+        V_smoothed = self._smooth_batched(V_net_norm, vertical=True)
+        H_smoothed = self._smooth_batched(H_net_norm, vertical=False)
+        V_total = V_smoothed + V_macro_norm
+        H_total = H_smoothed + H_macro_norm
+        combined = torch.cat([V_total, H_total], dim=1)  # [K, 2*num_cells]
+        total = combined.shape[1]
+        cnt = int(math.floor(total * 0.05))
+        if cnt == 0:
+            return combined.max(dim=1).values  # [K]
+        topk, _ = torch.topk(combined, cnt, dim=1)
+        return topk.sum(dim=1) / cnt
 
     def current_cost(self) -> Dict[str, float]:
         wl = self._wirelength_cost()
@@ -901,6 +996,181 @@ class IncrementalProxyEvaluator:
             if saved_pin_x is not None:
                 self.pin_x[macro_pins] = saved_pin_x
                 self.pin_y[macro_pins] = saved_pin_y
+
+    def delta_cost_axis_batch(
+        self,
+        macro_idx: int,
+        axis: int,
+        cur_xy,
+        candidates,
+    ) -> List[float]:
+        """Batched cost peek for K candidates on a single axis.
+
+        Equivalent to::
+
+            [self.delta_cost(macro_idx, (v, cur_xy[1]) if axis == 0
+                             else (cur_xy[0], v))["proxy"]
+             for v in candidates]
+
+        ...but amortizes the "subtract old contributions" precompute once
+        across all K candidates, and runs density + congestion cost as
+        batched ``[K, num_cells]`` torch ops instead of K serial calls.
+
+        Used by :func:`cd_core.search_axis` to evaluate the breakpoint
+        candidates for a single (macro, axis) search.
+
+        Returns a list of K proxy floats in the same order as
+        ``candidates``. Evaluator state is bit-identical on exit.
+        """
+        cur_x, cur_y = float(cur_xy[0]), float(cur_xy[1])
+        candidates_list = [float(v) for v in candidates]
+        K = len(candidates_list)
+        if K == 0:
+            return []
+
+        macro_pins = self.macro_to_pins[macro_idx]
+        affected_nets = self.macro_to_nets[macro_idx].tolist()
+        w_size = float(self.macro_sizes[macro_idx, 0])
+        h_size = float(self.macro_sizes[macro_idx, 1])
+
+        # ── Precompute "base" with old contributions subtracted (once) ──
+        base_total_hpwl_after_subtract = self.total_hpwl
+        for n in affected_nets:
+            base_total_hpwl_after_subtract -= float(self.net_hpwl[n])
+
+        base_grid = self.grid_occupied.clone()
+        old_macro_density = self.macro_density_contrib[macro_idx]
+        for cell, area in old_macro_density.items():
+            base_grid[cell] -= area
+
+        base_H_macro = self.H_macro_cong.clone()
+        base_V_macro = self.V_macro_cong.clone()
+        if bool(self.is_hard_macro[macro_idx]):
+            old_macro_cong = self.macro_cong_contrib[macro_idx]
+            for (orient, cell), val in old_macro_cong.items():
+                if orient == 0:
+                    base_H_macro[cell] -= val
+                else:
+                    base_V_macro[cell] -= val
+
+        base_H_net = self.H_net_cong.clone()
+        base_V_net = self.V_net_cong.clone()
+        for n in affected_nets:
+            old_contrib = self.net_cong_contrib[n]
+            for (orient, cell), val in old_contrib.items():
+                if orient == 0:
+                    base_H_net[cell] -= val
+                else:
+                    base_V_net[cell] -= val
+
+        # ── Per-candidate work — collect deltas into flat lists, then ──
+        # ── apply via one index_put_ per cell-tensor (scalar indexing ──
+        # ── into [K, num_cells] tensors is too slow for 100s of cells). ──
+        hpwl_for_affected = torch.zeros(K, dtype=torch.float64)
+        density_k, density_cell, density_val = [], [], []
+        H_macro_k, H_macro_cell, H_macro_val = [], [], []
+        V_macro_k, V_macro_cell, V_macro_val = [], [], []
+        H_net_k, H_net_cell, H_net_val = [], [], []
+        V_net_k, V_net_cell, V_net_val = [], [], []
+
+        # Briefly retarget pins (restored in finally).
+        if len(macro_pins) > 0:
+            saved_pin_x = self.pin_x[macro_pins].clone()
+            saved_pin_y = self.pin_y[macro_pins].clone()
+        else:
+            saved_pin_x = None
+            saved_pin_y = None
+
+        try:
+            is_hard = bool(self.is_hard_macro[macro_idx])
+            for k, v in enumerate(candidates_list):
+                if axis == 0:
+                    nx, ny = v, cur_y
+                else:
+                    nx, ny = cur_x, v
+
+                # Update this macro's pin positions for candidate k.
+                if len(macro_pins) > 0:
+                    self.pin_x[macro_pins] = nx + self.pin_offset_x[macro_pins]
+                    self.pin_y[macro_pins] = ny + self.pin_offset_y[macro_pins]
+
+                # Per-candidate wirelength: bbox over affected nets at hypothetical pins.
+                x_all, y_all = self.pin_x, self.pin_y
+                total_for_affected = 0.0
+                for n in affected_nets:
+                    pins = self.net_pins[n]
+                    xs = x_all[pins]
+                    ys = y_all[pins]
+                    mnx, mxx = float(xs.min()), float(xs.max())
+                    mny, mxy = float(ys.min()), float(ys.max())
+                    wnet = float(self.net_weight[n])
+                    total_for_affected += wnet * ((mxx - mnx) + (mxy - mny))
+                hpwl_for_affected[k] = total_for_affected
+
+                # Density add (collect; applied below).
+                new_macro_density = self._macro_cell_contrib(nx, ny, w_size, h_size)
+                for cell, area in new_macro_density.items():
+                    density_k.append(k); density_cell.append(cell); density_val.append(area)
+
+                # Macro routing add.
+                if is_hard:
+                    new_macro_cong = self._macro_cong_contrib(nx, ny, w_size, h_size)
+                    for (orient, cell), val in new_macro_cong.items():
+                        if orient == 0:
+                            H_macro_k.append(k); H_macro_cell.append(cell); H_macro_val.append(val)
+                        else:
+                            V_macro_k.append(k); V_macro_cell.append(cell); V_macro_val.append(val)
+
+                # Net routing add (reads hypothetical pin positions).
+                for n in affected_nets:
+                    new_contrib = self._net_cong_contrib(n)
+                    for (orient, cell), val in new_contrib.items():
+                        if orient == 0:
+                            H_net_k.append(k); H_net_cell.append(cell); H_net_val.append(val)
+                        else:
+                            V_net_k.append(k); V_net_cell.append(cell); V_net_val.append(val)
+        finally:
+            if saved_pin_x is not None:
+                self.pin_x[macro_pins] = saved_pin_x
+                self.pin_y[macro_pins] = saved_pin_y
+
+        # ── Build the [K, num_cells] hypothetical tensors with one ──
+        # ── scattered-add per tensor (instead of N scalar updates). ──
+        hypo_grid = base_grid.unsqueeze(0).repeat(K, 1)
+        hypo_H_net = base_H_net.unsqueeze(0).repeat(K, 1)
+        hypo_V_net = base_V_net.unsqueeze(0).repeat(K, 1)
+        hypo_H_macro = base_H_macro.unsqueeze(0).repeat(K, 1)
+        hypo_V_macro = base_V_macro.unsqueeze(0).repeat(K, 1)
+
+        def _scatter_add(tensor, ks, cells, vals):
+            if not ks:
+                return
+            k_t = torch.tensor(ks, dtype=torch.long)
+            c_t = torch.tensor(cells, dtype=torch.long)
+            v_t = torch.tensor(vals, dtype=torch.float64)
+            tensor.index_put_((k_t, c_t), v_t, accumulate=True)
+
+        _scatter_add(hypo_grid, density_k, density_cell, density_val)
+        _scatter_add(hypo_H_macro, H_macro_k, H_macro_cell, H_macro_val)
+        _scatter_add(hypo_V_macro, V_macro_k, V_macro_cell, V_macro_val)
+        _scatter_add(hypo_H_net, H_net_k, H_net_cell, H_net_val)
+        _scatter_add(hypo_V_net, V_net_k, V_net_cell, V_net_val)
+
+        # ── Batched cost computation ──
+        new_total_hpwl = base_total_hpwl_after_subtract + hpwl_for_affected  # [K]
+        new_wl = new_total_hpwl / ((self.width + self.height) * self.net_cnt)  # [K]
+
+        new_density = self._density_cost_of_batched(hypo_grid)  # [K]
+        new_cong = self._congestion_cost_of_batched(
+            hypo_H_net, hypo_V_net, hypo_H_macro, hypo_V_macro
+        )  # [K]
+
+        new_proxy = (
+            self.weights["wirelength"] * new_wl
+            + self.weights["density"] * new_density
+            + self.weights["congestion"] * new_cong
+        )
+        return new_proxy.tolist()
 
     # ── Move / revert ──────────────────────────────────────────────────────
 
