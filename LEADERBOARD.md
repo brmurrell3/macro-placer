@@ -114,3 +114,23 @@ NG45 audit per-design (placer_adaptive.py, EPYC cloud, 2026-05-11 19:08-19:58):
 - "Max wall" = largest per-bench wall in the run; must stay under 60-min cap.
 - Cascade cached 1.0612 is the IBM ceiling reachable on M3 uncapped.
   Path to reach it on EPYC under cap = PATH A2 (Cython port of move()).
+
+## 5-VARIANT PROBE RESULTS (2026-05-11 21:00 PDT, EPYC cloud, ibm10/12/14/17)
+
+vs cascade b=3000 baseline (avg 1.28178 on the 4 hardest):
+
+| Variant | ibm10 | ibm12 | ibm14 | ibm17 | Wins | Avg |
+|---------|------:|------:|------:|------:|-----:|----:|
+| cascade b=3000 (baseline) | 1.0775 | 1.3031 | 1.2919 | 1.4546 | — | 1.28178 |
+| wide-saddle (k=1, 6 eps, 60s polish) | 1.0989 | 1.3371 | 1.3051 | 1.4607 | 0/4 | 1.30045 |
+| more-cascade (40% cascade budget) | 1.0904 | 1.3143 | 1.3051 | 1.4549 | 0/4 | 1.29117 |
+| dual-basin (cascade from E25 AND E41) | 1.1020 | 1.3279 | 1.3083 | 1.4769 | 0/4 | 1.30377 |
+| aggressive-kjoint (K=8) | 1.1038 | 1.3169 | 1.3068 | 1.4657 | 0/4 | 1.29830 |
+| **finegrain** (tight eps + 300s polish) | **1.0781** | **1.2959** | 1.2927 | **1.4520** | **2/4** | **1.27968** |
+
+Finegrain wins ibm12 (-0.6%) and ibm17 (-0.2%), ties on ibm10 and ibm14.
+Avg -0.16% vs baseline — marginal but consistent. Launched finegrain --all
+to test if pattern holds across all 17.
+
+Other 4 variants STRICTLY WORSE than baseline cascade — falsified.
+
