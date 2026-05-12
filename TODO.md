@@ -23,39 +23,48 @@ Python** (`IncrementalProxyEvaluator.move()` + `revert()`, confirmed by
 cProfile on ibm04: 32 s of 33 s). A 10–30× CD speedup unlocks the
 cached-quality basin under the 60-min cap.
 
-### A1. Eliminate `revert()` via pure delta function
+### A1. Eliminate `revert()` via pure delta function — **DONE 2026-05-12**
 
-**A1 phase 1 — single-candidate `delta_cost` — LANDED 2026-05-12** (commit `59a7a8b`).
+Final speedup: **5.36× on ibm10 / 5.12× on ibm01** vs original
+move+revert. End-to-end smoke (ibm01, 180 s budget): proxy 0.88148 vs
+cleanup baseline 0.89195 (**−1.17 %** at same wall), zero overlaps.
+Per-probe parity perfect to 2e-16 (machine epsilon) on 100 probes
+each on both benches.
 
-- `IncrementalProxyEvaluator.delta_cost(macro_idx, new_xy)` returns
-  the cost dict that `move + current_cost + revert` would yield,
-  without mutating state. Wired into `cd_core.search_axis`.
-- **Measured speedup: 1.95× per probe on ibm01** (1423 µs vs 2773 µs).
-  Skips the snapshot dict copies (largest term in move-overhead) and
-  the entire revert pass.
-- Parity perfect: 100/100 probes within 1e-9, max err 2.22e-16
-  (machine epsilon).
-- State preservation: 50 probes leave every mutable field bit-identical.
-- End-to-end smoke on ibm01 (180 s budget): proxy 0.88344 vs pre-A1
-  baseline 0.89195 (**−0.85 %** at same wall — speedup converts to
-  deeper CD basins).
+Three landed commits:
 
-**A1 phase 2 — batched `delta_cost` *(1–2 days, NEXT)***
+- **`59a7a8b`** *phase 1 — single-candidate `delta_cost`* (1.95× per probe).
+  `IncrementalProxyEvaluator.delta_cost(macro_idx, new_xy)` returns
+  the cost dict `move + current_cost + revert` would yield, without
+  mutating state. Wired into `cd_core.search_axis`.
+- **`53b4a26`** *phase 2 — batched `delta_cost_axis_batch`* (2.32× more,
+  4.32× combined). Amortizes "subtract old" precompute once across K
+  candidates; uses `index_put_(accumulate=True)` for [K, num_cells]
+  scatter-adds; runs density + congestion cost as batched torch ops
+  via `_density_cost_of_batched` / `_congestion_cost_of_batched` /
+  `_smooth_batched`.
+- **`af520c3`** *flat routing variant* (1.18× more, 5.36× combined).
+  `_net_cong_contrib_flat(net_idx)` returns flat
+  `(h_cells, h_vals, v_cells, v_vals)` lists instead of a dict.
+  Vectorizes pin → gcell computation. Inlines 2-pin and multi-pin
+  routing topology (the common cases). Duplicates tolerated downstream.
 
-- `search_axis` evaluates K ≈ 12 candidates per macro × axis. Phase 1
-  speeds up each probe individually; phase 2 amortizes global work
-  across K candidates.
-- Plan: `batch_delta_cost(macro_idx, axis, K candidates) → [K] proxy`
-  - For affected nets: build a `[K, num_pins_per_net]` tensor of
-    hypothetical pin positions, compute bbox + hpwl in one batched op.
-  - For density: `[K, num_cells]` hypothetical `grid_occupied`,
-    single batched `torch.topk` instead of K serial ones.
-  - For congestion: hardest — `_net_cong_contrib` does topology-aware
-    routing in Python; need to batch the route accumulation across K.
-- Expected speedup over phase 1: another 3–5× (batches the global cost
-  ops that dominate phase 1's 1.4 ms/probe — congestion smoothing +
-  topk are O(num_cells log num_cells) and serial across candidates).
-- Combined with phase 1: ~6–10× over move+revert.
+**Further A1 micro-optimizations stopped here** — the remaining
+bottleneck is Python overhead inside `_net_cong_contrib_flat` (~10 µs
+per call across 57 k calls per 200 axis-searches; cProfile-confirmed).
+The remaining ~2× to hit the original "10×" target would need Numba/Cython
+(adds a build/runtime dependency to the submission) or a structural GPU
+port (A3 — multi-day refactor). Not worth it now — better-EV work waits
+on PATH C.
+
+### A2 / A3 — deferred (diminishing returns post-A1)
+
+After A1, `move()` is called once per *accepted* candidate (1× per
+macro per CD sweep) instead of K+1 times. Its absolute share of CD wall
+dropped from 96 % to <20 %. Cython/Numba porting `move()` (A2) or
+GPU-batching the routing (A3) would yield further speedup but the
+remaining absolute time is small. **Both deferred** pending PATH C
+results.
 
 ### A2. Cython/Numba port of `move()`  *(2–3 days)*
 - Current: ~100 lines of Python dict updates over `affected_nets`,
