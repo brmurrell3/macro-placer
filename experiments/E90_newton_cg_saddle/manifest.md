@@ -66,8 +66,46 @@ If both pass, the next step is a wall-safe integration: replace E84's
 single-direction inner loop with multi-direction (capped attempt count
 under the per-bench time budget).
 
-## Outcome (filled when decided)
-[Empty until decided.]
+## Outcome (in progress; spike PASSED 2026-05-12)
+
+### Spike on cached cascade ibm01 (canon 0.84528, 0 ovl)
+
+K=3 eigvecs at the plateau: `λ = [-0.124, -0.088, -0.081]` (3 negative
+directions, consistent with PATH A's k=4 diagnostic on this bench).
+
+Probe 1 (rank≥2 sign vectors × eps ∈ {0.5, 2.0}, 20 attempts at 45 s polish):
+
+| Rank | Best sv | Best eps | Polished | Δ vs input |
+|------|---------|----------|----------|------------|
+| 2 | (1,1,0) | 2.0 | **0.84231** | **−0.352 %** |
+| 2 | (1,−1,0) | 0.5 | 0.84322 | −0.244 % |
+| 3 | (1,1,1) | 2.0 | 0.84347 | −0.214 % |
+
+16 / 20 attempts found lifts; 4 regressed (3 of the 4 regressions were
+rank-3 with eps=0.5, suggesting rank-3 needs larger eps).
+
+**Striking finding: same-sign-vec, different eps → completely different
+basins.** sv=(1,1,0): eps=0.5 → 0.84578 (worst result in the sweep),
+eps=2.0 → 0.84231 (best). The eps × sign-vec interaction is strong;
+cloud validation MUST sweep multiple eps.
+
+### Decision
+**Spike PASS.** Multi-direction saddle escape lifts the cascade plateau
+where E84's iterated single-direction has saturated. Promote to cloud
+`--fast` validation (4 IBM): if aggregate lift ≥ 0.3 %, run `--all`
+17 IBM; if `--all` also ≥ 0.3 %, NG45 gate, then graduate as
+`submissions/cd_lns_sa_cascade_multidir/` with E84's pipeline + this
+multi-direction inner loop.
+
+### Reusable
+- `code/multi_saddle.py` — `multi_saddle_escape` with sign-vec
+  enumeration. Read-only consumer of E74 (`SmoothProxy`,
+  `find_softest_eigenvectors`) — no edits.
+- `code/cloud_validate.py` — per-bench validation driver, single-job,
+  configurable eps + polish budget.
+- Key empirical fact: at the cascade plateau, **same-sign rank-2
+  combinations** (e.g. (1,1,0)) reach basins single-direction misses.
+  This is the multi-direction contribution.
 
 ## Pointers
 - Code: `code/multi_saddle.py`, `code/spike_ibm01.py`
