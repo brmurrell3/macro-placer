@@ -88,9 +88,9 @@ def _cost_aware_destroy(
     scores: List[tuple] = []
     for idx in hard_movable:
         try:
-            evaluator.move(idx, (cw, ch))
-            p = evaluator.current_cost()["proxy"]
-            evaluator.revert()
+            # Pure probe — no state change needed. delta_cost peeks at
+            # the cost without mutating, ~2x faster than (move, cost, revert).
+            p = evaluator.delta_cost(idx, (cw, ch))["proxy"]
             scores.append((idx, p - baseline_p))
         except Exception:
             scores.append((idx, 0.0))
@@ -165,9 +165,8 @@ def _gridbin_reinsert(
                 macro_idx, cx, cy, evaluator.placement, macro_sizes_np, n_hard
             ):
                 continue
-            evaluator.move(macro_idx, (cx, cy))
-            cost = evaluator.current_cost()["proxy"]
-            evaluator.revert()
+            # Pure probe — delta_cost peeks without mutation.
+            cost = evaluator.delta_cost(macro_idx, (cx, cy))["proxy"]
             if cost < best_cost - 1e-9:
                 best_cost = cost
                 best_xy = (cx, cy)
