@@ -23,11 +23,39 @@ Python** (`IncrementalProxyEvaluator.move()` + `revert()`, confirmed by
 cProfile on ibm04: 32 s of 33 s). A 10–30× CD speedup unlocks the
 cached-quality basin under the 60-min cap.
 
-### A1. Eliminate `revert()` via pure delta function  *(1–2 days)*
-- `search_axis` currently: `move() → cost → revert()` per candidate (96 % of CD).
-- Replace with: `batch_delta_cost(macro_idx, K candidates, current_state) → [K] proxy deltas`.
-- Commit only the argmin candidate; no state mutation during probing.
-- Expected speedup: ~10× on CD inner loop.
+### A1. Eliminate `revert()` via pure delta function
+
+**A1 phase 1 — single-candidate `delta_cost` — LANDED 2026-05-12** (commit `59a7a8b`).
+
+- `IncrementalProxyEvaluator.delta_cost(macro_idx, new_xy)` returns
+  the cost dict that `move + current_cost + revert` would yield,
+  without mutating state. Wired into `cd_core.search_axis`.
+- **Measured speedup: 1.95× per probe on ibm01** (1423 µs vs 2773 µs).
+  Skips the snapshot dict copies (largest term in move-overhead) and
+  the entire revert pass.
+- Parity perfect: 100/100 probes within 1e-9, max err 2.22e-16
+  (machine epsilon).
+- State preservation: 50 probes leave every mutable field bit-identical.
+- End-to-end smoke on ibm01 (180 s budget): proxy 0.88344 vs pre-A1
+  baseline 0.89195 (**−0.85 %** at same wall — speedup converts to
+  deeper CD basins).
+
+**A1 phase 2 — batched `delta_cost` *(1–2 days, NEXT)***
+
+- `search_axis` evaluates K ≈ 12 candidates per macro × axis. Phase 1
+  speeds up each probe individually; phase 2 amortizes global work
+  across K candidates.
+- Plan: `batch_delta_cost(macro_idx, axis, K candidates) → [K] proxy`
+  - For affected nets: build a `[K, num_pins_per_net]` tensor of
+    hypothetical pin positions, compute bbox + hpwl in one batched op.
+  - For density: `[K, num_cells]` hypothetical `grid_occupied`,
+    single batched `torch.topk` instead of K serial ones.
+  - For congestion: hardest — `_net_cong_contrib` does topology-aware
+    routing in Python; need to batch the route accumulation across K.
+- Expected speedup over phase 1: another 3–5× (batches the global cost
+  ops that dominate phase 1's 1.4 ms/probe — congestion smoothing +
+  topk are O(num_cells log num_cells) and serial across candidates).
+- Combined with phase 1: ~6–10× over move+revert.
 
 ### A2. Cython/Numba port of `move()`  *(2–3 days)*
 - Current: ~100 lines of Python dict updates over `affected_nets`,
