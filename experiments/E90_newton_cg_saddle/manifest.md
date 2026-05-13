@@ -1,12 +1,12 @@
 ---
 id: E90
 name: multi_direction_saddle
-status: in_progress
+status: marginal
 parent: E74
 created: 2026-05-12
-decided: null
+decided: 2026-05-12
 champion_at_time: 1.0612          # canonical cascade --all uncapped
-outcome: null
+outcome: "Cloud --fast aggregate +0.054% (3 benches single-pass); local ibm01 cascade_multidir 3-iter -0.614% (best-case). CD-polish variance is the dominant factor — same code path gives -0.352% one run, 0.000% another. Below 0.3% promote gate. Research result, not submission promotion. PATH B is the better candidate."
 champion_delta: null
 graduated_to: null
 superseded_by: null
@@ -121,22 +121,66 @@ Why are cloud lifts smaller?
    process CPU at 133 % saturation).
 
 ### Decision
-**Working algorithm, gated on cloud iteration test.** Local ibm01
-shows cascade_multidir 3-iter compounds (−0.614 % cumulative). Cloud
-single-pass on wall-bound cached cascade outputs is modest
-(+0.01-0.09 % per bench), but those benches' cascade was wall-truncated
-not converged, so single-pass underestimates.
+**Research result, NOT submission-grade.** Per user direction, not
+promoting to champion. PATH B's DP-hybrid is the bigger-lift candidate.
 
-**Cloud cascade_multidir on ibm03 (3-iter)** launched 2026-05-12 evening
-as head-to-head test vs single-pass result (+0.013 %). If iteration
-compounds to ≥ 0.1 % on a wall-bound bench, supports cascade_multidir
-as a real submission-grade improvement. If iteration is also marginal,
-C3 value is limited to fully-converged plateaus.
+### Cloud single-pass --fast complete (2026-05-12 evening)
 
-**Per user direction, NOT promoting to champion yet** regardless of
-result. PATH B's DP-hybrid is the bigger-lift candidate
-(`submissions/cd_lns_sa_cascade_dp_lane/`, hard-bench aggregate
-−6.9 %).
+| Bench | Init | Best | Lift |
+|-------|-----:|-----:|-----:|
+| ibm01 | 0.84528 | 0.84231 | **+0.352 %** (local) |
+| ibm03 | 0.94634 | 0.94622 | +0.013 % |
+| ibm06 | 1.11792 | 1.11738 | +0.048 % |
+| ibm07 | 1.06449 | 1.06345 | +0.098 % |
+| --fast avg cloud-only (3 benches) | | | **+0.054 %** |
+| --fast avg mixed (4 with local ibm01) | | | +0.127 % |
+
+Below the 0.3 % promote gate. Positive but modest.
+
+### Cloud cascade_multidir iter test on ibm03
+
+Single-iter result: 0.94634 → 0.94634 = **+0.000 %**. Bailed at iter 1
+because the 20 attempts didn't trigger a NEW BEST (each polish stochastic;
+this run's attempts happened to all land above the init proxy by small
+margins).
+
+**Diagnosis: CD-polish variance is the dominant factor.** Local single-pass
+spike on ibm01 got +0.352 % vs iterated +0.614 % (1.75× compounding) —
+but those were *the same code path*. The variance across CD-polish
+trajectories explains:
+
+1. Local iter 1 on ibm01 found only +0.228 % (single-pass spike got
+   +0.352 %; iter 1 redo got less).
+2. Cloud ibm03 iter 1 found +0.000 % vs cloud single-pass ibm03's
+   +0.013 % run earlier.
+
+For the submission, cascade_multidir's mean-case behavior on cloud
+benches is around the single-pass aggregate (~0.05-0.10 %). The local
+ibm01 −0.614 % is a high-water mark, not a typical case.
+
+### What's reusable from C3
+
+- **`code/multi_saddle.py`** — clean single-pass multi-direction sweep.
+  Reusable for any state where the smooth-proxy Hessian has multiple
+  negative eigvecs and we want to test sign-permuted combinations.
+- **`code/cascade_multidir.py`** — iterated variant. Useful if combined
+  with deterministic polish (e.g., L-BFGS or noise-suppressed CD) or
+  multi-restart polish that reduces variance.
+- **`code/cloud_validate.py`, `cloud_cascade_multidir.py`** — drivers.
+- **`submissions/cd_lns_sa_cascade_multidir/placer.py`** — wrapper. Kept
+  as code; not promoted.
+
+### Open questions for future work
+
+1. **Reduce CD-polish variance** to make multi-direction lifts
+   reproducible. Options: multi-restart per attempt, deterministic
+   polish, larger polish budgets.
+2. **Compose with PATH B**: apply cascade_multidir on PATH B's hybrid
+   output. PATH B reaches different basins (DP-init); their Hessian
+   structure may have unexplored soft modes.
+3. **Larger K**: tested K=3 only. Higher K may find better combinations
+   when the leading eigvals are near-degenerate (ibm03's λ_1, λ_2 were
+   both ~−0.18).
 
 ### Reusable
 - `code/multi_saddle.py` — single-pass multi-direction sweep (passes
