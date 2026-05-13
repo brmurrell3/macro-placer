@@ -2,6 +2,28 @@
 
 <img src="assets/HRT.png" alt="Hudson River Trading" height="80"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img src="assets/partcl.png" alt="Partcl" height="80">
 
+## Submission entry (for judges)
+
+**Placer file:** [`submissions/cd_lns_sa_cascade/placer_adaptive.py`](submissions/cd_lns_sa_cascade/placer_adaptive.py) — `CDLNSSACascadeAdaptivePlacer`
+
+**Run command:**
+
+```bash
+git submodule update --init external/MacroPlacement
+uv sync
+export OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8 MKL_NUM_THREADS=8
+uv run evaluate submissions/cd_lns_sa_cascade/placer_adaptive.py --all --json
+uv run evaluate submissions/cd_lns_sa_cascade/placer_adaptive.py --ng45 --json
+```
+
+**Algorithm description:** [`submissions/cd_lns_sa_cascade/MECHANISM.md`](submissions/cd_lns_sa_cascade/MECHANISM.md)
+
+Default `budget_seconds=3000` (50 min/bench, safe under the 60-min cap on EPYC).
+Single global algorithm; no per-benchmark hyperparameters; no benchmark-identity
+dispatch (only canvas-area property dispatch, see MECHANISM.md).
+
+---
+
 **Win $20,000 by developing better macro placement algorithms!**
 
 Partcl and Hudson River Trading are excited to co-host a competition to solve the macro placement problem. 
