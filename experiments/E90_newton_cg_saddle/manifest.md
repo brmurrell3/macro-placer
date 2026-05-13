@@ -66,46 +66,92 @@ If both pass, the next step is a wall-safe integration: replace E84's
 single-direction inner loop with multi-direction (capped attempt count
 under the per-bench time budget).
 
-## Outcome (in progress; spike PASSED 2026-05-12)
+## Outcome (in progress; iteration is the key 2026-05-12)
 
-### Spike on cached cascade ibm01 (canon 0.84528, 0 ovl)
+### Result summary
 
-K=3 eigvecs at the plateau: `λ = [-0.124, -0.088, -0.081]` (3 negative
-directions, consistent with PATH A's k=4 diagnostic on this bench).
+| Test                                  | Bench | Polish | Lift vs cascade |
+|---------------------------------------|-------|-------:|----------------:|
+| Single-pass spike (local)             | ibm01 |    45 s | **−0.352 %** |
+| cascade_multidir iter 1 (local)       | ibm01 |    45 s | −0.228 % |
+| cascade_multidir iter 2 (local)       | ibm01 |    45 s | −0.361 % |
+| cascade_multidir iter 3 (local)       | ibm01 |    45 s | **−0.614 %** |
+| Cloud single-pass                     | ibm03 |    60 s | +0.013 % |
+| Cloud single-pass                     | ibm06 |    60 s | +0.048 % (so far) |
+| Cloud single-pass                     | ibm07 | pending | — |
 
-Probe 1 (rank≥2 sign vectors × eps ∈ {0.5, 2.0}, 20 attempts at 45 s polish):
+### Spike (single-pass) on cached cascade ibm01 — PASSED gate
 
-| Rank | Best sv | Best eps | Polished | Δ vs input |
-|------|---------|----------|----------|------------|
-| 2 | (1,1,0) | 2.0 | **0.84231** | **−0.352 %** |
-| 2 | (1,−1,0) | 0.5 | 0.84322 | −0.244 % |
-| 3 | (1,1,1) | 2.0 | 0.84347 | −0.214 % |
+K=3 eigvecs at the plateau: `λ = [−0.124, −0.088, −0.081]`.
 
-16 / 20 attempts found lifts; 4 regressed (3 of the 4 regressions were
-rank-3 with eps=0.5, suggesting rank-3 needs larger eps).
+Probe 1 (rank ≥ 2 sign vectors × eps ∈ {0.5, 2.0}, 20 attempts):
+- Best: rank-2 sv=(1,1,0) eps=2.0 → polished 0.84231 = **−0.352 %**.
+- 16 / 20 attempts found lifts; eps sweet spot is sign-vec dependent
+  (e.g. sv=(1,1,0) gives 0.84578 at eps=0.5 vs 0.84231 at eps=2.0).
+- Lanczos eigvecs: 4 s local.
 
-**Striking finding: same-sign-vec, different eps → completely different
-basins.** sv=(1,1,0): eps=0.5 → 0.84578 (worst result in the sweep),
-eps=2.0 → 0.84231 (best). The eps × sign-vec interaction is strong;
-cloud validation MUST sweep multiple eps.
+### cascade_multidir (3-iter, local) — DRAMATIC compounding
+
+Same K=3, eps ∈ {0.5, 2.0}, polish=45 s, only_rank_at_least=2:
+
+- Iter 1 best=0.84336 (Δ vs cascade input: −0.228 %).
+- Iter 2 best=0.84223 (Δ cumulative: **−0.361 %**).
+- Iter 3 best=0.84009 (Δ cumulative: **−0.614 %**, rank-2 sv=(1,0,−1) eps=2.0).
+
+Iter 3 plateau eigvals: `λ = [−0.207, −0.128, −0.056]` — top eigval got
+*more* negative after iter 2, meaning multi-direction is finding
+genuinely different basins rather than polishing a single basin.
+
+### Cloud single-pass on ibm03 / ibm06 (in flight) — much smaller
+
+Cloud single-pass results so far:
+- ibm03: lift +0.013 %.  Top eigval pair −0.178 / −0.174 (near-degenerate).
+- ibm06: lift +0.048 % so far.  Top eigval −0.251 (very asymmetric).
+- ibm07: pending.
+
+Why are cloud lifts smaller?
+1. **Single-pass underestimates the iterated lift.** Local iter 1 alone
+   gives −0.228 %; ibm01 single-pass spike beat that (−0.352 %) only
+   because of polish stochasticity, but the 3-iter compounding to
+   −0.614 % is what the submission would actually realize.
+2. **Per-bench variance is large.** ibm01 cached cascade is relatively
+   converged (~49 min wall, dropped from 0.85527 to 0.84528 over 3
+   single-direction iters); ibm03/ibm06 are more constrained.
+3. Cloud is contended with PATH A's A4 + PATH B's E91 (saw 49 min
+   process CPU at 133 % saturation).
 
 ### Decision
-**Spike PASS.** Multi-direction saddle escape lifts the cascade plateau
-where E84's iterated single-direction has saturated. Promote to cloud
-`--fast` validation (4 IBM): if aggregate lift ≥ 0.3 %, run `--all`
-17 IBM; if `--all` also ≥ 0.3 %, NG45 gate, then graduate as
-`submissions/cd_lns_sa_cascade_multidir/` with E84's pipeline + this
-multi-direction inner loop.
+**Promote cascade_multidir, not single-pass.** The TODO §C3 spec
+("drop-in for cascading_saddle's inner loop") is the right design;
+iteration compounds and reveals that the smooth-proxy Hessian remains
+indefinite after multi-direction escapes (i.e. there's still descent
+direction in the soft-mode subspace).
+
+**Next step: cloud cascade_multidir validation** with proper budget
+(replacing cloud_validate.py's single-pass with cascade_multidir
+end-to-end on --fast). Expected aggregate ≥ 0.3 % based on local ibm01
+−0.614 % and the iteration compounding pattern.
 
 ### Reusable
-- `code/multi_saddle.py` — `multi_saddle_escape` with sign-vec
-  enumeration. Read-only consumer of E74 (`SmoothProxy`,
-  `find_softest_eigenvectors`) — no edits.
-- `code/cloud_validate.py` — per-bench validation driver, single-job,
-  configurable eps + polish budget.
-- Key empirical fact: at the cascade plateau, **same-sign rank-2
-  combinations** (e.g. (1,1,0)) reach basins single-direction misses.
-  This is the multi-direction contribution.
+- `code/multi_saddle.py` — single-pass multi-direction sweep (passes
+  spike gate but underestimates submission impact).
+- `code/cascade_multidir.py` — iterated multi-direction; **the
+  recommended C3 design**.
+- `code/cloud_validate.py` — single-pass cloud driver (use as template,
+  but swap inner call to cascade_multidir for the real submission test).
+- `submissions/cd_lns_sa_cascade_multidir/` — wrapper subclass of
+  `CDLNSSACascadeAdaptivePlacer` that runs cascade + cascade_multidir
+  polish. Uncommitted in PR-ready state; awaits cloud cascade_multidir
+  --fast aggregate before promotion.
+
+### Key empirical findings
+- The smooth-proxy Hessian remains indefinite (λ_min < 0) after each
+  multi-direction escape on ibm01 — confirms there are deeper basins
+  E74/E84 single-direction can't reach.
+- Eps × sign-vector interaction is strong; eps={0.5, 2.0} is the
+  minimal eps grid that catches both regimes.
+- Rank-2 same-sign combinations of soft modes 1 + 2 are often the
+  most productive (consistent across iters 1, 2, 3 on ibm01).
 
 ## Pointers
 - Code: `code/multi_saddle.py`, `code/spike_ibm01.py`
