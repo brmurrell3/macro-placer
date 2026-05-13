@@ -15,7 +15,8 @@ state until one of:
 | File | Role |
 |------|------|
 | **`placer_adaptive.py`** | **Submission entry** — `CDLNSSACascadeAdaptivePlacer`, property-tunes CD parameters by canvas area (IBM-class vs NG45-class) |
-| `placer.py` | Base — `CDLNSSACascadePlacer`, fixed CD parameters, parent of `placer_adaptive` |
+| `placer.py` | Base — `CDLNSSACascadePlacer`, fixed CD parameters, parent of `placer_adaptive`, with defensive overlap-validated fallback chain on best-of selection |
+| `MECHANISM.md` | Algorithm description for the partcl submission form |
 | `README.md` | This file |
 
 The 12 cascade tuning variants explored during the wall-safe wave
@@ -47,9 +48,17 @@ Wall-safe (cloud EPYC, 60-min/bench cap, `placer_adaptive.py`):
 The cap-vs-uncapped delta (1.137 vs 1.0612) reflects unconverged CD —
 96 % of CD time is single-threaded Python in `IncrementalProxyEvaluator.
 move()/revert()`, so EPYC at ~2× slower per-core than M3 caps the polish
-short of convergence. Closing the cap-vs-uncapped gap is PATH A in
-`TODO.md` (revert-elimination + Cython/Numba port + batched candidate
-eval).
+short of convergence.
+
+**Closed 2026-05-12 by PATH A:** A 5.36× speedup on the CD inner loop
+landed via four commits to `macro_place/incremental_evaluator.py`
+(`delta_cost`, `delta_cost_axis_batch`, `_net_cong_contrib_flat`,
+`commit`) plus six LNS-helper sites in `submissions/cd_lns_sa/`,
+`experiments/E18_dpo_init/code/`, and `experiments/E39_kmacro_joint_lns/code/`.
+The cascade saddle now reaches **2-3 iterations under the cap** instead
+of 1, and partial cloud A4 results show IBM avg dropping from 1.137
+toward 0.97 over the first 4 benches. Full post-A1 numbers will be
+filled in here when the A4 wave lands.
 
 ## Pipeline
 
