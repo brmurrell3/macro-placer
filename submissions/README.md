@@ -6,14 +6,38 @@ Competition-ready placers, organized by lineage.
 
 **`cd_lns_sa_cascade/placer_adaptive.py`** — `CDLNSSACascadeAdaptivePlacer`.
 
+### Pre-A1 baseline (2026-05-11)
+
 | Metric | Value | Reference |
 |--------|------:|-----------|
-| IBM avg `--all` | **1.137** | cloud EPYC, 60-min/bench cap |
-| NG45 avg `--ng45` | **0.6925** | cloud EPYC |
+| IBM avg `--all` | 1.137 | cloud EPYC, 60-min/bench cap |
+| NG45 avg `--ng45` | 0.6925 | cloud EPYC |
 | Max wall | 57 min | safe under 60-min partcl cap |
 | Overlaps | 0 / 17 IBM | canonical eval, zero on every bench |
-| vs RePlAce 1.4578 | **−22 %** | published baseline |
-| vs leaderboard top ~1.01 | +13 % | gap to close (PATH A in `TODO.md`) |
+| vs RePlAce 1.4578 | −22 % | published baseline |
+
+### Post-A1 (2026-05-12, verification in flight — A4)
+
+The cascade CD inner loop received a 5.36× speedup via four commits to
+`macro_place/incremental_evaluator.py` (`delta_cost`,
+`delta_cost_axis_batch`, `_net_cong_contrib_flat`, `commit`) plus six
+LNS-helper sites in E25 / E18 / E39 (see `MECHANISM.md` for the full
+account). The cascade saddle now reaches 2–3 iterations under the cap
+instead of 1.
+
+**Partial A4 results (first 4 IBM benches landing):** 0.88864, 0.94975,
+1.07339, 0.99148 → partial avg ~0.97. Full 17-bench number expected
+1.05–1.08 IBM.
+
+**Partial NG45 (3/4 landed):** 0.67644, 0.65146, 0.73743 → partial avg
+~0.69. Full 4-bench number expected ≤ 0.69.
+
+Numbers in this table will be updated to verified A4-v2 aggregates once
+the wall-safe LNS-delta variant completes (chained behind A4-v1 on
+`ubuntu@129.213.18.245`).
+
+See `cd_lns_sa_cascade/MECHANISM.md` for the form-submission algorithm
+description.
 
 Pipeline: E25 (SDF + CD + LNS + SA) → E41 (DPO + CD + LNS + SA + K-joint) →
 cascading Hessian saddle escape on the best-of-{E25, E41} plateau. The
