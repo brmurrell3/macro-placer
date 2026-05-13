@@ -121,16 +121,22 @@ Why are cloud lifts smaller?
    process CPU at 133 % saturation).
 
 ### Decision
-**Promote cascade_multidir, not single-pass.** The TODO §C3 spec
-("drop-in for cascading_saddle's inner loop") is the right design;
-iteration compounds and reveals that the smooth-proxy Hessian remains
-indefinite after multi-direction escapes (i.e. there's still descent
-direction in the soft-mode subspace).
+**Working algorithm, gated on cloud iteration test.** Local ibm01
+shows cascade_multidir 3-iter compounds (−0.614 % cumulative). Cloud
+single-pass on wall-bound cached cascade outputs is modest
+(+0.01-0.09 % per bench), but those benches' cascade was wall-truncated
+not converged, so single-pass underestimates.
 
-**Next step: cloud cascade_multidir validation** with proper budget
-(replacing cloud_validate.py's single-pass with cascade_multidir
-end-to-end on --fast). Expected aggregate ≥ 0.3 % based on local ibm01
-−0.614 % and the iteration compounding pattern.
+**Cloud cascade_multidir on ibm03 (3-iter)** launched 2026-05-12 evening
+as head-to-head test vs single-pass result (+0.013 %). If iteration
+compounds to ≥ 0.1 % on a wall-bound bench, supports cascade_multidir
+as a real submission-grade improvement. If iteration is also marginal,
+C3 value is limited to fully-converged plateaus.
+
+**Per user direction, NOT promoting to champion yet** regardless of
+result. PATH B's DP-hybrid is the bigger-lift candidate
+(`submissions/cd_lns_sa_cascade_dp_lane/`, hard-bench aggregate
+−6.9 %).
 
 ### Reusable
 - `code/multi_saddle.py` — single-pass multi-direction sweep (passes
