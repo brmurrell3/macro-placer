@@ -163,19 +163,35 @@ class CDLNSSACascadePlacer:
             except Exception as exc:
                 log(f"  cascade failed: {exc}; falling back to plateau")
 
-        # 4. Best of all.
+        # 4. Best of all (overlap-validated fallback chain).
+        # All three phases independently guarantee zero overlaps internally,
+        # but defend against the edge case where cascade returns a state
+        # whose overlap-count slipped past its internal validation (e.g.
+        # float-precision wedge after legalization). If the lowest-proxy
+        # candidate has overlaps, walk the sorted list until we find a
+        # zero-overlap one. E25 is always present and always overlap-free,
+        # so the chain is bounded.
         candidates = [(e25_proxy, e25, "E25"), (cascade_proxy, cascade_state, "cascade")]
         if e41 is not None:
             candidates.append((e41_proxy, e41, "E41"))
         candidates.sort(key=lambda c: c[0])
         best_proxy, best_placement, best_name = candidates[0]
+
+        chosen = None
+        for proxy_i, placement_i, name_i in candidates:
+            ovl_i = compute_overlap_metrics(placement_i, benchmark)["overlap_count"]
+            if ovl_i == 0:
+                chosen = (proxy_i, placement_i, name_i)
+                break
+            log(f"  WARNING: {name_i} has {ovl_i} overlaps; falling through")
+        if chosen is None:
+            raise RuntimeError(
+                "Cascade pipeline returned no overlap-free candidate "
+                "(all of E25 / E41 / cascade have hard-macro overlaps)"
+            )
+        best_proxy, best_placement, best_name = chosen
+
         log(f"  WINNER: {best_name} proxy={best_proxy:.5f} "
             f"({', '.join(f'{n}={p:.5f}' for p, _, n in candidates)})  "
             f"total wall={time.time() - t0:.0f}s")
-
-        ovl = compute_overlap_metrics(best_placement, benchmark)["overlap_count"]
-        if ovl > 0:
-            raise RuntimeError(
-                f"Cascade winner has {ovl} hard-macro overlaps"
-            )
         return best_placement
