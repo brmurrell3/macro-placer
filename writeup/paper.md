@@ -1299,46 +1299,90 @@ discrete optimal transport / Laguerre tessellations.
 
 ---
 
-## Master TODO list (rolled up from inline `TODO(...)` markers)
+## Master TODO list (rolled up from inline `TODO(...)` markers, current 2026-05-13)
 
-### Data (load-bearing)
-- [ ] **NG45 transfer datapoint** (≥ 1 public design: ariane133 / ariane136 /
-      mempool_tile / nvdla). The Tier-1 generalization claim hinges on this.
-      The 1–2 truly hidden NG45 designs remain opaque, but any *public* NG45
-      result backs "transfers without per-bench tuning."
-- [ ] **CDAdaptive multi-seed variance** (3–5 seeds on `--all`).
-- [ ] **Generalize Miftari ρ=−0.001** from ibm01 to ibm04/09/13.
-- [ ] **Plateau-threshold sensitivity** sweep (0.001 / 0.002 / 0.005 / 0.01).
-      E16 is one datapoint; need 2 more.
-- [ ] **Frozen `data/rudy_ibm01.txt`** captured from `rudy_analysis.py`.
-- [ ] **Per-sweep convergence trajectories** for 3–4 benchmarks
-      (easy/medium/hard).
+### Data — load-bearing (closed)
 
-### Data (optional / contingent)
-- [x] **E12 grid-bin LNS final result — DONE 2026-04-28.** Avg `--all`
-      1.0990, zero overlaps. Promoted to champion (ADR-007). Integrated
-      into §8 as the final refinement and §9.1 lineage table.
+- [x] **NG45 transfer datapoint.** A4-v2 ran cascade-adaptive `--ng45`
+      on cloud EPYC: avg 0.6870 across ariane133 / ariane136 /
+      mempool_tile / nvdla, zero overlaps. Per-design results
+      sourced from `results/CDLNSSACascadeAdaptivePlacer_20260513_091359.json`.
+      The 1–2 truly hidden NG45 designs remain opaque per the
+      competition rules; the four public designs confirm transfer.
+- [x] **Hessian-saddle ariane133 lift.** E74 0.6641 vs E48 0.6861
+      (−3.21 %). Breaks the IBM/NG45 transfer-failure pattern (see
+      §8.9.4). Sourced from
+      `experiments/E74_hessian_saddle/results/hessian_ariane133.pt`.
+- [x] **Cap-vs-ceiling closure (PATH A).** A4-v1 / A4-v2 on cloud
+      verify 1.077–1.078 IBM under 60-min cap, vs 1.0612 M3 cached
+      ceiling. Gap is 1.5 % residual per-core speed differential.
+      §8.11 documented.
+- [x] **Macro clearance diagnostic for Tier 2 ORFS push.** All 4
+      NG45 designs: max push 6.00 μm everywhere; canvas displacement
+      < 0.4 %. See `analysis/macro_clearance_diagnostic/findings.md`.
 
-### Figures (all unbuilt)
-- [ ] §2: 3-macro polyhedra schematic + LP dual interpretation.
-- [ ] §4: LP-HPWL vs proxy scatter; congestion vs proxy scatter; overnight
-      sweep bar chart.
-- [ ] §5: DPO ablation bar chart.
-- [ ] §7: RUDY vs real congestion heatmap (ibm01); per-cell ratio
-      distribution.
-- [ ] §8: CD convergence curve; CDAdaptive per-benchmark wall-time chart.
-- [ ] §9: Champion lineage bar chart.
+### Data — load-bearing (open)
 
-### Prose (none drafted)
-- [ ] Sections 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 — full prose.
-- [ ] Abstract.
-- [ ] References list, formatted with DOIs.
-- [ ] Title finalize.
+- [ ] **λ-spectrum capture** for the ibm01 E48 plateau: top-8
+      smallest-algebraic eigenvalues of the smooth-proxy Hessian.
+      Source script: `experiments/E74_hessian_saddle/code/hessian_saddle.py`
+      with `k=8`. Freeze as `writeup/data/lambda_spectrum_ibm01.txt`.
+      Feeds the §8.9.2 high-index-saddle claim and Figure-1.
+- [ ] **Cascade lift-per-iteration trace** for 3 benchmarks (one easy:
+      ibm01; one medium: ibm10; one hard: ibm17). Source: the cascade
+      log's `iter N: NEW BEST` lines. Justifies cascading vs
+      single-shot in §8.10.
+- [ ] **Per-bench A4-v2 champion table** for §9.2. Should pair each
+      IBM bench's A4-v2 result against the E48 / E74 / E84 cached
+      result and the RePlAce baseline. Source: A4-v2 result JSON +
+      `docs/results.md`.
+
+### Figures — unbuilt
+
+- [ ] **Figure 1 (motivation):** λ-spectrum bar chart for ibm01 E48
+      plateau showing top-8 eigenvalues, the negative ones colored.
+      Caption: "The plateau every local-move heuristic terminates at
+      is a high-index saddle of the smooth proxy."
+- [ ] **Figure 2 (mechanism):** schematic of the saddle escape step
+      — current plateau, eigenvector arrow, ε-step, polish path, new
+      basin. Hand-drawn-style is fine.
+- [ ] **Figure 3 (cascade lift):** lift-per-iteration line chart for
+      3 representative benchmarks. Shows diminishing returns and the
+      stop-condition firing.
+- [ ] **Figure 4 (champion lineage):** RePlAce → CD → E48 → E74 →
+      E84 → A4-v2 bar chart. Shows the three-era arc visually.
+- [ ] **Figure 5 (per-bench bar chart):** E48 / E74 / A4-v2 stacked
+      bars over the 17 IBM benches. Shows the uniform-improvement
+      claim from §8.9.4.
+- [ ] **Figure 6 (macro clearance, optional):** clearance histogram
+      from `analysis/macro_clearance_diagnostic/` for the 4 NG45
+      designs. Justifies the "submit as-is" Tier 2 decision.
+
+### Prose — drafting status
+
+- [ ] **Abstract.** Currently TODO bullets covering the three-act
+      structure; needs ~250 words of prose.
+- [ ] **§§1–8.8 prose.** Sections 1–8.8 still have `TODO(prose)`
+      placeholders. The narrative arc from STORY.md drives this pass.
+- [x] **§8.9 Hessian Saddle Escape.** Drafted 2026-05-13 (commit
+      `57f5acf`). Publication-ready high-level prose.
+- [ ] **§8.10 Cascading.** Scaffold; ~1 page of prose needed.
+- [ ] **§8.11 PATH A speedup.** Scaffold; ~1 page of prose needed.
+- [ ] **§9 Results.** Lineage table is updated through A4-v2; per-bench
+      tables and prose still TODO.
+- [ ] **§10 Discussion.** Scaffold; needs prose on the three-act recap,
+      "bypass don't fix" recurring pattern, transferability of the
+      saddle insight, limitations, future work.
+- [x] **§11 References.** Organized by topic and updated 2026-05-13
+      (commit `f49d577`). DOIs added for transition-state methods.
 
 ### Final pass
-- [ ] Length/density check vs 12–14-page target.
-- [ ] Math notation consistency.
+
+- [ ] Length/density check vs 14–18-page target (the post-A1 arc
+      adds ~3 pages vs the original 12–14 plan).
+- [ ] Math notation consistency (Hessian, eigenvector, ε, gradient).
 - [ ] Cold-read by someone unfamiliar with the project.
+- [ ] Final reference-list cleanup: drop pointers we don't cite.
 
 ---
 
