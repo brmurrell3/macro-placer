@@ -1207,25 +1207,78 @@ heuristics are the empirical safe combination.
 
 ## 11. References (~1 page)
 
-**Sketch list (build out from `outline.md` references):**
-- Balas (1979) — disjunctive programming.
-- Kronqvist et al. (2025) — P-split formulation.
-- Naylor (2001) — LSE-HPWL.
-- Lin et al. (2019) — DREAMPlace.
-- Lu et al. (2020) — congestion-aware DREAMPlace.
-- C3PO / NV-Place (ASP-DAC 2026) — differentiable RUDY for standard-cell.
-- DREAMPlace-Cong (DATE 2021); DCGP (DAC 2025); DGR (DAC 2024).
-- Hazan et al. (2016) — graduated optimization.
-- Bertsekas (1982) — penalty methods.
-- Zariski (1962) — hyperplane arrangement complement connectivity.
-- Slaney & Walsh (2001) — backbone variables.
-- Miftari et al. (2024-2026) — LP sensitivity analysis.
-- Mobahi & Fisher (2015) — Gaussian smoothing.
-- RePlAce (Cheng et al.); TILOS / IBM benchmarks.
-- Partcl/HRT Macro Placement Challenge 2026.
+### Transition-state search (the saddle-escape mechanism, §§8.9–8.10)
 
-> **TODO(refs):** Format properly with DOIs. Verify each citation is one
-> we *use*, not just a literature pointer. Drop anything we only read.
+- Henkelman, G., & Jónsson, H. (1999). A dimer method for finding
+  saddle points on high dimensional potential surfaces using only
+  first derivatives. *Journal of Chemical Physics*, **111**(15),
+  7010–7022. [doi:10.1063/1.480097](https://doi.org/10.1063/1.480097)
+- Henkelman, G., & Jónsson, H. (2000). Improved tangent estimate in the
+  nudged elastic band method for finding minimum energy paths and
+  saddle points. *Journal of Chemical Physics*, **113**(22), 9978–9985.
+  [doi:10.1063/1.1323224](https://doi.org/10.1063/1.1323224)
+- E, W., & Zhou, X. (2011). The gentlest ascent dynamics. *Nonlinearity*,
+  **24**(6), 1831–1842.
+  [doi:10.1088/0951-7715/24/6/008](https://doi.org/10.1088/0951-7715/24/6/008)
+- Heyden, A., Bell, A. T., & Keil, F. J. (2005). Efficient methods for
+  finding transition states in chemical reactions. *Journal of Chemical
+  Physics*, **123**(22), 224101.
+  [doi:10.1063/1.2104507](https://doi.org/10.1063/1.2104507)
+
+### Macro placement (the field)
+
+- Cheng, C.-K., Kahng, A. B., Kang, I., & Wang, L. (2019). RePlAce:
+  Advancing Solution Quality and Routability Validation in Global
+  Placement. *IEEE TCAD*, **38**(9), 1717–1730.
+- Lin, Y., Dhar, S., Li, W., Ren, H., Khailany, B., & Pan, D. Z. (2019).
+  DREAMPlace: Deep Learning Toolkit-Enabled GPU Acceleration for Modern
+  VLSI Placement. *DAC '19*.
+- Lu, J., Chen, P., Chang, C.-C., et al. (2020). Routability-driven
+  global placement with congestion-aware density mapping. *DATE '20* /
+  DREAMPlace-Cong (DATE '21).
+- TILOS MacroPlacement open repository — `external/MacroPlacement`,
+  IBM ICCAD-04 benchmark suite, NG45 design flows.
+
+### Smooth-proxy / differentiable optimization for placement
+
+- Naylor, P., Donelly, S., & Sha, L. (2001). Non-linear Optimization
+  System and Method for Wire Length and Constraint Placement.
+  *US Patent 6 301 693* — LSE-HPWL formulation.
+- Hazan, E., Levy, K. Y., & Shalev-Shwartz, S. (2016). On graduated
+  optimization for stochastic non-convex problems. *ICML '16*.
+- Mobahi, H., & Fisher, J. W. (2015). On the link between Gaussian
+  homotopy continuation and convex envelopes. *EMMCVPR '15*.
+- Bertsekas, D. P. (1982). *Constrained Optimization and Lagrange
+  Multiplier Methods*. Academic Press. (Penalty methods underlying
+  the smooth-proxy overlap term.)
+- Mountain-pass theorem / least-action: Ambrosetti & Rabinowitz (1973),
+  *Dual variational methods in critical point theory and applications*.
+  Provides the topological grounding for §8.9's "the plateau is a
+  saddle" interpretation.
+
+### Decomposition / structural analysis (Acts 1–2 — §§2–7, 8.7.5)
+
+- Balas, E. (1979). Disjunctive programming. *Annals of Discrete
+  Mathematics*, **5**, 3–51.
+- Kronqvist, J., Misener, R., & Tsay, C. (2025). P-split formulations
+  for piecewise linear functions in MILP. (For polyhedral
+  decomposition baselines.)
+- Zariski, O. (1962). Hyperplane arrangement complement connectivity —
+  motivates the infeasibility-wall framing in §8.7.5.
+- Slaney, J., & Walsh, T. (2001). Backbones in optimization and
+  approximation. *IJCAI '01*.
+- Miftari, B., et al. (2024–2026). LP sensitivity analysis for
+  combinatorial placement-style problems.
+
+### Competition reference
+
+- Partcl/HRT Macro Placement Challenge (2026). Competition rules,
+  scoring v2.0, OpenROAD Tier 2 flow.
+
+> **TODO(refs):** Format properly per the target venue's bibliography
+> style (IEEE TCAD recommended). Verify each citation is one we *use*
+> in the body, not just a literature pointer. Drop anything we only
+> read but do not cite from a numbered section.
 
 ---
 
