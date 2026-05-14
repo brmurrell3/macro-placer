@@ -645,6 +645,156 @@ first time here.
 
 ---
 
+## 21. Hessian saddle escape on the local-move plateau (E74 — central innovation)
+
+**Claim (TODO prose):** The converged plateau of any local-move
+placement pipeline (CD + LNS + SA + K-joint, in our case) is a
+*saddle* of the smooth proxy with multiple negative-curvature
+eigenvectors, and stepping along these eigenvectors followed by
+CD-polish reaches deeper local minima the local-move set cannot
+reach. We apply the smooth-proxy autograd Hessian + Lanczos
+smallest-algebraic eigenvectors + ε-perturbation + canonical-proxy
+polish to combinatorial macro placement plateaus, lifting beyond the
+fixed point of the local-move family.
+
+> **TODO(prose):** The mechanism rests on three observations:
+>
+> 1. The *smooth* proxy (LSE-HPWL + Gaussian-density + RUDY-cong) is
+>    differentiable end-to-end in PyTorch, so its Hessian-vector
+>    product is exactly available via `torch.autograd.functional.hvp`.
+>    No surrogate Hessian, no finite-difference noise.
+> 2. At a polished plateau (E48 hybrid, in our pipeline), the smooth
+>    proxy Hessian has **multiple** negative-algebraic eigenvalues.
+>    Empirically the top-4 are all negative on ibm01 (-0.14, -0.076,
+>    -0.066, -0.060) and ibm04 (-0.695, -0.113, -0.071, -0.034). The
+>    plateau is therefore a *high-index saddle*, not a true local min
+>    of the smooth surface.
+> 3. The Lanczos algorithm (scipy `eigsh` with `LinearOperator`
+>    wrapping our HVP) finds the smallest-algebraic eigenvectors in
+>    O(k · HVP_cost) without forming the explicit O(N²) Hessian.
+>    For N ≈ 250 hard macros / 500 coordinates, k = 1-2 eigenvectors,
+>    Lanczos converges in ~5 s on a single CPU core.
+>
+> The escape itself: step `p ← p ± ε · v_min` for `ε ∈ {0.3, 1.0, 3.0}`
+> and both signs. Each step is followed by `project_overlaps`
+> (geometric legalization) and then by **CD-adaptive polish on the
+> canonical (non-smooth) proxy** — the smooth proxy is the curvature
+> oracle, never the cost. Best polished state wins.
+
+**What's novel:** **The connection.** Climbing-image NEB (Henkelman &
+Jónsson 2000), the dimer method (Henkelman & Jónsson 1999), and
+gentlest-ascent dynamics (E & Zhou 2011) are well-established
+transition-state search methods in chemistry, materials science, and
+applied mathematics. Their application to combinatorial-with-smooth-
+surrogate optimization is rare; their application to *macro
+placement* — and specifically to escaping the local-move-plateau
+that all prior placement heuristics converge to — is, to our
+knowledge, novel.
+
+**Verified results (`--all`, 17 IBM, zero overlaps):**
+
+| Metric | E48 (parent) | E74 (this) | Δ |
+|--------|-------------:|-----------:|---:|
+| IBM avg | 1.08151 | **1.0666** | **−1.38 %** |
+| ariane133 (NG45) | 0.6861 | **0.6641** | **−3.21 %** |
+
+The ariane133 lift is particularly meaningful: every prior
+IBM-aligned mechanism (E42, E43, E44, E54, E62) *regressed* on
+ariane133 (+3.57 % to +5.14 %). The Hessian saddle escape is the
+first mechanism since CD itself to lift uniformly across all 21
+designs (17 IBM + 4 NG45 commercial).
+
+**Evidence:** `experiments/E74_hessian_saddle/manifest.md`,
+`docs/decisions/012_e74_hessian_saddle_promotion.md`,
+`experiments/E74_hessian_saddle/code/hessian_saddle.py`.
+
+---
+
+## 22. Cascading saddle escape — iterate until true local minimum (E84)
+
+**Claim (TODO prose):** A single application of E74 escapes one saddle
+direction; iterating (re-eigenanalysis at each new state, escape
+again, polish, repeat) reaches a *true* smooth-proxy local minimum
+where all eigenvalues are non-negative. Cumulative lift is bounded
+by the number of negative-curvature directions at the plateau.
+
+> **TODO(prose):** Stop conditions are interpretable:
+> `λ_min ≥ −1e-3` means the smooth proxy has reached a local minimum;
+> "no proxy improvement this iter" means saddle escape landed in the
+> same basin; `max_iters = 5` is a soft bound; wall-budget exhaust
+> handles the cap.
+>
+> Empirically: 2-5 iterations per benchmark, with diminishing per-iter
+> lift (first iter -1 to -5 %, subsequent iters 0.1-0.5 % each). For
+> ibm17 (the hardest, proxy 1.4546 from E48): cascade lifts to
+> 1.3340 — still high in absolute terms but a meaningful relative
+> improvement over a previously-frozen plateau.
+
+**What's novel:** Iterating saddle escape over a sequence of
+*increasingly converged* states is structurally related to climbing-
+image NEB (which iterates over a *path* of states), but the cascading
+form — where each new state is the prior state's escape result, not
+a path-interpolation step — is, in our exploration, a new variant
+specifically motivated by the high-index nature of the placement
+plateau.
+
+**Verified results (M3 cached, no wall cap):**
+1.0612 IBM `--all` (-0.51 % vs E74 1.0666). 8 of 17 benches require
+> 55 min wall uncapped; a wall-safe variant with `budget_seconds`
+enforcement is the submission entry (see §23).
+
+**Evidence:** `experiments/E84_cascading_saddle/manifest.md`,
+`experiments/E84_cascading_saddle/code/cascading_saddle.py`,
+`experiments/E84_cascading_saddle/results/cascade_*.pt`.
+
+---
+
+## 23. CD inner-loop speedup via batched no-mutation cost peek (A1 / PATH A)
+
+**Claim (TODO prose):** The CD-adaptive coordinate-descent inner loop
+of all our pipelines is bottlenecked by the (move, current_cost,
+revert) probe pattern in `IncrementalProxyEvaluator`. Replacing this
+trio with a single no-mutation `delta_cost` peek — and amortizing
+the "subtract old contributions" precompute across K candidates per
+axis search — yields a **5.36× speedup** on the CD inner loop with
+bit-exact parity (machine-epsilon agreement, 100/100 probes).
+
+> **TODO(prose):** Three layered optimizations:
+>
+> 1. `delta_cost(macro_idx, new_xy)` — no-mutation cost peek. Briefly
+>    retargets the moving macro's pins in a try/finally, builds
+>    hypothetical cell tensors via clone + delta, returns the cost
+>    dict. Skips snapshot building and the entire revert pass that
+>    the original move/revert pair required. **1.95× per probe** on
+>    ibm10.
+> 2. `delta_cost_axis_batch(macro_idx, axis, cur_xy, candidates)` —
+>    amortizes the subtract-old precompute once across K candidates,
+>    collects per-candidate cell-level deltas into flat (k, cell, val)
+>    triples, applies via one `index_put_(accumulate=True)` per
+>    cell-tensor, runs density top-K and congestion smooth+top-K as
+>    batched torch ops on `[K, num_cells]`. **4.32× combined**.
+> 3. `_net_cong_contrib_flat` — flat-list per-net routing helper.
+>    Vectorized pin→gcell, inlined 2-pin and multi-pin route
+>    enumeration, duplicates re-aggregated downstream by
+>    `index_put_`. **5.36× combined**.
+
+**What's novel:** The optimizations are individually mundane (cache
+the work, batch the ops, skip the snapshot). What's notable is the
+*compounding effect*: the cascade saddle escape's inner CD polish
+runs ~6 probes per ε-trial × 3 ε-values × 2 signs × 2-5 cascade
+iters per bench × 17 benches per `--all`. At 5.36× the inner loop,
+the algorithm completes more saddle iterations under the same wall
+cap, which compounds with the cascade's algorithmic gain (§22) into
+the verified **1.0771** cloud result vs the pre-A1 **1.137** baseline
+(−5.2 % at the same 60-min/bench cap).
+
+**Evidence:** `macro_place/incremental_evaluator.py` (commits
+59a7a8b, 53b4a26, af520c3, 9df5ac2, f2269b3), parity tests in
+`test/test_incremental_evaluator.py`, A4-v1 / A4-v2 cloud results
+in `results/CDLNSSACascadeAdaptivePlacer_*.json` (2026-05-13).
+
+---
+
 ## Explicitly excluded
 
 The following topics from `theory.md` (in this writeup directory)
