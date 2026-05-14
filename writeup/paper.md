@@ -1,6 +1,4 @@
-# Macro Placement: A Diagnostic-Driven Path from 1.46 to 1.10
-<!-- TODO(meta): the headline 1.46 -> 1.10 still rounds correctly to 1.0990; consider whether to update to "1.46 to 1.10 (1.0990)" once the abstract is drafted. -->
-
+# Macro Placement: A Diagnostic-Driven Path from 1.46 to 1.08, and a Hessian Saddle Escape Beyond
 
 > **STATUS:** Working master draft. Source-of-truth for the paper. Section
 > scaffolding + locked-in numbers; prose drafts are TODO. Cite the supporting
@@ -8,18 +6,47 @@
 > them — write fresh prose from those sources here.
 
 > **TODO(meta):** Title, authors, affiliation, abstract, venue/format target.
-> Current placeholder title above. Length target: 12–14 pages.
+> Current placeholder title above. Length target: 14–18 pages including the
+> Hessian-saddle-escape arc added in §§8.9–8.11.
+
+> **Headline numbers (current):**
+> - **1.0612** uncapped on M3 (cascade saddle escape ceiling, 17 IBM)
+> - **1.0771** cloud EPYC, 60-min/bench cap (post-A1 implementation speedup)
+> - **0.6870** NG45 (4 commercial designs)
+> - vs RePlAce 1.4578 → **−26.1 %**; vs leaderboard top 1.037 → **+3.9 %** gap.
+> - Zero overlaps on every benchmark, every variant.
 
 ---
 
 ## Abstract
 
-> **TODO(prose):** ~200 words. Hits: composite proxy (WL + 0.5·D + 0.5·C),
-> two diagnosis-pivot cycles, "bypass don't fix" principle, infrastructure-
-> unlocks-algorithm twice (E1 and E9), grid-bin LNS overlay (E12) escapes
-> the CD plateau via a *different move type*, final **1.0990** avg on 17
-> IBM benchmarks (−24.6 % vs RePlAce 1.4578, −1.63 % vs leaderboard
-> 1.1172), zero overlaps, within 1-hour-per-bench compute envelope.
+> **TODO(prose):** ~250 words. The arc through three eras:
+>
+> 1. **Diagnostic era** (E1–E12): composite proxy diagnosis (WL +
+>    0.5·D + 0.5·C; E8 decomposition: 6 % WL / 20 % density / 74 %
+>    congestion), two diagnosis-pivot cycles, infrastructure-unlocks-
+>    algorithm twice (E1 incremental evaluator → E9 plateau detection
+>    → E12 grid-bin LNS overlay), "bypass don't fix" principle.
+> 2. **Compositional era** (E18–E61): SDF + DPO as orthogonal basin
+>    sources; CD + LNS + SA + K-joint as compositional polish stack;
+>    per-bench best-of-{E25, E41} hybrid (E48) at **1.08151**; E65
+>    infeasibility-wall finding formalizing why local-move and
+>    crossover heuristics share a reachable set.
+> 3. **Hessian saddle escape era** (E74–E84 + PATH A): the local-move
+>    plateau is a saddle of the smooth proxy with multiple negative-
+>    curvature eigenvectors; applying transition-state methods from
+>    chemistry / materials science (climbing-image NEB, dimer,
+>    gentlest-ascent) to the combinatorial placement plateau yields
+>    a uniform improvement across all 21 designs (including breaking
+>    the IBM/NG45 transfer-failure pattern on ariane133, −3.21 %
+>    where every prior IBM-aligned mechanism regressed). Cascading
+>    the saddle escape until the smooth-proxy Hessian becomes
+>    positive-semidefinite reaches a verified **1.0612** uncapped
+>    on 17 IBM. A 5.36× implementation speedup of the CD inner loop
+>    closes most of the cap-vs-ceiling gap on EPYC, landing at
+>    **1.0771** on the partcl-equivalent hardware under the 60-min
+>    per-bench cap. Zero overlaps on every benchmark; single global
+>    algorithm; no per-benchmark tuning; CPU-only Python.
 
 ---
 
@@ -665,6 +692,205 @@ benchmark structure data.
 
 ---
 
+## 8.9 Hessian Saddle Escape on the Local-Move Plateau — E74 (~2 pages, central innovation)
+
+**Source material:** `experiments/E74_hessian_saddle/manifest.md`,
+`experiments/E74_hessian_saddle/code/hessian_saddle.py`,
+`docs/decisions/012_e74_hessian_saddle_promotion.md`.
+
+> **TODO(prose):** Once E48 verified at 1.08151 the obvious local-move
+> moves were exhausted: CD breakpoints, grid-bin LNS, SA-v2 Metropolis,
+> K-macro joint, spatial-block GA. None lifted past 1.08 because they
+> all share a *reachable set* — each places-or-rearranges one or a few
+> macros at a time, and the plateau they all converge to is the same
+> *local minimum of the proxy under local moves*. E65's infeasibility
+> wall (§8.7.5) formalized why interpolation / crossover can't bridge
+> basins. The plateau itself, though, has a richer structure: at the
+> plateau, the *smooth proxy* (a differentiable approximation already
+> used internally by DPO and the GPU experiments) has multiple
+> negative-curvature eigenvectors. These are the *soft modes* that
+> escape the plateau along directions no local move set can reach
+> coherently.
+>
+> The mechanism we build, *Hessian saddle escape*, treats the local-move
+> plateau as a saddle of the smooth proxy and follows transition-state
+> methods from chemistry / materials science (Henkelman & Jónsson 2000
+> climbing-image NEB; the dimer method; gentlest-ascent dynamics) to
+> step out of it. Concretely:
+>
+> 1. Build a smooth-proxy function `f_smooth(p) = WL_LSE + 0.5·D_smooth
+>    + 0.5·C_RUDY` in PyTorch over the placement tensor `p ∈ ℝ^{2N}`.
+>    All three terms are autograd-compatible. The smooth proxy is not
+>    used as the *cost* (the canonical proxy stays the score) — only as
+>    the curvature oracle.
+> 2. At the plateau state, compute the Hessian-vector product `Hv` via
+>    `torch.autograd.functional.hvp`. Pass this as a `LinearOperator`
+>    to scipy's `eigsh` with `which='SA'` (smallest-algebraic) and
+>    `k=2`. Returns the two softest eigenvectors `v_0, v_1` and their
+>    eigenvalues `λ_0 ≤ λ_1`.
+> 3. If `λ_0 ≥ 0` (within tolerance), we're at a true smooth-proxy local
+>    minimum; no escape direction exists. Stop.
+> 4. Otherwise step `p ← p ± ε · v_0` for `ε ∈ {0.3, 1.0, 3.0}` and
+>    both signs. Each step is followed by `project_overlaps` (to
+>    legalize), then by CD-adaptive polish on the canonical proxy
+>    (Phase 8 mechanism). Keep the best polished state.
+>
+> The trick is that the smooth-proxy eigenvector is a *coordinated
+> displacement of many macros simultaneously* along a direction the
+> canonical local-move set never explored. After the ε-step the state
+> is far from the original plateau in placement space but typically
+> still close on the canonical proxy surface; the subsequent CD polish
+> exploits the now-different basin to discover a *deeper* canonical
+> local minimum.
+
+**Key results (verified `--all`):**
+
+| Metric | E48 hybrid (parent) | E74 (this) | Δ |
+|--------|--------------------:|-----------:|---:|
+| `--all` avg | 1.08151 | **1.0666** | **−1.38 %** |
+| ariane133 (NG45) | 0.6861 | **0.6641** | **−3.21 %** |
+| Overlaps | 0 / 17 + 4 | 0 / 17 + 4 | — |
+
+> **TODO(prose):** Highlight the ariane133 number — every IBM-aware
+> mechanism in §8.7 / §8.8 *regressed* on ariane133 (E42 +3.57 %, E43
+> +4.10 %, E54 +5.14 %, E62 +1.45 %). Hessian saddle escape *advances*
+> by 3.21 %, breaking the IBM/NG45 transfer-failure pattern. The
+> mechanism is rule-neutral about benchmark scale — eigenvectors of the
+> smooth proxy don't care whether the macro density is IBM-class or
+> NG45-class. This is the first mechanism since CD itself that improves
+> *uniformly* across all 21 designs.
+
+> **TODO(figure):** λ-spectrum plot for ibm01 plateau (top-4 eigvals,
+> all negative: −0.14, −0.076, −0.066, −0.060) showing the plateau is
+> a *high-index* saddle, not a true local min — multiple escape
+> directions exist, justifying the cascading extension (§8.10).
+
+> **TODO(theory ref):** cite Henkelman & Jónsson "Improved
+> tangent estimate in the nudged elastic band method" (2000); the dimer
+> method (Henkelman & Jónsson 1999); gentlest-ascent dynamics (E, Zhou
+> 2011). These are the chemistry/materials transition-state methods we
+> are applying to a combinatorial placement problem — the contribution
+> is the *connection*, not the algorithms themselves.
+
+---
+
+## 8.10 Cascading the Saddle Escape — E84 (~1.5 pages)
+
+**Source material:** `experiments/E84_cascading_saddle/manifest.md`,
+`experiments/E84_cascading_saddle/code/cascading_saddle.py`.
+
+> **TODO(prose):** E74 applied one step of saddle escape (compute v_0,
+> step ε, polish, return best). But the eigenvalue diagnostic shows
+> *multiple* negative-curvature directions at the plateau — and once we
+> escape via v_0, the new state may itself be a saddle (just at a
+> deeper basin). Cascading saddle escape iterates: after each polish,
+> recompute the Hessian, check the smallest eigenvalue, and if still
+> negative, escape again.
+>
+> Stop conditions:
+> - smallest eigenvalue ≥ `−1e-3` (true local minimum reached)
+> - cascade iteration produced no proxy improvement
+> - `max_iters = 5` exhausted
+> - wall budget exhausted
+>
+> Empirically the cascade runs 2-5 iterations per benchmark before
+> hitting one of the stop conditions, with diminishing per-iter lift:
+> first iter gives the bulk (−1 to −5 % depending on benchmark);
+> subsequent iters add 0.1 to 0.5 % each. The cumulative lift is
+> consistent across all 17 IBM and 4 NG45 designs.
+
+**Verified results (M3 cached, no wall cap):**
+
+| Metric | E74 (parent) | E84 cascade (this) | Δ |
+|--------|-------------:|-------------------:|---:|
+| IBM `--all` | 1.0666 | **1.0612** | **−0.51 %** |
+| Overlaps | 0 / 17 | 0 / 17 | — |
+| Walls > 55 min | 0 / 17 | 8 / 17 | requires wall-safe variant |
+
+The wall-uncapped 1.0612 number is the algorithmic *ceiling* of the
+cascade approach — further iteration of E74-style saddle escape no
+longer improves the proxy. Closing the gap from this ceiling to a
+*cap-bound* result on EPYC is an *engineering* problem, not an
+algorithmic one, and is the subject of §8.11.
+
+---
+
+## 8.11 PATH A — Closing the Cap-vs-Ceiling Gap via Implementation Speedup (~1.5 pages)
+
+**Source material:** `macro_place/incremental_evaluator.py` (commits
+59a7a8b, 53b4a26, af520c3, 9df5ac2, f2269b3),
+`docs/decisions/A4_postA1_validation.md` (forthcoming).
+
+> **TODO(prose):** The cascade saddle escape reaches 1.0612 on M3 Max
+> with no wall budget enforced. Under the 60-min/bench cap on
+> partcl-equivalent EPYC, the same algorithm plateaus at 1.137 because
+> CD coordinate descent in the inner polish phase is single-threaded
+> Python and can't complete enough sweeps. cProfile on ibm04 isolated
+> the bottleneck: 32 of 33 s of CD time is in
+> `IncrementalProxyEvaluator.move() + revert()`, the per-candidate
+> probe-and-undo pattern in `cd_core.search_axis`.
+>
+> Four optimizations close the gap:
+>
+> 1. **`delta_cost(macro_idx, new_xy)`** — a no-mutation cost peek
+>    that mirrors the (move, current_cost, revert) trio without
+>    building a `_MoveSnapshot` and without applying state mutations
+>    that need to be undone. Briefly retargets the moving macro's pin
+>    positions in a try/finally; everything else builds hypothetical
+>    cell tensors via clone + delta. **1.95× per probe** on ibm10.
+>
+> 2. **`delta_cost_axis_batch(macro_idx, axis, cur_xy, candidates)`** —
+>    evaluates K candidates on a single axis in one call. Amortizes
+>    the "subtract old contributions" precompute once; collects
+>    per-candidate cell-level deltas as flat `(k, cell, val)` triples
+>    and applies via `torch.index_put_(accumulate=True)`; runs density
+>    top-K and congestion smoothing + top-K as batched torch ops on
+>    `[K, num_cells]` tensors. **4.32× combined** on ibm10.
+>
+> 3. **`_net_cong_contrib_flat`** — flat-list replacement for the
+>    dict-based per-net routing helper. Vectorized pin→gcell via
+>    tensor floor/clamp/long; inlined 2-pin and multi-pin routing
+>    (the 88 % case per profile); no dict allocation; duplicates
+>    re-aggregated downstream by `index_put_`. **5.36× combined** on
+>    ibm10.
+>
+> 4. **LNS-helper conversions** — `_pick_destroy_by_cost` and
+>    `_gridbin_reinsert` in E25 / E18 / E39 are pure probe patterns
+>    (move, cost, revert); replaced with `delta_cost`. Same bit-exact
+>    cost result; ~2× wall reduction on the LNS phase, which on
+>    cascade benches converts to deeper basins per LNS sample under
+>    the same per-phase budget.
+
+**Verified results (cloud EPYC, jobs=4, `budget_seconds=3000`):**
+
+| Run | Mode | Avg proxy | Overlaps | vs Pre-A1 |
+|-----|------|----------:|---------:|----------:|
+| Pre-A1 baseline (2026-05-11) | `--all` | 1.137 | 0 | — |
+| A4-v1 (A1 inner only) | `--all` | **1.0782** | 0 | **−5.2 %** |
+| A4-v2 (A1 + LNS-delta) | `--all` | **1.0771** | 0 | **−5.3 %** |
+| Pre-A1 baseline | `--ng45` | 0.7034 | 0 | — |
+| A4-v1 | `--ng45` | **0.6853** | 0 | **−2.6 %** |
+| A4-v2 | `--ng45` | **0.6870** | 0 | −2.3 % |
+
+> **TODO(prose):** The 1.0771 cloud number is within +1.5 % of the
+> 1.0612 M3 cached ceiling. The remaining gap is residual per-core
+> speed differential between M3 and EPYC; closing it further would
+> require either a Cython/Numba port of the routing inner loops or a
+> GPU port of the routing-dispatch logic. Neither is justified at this
+> margin since the leaderboard top is at 1.037 (Cezar/ReFine) — closing
+> the cap-vs-ceiling gap fully gives < 0.4 % more, which is not enough
+> to overtake. The breakthrough vector beyond cascade is *algorithmic*
+> (PATH B: DREAMPlace basin + cascade polish; PATH C: multi-direction
+> saddle escape), not implementation.
+
+> **TODO(theory ref):** Note that the implementation work is parallel
+> to the algorithmic work — the same `IncrementalProxyEvaluator`
+> primitives feed all downstream variants (DP-hybrid, multi-direction
+> cascade, etc.), so A1's speedup compounds with their potential
+> algorithmic lifts.
+
+---
+
 ## 9. Empirical Results (~2 pages)
 
 ### 9.1 Champion lineage (`--all`, 17 IBM benchmarks, zero overlaps)
@@ -682,8 +908,10 @@ benchmark structure data.
 | DPO init + CD + LNS + SA-v2 *(component)* | CDLNSSADPOInit (E18) | 1.08979 | +25.2 % | 2026-04-30 |
 | DPO init + CD + LNS + SA-v2 + K-joint *(component)* | CDLNSSADPOKJoint (E41) | 1.0848 | +25.6 % | 2026-04-30 |
 | **Per-bench best-of-{E25, E41} hybrid** | **CDLNSSAHybrid (E48)** | **1.08151** | **+25.8 %** | **2026-05-02** |
-| Spatial-block GA crossover (E25 ⊗ E41 outputs) *(candidate)* | CDLNSGACrossoverPlacer (E61_v2) | 1.08083 | +25.9 % | 2026-05-03 |
-| **3-lane best-of-{E48, E61_v2}** *(if ADR-012 accepted)* | (3-lane hybrid extension) | **1.08025** | **+25.9 %** | TBD |
+| Spatial-block GA crossover (E25 ⊗ E41 outputs) | CDLNSGACrossoverPlacer (E61_v2) | 1.08083 | +25.9 % | 2026-05-03 |
+| **Hessian saddle escape on E48 plateau** | **CDLNSSAHessian (E74)** | **1.0666** | **+26.8 %** | **2026-05-05** |
+| **Cascading saddle escape (M3 cached, uncapped)** | **CDLNSSACascade (E84)** | **1.0612** | **+27.2 %** | **2026-05-10** |
+| **Cascade + A1 implementation speedup (cloud, 60-min cap)** | **CDLNSSACascadeAdaptivePlacer (post-A1)** | **1.0771** | **+26.1 %** | **2026-05-13** |
 
 Each champion replaced its predecessor by a *structural change*, not
 parameter tuning. The May 2026 entries (E18 / E25 / E41) appear as
