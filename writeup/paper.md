@@ -1590,8 +1590,10 @@ discrete optimal transport / Laguerre tessellations.
       placeholders. The narrative arc from STORY.md drives this pass.
 - [x] **§8.9 Hessian Saddle Escape.** Drafted 2026-05-13 (commit
       `57f5acf`). Publication-ready high-level prose.
-- [ ] **§8.10 Cascading.** Scaffold; ~1 page of prose needed.
-- [ ] **§8.11 PATH A speedup.** Scaffold; ~1 page of prose needed.
+- [x] **§8.10 Cascading.** Drafted 2026-05-13 (commit `63a0431`).
+      Publication-ready high-level prose.
+- [x] **§8.11 PATH A speedup.** Drafted 2026-05-13 (commit `63a0431`).
+      Publication-ready high-level prose.
 - [ ] **§9 Results.** Lineage table is updated through A4-v2; per-bench
       tables and prose still TODO.
 - [ ] **§10 Discussion.** Scaffold; needs prose on the three-act recap,
