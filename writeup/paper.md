@@ -126,16 +126,21 @@ decomposition of the feasible region and §3 describes the navigation
 system we built on it. §4 documents the LP-HPWL barrier diagnosis;
 §5 covers the DPO pivot and §6 the geometric interpretation of why
 penalty continuation crosses the infeasibility barrier. §7 documents
-the RUDY fidelity diagnosis. §8 is the longest section: incremental
-evaluator (§8), full-proxy CD and plateau detection (§§8.1–8.4),
-compositional polish (§8.5), the per-bench best-of hybrid (§8.6), the
-failed extension wave and the infeasibility-wall finding (§§8.7–8.7.5),
-the spatial-block crossover (§8.7.6), the IBM/NG45 transfer-failure
-pattern (§8.8), single Hessian saddle escape (§8.9), cascading saddle
-escape (§8.10), the implementation speedup (§8.11), and the DREAMPlace
-third lane (§8.12). §9 collects empirical results across 17 IBM + 4
-NG45 designs. §10 discusses the recurring objective-mismatch pattern
-and what we believe it means for the field. §11 collects references.
+the RUDY fidelity diagnosis. §8 is the longest section, covering the
+incremental evaluator, full-proxy CD with breakpoint enumeration,
+per-benchmark plateau detection, and the grid-bin LNS escape (E12) as
+a single connected story. §8.5 layers compositional polish (SA-v2,
+DPO init, K-joint LNS); §8.6 covers the per-bench best-of hybrid (E48);
+§8.7 documents the failed extension wave and the infeasibility-wall
+finding (§§8.7.5–8.7.6); §8.8 surfaces the IBM/NG45 transfer-failure
+pattern as a structural finding. §§8.9–8.11 are the Hessian saddle
+escape arc: single-step escape (E74), cascading until convergence
+(E84), and the implementation speedup that closes the cap-vs-ceiling
+gap (PATH A post-A1). §8.12 documents the DREAMPlace third-lane
+extension and the empirical refutation of the prior PATH B autopsy.
+§9 collects empirical results across 17 IBM + 4 NG45 designs. §10
+discusses the recurring objective-mismatch pattern and what we believe
+it means for the field. §11 collects references.
 
 ---
 
@@ -526,7 +531,7 @@ path in §8.
 
 ---
 
-## 8. Second Pivot — Full-Proxy CD on an Incremental Evaluator (~2 pages)
+## 8. Second Pivot — Full-Proxy CD on an Incremental Evaluator
 
 **Source material:** `evidence.md` §7 (CD breakthrough: E1, E2, CDOnly,
 E9, E16), `docs/approach.md` §1, `contributions.md` §8–9 + §12.
@@ -767,7 +772,7 @@ diverge from. ADR-010 documents E41; later superseded by ADR-011.
 
 ---
 
-## 8.6 Per-Bench Best-of Hybrid — E48 (prior champion)
+## 8.6 Per-Bench Best-of Hybrid — E48
 
 E25 (SDF init + CD-LNS-SA-v2) and E41 (DPO init + CD-LNS-SA-v2 +
 K-joint) reach 1.0954 and 1.0848 respectively on `--all` — within
@@ -821,7 +826,7 @@ genuinely different init class (DREAMPlace, in §8.12) does.
 
 ---
 
-## 8.7 Failed Extensions (the May 1–2 wave) (~1 page)
+## 8.7 Failed Extensions (the May 1–2 wave)
 
 **Source material:** `experiments/E53_dpo_basin_eval/manifest.md`,
 `experiments/E53_multiseed_hybrid/manifest.md`,
@@ -910,7 +915,7 @@ structure) are the safe baselines that survive cross-design transfer.
 
 ---
 
-## 8.7.5 The Infeasibility Wall — E65 Cross-Section (~1 page, structural finding, 2026-05-03)
+## 8.7.5 The Infeasibility Wall — E65 Cross-Section
 
 **Source material:** `experiments/E65_neb_cross_section/manifest.md`,
 `memory/e65_infeasibility_wall.md`.
@@ -980,7 +985,7 @@ along it, but never element-level interpolation that ignores it.
 
 ---
 
-## 8.7.6 Spatial-Block GA Crossover — E61 V2 Threads the Wall (~1.5 pages, candidate, 2026-05-03)
+## 8.7.6 Spatial-Block GA Crossover — E61 V2 Threads the Wall
 
 **Source material:** `experiments/E61_ga_crossover/manifest.md`,
 `experiments/E61_ga_crossover/results/best_of_analysis.md`,
@@ -1067,7 +1072,7 @@ acceptance.
 
 ---
 
-## 8.8 The IBM/NG45 Transfer-Failure Pattern (~0.75 pages, structural finding)
+## 8.8 The IBM/NG45 Transfer-Failure Pattern
 
 **Source material:** `docs/roadmap.md` §4.5; per-experiment manifests
 above; `external/MacroPlacement/Testcases/ariane133/` for the
@@ -1572,7 +1577,7 @@ modification will lift the ceiling."
 
 ---
 
-## 8.12 The DREAMPlace Lane — Refuting the Autopsy (~1.5 pages)
+## 8.12 The DREAMPlace Lane — Refuting the Autopsy
 
 **Source material:** `experiments/E91_dp_full_polish/manifest.md`,
 `experiments/E91_dp_full_polish/code/dp_full_polish.py`,
@@ -1742,7 +1747,7 @@ plateau pick.
 
 ---
 
-## 9. Empirical Results (~2 pages)
+## 9. Empirical Results
 
 ### 9.1 Champion lineage (`--all`, 17 IBM benchmarks, zero overlaps)
 
@@ -1886,7 +1891,7 @@ with ~9 hr of headroom (down from CDAdaptive's ~12 hr).
 
 ---
 
-## 10. Discussion (~1.5 pages)
+## 10. Discussion
 
 **Source material:** `contributions.md` §5 + §10 + §11; `evidence.md` §9
 (falsification record).
@@ -2030,7 +2035,7 @@ overfit to a single design class are the failure mode to watch for.
 
 ---
 
-## 11. References (~1 page)
+## 11. References
 
 ### Transition-state search (the saddle-escape mechanism, §§8.9–8.10)
 
