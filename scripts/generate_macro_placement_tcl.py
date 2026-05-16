@@ -437,11 +437,35 @@ dict for {prefix entries} $_odb_groups {
             f.write("    }\n")
             f.write("    return NULL\n")
             f.write("}\n\n")
+            # Translate .plc orientations (N/E/S/W/FN/FE/FS/FW) to ODB strings
+            # accepted by $inst setOrient: R0/R90/R180/R270/MY/MX/MYR90/MXR90.
+            _orient_map = {
+                "N": "R0", "E": "R270", "S": "R180", "W": "R90",
+                "FN": "MY", "FE": "MYR90", "FS": "MX", "FW": "MXR90",
+                "R0": "R0", "R90": "R90", "R180": "R180", "R270": "R270",
+                "MY": "MY", "MX": "MX", "MYR90": "MYR90", "MXR90": "MXR90",
+            }
             for odb_name, x_ll, y_ll, orient, plc_name in direct_placements:
-                # Try: 1) converted ODB name, 2) with escaped brackets, 3) raw plc name
+                # Map orient to ODB form
+                orient = _orient_map.get(orient, "R0")
+                # Try: 1) converted ODB name, 2) with TCL-escaped brackets (preserves
+                # the literal backslash in the runtime string — needed for Verilog-
+                # escaped identifiers like `sram_block\[0\]` in ODB), 3) Python-escaped
+                # brackets (single-backslash, in case the netlist used that form),
+                # 4) raw plc name.
                 candidates = [odb_name]
                 if plc_name != odb_name:
-                    # Also try escaped-bracket version for Genus netlists
+                    # TCL runtime needs `\[` (literal backslash + bracket) to match
+                    # ODB names like `sram_block\[0\].data_sram/macro_mem\[0\].i_ram`.
+                    # TCL source needs `\\\[` (3 backslashes + bracket) inside the
+                    # quoted string: `\\` produces `\` (literal), then `\[` is the
+                    # escape that produces `[` literally (suppresses command sub).
+                    # Python `'\\\\\\['` is 4 chars (3 backslashes + bracket), so
+                    # the file contents are `\\\[` as required.
+                    tcl_escaped = plc_name.replace('[', '\\\\\\[').replace(']', '\\\\\\]')
+                    candidates.append(tcl_escaped)
+                    # Also keep the prior form (single-backslash) for designs whose
+                    # ODB stripped the Verilog escape.
                     escaped = plc_name.replace('[', '\\[').replace(']', '\\]')
                     candidates.append(escaped)
                     candidates.append(plc_name)
