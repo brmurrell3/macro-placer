@@ -48,7 +48,29 @@ including ariane133, ariane136 (our Grand Prize set).
 - New: `submissions/cd_lns_sa_cascade_periphery/placer.py`
 - Modify: cascade saddle objective (separate placer, don't break existing)
 
-**Owner**: <unclaimed — needs OpenROAD access>
+**Owner**: <unclaimed — needs OpenROAD access for full validation>
+
+### 🟢 PRELIMINARY E107 RESULTS (2026-05-16 01:25 EDT)
+
+Spike `experiments/E107_periphery_bias/` running locally. Cached
+cascade-converged placements pushed α=0.01 toward nearest canvas edge,
+then CD-polished:
+
+| Bench | Baseline | Control (re-polish) | Periphery | Random (matched RMS) | Center |
+|---|---|---|---|---|---|
+| ariane133 | 0.66993 | -0.28% (ovl=0) | **-0.95% (ovl=0)** | -0.62% (ovl=0) | -0.50% (ovl=1) |
+| ariane136 | 0.66107 | -0.23% (ovl=0) | -0.38% (ovl=1) | -0.68% (ovl=5) | -0.55% (ovl=9) |
+| mempool_tile | 0.73744 | 0.00% (ovl=0) | running... | running... | running... |
+| nvdla | 0.69+ | pending | pending | pending | pending |
+
+Key signals:
+- **ariane133**: periphery beats random by -0.33% AND is the most peripheral. Strong signal.
+- **ariane136**: periphery has LEAST overlaps (1 vs 5 vs 9) — structurally gentler
+- All cases: periphery never INCREASES edge_dist (vs random +0.41% / center +0.83%)
+
+Deployable placer ready: `submissions/cd_lns_sa_cascade_levy_periphery/placer.py`
+(strictly conservative — only accepts periphery polish if zero overlaps
+AND lower proxy than baseline).
 
 ---
 
