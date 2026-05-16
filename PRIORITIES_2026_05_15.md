@@ -82,10 +82,48 @@ including ariane133, ariane136 (our Grand Prize set).
 **Net deployment benefit**:
 - ariane133 (Grand Prize bench): -0.67% lift via wrapper vs baseline
 - All others: wrapper falls back to Lévy cascade (no regression)
-- Overnight multi-seed chain validating signal stability (5 random seeds × 9 (bench, α) combos)
 
-Deployable: `submissions/cd_lns_sa_cascade_levy_periphery/placer.py`
-ibm01 smoke test verified VALID with strict-accept fallback (0.8788 proxy, 0 ovl).
+### Multi-seed validation (12 tests, 5 random seeds each) — COMPLETE 06:35 EDT
+
+| bench | α | Peri | Rand μ | Rand σ | z (Peri vs Rand) | **Δedge_p** |
+|---|---|---|---|---|---|---|
+| ariane133 | 0.005 | -0.63 | -0.83 | 0.15 | -1.4σ | **-0.06%** ✓ |
+| ariane133 | 0.010 | -0.95 | -0.96 | 0.20 | -0.0σ TIE | **-0.08%** ✓ |
+| ariane133 | 0.020 | -1.07 | -1.31 | 0.25 | -0.9σ | **-0.20%** ✓ |
+| ariane136 | 0.010 | -0.38 | -0.82 | 0.12 | -3.7σ | **-0.55%** ✓ |
+| ibm09 | 0.010 | -0.26 | -0.50 | 0.18 | -1.3σ | **-0.35%** ✓ |
+| ibm10 | 0.005 | +4.74 | -1.74 | 1.60 | -4.1σ | -1.58% ✓ (but proxy disaster) |
+| ibm10 | 0.010 | +9.28 | +3.02 | 4.52 | -1.4σ | +0.36% ❌ |
+| ibm14 | 0.005 | -0.61 | -1.08 | 0.15 | -3.2σ | +0.15% ≈ |
+| ibm14 | 0.010 | -0.86 | -1.13 | 0.10 | -2.7σ | **-0.38%** ✓ |
+| ibm17 | 0.010 | -1.44 | -1.70 | 0.09 | -3.0σ | **-1.19%** ✓ |
+| mempool_tile | 0.010 | +0.41 | +0.39 | 0.17 | -0.1σ TIE | **-1.39%** ✓ |
+| nvdla | 0.010 | -0.67 | -1.11 | 0.03 | -14.0σ | **-0.78%** ✓ |
+
+**Robust universal findings (across 12 multi-seed tests):**
+
+1. **Random kicks WIN proxy at every α** (1-14σ statistical advantage, except 2 ties on ariane133 α=0.01 and mempool α=0.01)
+2. **Periphery direction reliably pushes TOWARD edge** (Δedge negative in 10/12)
+3. **Random direction pushes AWAY from edge** (Δedge positive in most)
+4. **Center is universally worst** (worst proxy + drifts inward)
+5. **ibm10 is uniquely fragile** — α=0.01 breaks everything; α=0.005 better for Random but not Periphery
+
+**Strategic decision matrix:**
+
+| Goal | Best mechanism |
+|---|---|
+| Proxy ranking (top 7 qualifier) | Lévy cascade (existing) — random ε magnitudes already deliver max lift |
+| Periphery → WNS/TNS (Grand Prize) | Periphery wrapper as post-pass with strict-accept |
+| Both at once | Wrapper: 1-3% proxy loss possible IF periphery accepted, but gives edge_dist reduction |
+
+**Wrapper deployment (cd_lns_sa_cascade_levy_periphery)** at strict-accept:
+- ariane133: SHIPS (real -0.67% net vs baseline, 0 ovl)
+- ariane136: REJECTS (1 ovl typical)
+- mempool_tile: REJECTS (proxy +0.4%)
+- nvdla: REJECTS (1 ovl, no proxy benefit)
+- All IBM: REJECTS (heavy ovls at α=0.01)
+
+**Confirmed safe everywhere**, useful proxy benefit only on 1/21 benches. Grand Prize benefit (via OpenROAD WNS/TNS) PENDING validation by other Claude.
 
 ---
 

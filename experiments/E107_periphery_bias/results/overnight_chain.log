@@ -1,0 +1,133 @@
+[02:15:55] START ariane133 α=0.005 → experiments/E107_periphery_bias/results/multiseed_ariane133_a0005.log
+[02:30:02] DONE  ariane133 α=0.005
+=== ariane133 α=0.005 (n_seeds=5) ===
+  Control       : Δproxy=-0.275%
+  Periphery     : Δproxy=-0.629% Δedge=-0.058%
+  Random (mean) : Δproxy=-0.830% ± 0.145%  Δedge=+0.237% ± 0.167%
+  Center        : Δproxy=-0.836% Δedge=+0.899%
+  Periphery vs Random: -1.39σ (random wins by 0.202%)
+
+Saved /Users/brendan/Developer/macro-place-challenge-2026/experiments/E107_periphery_bias/results/ariane133_multiseed_alpha005.pt
+---
+[02:30:02] START ariane133 α=0.01 → experiments/E107_periphery_bias/results/multiseed_ariane133_a001.log
+[02:45:06] DONE  ariane133 α=0.01
+=== ariane133 α=0.01 (n_seeds=5) ===
+  Control       : Δproxy=-0.275%
+  Periphery     : Δproxy=-0.954% Δedge=-0.085%
+  Random (mean) : Δproxy=-0.956% ± 0.195%  Δedge=+0.298% ± 0.227%
+  Center        : Δproxy=-0.497% Δedge=+0.827%
+  Periphery vs Random: -0.01σ (random wins by 0.003%)
+
+Saved /Users/brendan/Developer/macro-place-challenge-2026/experiments/E107_periphery_bias/results/ariane133_multiseed_alpha010.pt
+---
+[02:45:06] START ariane133 α=0.02 → experiments/E107_periphery_bias/results/multiseed_ariane133_a002.log
+[03:02:21] DONE  ariane133 α=0.02
+=== ariane133 α=0.02 (n_seeds=5) ===
+  Control       : Δproxy=-0.275%
+  Periphery     : Δproxy=-1.075% Δedge=-0.202%
+  Random (mean) : Δproxy=-1.306% ± 0.250%  Δedge=+0.528% ± 0.368%
+  Center        : Δproxy=-0.154% Δedge=+0.951%
+  Periphery vs Random: -0.93σ (random wins by 0.231%)
+
+Saved /Users/brendan/Developer/macro-place-challenge-2026/experiments/E107_periphery_bias/results/ariane133_multiseed_alpha020.pt
+---
+[03:02:21] START ibm09 α=0.01 → experiments/E107_periphery_bias/results/multiseed_ibm09_a001.log
+[03:17:13] DONE  ibm09 α=0.01
+=== ibm09 α=0.01 (n_seeds=5) ===
+  Control       : Δproxy=+0.134%
+  Periphery     : Δproxy=-0.257% Δedge=-0.350%
+  Random (mean) : Δproxy=-0.500% ± 0.182%  Δedge=+0.200% ± 0.209%
+  Center        : Δproxy=-0.137% Δedge=+1.600%
+  Periphery vs Random: -1.33σ (random wins by 0.243%)
+
+Saved /Users/brendan/Developer/macro-place-challenge-2026/experiments/E107_periphery_bias/results/ibm09_multiseed_alpha010.pt
+---
+[03:17:13] START ibm10 α=0.01 → experiments/E107_periphery_bias/results/multiseed_ibm10_a001.log
+[03:45:08] DONE  ibm10 α=0.01
+=== ibm10 α=0.01 (n_seeds=5) ===
+  Control       : Δproxy=-1.369%
+  Periphery     : Δproxy=+9.282% Δedge=+0.362%
+  Random (mean) : Δproxy=+3.021% ± 4.521%  Δedge=-0.387% ± 0.139%
+  Center        : Δproxy=+12.481% Δedge=+1.252%
+  Periphery vs Random: -1.38σ (random wins by 6.261%)
+
+Saved /Users/brendan/Developer/macro-place-challenge-2026/experiments/E107_periphery_bias/results/ibm10_multiseed_alpha010.pt
+---
+[03:45:08] START ibm14 α=0.01 → experiments/E107_periphery_bias/results/multiseed_ibm14_a001.log
+[04:14:14] DONE  ibm14 α=0.01
+=== ibm14 α=0.01 (n_seeds=5) ===
+  Control       : Δproxy=-0.519%
+  Periphery     : Δproxy=-0.860% Δedge=-0.378%
+  Random (mean) : Δproxy=-1.129% ± 0.101%  Δedge=+0.445% ± 0.168%
+  Center        : Δproxy=-1.170% Δedge=+1.377%
+  Periphery vs Random: -2.67σ (random wins by 0.269%)
+
+Saved /Users/brendan/Developer/macro-place-challenge-2026/experiments/E107_periphery_bias/results/ibm14_multiseed_alpha010.pt
+---
+[04:14:14] START ibm17 α=0.01 → experiments/E107_periphery_bias/results/multiseed_ibm17_a001.log
+[04:48:02] DONE  ibm17 α=0.01
+=== ibm17 α=0.01 (n_seeds=5) ===
+  Control       : Δproxy=-0.983%
+  Periphery     : Δproxy=-1.441% Δedge=-1.195%
+  Random (mean) : Δproxy=-1.704% ± 0.089%  Δedge=-0.174% ± 0.219%
+  Center        : Δproxy=-1.604% Δedge=+0.917%
+  Periphery vs Random: -2.97σ (random wins by 0.264%)
+
+Saved /Users/brendan/Developer/macro-place-challenge-2026/experiments/E107_periphery_bias/results/ibm17_multiseed_alpha010.pt
+---
+[04:48:02] START ibm10 α=0.005 → experiments/E107_periphery_bias/results/multiseed_ibm10_a0005.log
+[05:15:56] DONE  ibm10 α=0.005
+=== ibm10 α=0.005 (n_seeds=5) ===
+  Control       : Δproxy=-1.370%
+  Periphery     : Δproxy=+4.739% Δedge=-1.578%
+  Random (mean) : Δproxy=-1.744% ± 1.599%  Δedge=+0.357% ± 0.472%
+  Center        : Δproxy=-2.565% Δedge=-0.054%
+  Periphery vs Random: -4.06σ (random wins by 6.484%)
+
+Saved /Users/brendan/Developer/macro-place-challenge-2026/experiments/E107_periphery_bias/results/ibm10_multiseed_alpha005.pt
+---
+[05:15:56] START ibm14 α=0.005 → experiments/E107_periphery_bias/results/multiseed_ibm14_a0005.log
+[05:45:00] DONE  ibm14 α=0.005
+=== ibm14 α=0.005 (n_seeds=5) ===
+  Control       : Δproxy=-0.519%
+  Periphery     : Δproxy=-0.609% Δedge=+0.151%
+  Random (mean) : Δproxy=-1.079% ± 0.147%  Δedge=+0.350% ± 0.169%
+  Center        : Δproxy=-1.303% Δedge=+1.282%
+  Periphery vs Random: -3.20σ (random wins by 0.471%)
+
+Saved /Users/brendan/Developer/macro-place-challenge-2026/experiments/E107_periphery_bias/results/ibm14_multiseed_alpha005.pt
+---
+[05:45:00] START ariane136 α=0.01 → experiments/E107_periphery_bias/results/multiseed_ariane136_a001.log
+[05:59:22] DONE  ariane136 α=0.01
+=== ariane136 α=0.01 (n_seeds=5) ===
+  Control       : Δproxy=-0.226%
+  Periphery     : Δproxy=-0.380% Δedge=-0.551%
+  Random (mean) : Δproxy=-0.823% ± 0.120%  Δedge=-0.243% ± 0.226%
+  Center        : Δproxy=-0.548% Δedge=+0.126%
+  Periphery vs Random: -3.70σ (random wins by 0.443%)
+
+Saved /Users/brendan/Developer/macro-place-challenge-2026/experiments/E107_periphery_bias/results/ariane136_multiseed_alpha010.pt
+---
+[05:59:22] START mempool_tile α=0.01 → experiments/E107_periphery_bias/results/multiseed_mempool_tile_a001.log
+[06:13:38] DONE  mempool_tile α=0.01
+=== mempool_tile α=0.01 (n_seeds=5) ===
+  Control       : Δproxy=+0.000%
+  Periphery     : Δproxy=+0.406% Δedge=-1.392%
+  Random (mean) : Δproxy=+0.392% ± 0.171%  Δedge=-1.336% ± 0.308%
+  Center        : Δproxy=+1.147% Δedge=+0.657%
+  Periphery vs Random: -0.08σ (random wins by 0.014%)
+
+Saved /Users/brendan/Developer/macro-place-challenge-2026/experiments/E107_periphery_bias/results/mempool_tile_multiseed_alpha010.pt
+---
+[06:13:38] START nvdla α=0.01 → experiments/E107_periphery_bias/results/multiseed_nvdla_a001.log
+[06:35:18] DONE  nvdla α=0.01
+=== nvdla α=0.01 (n_seeds=5) ===
+  Control       : Δproxy=-0.704%
+  Periphery     : Δproxy=-0.672% Δedge=-0.777%
+  Random (mean) : Δproxy=-1.111% ± 0.031%  Δedge=+0.564% ± 0.587%
+  Center        : Δproxy=-1.480% Δedge=+1.019%
+  Periphery vs Random: -14.04σ (random wins by 0.439%)
+
+Saved /Users/brendan/Developer/macro-place-challenge-2026/experiments/E107_periphery_bias/results/nvdla_multiseed_alpha010.pt
+---
+[06:35:18] OVERNIGHT CHAIN COMPLETE
