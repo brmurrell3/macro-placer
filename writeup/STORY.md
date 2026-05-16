@@ -15,12 +15,16 @@
 
 **We diagnose macro placement's local-move plateau as a high-index saddle of
 the smooth proxy, then apply transition-state methods from chemistry /
-materials science to escape it — landing 1.0771 vs RePlAce 1.4578 (−26.1 %)
-under partcl's 60-min cap, with zero overlaps and no per-benchmark tuning.**
+materials science to escape it — landing 1.07820 (cascade alone, Option A)
+or 1.06650 (cascade + DREAMPlace 3rd lane, Option B) on 17 IBM
+benchmarks vs RePlAce 1.4578 (−26.9 % at Option B), under partcl's 60-min
+cap, with zero overlaps and no per-benchmark tuning.**
 
 That sentence carries the headline: a *new mechanism* (the saddle reframing),
-a *verified result* on the field's reference baseline, and the
-*generalization claim* (no tuning, uniform across 21 designs).
+a *verified result* on the field's reference baseline, the *generalization
+claim* (no tuning, uniform across 21 designs), and the *empirical refutation
+of a documented PATH B autopsy* (DREAMPlace's basin, under matched polish,
+opens a third valley the cascade cannot reach alone — §8.12).
 
 ---
 
@@ -160,9 +164,9 @@ wave proves the local-move family has been exhausted.
   cloud (pre-A1)** — closes the gap from the cascade ceiling (1.0612) to
   within 1.5 %.
 
-**Headline result:** 1.08151 → 1.0612 (uncapped ceiling, −1.88 %) →
-**1.0771 under 60-min cap** (−5.2 % vs morning baseline). All zero overlaps,
-no per-benchmark tuning, CPU-only Python.
+**Headline result (cascade era):** 1.08151 → 1.0612 (uncapped ceiling,
+−1.88 %) → **1.07820 under 60-min cap** (Option A, the cap-bound floor).
+All zero overlaps, no per-benchmark tuning, CPU-only Python.
 
 **Key insight (the paper's strongest claim):** *The plateau every prior
 local-move placement heuristic reaches is structurally a high-index saddle
@@ -172,8 +176,60 @@ climbing-image NEB (Henkelman & Jónsson 2000), the dimer method (Henkelman
 principled machinery to escape it.* This is the connection the paper exists
 to make.
 
-**Paper sections:** §§8.9–8.11 (scaffold added 2026-05-13 in commits
-`7efc99e`, `438007c`; prose pending).
+**Paper sections:** §§8.9–8.11 (drafted prose).
+
+---
+
+### Act 4 (epilogue) — DREAMPlace as a third init lane (→ §8.12)
+
+**Wall:** PATH B (DREAMPlace integration) was documented as falsified
+on 2026-05-10 after a 25-config sweep concluded that DP basins were
+*structurally below* cascade-capped outputs on every hard benchmark
+(ibm10 +16.5 %, ibm12 +5.2 %, ibm14 +9.7 %, ibm17 +5.8 %). The wave
+of E92–E98 work that followed targeted modifications to DP, on the
+assumption that the stock basin was unrecoverable.
+
+**Diagnostic move (the autopsy refutation):** Re-reading the autopsy
+driver revealed an asymmetry — the SDF and DPO lanes received the full
+~1100 s polish budget each; the DP lane received only **60 s of CD
+cleanup**, two orders of magnitude less. The autopsy table compared
+DP basins after 60 s of polish against SDF/DPO basins after full
+polish. The original conclusion ("DP polishes 10–23 % worse") was a
+statement about *polish budget*, not basin quality.
+
+**Mechanism (E91, → §8.12):**
+- Stock DREAMPlace (auto-adaptive `target_density = clip(macro_density
+  × 1.5, 0.40, 0.85)` — rule-compliant, no per-bench dispatch).
+- `greedy_macro_legalize` to resolve DP's residual overlaps.
+- Matched polish budget: CD-adaptive ≤ 660 s + LNS ≤ 200 s + SA-v2
+  ≤ 200 s — same as E25 and E41 receive.
+- Cascading saddle escape on the polished plateau.
+
+**Result on the 3 hardest IBM benches that the autopsy ruled out:**
+- ibm12: cascade 1.3031 → DP+polish **1.129** (**−13.3 %**)
+- ibm17: cascade 1.4546 → DP+polish **1.307** (**−10.2 %**)
+- ibm14: cascade 1.2919 → DP+polish **1.243** (**−3.8 %**)
+- ibm10: cascade 1.0775 → DP+polish 1.095 (+1.6 %; plateau-pick keeps
+  the cascade winner on this bench).
+
+Hard-bench aggregate: cascade-capped **1.2818** → DP+full-polish
+**1.1936** = **−6.9 %**.
+
+The submission architecture extends the cascade base with DREAMPlace
+as a third init lane and a per-bench best-of plateau pick — the same
+meta-algorithmic structure E48 used for 2 lanes (§8.6), generalized to
+3. Option B (`cd_lns_sa_cascade_dp_lane/placer.py`) reaches **IBM
+1.06650 / NG45 0.68086** on the verified gates; Option A
+(`placer_adaptive.py`, no DREAMPlace dep) is the safer fallback at
+**1.07820 / 0.68102**. Falls back to A if `DREAMPLACE_ROOT` unset.
+
+**Key insight (the paper's second strongest claim):** *Black-box basin
+generators must be evaluated under matched polish budgets before
+drawing structural conclusions about basin quality. The original PATH B
+autopsy was not a finding about DREAMPlace; it was a finding about
+the test that produced it.*
+
+**Paper sections:** §8.12 (drafted 2026-05-16).
 
 ---
 
@@ -183,18 +239,23 @@ Standard CAD-paper structure → our content.
 
 | Paper section | Our content | Status |
 |---|---|---|
-| **Abstract** | Three-act compressed; headline 1.0771 / NG45 0.6870 vs RePlAce 1.4578 | scaffold + TODO(prose) |
-| **§1 Introduction** | Problem statement, proxy definition, baselines, contributions list, paper organization | scaffold |
-| **§2 Background** | Proxy decomposition (E8), prior approaches (RePlAce, leaderboard tops), competition setup | needs new section |
-| **§3 Diagnostic Phase — discovering CD** | §§4–8 of current paper merged + tightened | scaffold + needs prose |
-| **§4 Compositional Polish** | §§8.5–8.6 (E25/E18/E41 layers + E48 hybrid) | scaffold |
-| **§5 The Infeasibility Wall + Failed Extensions** | §§8.7–8.8 (E53–E54 wave + E65 wall + E61_v2) | scaffold |
-| **§6 Hessian Saddle Escape (CENTRAL INNOVATION)** | §§8.9–8.10 (E74 + E84) | scaffold added 2026-05-13 |
-| **§7 Implementation: closing the cap-vs-ceiling gap** | §8.11 (A1 speedup) | scaffold added 2026-05-13 |
-| **§8 Empirical Results** | §9 (lineage table extended through A1) | table updated; per-bench TODO |
-| **§9 Discussion** | §10 (objective mismatch, bypass-don't-fix, compositional, transfer pattern, saddle insight) | scaffold + needs prose |
-| **§10 Related Work** | NEB / dimer / GAD references + macro placement literature | TODO — does not currently exist |
-| **§11 Conclusion** | The three-act recap + the saddle insight as a transferable principle | TODO |
+| **Abstract** | Four-era compressed; headline Option B 1.06650 / NG45 0.68086, Option A 1.07820, gaps to leaderboard vmallela 1.0109 +5.6 % | **drafted** 2026-05-16 |
+| **§1 Introduction** | Problem statement, proxy definition, baselines, contributions list, section roadmap | **drafted** 2026-05-16 |
+| **§§2-3 Polyhedra + Navigation** | Disjunctive decomposition + 7-module nav system + 1.4867 ceiling | **drafted** 2026-05-16 |
+| **§4 Congestion Barrier** | LP-HPWL ρ = −0.001 diagnostic; 6/20/74 decomposition; swap+LP corroboration | **drafted** 2026-05-16 |
+| **§5 DPO First Pivot** | Architecture + ablation + novelty boundary | **drafted** 2026-05-16 |
+| **§6 Why DPO Crosses Barrier** | Penalty continuation + complexification interpretation | **drafted** 2026-05-16 |
+| **§7 RUDY Limit** | 10.9 % top-5 % hotspot overlap; direction-not-magnitude | **drafted** 2026-05-16 |
+| **§8 CD Breakthrough** | 4657× evaluator + breakpoint enumeration + plateau detection + grid-bin LNS | **drafted** 2026-05-16 |
+| **§§8.5-8.7 Compositional Polish + Hybrid + Failed Extensions** | E25/E18/E41/E48 hybrid + E53-E54 wave + E65 wall + E61_v2 | **drafted** 2026-05-16 |
+| **§8.8 IBM/NG45 Transfer Pattern** | 5-experiment regression class + density hypothesis + OOD framing | **drafted** 2026-05-16 |
+| **§8.9 Hessian Saddle Escape (CENTRAL INNOVATION)** | E74 mechanism + ariane133 breakthrough | drafted 2026-05-13 |
+| **§8.10 Cascading** | Iterate until eigenvalue ≥ 0; 1.0612 uncapped | drafted 2026-05-13 |
+| **§8.11 PATH A speedup** | 5.36× delta_cost + LNS-helper conversions | drafted 2026-05-13 |
+| **§8.12 DREAMPlace Lane** | E91 autopsy refutation; Option B architecture | **drafted** 2026-05-16 |
+| **§9 Empirical Results** | Lineage table through Option A/B; NG45 transfer; compute envelope | **drafted** 2026-05-16 (per-bench data table TODO) |
+| **§10 Discussion** | Objective mismatch recurrence; bypass-don't-fix; compositional multiplicativity; OOD pattern; limitations; field implications | **drafted** 2026-05-16 |
+| **§11 References** | NEB / dimer / GAD references + macro placement literature + OOD generalization | drafted 2026-05-13 |
 
 ---
 
@@ -210,25 +271,45 @@ In priority order, what to draft next:
    - Transition-state methods applied to other combinatorial problems
      (rare; this is part of the novelty). ~3–5 papers if they exist.
 
-2. **§2 Background** — proxy decomposition formal statement, what
-   PlacementCost computes, what compute_proxy_cost returns. Currently
-   distributed across §§1, 4, 7.
+2. **Per-benchmark champion table** for §9.2 (Option A / Option B
+   per-bench numbers alongside RePlAce baseline). Per-bench data
+   sourced from `results/CDLNSSACascadeDPLanePlacer_*.json` and
+   `results/CDLNSSACascadeAdaptivePlacer_*.json`; needs freezing
+   into `writeup/data/per_bench_champion.csv`.
 
-3. **Prose for the central innovation sections (§§6–7)** — currently
-   `TODO(prose)` blocks. These are the highest-leverage prose to write
-   because they're what the paper exists to communicate.
+3. **Figures (drafted-but-not-rendered).** Six identified:
+   - Figure 1: λ-spectrum bar chart for ibm01 E48 plateau (motivates
+     the high-index-saddle claim).
+   - Figure 2: schematic of the saddle escape step.
+   - Figure 3: cascade lift-per-iteration line chart (3 representative
+     benchmarks).
+   - Figure 4: champion lineage bar chart (RePlAce → CD → E48 → E74 →
+     E84 → Option A → Option B).
+   - Figure 5: per-bench E48 / E74 / Option A / Option B stacked bar
+     chart over 17 IBM benches.
+   - Figure 6: per-bench plateau-pick winner stacked bar (SDF / DPO /
+     DP lane color-coded; visualizes the §8.12 architecture).
+   - Figure 7 (optional): macro-clearance histogram from
+     `analysis/macro_clearance_diagnostic/`.
 
-4. **Per-benchmark champion table** for §8 (E84 / A4-v2 per-bench numbers
-   alongside RePlAce baseline). Currently a TODO in §9.2.
+4. **Frozen-data artifacts** for figure reproducibility:
+   - `writeup/data/lambda_spectrum_ibm01.txt` (top-8 eigenvalues).
+   - `writeup/data/rudy_ibm01.txt` (3.1×, 10.9 %, Jaccard 0.057).
+   - `writeup/data/cascade_lift_traces/{ibm01,ibm10,ibm17}.csv`.
+   - `writeup/data/lp_hpwl_correlations_ibm01.csv`.
+   - `writeup/data/lane_pick_distribution.csv` (lane-pick winners
+     per bench for §8.12 Figure 6).
 
-5. **Figures.** Several already TODO'd:
-   - λ-spectrum plot for ibm01 plateau (motivates the high-index-saddle claim)
-   - Cascade lift-per-iteration plot (justifies cascading vs single-shot)
-   - Per-bench E48 vs E74 vs E84 vs A4-v2 bar chart
-   - Macro-clearance histogram from `analysis/macro_clearance_diagnostic/`
+5. **Cold-read pass.** All prose drafted but unchecked against a fresh
+   reader's understanding. Pass should flag run-on paragraphs,
+   inconsistent terminology (Option A vs A4-v2 vs cascade-adaptive),
+   stale numbers (any remaining "1.137" / "1.0771-only" / "Cezar 1.037"
+   references).
 
-6. **Abstract prose** — currently a TODO with bullet points; needs
-   ~250 words of clean prose hitting the three-act arc.
+6. **Math notation consistency pass.** Hessian symbol (`H` vs `∇²f`),
+   eigenvector indexing (`v_0` vs `v_min` vs `v_min(0)`), ε naming
+   (`ε` vs `eps` vs `epsilon`), and gradient symbol consistency
+   across §§6, 8.9, 8.10.
 
 ---
 
