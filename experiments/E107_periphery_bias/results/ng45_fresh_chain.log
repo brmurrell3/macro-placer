@@ -1,0 +1,37 @@
+[07:10:30] START fresh ariane136 wrapper
+[07:41:21] DONE ariane136
+  REJECT periphery (ovl=10, Δ=-0.00295); keeping Lévy
+proxy=0.6498  (wl=0.053 den=0.498 cong=0.697)  VALID  [1843.12s]
+Results written to results/CDLNSSACascadeLevyPeripheryPlacer_20260516_074120.json
+  Lévy cascade done: 0.64980 iters=2
+  WINNER: levy_cascade proxy=0.64980 (levy_cascade=0.64980, E41=0.67324, E25=0.68177)  total wall=1705s
+  Lévy cascade done: proxy=0.64980 ovl=0 (wall=1711s)
+  periphery done: proxy=0.65275 (-0.00295) ovl=10 (total wall=1843s)
+  REJECT periphery (ovl=10, Δ=-0.00295); keeping Lévy
+proxy=0.6498  (wl=0.053 den=0.498 cong=0.697)  VALID  [1843.12s]
+---
+[07:41:21] START fresh mempool_tile wrapper
+[08:15:17] DONE mempool_tile
+  REJECT periphery (ovl=0, Δ=-0.00276); keeping Lévy
+proxy=0.7375  (wl=0.053 den=0.660 cong=0.708)  VALID  [2028.68s]
+Results written to results/CDLNSSACascadeLevyPeripheryPlacer_20260516_081517.json
+  Lévy cascade done: 0.73750 iters=3
+  WINNER: levy_cascade proxy=0.73750 (levy_cascade=0.73750, E41=0.73768, E25=0.74377)  total wall=1904s
+  Lévy cascade done: proxy=0.73750 ovl=0 (wall=1910s)
+  periphery done: proxy=0.74026 (-0.00276) ovl=0 (total wall=2029s)
+  REJECT periphery (ovl=0, Δ=-0.00276); keeping Lévy
+proxy=0.7375  (wl=0.053 den=0.660 cong=0.708)  VALID  [2028.68s]
+---
+[08:15:17] START fresh nvdla wrapper
+[08:24:25] DONE nvdla
+    e25 = CDLNSSAPlacer(**e25_kwargs).place(benchmark)
+  File "/Users/brendan/Developer/macro-place-challenge-2026/submissions/cd_lns_sa/placer.py", line 612, in place
+    raise RuntimeError(
+  LNS sample 1: K=6, Δ=-0.00202 (moves=2/6), proxy=0.67832, sample_wall=9.9s, total elapsed=9.9s
+  LNS sample 2: K=6, Δ=-0.00000 (moves=1/6), proxy=0.67832, sample_wall=8.9s, total elapsed=18.8s
+  LNS sample 3: K=6, Δ=-0.00000 (moves=1/6), proxy=0.67831, sample_wall=8.9s, total elapsed=27.7s
+  LNS sample 4: K=6, Δ=+0.00000 (moves=0/6), proxy=0.67831, sample_wall=8.9s, total elapsed=36.7s
+  LNS done: samples=4, Δ=-0.00202, wall=36.7s, proxy=0.67831
+  SA-v2 done: lift_vs_init=+0.00001, best=0.67830, final proxy=0.67830
+---
+[08:24:25] NG45 FRESH CHAIN COMPLETE

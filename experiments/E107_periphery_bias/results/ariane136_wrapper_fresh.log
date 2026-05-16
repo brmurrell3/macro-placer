@@ -1,0 +1,182 @@
+================================================================================
+evaluate · CDLNSSACascadeLevyPeripheryPlacer  (submissions/cd_lns_sa_cascade_levy_periphery/placer.py)
+================================================================================
+
+  ariane136... #[INFO] Reading from external/MacroPlacement/Flows/NanGate45/ariane136/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 25, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+=== CDLNSSACascadeLevyPeripheryPlacer (ariane136) ===
+  budget split: Lévy=3090.0s, periphery polish=180.0s
+=== CDLNSSACascadeLevyPlacer (ariane136) ===
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane136/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 25, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+  budget enforced: 3090s; E25 cap≈989s, E41 cap≈1082s, cascade≈1020s, K_eps=3
+  Phase 1: E25 (CDLNSSAPlacer)
+=== CDLNSSAPlacer (ariane136): CD cap=618s, LNS=185s, SA=185s ===
+  num_macros=908, n_hard=136, canvas=1446.4x1446.4
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane136/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 25, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+  SDF init wall = 1.9 s
+  overlap projection: 0 iters, residual count=0
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane136/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 25, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+  init proxy=0.82461 [wl=0.0521 d=0.8124 c=0.7326]
+  starting CD phase (cap=618s)
+  sweep   1  elapsed=   19.9s  sweep_t=  19.9s  proxy=0.72173  Δ=+0.10288  accepted=1329/1816  gs=0  [wl=0.0611 d=0.5993 c=0.7220]
+  sweep   2  elapsed=   37.0s  sweep_t=  17.1s  proxy=0.70892  Δ=+0.01281  accepted=616/1816  gs=0  [wl=0.0599 d=0.5817 c=0.7165]
+  sweep   3  elapsed=   53.3s  sweep_t=  16.2s  proxy=0.70312  Δ=+0.00580  accepted=379/1816  gs=0  [wl=0.0605 d=0.5699 c=0.7153]
+  sweep   4  elapsed=   69.4s  sweep_t=  16.1s  proxy=0.69816  Δ=+0.00496  accepted=302/1816  gs=0  [wl=0.0599 d=0.5623 c=0.7142]
+  sweep   5  elapsed=   85.1s  sweep_t=  15.8s  proxy=0.69482  Δ=+0.00334  accepted=204/1816  gs=0  [wl=0.0597 d=0.5567 c=0.7135]
+  sweep   6  elapsed=  100.8s  sweep_t=  15.7s  proxy=0.69246  Δ=+0.00236  accepted=175/1816  gs=0  [wl=0.0594 d=0.5529 c=0.7132]
+  sweep   7  elapsed=  116.3s  sweep_t=  15.5s  proxy=0.69094  Δ=+0.00151  accepted=118/1816  gs=0  [wl=0.0598 d=0.5496 c=0.7126]
+  sweep   8  elapsed=  131.8s  sweep_t=  15.5s  proxy=0.68908  Δ=+0.00186  accepted=126/1816  gs=0  [wl=0.0597 d=0.5464 c=0.7124]
+  sweep   9  elapsed=  147.1s  sweep_t=  15.4s  proxy=0.68793  Δ=+0.00116  accepted=105/1816  gs=0  [wl=0.0596 d=0.5444 c=0.7123]
+  sweep  10  elapsed=  162.5s  sweep_t=  15.3s  proxy=0.68710  Δ=+0.00083  accepted=101/1816  gs=0  [wl=0.0595 d=0.5432 c=0.7121]
+  sweep  11  elapsed=  177.7s  sweep_t=  15.2s  proxy=0.68673  Δ=+0.00037  accepted=57/1816  gs=0  [wl=0.0594 d=0.5428 c=0.7118]
+  sweep  12  elapsed=  192.9s  sweep_t=  15.2s  proxy=0.68661  Δ=+0.00012  accepted=32/1816  gs=0  [wl=0.0594 d=0.5426 c=0.7119]
+  sweep  13  elapsed=  208.0s  sweep_t=  15.2s  proxy=0.68656  Δ=+0.00005  accepted=35/1816  gs=0  [wl=0.0594 d=0.5425 c=0.7119]
+  sweep  14  elapsed=  223.2s  sweep_t=  15.2s  proxy=0.68654  Δ=+0.00002  accepted=18/1816  gs=0  [wl=0.0594 d=0.5425 c=0.7119]
+  sweep  15  elapsed=  238.3s  sweep_t=  15.1s  proxy=0.68652  Δ=+0.00002  accepted=12/1816  gs=0  [wl=0.0593 d=0.5425 c=0.7119]
+  sweep  16  elapsed=  253.4s  sweep_t=  15.0s  proxy=0.68652  Δ=+0.00000  accepted=2/1816  gs=0  [wl=0.0593 d=0.5425 c=0.7119]
+  sweep  17  elapsed=  268.4s  sweep_t=  15.0s  proxy=0.68652  Δ=+0.00000  accepted=1/1816  gs=0  [wl=0.0593 d=0.5425 c=0.7119]
+  sweep  18  elapsed=  283.6s  sweep_t=  15.2s  proxy=0.68652  Δ=+0.00000  accepted=1/1816  gs=0  [wl=0.0593 d=0.5425 c=0.7119]
+  sweep  19  elapsed=  298.6s  sweep_t=  15.1s  proxy=0.68652  Δ=+0.00000  accepted=1/1816  gs=0  [wl=0.0593 d=0.5425 c=0.7119]
+  sweep  20  elapsed=  313.6s  sweep_t=  15.0s  proxy=0.68652  Δ=+0.00000  accepted=0/1816  gs=0  [wl=0.0593 d=0.5425 c=0.7119]
+  CD done: exit=plateau, sweeps=20, accepts=3614, wall=313.6s, proxy=0.68652
+  starting LNS phase (budget=185s)
+  LNS budget=185s, destroy K=6 (=5.0% of 136 hard movables, capped at 30), strategy=cost_aware
+  LNS sample 1: K=6, Δ=-0.00181 (moves=4/6), proxy=0.68471, sample_wall=1.7s, total elapsed=1.7s
+  LNS sample 2: K=6, Δ=-0.00052 (moves=2/6), proxy=0.68420, sample_wall=1.7s, total elapsed=3.4s
+  LNS sample 3: K=6, Δ=-0.00003 (moves=1/6), proxy=0.68417, sample_wall=1.8s, total elapsed=5.2s
+  LNS sample 4: K=6, Δ=+0.00000 (moves=0/6), proxy=0.68417, sample_wall=1.9s, total elapsed=7.0s
+  LNS converged at sample 4 (no improvement)
+  LNS done: samples=4, Δ=-0.00235, wall=7.0s, proxy=0.68417
+  starting SA-v2 phase (budget=185s)
+  SA v2 budget=185s, T0=5.00e-04, Tf=1.00e-06, |H|=136, seed=42 (best-so-far tracking ON)
+  SA v2 t=  30.0s T=1.83e-04 proposed=8601 better=3185 worse=3358 rejected=2058 skipped=426 cur=0.69563 best=0.68417
+  SA v2 t=  60.0s T=6.69e-05 proposed=16535 better=5952 worse=6124 rejected=4459 skipped=699 cur=0.68831 best=0.68417
+  SA v2 t=  90.0s T=2.45e-05 proposed=24142 better=8244 worse=8452 rejected=7446 skipped=968 cur=0.68627 best=0.68417
+  SA v2 t= 120.0s T=8.95e-06 proposed=31493 better=10074 worse=10155 rejected=11264 skipped=1182 cur=0.68389 best=0.68387
+  SA v2 t= 150.0s T=3.28e-06 proposed=38768 better=11533 worse=11456 rejected=15779 skipped=1533 cur=0.68230 best=0.68230
+  SA v2 t= 180.0s T=1.20e-06 proposed=45847 better=12556 worse=12350 rejected=20941 skipped=1988 cur=0.68180 best=0.68180
+  SA v2 done: proposed=47096, better=12706, worse=12493, rejected=21897, skipped=2096, init=0.68417, best=0.68177 (found at t=182.1s), chain-final=0.68178, restored=True, evaluator-final=0.68177
+  SA-v2 done: lift_vs_init=+0.00240, best=0.68177, final proxy=0.68177
+  TOTAL lifts: CD=+0.13809, LNS=+0.00235, SA=+0.00240
+  total wall: 509.4 s (SDF + project + CD + LNS + SA + validate)
+  E25 done: proxy=0.68177 (wall=515s)
+  Phase 2: E41 (CDLNSSADPOKJointPlacer)
+=== CDLNSSADPOKJointPlacer (ariane136): DPO init -> CD cap=618s -> LNS=154s -> SA=154s -> KJoint=154s ===
+  num_macros=908, n_hard=136, canvas=1446.4x1446.4
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane136/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 25, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane136/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 25, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+    P1: wl=0.083 den=0.813 cong=9.498
+  DPO phase 1 done: best_score=4.5323  overlaps=0
+    P2: wl=0.070 den=0.654 cong=7.261
+  DPO phase 2 done: best_score=3.8038  overlaps=0
+    P3: wl=0.067 den=0.636 cong=6.755
+  DPO phase 3 done: best_score=3.7164  overlaps=0
+  best_of_v2: SDF=0.8246  DPO-v2=0.7308  -> DPO-v2
+  DPO init wall = 20.7 s
+  overlap projection: 0 iters, residual count=0
+  init proxy=0.73082 [wl=0.0503 d=0.6329 c=0.7282]
+  starting CD phase (cap=618s)
+  sweep   1  elapsed=   18.6s  sweep_t=  18.6s  proxy=0.70624  Δ=+0.02458  accepted=1077/1816  gs=0  [wl=0.0527 d=0.5949 c=0.7122]
+  sweep   2  elapsed=   35.7s  sweep_t=  17.2s  proxy=0.69248  Δ=+0.01376  accepted=676/1816  gs=0  [wl=0.0532 d=0.5688 c=0.7098]
+  sweep   3  elapsed=   51.9s  sweep_t=  16.2s  proxy=0.68753  Δ=+0.00495  accepted=375/1816  gs=0  [wl=0.0524 d=0.5615 c=0.7087]
+  sweep   4  elapsed=   67.5s  sweep_t=  15.6s  proxy=0.68448  Δ=+0.00305  accepted=239/1816  gs=0  [wl=0.0516 d=0.5575 c=0.7082]
+  sweep   5  elapsed=   82.9s  sweep_t=  15.4s  proxy=0.68276  Δ=+0.00172  accepted=160/1816  gs=0  [wl=0.0516 d=0.5541 c=0.7082]
+  sweep   6  elapsed=   98.2s  sweep_t=  15.3s  proxy=0.68100  Δ=+0.00177  accepted=171/1816  gs=0  [wl=0.0517 d=0.5506 c=0.7079]
+  sweep   7  elapsed=  113.4s  sweep_t=  15.2s  proxy=0.68001  Δ=+0.00099  accepted=144/1816  gs=0  [wl=0.0520 d=0.5483 c=0.7076]
+  sweep   8  elapsed=  128.4s  sweep_t=  15.0s  proxy=0.67965  Δ=+0.00036  accepted=77/1816  gs=0  [wl=0.0518 d=0.5480 c=0.7076]
+  sweep   9  elapsed=  143.3s  sweep_t=  14.9s  proxy=0.67930  Δ=+0.00035  accepted=45/1816  gs=0  [wl=0.0518 d=0.5475 c=0.7076]
+  sweep  10  elapsed=  158.2s  sweep_t=  14.8s  proxy=0.67924  Δ=+0.00005  accepted=22/1816  gs=0  [wl=0.0517 d=0.5474 c=0.7076]
+  sweep  11  elapsed=  173.0s  sweep_t=  14.9s  proxy=0.67921  Δ=+0.00004  accepted=19/1816  gs=0  [wl=0.0517 d=0.5473 c=0.7076]
+  sweep  12  elapsed=  187.8s  sweep_t=  14.8s  proxy=0.67921  Δ=+0.00000  accepted=5/1816  gs=0  [wl=0.0517 d=0.5473 c=0.7076]
+  sweep  13  elapsed=  202.6s  sweep_t=  14.8s  proxy=0.67921  Δ=+0.00000  accepted=2/1816  gs=0  [wl=0.0517 d=0.5473 c=0.7076]
+  sweep  14  elapsed=  217.5s  sweep_t=  14.8s  proxy=0.67921  Δ=+0.00000  accepted=1/1816  gs=0  [wl=0.0517 d=0.5473 c=0.7076]
+  sweep  15  elapsed=  232.2s  sweep_t=  14.8s  proxy=0.67921  Δ=+0.00000  accepted=2/1816  gs=0  [wl=0.0517 d=0.5473 c=0.7076]
+  sweep  16  elapsed=  247.0s  sweep_t=  14.8s  proxy=0.67921  Δ=+0.00000  accepted=1/1816  gs=0  [wl=0.0517 d=0.5473 c=0.7076]
+  sweep  17  elapsed=  261.8s  sweep_t=  14.8s  proxy=0.67921  Δ=+0.00000  accepted=1/1816  gs=0  [wl=0.0517 d=0.5473 c=0.7076]
+  sweep  18  elapsed=  276.6s  sweep_t=  14.8s  proxy=0.67921  Δ=+0.00000  accepted=1/1816  gs=0  [wl=0.0517 d=0.5473 c=0.7076]
+  sweep  19  elapsed=  291.4s  sweep_t=  14.8s  proxy=0.67921  Δ=+0.00000  accepted=2/1816  gs=0  [wl=0.0517 d=0.5473 c=0.7076]
+  sweep  20  elapsed=  306.2s  sweep_t=  14.8s  proxy=0.67921  Δ=+0.00000  accepted=2/1816  gs=0  [wl=0.0517 d=0.5473 c=0.7076]
+  CD done: exit=plateau, sweeps=20, accepts=3022, wall=306.2s, proxy=0.67921
+  starting LNS phase (budget=154s)
+  LNS budget=154s, destroy K=6 (=5.0% of 136 hard movables, capped at 30), strategy=cost_aware
+  LNS sample 1: K=6, Δ=-0.00191 (moves=2/6), proxy=0.67730, sample_wall=1.9s, total elapsed=1.9s
+  LNS sample 2: K=6, Δ=-0.00098 (moves=2/6), proxy=0.67632, sample_wall=1.7s, total elapsed=3.6s
+  LNS sample 3: K=6, Δ=-0.00061 (moves=2/6), proxy=0.67571, sample_wall=2.1s, total elapsed=5.7s
+  LNS sample 4: K=6, Δ=-0.00016 (moves=1/6), proxy=0.67555, sample_wall=2.2s, total elapsed=7.9s
+  LNS sample 5: K=6, Δ=+0.00000 (moves=0/6), proxy=0.67555, sample_wall=2.3s, total elapsed=10.2s
+  LNS converged at sample 5 (no improvement)
+  LNS done: samples=5, Δ=-0.00365, wall=10.2s, proxy=0.67555
+  starting SA-v2 phase (budget=154s)
+  SA v2 budget=154s, T0=5.00e-04, Tf=1.00e-06, |H|=136, seed=42 (best-so-far tracking ON)
+  SA v2 t=  30.0s T=1.50e-04 proposed=8301 better=3169 worse=3363 rejected=1769 skipped=383 cur=0.68374 best=0.67555
+  SA v2 t=  60.0s T=4.48e-05 proposed=16185 better=5990 worse=6107 rejected=4088 skipped=621 cur=0.67976 best=0.67555
+  SA v2 t=  90.0s T=1.34e-05 proposed=23753 better=8207 worse=8266 rejected=7280 skipped=880 cur=0.67701 best=0.67555
+  SA v2 t= 120.0s T=4.01e-06 proposed=31217 better=10011 worse=9954 rejected=11252 skipped=1258 cur=0.67542 best=0.67541
+  SA v2 t= 150.0s T=1.20e-06 proposed=38479 better=11445 worse=11254 rejected=15780 skipped=1767 cur=0.67461 best=0.67461
+  SA v2 done: proposed=39553, better=11632, worse=11440, rejected=16481, skipped=1838, init=0.67555, best=0.67430 (found at t=154.5s), chain-final=0.67430, restored=True, evaluator-final=0.67430
+  SA-v2 done: lift_vs_init=+0.00125, best=0.67430, proxy=0.67430
+  starting K-joint phase (budget=154s, K=3, top_N=5)
+  K-joint budget=154s, K=3, top_N=5, |H|=136, seed=42
+  K-joint top-5 by adjacency: m20=26.517, m31=26.517, m16=25.818, m37=25.760, m38=25.671
+  K-joint pass 1: tuples=45, committed=10, Δ=-0.00106, proxy=0.67324, pass_wall=115.5s, elapsed=115.5s
+  K-joint pass 2: tuples=45, committed=0, Δ=+0.00000, proxy=0.67324, pass_wall=39.0s, elapsed=154.5s
+  K-joint converged at pass 2 (no improvement)
+  K-joint done: passes=2, tuples_tried=64, committed=10, Δ=-0.00106, wall=154.5s, final proxy=0.67324
+  TOTAL lifts: CD=+0.05161, LNS=+0.00365, SA=+0.00125, KJoint=+0.00106
+  total wall: 647.4 s (DPO + project + CD + LNS + SA + KJoint + validate)
+  E41 done: proxy=0.67324 (wall=1168s)
+  E48 plateau = E41 (0.67324)
+  Phase 3: Lévy cascading saddle (budget 1912s, max_iters 5, K=3, σ=1.0)
+[levy] init proxy: 0.67324
+[levy] iter 1/5 eps_grid=['0.824', '2.697', '4.428']
+  λ_min = -1.7139e-03
+  iter1 sign=+1 eps=0.824: NEW BEST 0.64981 (Δ vs init=-0.02343)
+  iter1 sign=-1 eps=0.824: NEW BEST 0.64980 (Δ vs init=-0.02343)
+[levy] iter 2/5 eps_grid=['0.149', '1.943', '26.102']
+  λ_min = -1.5354e-04
+  λ_min >= -tol; reached local min
+[levy] done: init=0.67324 best=0.64980 Δ=-0.02343 wall=527s iters=2
+  Lévy cascade done: 0.64980 iters=2
+  WINNER: levy_cascade proxy=0.64980 (levy_cascade=0.64980, E41=0.67324, E25=0.68177)  total wall=1705s
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane136/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 25, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+  Lévy cascade done: proxy=0.64980 ovl=0 (wall=1711s)
+  Periphery push α=0.01 + CD polish (budget 180s)
+  periphery done: proxy=0.65275 (-0.00295) ovl=10 (total wall=1843s)
+  REJECT periphery (ovl=10, Δ=-0.00295); keeping Lévy
+proxy=0.6498  (wl=0.053 den=0.498 cong=0.697)  VALID  [1843.12s]
+Results written to results/CDLNSSACascadeLevyPeripheryPlacer_20260516_074120.json
+Logged to results/experiment_log.jsonl

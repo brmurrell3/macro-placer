@@ -1,0 +1,87 @@
+================================================================================
+evaluate · CDLNSSACascadeLevyPeripheryPlacer  (submissions/cd_lns_sa_cascade_levy_periphery/placer.py)
+================================================================================
+
+  nvdla... #[INFO] Reading from external/MacroPlacement/Flows/NanGate45/nvdla/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 39, Row: 36
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+=== CDLNSSACascadeLevyPeripheryPlacer (nvdla) ===
+  budget split: Lévy=3090.0s, periphery polish=180.0s
+=== CDLNSSACascadeLevyPlacer (nvdla) ===
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/nvdla/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 39, Row: 36
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+  budget enforced: 3090s; E25 cap≈989s, E41 cap≈1082s, cascade≈1020s, K_eps=3
+  Phase 1: E25 (CDLNSSAPlacer)
+=== CDLNSSAPlacer (nvdla): CD cap=618s, LNS=185s, SA=185s ===
+  num_macros=799, n_hard=128, canvas=2127.9x2127.9
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/nvdla/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 39, Row: 36
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+  SDF init wall = 2.7 s
+  overlap projection: 0 iters, residual count=0
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/nvdla/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 39, Row: 36
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+  init proxy=0.88393 [wl=0.0659 d=0.8727 c=0.7633]
+  starting CD phase (cap=618s)
+  sweep   1  elapsed=   29.3s  sweep_t=  29.3s  proxy=0.74172  Δ=+0.14221  accepted=1275/1598  gs=0  [wl=0.0781 d=0.5968 c=0.7304]
+  sweep   2  elapsed=   54.7s  sweep_t=  25.4s  proxy=0.70465  Δ=+0.03707  accepted=726/1598  gs=0  [wl=0.0744 d=0.5416 c=0.7189]
+  sweep   3  elapsed=   78.4s  sweep_t=  23.7s  proxy=0.69316  Δ=+0.01148  accepted=465/1598  gs=0  [wl=0.0729 d=0.5249 c=0.7155]
+  sweep   4  elapsed=  101.2s  sweep_t=  22.8s  proxy=0.68795  Δ=+0.00522  accepted=307/1598  gs=0  [wl=0.0715 d=0.5200 c=0.7130]
+  sweep   5  elapsed=  123.1s  sweep_t=  22.0s  proxy=0.68565  Δ=+0.00230  accepted=161/1598  gs=0  [wl=0.0714 d=0.5164 c=0.7121]
+  sweep   6  elapsed=  144.9s  sweep_t=  21.8s  proxy=0.68343  Δ=+0.00222  accepted=104/1598  gs=0  [wl=0.0708 d=0.5135 c=0.7119]
+  sweep   7  elapsed=  166.3s  sweep_t=  21.4s  proxy=0.68179  Δ=+0.00164  accepted=62/1598  gs=0  [wl=0.0697 d=0.5130 c=0.7112]
+  sweep   8  elapsed=  187.6s  sweep_t=  21.4s  proxy=0.68129  Δ=+0.00050  accepted=47/1598  gs=0  [wl=0.0694 d=0.5128 c=0.7110]
+  sweep   9  elapsed=  208.9s  sweep_t=  21.2s  proxy=0.68092  Δ=+0.00037  accepted=28/1598  gs=0  [wl=0.0692 d=0.5126 c=0.7109]
+  sweep  10  elapsed=  230.0s  sweep_t=  21.2s  proxy=0.68076  Δ=+0.00017  accepted=13/1598  gs=0  [wl=0.0693 d=0.5120 c=0.7109]
+  sweep  11  elapsed=  251.3s  sweep_t=  21.3s  proxy=0.68058  Δ=+0.00018  accepted=17/1598  gs=0  [wl=0.0693 d=0.5117 c=0.7108]
+  sweep  12  elapsed=  272.5s  sweep_t=  21.3s  proxy=0.68041  Δ=+0.00017  accepted=18/1598  gs=0  [wl=0.0693 d=0.5116 c=0.7106]
+  sweep  13  elapsed=  293.7s  sweep_t=  21.2s  proxy=0.68038  Δ=+0.00003  accepted=16/1598  gs=0  [wl=0.0693 d=0.5116 c=0.7106]
+  sweep  14  elapsed=  314.8s  sweep_t=  21.1s  proxy=0.68033  Δ=+0.00004  accepted=7/1598  gs=0  [wl=0.0692 d=0.5116 c=0.7106]
+  CD done: exit=plateau, sweeps=14, accepts=3246, wall=314.8s, proxy=0.68033
+  starting LNS phase (budget=185s)
+  LNS budget=185s, destroy K=6 (=5.0% of 128 hard movables, capped at 30), strategy=cost_aware
+  LNS sample 1: K=6, Δ=-0.00202 (moves=2/6), proxy=0.67832, sample_wall=9.9s, total elapsed=9.9s
+  LNS sample 2: K=6, Δ=-0.00000 (moves=1/6), proxy=0.67832, sample_wall=8.9s, total elapsed=18.8s
+  LNS sample 3: K=6, Δ=-0.00000 (moves=1/6), proxy=0.67831, sample_wall=8.9s, total elapsed=27.7s
+  LNS sample 4: K=6, Δ=+0.00000 (moves=0/6), proxy=0.67831, sample_wall=8.9s, total elapsed=36.7s
+  LNS converged at sample 4 (no improvement)
+  LNS done: samples=4, Δ=-0.00202, wall=36.7s, proxy=0.67831
+  starting SA-v2 phase (budget=185s)
+  SA v2 budget=185s, T0=5.00e-04, Tf=1.00e-06, |H|=128, seed=42 (best-so-far tracking ON)
+  SA v2 t=  30.0s T=1.83e-04 proposed=2999 better=966 worse=1082 rejected=951 skipped=88 cur=0.69366 best=0.67830
+  SA v2 t=  60.0s T=6.69e-05 proposed=5778 better=1744 worse=1850 rejected=2184 skipped=169 cur=0.68836 best=0.67830
+  SA v2 t=  90.0s T=2.45e-05 proposed=8455 better=2324 worse=2380 rejected=3751 skipped=203 cur=0.68255 best=0.67830
+  SA v2 t= 120.0s T=8.95e-06 proposed=11078 better=2723 worse=2736 rejected=5619 skipped=256 cur=0.68046 best=0.67830
+  SA v2 t= 150.1s T=3.27e-06 proposed=13644 better=3027 worse=2979 rejected=7638 skipped=290 cur=0.67963 best=0.67830
+  SA v2 t= 180.1s T=1.20e-06 proposed=16167 better=3243 worse=3146 rejected=9778 skipped=318 cur=0.67926 best=0.67830
+  SA v2 done: proposed=16613, better=3266, worse=3170, rejected=10177, skipped=321, init=0.67831, best=0.67830 (found at t=0.0s), chain-final=0.67925, restored=True, evaluator-final=0.67830
+  SA-v2 done: lift_vs_init=+0.00001, best=0.67830, final proxy=0.67830
+  TOTAL lifts: CD=+0.20359, LNS=+0.00202, SA=+0.00001
+Traceback (most recent call last):
+  File "/Users/brendan/Developer/macro-place-challenge-2026/.venv/bin/evaluate", line 10, in <module>
+    sys.exit(main())
+  File "/Users/brendan/Developer/macro-place-challenge-2026/macro_place/evaluate.py", line 413, in main
+    result = evaluate_benchmark(placer, name, str(testcase_root), ng45_dir=ng45_dir)
+  File "/Users/brendan/Developer/macro-place-challenge-2026/macro_place/evaluate.py", line 152, in evaluate_benchmark
+    placement = placer.place(benchmark)
+  File "/Users/brendan/Developer/macro-place-challenge-2026/submissions/cd_lns_sa_cascade_levy_periphery/placer.py", line 158, in place
+    base_placement = levy.place(benchmark)
+  File "/Users/brendan/Developer/macro-place-challenge-2026/submissions/cd_lns_sa_cascade_levy/placer.py", line 107, in place
+    e25 = CDLNSSAPlacer(**e25_kwargs).place(benchmark)
+  File "/Users/brendan/Developer/macro-place-challenge-2026/submissions/cd_lns_sa/placer.py", line 612, in place
+    raise RuntimeError(
+RuntimeError: CDLNSSAPlacer produced 1 overlaps (area 0.0022) on 'nvdla'
