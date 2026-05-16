@@ -40,6 +40,13 @@ from macro_place.loader import load_benchmark_from_dir
 # and sizes by SCALE before writing, then divide by SCALE on read-back.
 SCALE = 1000
 
+# Xplace's ispd2005 parser asserts row height == GCD(all cell heights). For
+# TILOS benchmarks, cell heights have GCD=1 in scaled units, which would
+# require 1-unit-tall rows (untenable). We snap all sizes UP to multiples
+# of GRID_INT, then use rowHeight = siteWidth = GRID_INT. The slight area
+# inflation (typically <5%) is acceptable for global placement.
+GRID_INT = 10
+
 
 def _node_name(idx: int) -> str:
     """Bookshelf node name. We use a uniform `n<idx>` scheme so the .pl/.nets
@@ -59,8 +66,11 @@ def _write_nodes(benchmark, out_dir: Path) -> None:
         f.write(f"NumNodes : {num_nodes}\n")
         f.write(f"NumTerminals : {num_terminals}\n")
         for i in range(n):
-            w = max(1, int(round(float(sizes[i, 0]) * SCALE)))
-            h = max(1, int(round(float(sizes[i, 1]) * SCALE)))
+            w_raw = max(1, int(round(float(sizes[i, 0]) * SCALE)))
+            h_raw = max(1, int(round(float(sizes[i, 1]) * SCALE)))
+            # Snap UP to multiple of GRID_INT (Xplace assertion compliance)
+            w = ((w_raw + GRID_INT - 1) // GRID_INT) * GRID_INT
+            h = ((h_raw + GRID_INT - 1) // GRID_INT) * GRID_INT
             term = " terminal" if bool(fixed[i]) else ""
             f.write(f"  {_node_name(i)}\t{w}\t{h}{term}\n")
 
@@ -96,7 +106,7 @@ def _write_nets(benchmark, out_dir: Path) -> None:
     num_pins = sum(int(net.numel()) for net in nets)
     with open(out_dir / f"{benchmark.name}.nets", "w") as f:
         f.write("UCLA nets 1.0\n")
-        f.write("# Generated; pin offsets defaulted to (0,0) — bbox HPWL preserved\n\n")
+        f.write("# Generated; pin offsets defaulted to (0,0); bbox HPWL preserved\n\n")
         f.write(f"NumNets : {num_nets}\n")
         f.write(f"NumPins : {num_pins}\n\n")
         for j, net in enumerate(nets):
@@ -108,22 +118,14 @@ def _write_nets(benchmark, out_dir: Path) -> None:
 
 
 def _write_scl(benchmark, out_dir: Path) -> None:
-    """Site/row definition. We treat the canvas as a uniform grid of rows
-    1.0 μm tall, 1.0 μm site width — DREAMPlace doesn't strictly need
-    rigorous row alignment for macro placement, but Bookshelf format
-    requires this section.
+    """Site/row definition. Xplace's ispd2005 parser asserts rowHeight ==
+    GCD(cell heights). We snap cell sizes to GRID_INT in _write_nodes,
+    so rowHeight = GRID_INT here matches.
     """
     cw = float(benchmark.canvas_width)
     ch = float(benchmark.canvas_height)
-    row_height = 1.0
-    site_width = 1.0
-    num_rows = max(1, int(ch / row_height))
-    # DREAMPlace Bookshelf parser is integer-strict. We use the SCALE
-    # factor to map μm → integer units consistent with .nodes/.pl.
-    # Row height = 100 scaled units (= 0.1 μm) — fine grain for placement.
-    # Number of rows covers full canvas height.
-    row_h_int = 100
-    site_w_int = 100
+    row_h_int = GRID_INT
+    site_w_int = GRID_INT
     cw_int = int(round(cw * SCALE))
     ch_int = int(round(ch * SCALE))
     num_rows_int = max(1, ch_int // row_h_int + 1)
