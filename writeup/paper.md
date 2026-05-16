@@ -1780,14 +1780,24 @@ infeasibility wall identified in §8.7.5.
 
 ### 9.2 Per-benchmark champion table
 
-> **TODO(content):** Pull full per-benchmark CDAdaptive table from
-> `docs/results.md` (already populated). Include side-by-side with
-> CDOnly (prior champion) and RePlAce. 17 rows.
+The full 17-benchmark per-bench results for Option A and Option B
+against RePlAce, the prior champion lineage (E12, E48, E74), and the
+E84 uncapped ceiling are tabulated in [`docs/results.md`](../docs/results.md)
+§Post-2026-05-06. Per-design `--ng45` numbers for Option A vs Option B
+appear in §9.5 above. The complete table is reproduced as Figure 5
+(per-bench bar chart) for visual reference; the underlying JSON is
+preserved at `results/CDLNSSACascadeAdaptivePlacer_*.json` and
+`results/CDLNSSACascadeDPLanePlacer_*.json`.
 
 ### 9.3 DPO ablation summary
 
-> **TODO(content):** Pull from `evidence.md` §3.1. Table is already drafted
-> in §5 above; either inline here or cross-reference.
+The DPO ablation table appears in §5 (DPO first pivot). The headline
+findings are: density gradient contributes +21.7 % (removing it), SDF
+init contributes +247 % (removing it for random init), congestion
+gradient contributes +5.9 %, and penalty annealing contributes +2.5 %.
+The same component decomposition is what the §7 RUDY-fidelity
+diagnostic later reveals is structurally mis-calibrated against
+canonical congestion on the four DPO-regressing benchmarks.
 
 ### 9.4 Falsification record (the dead ends)
 
@@ -1817,6 +1827,11 @@ infeasibility wall identified in §8.7.5.
 | **E61 V1** Per-macro Bernoulli GA crossover | 136 unrecoverable overlaps per attempt | falsified | Per-macro recombination falls inside the infeasibility wall (§8.7.5); fixed by V2 spatial-block at coarser granularity |
 | **E62** WillSeed init lane (E41 backbone) | --fast 0.9335 (+1.44 % vs E48; loses every fast bench) | falsified | Standalone init quality (1.5338) doesn't predict basin quality; CD lands worse fixed point from WillSeed than from SDF or DPO |
 | **E63** Spectral / quadratic init (V2 Hungarian / V3 row-pack) | implementation blocked: V2 28 max-size slots vs 246 macros; V3 111 fixed-macro residuals | implementation incomplete | Eigendecomposition works in 0.2 s; legalization is the hard step. Needs row-pack with fixed-region awareness (~2-4 hr dev). |
+| **E91** DP-basin autopsy (the falsification of a falsification) | hard-bench cascade-capped 1.2818 → DP+full-polish 1.1936 (−6.9 %) | **refutes prior PATH B autopsy** | Original autopsy gave DP 60 s polish vs SDF/DPO 1100 s; rerun with matched polish shows DP basins polish to a deeper valley on ibm12 (−13.3 %), ibm17 (−10.2 %), ibm14 (−3.8 %). Drives Option B. |
+| **E92 / E103** Diff trace-route RUDY rebuild | blocked at vectorization | both blocked | Smooth bbox-uniform RUDY vs canonical per-net trace mismatches 3-4× on hard benches; ~2-3 days dev to fix. Subsumed by E91 empirical bypass. |
+| **E95** Differentiable proxy v2 (calibrated LSE+Gaussian+RUDY) | AdamW destroys cascade basin in step 1 | **falsified** | Calibration ρ=0.929 with canonical is necessary but not sufficient. Cascade basin near canonical local min ≠ smooth-proxy local min. |
+| **E98** Congestion-gradient hybrid | n/a | falsified | Third smooth-RUDY mismatch on hard benches; same gap as E92. |
+| **E104** Worse-init saddle escape | σ=0.05 jitter regresses cascade plateau by +1.2 % on ibm01 | falsified | Jitter degrades quality, doesn't expose more saddle directions. Cascade plateau is near-tangent to multiple saddles; pushing off-plateau moves further from all of them. |
 
 The bottom block (E42 / E43 / E44 / E54) reveals a structural failure
 class: heuristics that engage the proxy's component decomposition
@@ -1832,17 +1847,28 @@ blocks, §8.7.6) thread through. E63 spectral and E64 LP-bounded beam
 K-joint remain candidates for "construct a third basin without
 bridging" — both still under development.
 
+The post-E84 wave (E91-E104) was driven by the discovery that the
+cascade saddle escape had reached its algorithmic ceiling at 1.0612
+uncapped. Three orthogonal directions were probed: differentiable-
+proxy spikes (E95), DREAMPlace integration as a third basin (E91), and
+multi-direction saddle escape (E97 Lévy + E100 portfolio). E91 alone
+produced a verified lift — landing in Option B at 1.06650 — while the
+other two falsified or hit implementation walls. The smooth-RUDY /
+canonical mismatch on hard benches (E92, E95, E98, E103) appears
+unresolvable without a ~2-3 day rebuild of the diff RUDY operator, and
+is empirically bypassed by E91's matched-polish DP integration.
+
 ### 9.5 Generalization & robustness
 
-NG45 transfer (4 commercial designs, zero overlaps):
+NG45 transfer (4 commercial designs, zero overlaps everywhere):
 
-| Design | E12 | E18 | E41 | **E48** | Δ vs E12 |
-|--------|----:|----:|----:|--------:|---------:|
-| ariane133 | 0.7202 | 0.6850 | 0.6733 | **0.6861** | **−4.74 %** |
-| ariane136 | 0.6850 | 0.6724 | 0.6728 | **0.6685** | **−2.41 %** |
-| mempool_tile | 0.7375 | 0.7375 | 0.7375 | **0.7375** | tied |
-| nvdla | 0.6720 | 0.6815 | 0.6767 | **0.6767** | +0.70 % |
-| **avg** | **0.7037** | 0.69193 | 0.69022 | **0.6922** | **−1.66 %** |
+| Design | E12 | E48 | E74 | **Option A** | **Option B** | Δ vs E12 |
+|--------|----:|----:|----:|-------------:|-------------:|---------:|
+| ariane133 | 0.7202 | 0.6861 | 0.6641 | **0.65795** | 0.66167 | **−8.65 %** (A) |
+| ariane136 | 0.6850 | 0.6685 | 0.6518 | **0.65348** | 0.66071 | **−4.60 %** (A) |
+| mempool_tile | 0.7375 | 0.7375 | 0.7376 | 0.73743 | **0.72071** | **−2.28 %** (B) |
+| nvdla | 0.6720 | 0.6767 | 0.6716 | 0.67524 | **0.68033** | +0.48 % (A) |
+| **avg** | **0.7037** | 0.6922 | 0.6813 | **0.68102** | **0.68086** | **−3.24 %** (B avg) |
 
 The NG45 transfer is the structural test of the "no per-benchmark
 tuning" claim. E48's hybrid mechanism — per-bench best-of-{SDF, DPO}
@@ -1855,9 +1881,14 @@ across-IBM heterogeneity also exploits across-commercial-design
 heterogeneity — a non-trivial transfer because nothing in the pipeline
 was tuned for it. The §8.12 DREAMPlace lane extends this further:
 Option B's NG45 0.68086 matches Option A's 0.68102 to within noise
-because the per-design lane-pick correctly routes DP-lane wins where
-they exist (mempool_tile) and DP-lane regressions where they exist
-(ariane133, where DP lane underperforms cascade by 0.88 %).
+because the per-design pattern in Option B is sharper than the aggregate
+suggests: the DP lane wins decisively on mempool_tile (−2.28 % vs
+Option A) but loses on the three cascade-friendly designs
+(ariane133 +0.57 %, ariane136 +1.11 %, nvdla +0.75 % vs Option A's
+cascade-only). The aggregate ties because mempool_tile's lift outweighs
+the other three losses. A reader of just the aggregate would miss the
+per-design heterogeneity that the §8.12 lane-pick architecture is
+designed to handle.
 
 The §8.9 Hessian saddle escape (E74) further lifts NG45: 0.6813
 average across 4 designs, with ariane133 at 0.6641 (−3.21 % vs E48's
@@ -1877,17 +1908,32 @@ diversity that lifts the congestion-hardest IBM benchmarks.
 
 ### 9.6 Compute envelope
 
-| Stage | Wall (s) | Per-bench wall | Notes |
+| Stage | Total wall | Per-bench wall | Notes |
 |-------|---------:|----------------|-------|
-| CDOnly fixed 600 s | 10 316 | 600 (uniform) | superseded |
-| CDAdaptive (E9, prior champion) | 17 480 | 322–2238 | All exit via plateau, none hit 3600 s cap |
-| **CDLNSGridBin (E12, champion)** | **28 256** | **524–3 487** | **CD ≤ 3 000 s + LNS ≤ 600 s; ibm17 closest to per-bench cap at 3 487 s of 3 600 s** |
+| CDOnly fixed 600 s | 10 316 s | 600 s (uniform) | superseded |
+| CDAdaptive (E9) | 17 480 s | 322–2 238 s | All exit via plateau, none hit 3 600 s cap |
+| CDLNSGridBin (E12, ADR-007) | 28 256 s (7.85 hr) | 524–3 487 s | CD ≤ 3 000 s + LNS ≤ 600 s; ibm17 closest to per-bench cap at 3 487 s of 3 600 s |
+| CDLNSSAHybrid (E48, ADR-011) | ~88 452 s aggregate (~7 hr `--jobs 4`) | E25 ~660 s + E41 ~840 s | Per-bench best-of runs both pipelines in sequence |
+| CDLNSSAHessian (E74, ADR-012) | ~14 hr serial (~4 hr `--jobs 4`) | up to 96 min on hardest benches | Saddle escape adds ~20 min + polish per ε; 8/17 over 55-min cap on hard benches; wall-safe descendant in §8.11. |
+| E84 cascading saddle (uncapped) | ~16 hr serial | up to ~110 min on ibm12/ibm17 | Algorithmic ceiling, 8/17 walls > 55 min. Validation parent for the capped variants below. |
+| **Option A — CDLNSSACascadeAdaptive** | ~50 min × 17 = ~14 hr serial / ~3.5 hr `--jobs 4` | ≤ 57 min (3-min margin to cap) | PATH A post-A1 wall-safe cascade; `budget_seconds=3000` default; all walls under 60 min on EPYC. |
+| **Option B — CDLNSSACascadeDPLane** | ~50 min × 17 = ~14 hr serial / ~3.5 hr `--jobs 4` | ≤ 52 min (8-min margin) | Adds DP lane (~12 s basin + ~1100 s polish) alongside E25/E41 lanes; per-lane budget split inside the same 3 000 s. |
 
-Total wall = 7.85 hr — inside the 17-hr (17 × 1 hr) hidden-test envelope
-with ~9 hr of headroom (down from CDAdaptive's ~12 hr).
+Wall claims are measured under `OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8
+MKL_NUM_THREADS=8` on AMD EPYC 9655P. Without those, `numpy` defaults
+to 1 thread, producing a 3–9× slowdown on the routing inner loop that
+would invalidate the cap-bound result.
 
-> **TODO(figure):** Champion lineage bar chart
-> (1.50 → 1.49 → 1.38 → 1.12 → 1.10).
+The progression from E12 (7.85 hr aggregate) to Option B (~3.5 hr
+under `--jobs 4`) is largely a parallelization story across runs;
+per-bench wall increased from CD-only's 600 s to the cap-bound 50 min,
+trading off elapsed time for algorithmic depth at every generation.
+Inside the per-bench budget, the PATH A delta-cost API (§8.11)
+delivers the 5.36× CD speedup that lets cascade reach multiple saddle-
+escape iterations rather than one truncated polish.
+
+> **TODO(figure):** Champion lineage bar chart with Option A / B
+> alongside RePlAce, polyhedra, DPO, CD-Only, E9, E12, E48, E74, E84.
 
 ---
 
