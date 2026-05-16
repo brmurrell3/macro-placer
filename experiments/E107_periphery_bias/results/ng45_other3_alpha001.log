@@ -1,0 +1,54 @@
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane136/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 25, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+
+=== ariane136 (n=908, canvas=1446×1446) ===
+baseline: proxy=0.66107 edge_dist=0.1953
+α=0.01 RMS=2.1546
+      case     proxy   Δprx%    edge   Δedg%  ovl  wall
+   Control   0.65957  -0.23%  0.1951  -0.09%    0    96s
+ Periphery   0.65855  -0.38%  0.1942  -0.55%    1   115s
+    Random   0.65659  -0.68%  0.1948  -0.23%    5   117s
+    Center   0.65744  -0.55%  0.1955  +0.13%    9   134s
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/mempool_tile/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 29, Row: 24
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+
+=== mempool_tile (n=581, canvas=885×885) ===
+baseline: proxy=0.73744 edge_dist=0.2112
+α=0.01 RMS=1.4440
+      case     proxy   Δprx%    edge   Δedg%  ovl  wall
+   Control   0.73744  +0.00%  0.2112  +0.00%    0    78s
+ Periphery   0.74043  +0.41%  0.2083  -1.39%    0   116s
+    Random   0.74068  +0.44%  0.2088  -1.12%    0   149s
+    Center   0.74589  +1.15%  0.2126  +0.66%    1   114s
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/nvdla/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 39, Row: 36
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+
+=== nvdla (n=799, canvas=2128×2128) ===
+baseline: proxy=0.68438 edge_dist=0.1685
+α=0.01 RMS=2.9141
+      case     proxy   Δprx%    edge   Δedg%  ovl  wall
+   Control   0.67956  -0.70%  0.1688  +0.15%    0   145s
+ Periphery   0.67978  -0.67%  0.1672  -0.78%    1   145s
+    Random   0.67657  -1.14%  0.1709  +1.44%    4   171s
+    Center   0.67425  -1.48%  0.1702  +1.02%   11   190s
+
+
+=== ng45 PERIPHERY SUMMARY (α=0.01) ===
+           bench   control periphery    random    center  -- Δproxy% --
+       ariane136    -0.23%    -0.38%    -0.68%    -0.55%
+    mempool_tile    +0.00%    +0.41%    +0.44%    +1.15%
+           nvdla    -0.70%    -0.67%    -1.14%    -1.48%
+
+Saved /Users/brendan/Developer/macro-place-challenge-2026/experiments/E107_periphery_bias/results/ng45_sweep_alpha001.pt

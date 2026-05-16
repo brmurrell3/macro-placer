@@ -1,0 +1,43 @@
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 24, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+
+=== ariane133 (n=915, canvas=1433×1433) ===
+baseline: proxy=0.66993 edge_dist=0.2520
+α=0.01 RMS=2.7124
+      case     proxy   Δprx%    edge   Δedg%  ovl  wall
+   Control   0.66809  -0.28%  0.2528  +0.32%    0    80s
+ Periphery   0.66354  -0.95%  0.2518  -0.08%    0   135s
+    Random   0.66579  -0.62%  0.2530  +0.41%    0   103s
+    Center   0.66660  -0.50%  0.2541  +0.83%    1   117s
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane136/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 25, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+  [ariane136] NO CACHED PLACEMENT — skipping
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/mempool_tile/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 29, Row: 24
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+  [mempool_tile] NO CACHED PLACEMENT — skipping
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/nvdla/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 39, Row: 36
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+  [nvdla] NO CACHED PLACEMENT — skipping
+
+
+=== ng45 PERIPHERY SUMMARY (α=0.01) ===
+           bench   control periphery    random    center  -- Δproxy% --
+       ariane133    -0.28%    -0.95%    -0.62%    -0.50%
+
+Saved /Users/brendan/Developer/macro-place-challenge-2026/experiments/E107_periphery_bias/results/ng45_sweep_alpha001.pt
