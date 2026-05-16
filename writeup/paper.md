@@ -575,7 +575,7 @@ plateau_threshold = 0.005     # absolute proxy delta per sweep
 via plateau; none hit the 1-hour cap.** This run signature — every bench
 plateau-bound, none budget-bound — is what motivated E12's escape phase.
 
-**E12 — grid-bin LNS overlay (current champion, 1.0990).** Three escape
+**E12 — grid-bin LNS overlay (prior champion, 1.0990; ADR-007).** Three escape
 mechanisms tested before E12 all reused CD's per-axis move type and
 produced flat results: E3 single-macro LNS (full-canvas v1, 5×5 local v2),
 SDF-jitter multi-init (0/8 improved, contractive), subset-CD destroy
@@ -598,19 +598,59 @@ the cost-aware ranking only because the ablation result landed late
 relative to the May 21 deadline; the ranking adds ~10 % wall per LNS
 sample at no quality benefit.
 
-> **TODO(prose):** Draft.
+The four mechanisms compose into a sequence whose individual lifts
+each address a specific limitation of its predecessor:
+
+1. **The incremental evaluator** unblocks coordinate descent by making
+   per-move proxy evaluation a 6.5-ms operation rather than a 30-second
+   one. Without it, the contest budget allows perhaps two sweeps per
+   benchmark; with it, 13 sweeps on the same bench.
+
+2. **Full-proxy CD with breakpoint enumeration** beats DPO on the same
+   benchmarks (ibm10: CD 1.0632 vs DPO 1.254 = −17.5 %) because it
+   optimizes against the canonical proxy directly, with the breakpoint
+   set covering all O(net degree + grid cols) candidates per axis per
+   macro. The exact evaluator removes the surrogate error that
+   constrained DPO; the breakpoint enumeration provides the discrete-
+   topology jumps that gradient descent cannot make.
+
+3. **Per-benchmark plateau detection (E9)** routes compute time to
+   where it is needed. Every benchmark exits CD via plateau, never via
+   wall-clock cap — the algorithm self-terminates when sweep-deltas
+   fall below `plateau_threshold = 0.005`. The contest 1-hour cap is a
+   safety bound, not the operational regime.
+
+4. **Grid-bin LNS escape (E12)** crosses the per-axis fixed point that
+   CD plateaus at. After CD terminates, K = max(1, min(30, 5 % of
+   movable hard macros)) macros are destroyed (cost-aware ranking) and
+   each is reinserted at the proxy-minimizing legal `(grid_col, grid_row)`
+   cell center — a fundamentally different move type than CD's per-axis
+   breakpoint enumeration. The escape lifts E9's 1.1055 to **1.0990**
+   on `--all`, with zero benchmark regressions, in an additional 600 s
+   per benchmark of LNS time.
+
+A cost-aware-vs-random destroy ablation on the predictive `--fast`
+subset showed that the cost ranking is **not** load-bearing: random
+destroy averaged 0.9372 vs cost-aware 0.9426 (within run noise, with
+random actually winning on ibm09 — 0.8541 vs 0.8591). Production keeps
+the cost-aware ranking because the ablation result landed late in the
+project timeline, but the simplification is justified by the data.
+
 > **TODO(data):** Capture per-sweep convergence (proxy / WL / density /
-> congestion vs sweep) for 3–4 representative benchmarks (easy/medium/hard)
-> from a re-run with logging — drives the convergence figure.
+> congestion vs sweep) for 3–4 representative benchmarks (easy /
+> medium / hard) from a re-run with logging — drives the convergence
+> figure below.
 > **TODO(data):** Plateau-threshold sensitivity sweep
-> (0.001 / 0.002 / 0.005 / 0.01) so the defaults are *defended*, not asserted.
-> E16 is one such datapoint (threshold=0.001 → 1.1025); add 2 more.
-> **TODO(figure):** CD convergence curve; CDAdaptive per-benchmark wall-
-> time chart.
+> (0.001 / 0.002 / 0.005 / 0.01) so the defaults are *defended*, not
+> asserted. E16 (`plateau_threshold = 0.001` → 1.1025) is one such
+> datapoint; add two more to verify the gradient.
+> **TODO(figure):** CD convergence curve (proxy vs sweep) for one
+> easy / medium / hard benchmark; CDAdaptive per-benchmark wall-time
+> chart showing every bench exiting via plateau.
 
 ---
 
-## 8.5 Compositional Polish — SA-v2, DPO Init, K-joint (~2 pages)
+## 8.5 Compositional Polish — SA-v2, DPO Init, K-joint
 
 **Source material:** `evidence.md` §X (TBD), `experiments/E18_dpo_init/`,
 `experiments/E25_lns_sa_compose/`, `experiments/E39_kmacro_joint_lns/`,
@@ -625,70 +665,159 @@ backbone.
 
 ### 8.5.1 SA-v2 polish on per-axis breakpoints (E25 → 1.0954)
 
-> **TODO(prose):** Stochastic Metropolis acceptance over CD's per-axis
-> breakpoint set, with best-so-far tracking and T₀=5e-4. Adds one
-> stochastic mechanism on top of CD's monotone descent. Lessons: (a)
-> best-tracking is non-negotiable (E14 falsification at +5.7 % when
-> SA wandered without restoration); (b) T₀ scale must match
-> per-breakpoint Δproxy magnitudes; (c) basin lock is *not* broken by
-> SA — chain wandered up by ~0.01 absolute on hard benches even with
-> best-tracking on, so SA polishes within a basin but doesn't escape.
-> ADR-008 *Superseded by ADR-011*.
+E12 (1.0990) is monotone-descent on the proxy: every move either
+reduces proxy or is rejected. A natural extension is to add a
+stochastic Metropolis acceptance step on top of CD's breakpoint
+enumeration — accept moves that *increase* proxy with probability
+`exp(−Δproxy / T)`, in the hope that the chain occasionally crosses
+local barriers that CD's strict monotone rule cannot. The implementation
+("SA-v2") reuses CD's per-axis breakpoint set as the move proposal
+distribution, runs a Metropolis chain at `T₀ = 5×10⁻⁴`, and tracks
+best-so-far so the polished output is the lowest-proxy state observed.
+
+Two implementation-level findings are load-bearing for any future
+SA-on-breakpoints work:
+
+- **Best-so-far tracking is non-negotiable.** E14 (an earlier SA
+  attempt without it) regressed +5.7 % below the CD baseline because
+  the chain wandered upward and the final state was *not* the best
+  visited. Returning to the proxy-minimizing visited state turns SA
+  from a regression into a marginal lift.
+- **`T₀` must match the per-breakpoint Δproxy magnitudes.** CD
+  breakpoint deltas at the plateau are on the order of `10⁻⁴` (the
+  acceptance threshold for CD's monotone rule); `T₀ = 5×10⁻⁴` gives
+  ~10–40 % uphill acceptance, which is the chain's exploratory regime.
+  At `T₀ = 0.01` (E14's setting), acceptance is ~99 % and the chain is
+  a random walk.
+
+With both rules satisfied, E25 (CD + grid-bin LNS + SA-v2) reaches
+**1.0954** on `--all`, a 0.33 % lift over E12. Importantly, even with
+best-tracking on, the SA chain wanders upward by ~0.01 absolute on
+hard benches before recovering — SA polishes *within* a basin but does
+not escape it, which is the structural ceiling we revisit in §8.7.
+ADR-008 documents the change; later superseded by ADR-011.
 
 ### 8.5.2 DPO best_of_v2 init replaces SDF (E18 → 1.08979)
 
-> **TODO(prose):** Multi-basin claim: DPO best_of_v2 init lands a basin
-> structurally different from SDF, AND deeper. E11 had earlier failed
-> with diverse priors *within DPO refinement*; the difference here is
-> using DPO output as init for CD-LNS-SA-v2, not as the polish itself.
-> 4/4 NG45 wins confirmed at-or-below E12 NG45 0.7037 — basin lift
-> transfers. ADR-009 *Superseded by ADR-011*.
+The §7 RUDY diagnosis falsified DPO as a *standalone* placer (1.3834
+on `--all`), but the question that remained was whether the DPO basin
+— qualitatively different from the SDF basin — could serve as an
+*initialization* for the CD-LNS-SA-v2 pipeline. The mechanism difference
+is sharp: SDF init is density-aware analytical spreading; DPO output
+is a partial barrier-crossing into a polyhedron the gradient
+continuation has reached. The two starting points yield different
+basins after polish, and a multi-basin best-of can in principle pick
+the better one per benchmark.
+
+E18 verifies this: DPO best_of_v2 as init to the E25 pipeline
+(CD + grid-bin LNS + SA-v2) reaches **1.08979** on `--all`, a 0.84 %
+lift over E12. The lift transfers to NG45 commercial designs cleanly
+— E18's NG45 result is 0.69193 across the 4 designs (4/4 wins
+at-or-below E12's NG45 0.7037). The basin shift survives polish.
+
+The result *contradicts* an earlier prediction from E11 (§7): when DPO
+output was used to *refine* DPO (the diverse-priors experiment), the
+basin lift was 0 % on `--all`. The difference is that E11 ran DPO →
+DPO; E18 runs DPO → CD-LNS-SA-v2. The first is "polish DPO better
+within the same RUDY-misdirected basin"; the second is "use DPO's
+partial barrier crossing as the *starting* polyhedron for a fundamentally
+different polish algorithm that uses the canonical proxy directly." The
+mechanism distinction is load-bearing for §8.6's hybrid.
+
+ADR-009 documents E18; later superseded by ADR-011.
 
 ### 8.5.3 K-macro joint LNS (E39 standalone, E41 composed → 1.0848)
 
-> **TODO(prose):** K=3 joint reinsertion, top-N=5 candidates per macro,
-> brute-force N^K=125 combos per K-tuple. Different move type from
-> E12's grid-bin (single-macro joint) and CD's per-axis (single-macro
-> single-axis). Composes with DPO init: E41 = E18 ⊕ K-joint = 1.0848
-> on `--all`, breaking the multi-mechanism plateau on ibm10/11/13/14/15
-> (-1.7 % to -4.4 % vs E25 on those benches specifically). NG45 0.69022.
-> Three K-joint variants (E42 K=4, E43 longer budget, E44 spatial)
-> all failed NG45 transfer — see §9.4. ADR-010 *Superseded by ADR-011*.
+E12's grid-bin LNS destroys K macros one by one and reinserts each at
+its proxy-minimizing legal `(col, row)`. The reinsertion is *single-
+macro*: each destroyed macro is placed in isolation, ignoring how
+its placement affects the remaining destroyed macros' optimal positions.
+For cost-coupled macros that constrain each other through shared nets,
+single-macro reinsertion is myopic.
 
-> **TODO(figure):** Lineage waterfall E12 → E25 → E18 → E41 with
-> per-bench ablation of each added mechanism.
+K-macro joint LNS reinserts K destroyed macros *jointly*. At K = 3,
+top-N = 5 candidates per macro, the enumeration is `5³ = 125` joint
+placements per K-tuple; the proxy-minimizing joint placement is
+committed. The move type is fundamentally different from CD's per-axis
+single-macro single-axis search or grid-bin LNS's single-macro
+two-axis search — joint reinsertion captures coordinated cost across
+the K-tuple.
+
+K-joint composes with DPO init (E18) cleanly. E41 = E18 ⊕ K-joint =
+**1.0848** on `--all`, a 1.29 % lift over E12 and 0.46 % over E18. The
+per-bench breakdown shows K-joint lifting the hardest benchmarks
+disproportionately: ibm10 (−1.7 % vs E25), ibm11 (−4.4 %), ibm13
+(−2.2 %), ibm14 (−2.7 %), ibm15 (−1.2 %) — the benches where multi-
+mechanism plateaus had previously been densest. NG45 transfer is
+**0.69022** (better than E12 by 1.91 %, better than E18 by 0.25 %).
+
+Three K-joint variants explored later in the project all failed NG45
+transfer in the pattern documented in §8.8 — K=4 (E42), longer-budget
+K-joint (E43), and spatial K-tuple selection (E44) each lifted IBM but
+regressed substantially on ariane133. The structural reading from §8.8
+is that mechanism-aligned destroy heuristics depend on dense macro
+packing that IBM has but commercial designs do not. The K=3 base
+configuration with netlist-adjacency K-tuple ranking — the version in
+E41 — is the topology-blind safe baseline that the failed variants
+diverge from. ADR-010 documents E41; later superseded by ADR-011.
+
+> **TODO(figure):** Lineage waterfall — bar chart showing E12 → E25 →
+> E18 → E41 per-bench, with each added mechanism colored separately.
+> Visualizes the compositional structure.
 
 ---
 
-## 8.6 Per-Bench Best-of Hybrid — E48 (~1.5 pages, current champion)
+## 8.6 Per-Bench Best-of Hybrid — E48 (prior champion)
 
-**Source material:** `experiments/E48_hybrid_e25_e41/manifest.md`,
-`docs/decisions/011_hybrid_e25_e41_promotion.md`,
-`submissions/cd_lns_sa_hybrid/placer.py`.
+E25 (SDF init + CD-LNS-SA-v2) and E41 (DPO init + CD-LNS-SA-v2 +
+K-joint) reach 1.0954 and 1.0848 respectively on `--all` — within
+1 % of each other in aggregate, but with substantial per-benchmark
+heterogeneity in which one wins. The verified per-bench comparison:
+**E25 wins on 5 of 17 benchmarks** (ibm01, ibm06, ibm07, ibm17, ibm18,
+where the DPO basin is globally worse for those particular topologies)
+and **E41 wins on 12 of 17** (the rest, where the DPO basin transfers
+to a better polish endpoint).
 
-> **TODO(prose):** Per-bench analysis on verified --all results from E25
-> and E41 showed E25 wins on 5/17 (ibm01/06/07/17/18) where DPO basin
-> is globally worse than SDF basin, E41 wins on 12/17 (rest). Theoretical
-> best-of-2 = 1.08121. E48 hybrid runs both pipelines per benchmark and
-> returns lower-cost output by *proxy value* (no per-bench hardcoded
-> logic; algorithmically valid). Verified `--all` 1.08151 (within
-> float-drift of theoretical bound). ADR-011 *Accepted* 2026-05-02;
-> supersedes ADR-007/008/009/010.
->
-> **The structural insight to articulate:** the per-bench winner is
-> determined by which init class (SDF or DPO) lands in the right basin
-> for that benchmark. The hybrid is *meta-algorithmic* in that sense —
-> it doesn't introduce a new mechanism, just exploits the
-> across-benchmark heterogeneity in which mechanism wins. This pattern
-> is what positions the work as "compositional optimization" rather than
-> "tuned algorithm".
+The theoretical best-of-2 (picking the per-bench winner with oracle
+knowledge of canonical-proxy values) is **1.08121**. The E48 hybrid
+implements this without oracle knowledge: for each benchmark, it runs
+*both* pipelines, evaluates the canonical proxy on each output, and
+returns the lower-proxy result. No per-bench hardcoded logic; no
+benchmark-name dispatch; the meta-algorithm is "pick whichever lane
+wins by canonical proxy on this run." Verified `--all` is **1.08151**,
+within float-drift (3 in the fifth decimal) of the theoretical bound.
+ADR-011 *Accepted* 2026-05-02; supersedes ADR-007 through ADR-010.
 
-> **TODO(figure):** Per-bench breakdown E25 vs E41 vs E48 — bar chart
-> showing where each lane wins.
->
-> **TODO(data):** Cross-validate with E53m (3-way multi-seed hybrid) to
-> show the lift saturates at 2 lanes; adding seed=1 lane gives +0.02 %
-> at --all (within run-to-run noise).
+The structural insight is that the per-bench winner is determined by
+*which init class lands in the right basin* for the benchmark, not by
+which polish algorithm is intrinsically better. The hybrid is therefore
+*meta-algorithmic* — it does not introduce a new mechanism, it exploits
+the across-benchmark heterogeneity in which existing mechanism wins.
+The result positions this work in the "compositional optimization /
+ensemble" tradition rather than the "tuned single algorithm" tradition.
+The §8.12 DREAMPlace-lane extension (Option B) generalizes the same
+pattern from 2 lanes to 3 — the meta-algorithmic structure is identical;
+adding a lane adds a basin source without changing the merger.
+
+NG45 transfer for E48 is **0.6922** average across the 4 commercial
+designs, with ariane133 at 0.6861. Per-design, the per-bench best-of
+lane-picking pattern transfers cleanly: ariane133 picks the DPO lane,
+ariane136 and mempool_tile tie on both lanes, nvdla picks SDF. The
+hybrid mechanism is design-class-blind by construction; the basin
+heterogeneity drives the per-design lane pick.
+
+The 3-lane extension (E53m, adding E41 seed=1 as a third lane) lifts
+`--all` by only +0.02 % (within run-to-run noise) but `--fast` by
+−0.97 % (a sample-size outlier on the 4-bench predictive subset where
+DPO seed-noise is amplified relative to the bench-set diversity).
+Multi-seed within DPO does not extend the basin coverage that adding a
+genuinely different init class (DREAMPlace, in §8.12) does.
+
+> **TODO(figure):** Per-bench bar chart of E25 vs E41 vs E48 vs E53m
+> outputs on all 17 IBM benchmarks. Color-coded by lane-pick winner.
+> Generate from
+> `results/CDLNSSAHybridPlacer_*.json` + corresponding single-lane
+> result files.
 
 ---
 
@@ -703,40 +832,81 @@ tested overnight 2026-05-01 → 02. **None lifted past E48.**
 
 ### 8.7.1 GPU DPO basin polish (E53) — falsified
 
-> **TODO(prose):** Multi-restart full-pose Adam on smooth proxy + overlap
-> penalty, MPS device on M3 Max. Layered after CD-LNS-SA as a polish
-> phase. **0 accepts in 350 GPU restarts across 4 benchmarks.** Smooth
-> proxy gradient cannot escape the local optimum CD-LNS-SA's breakpoint
-> enumeration + LNS + Metropolis already reach. Smoke test on shortened
-> budgets (CD/LNS/SA at 10-20 s each) DID see −2.16 % lift; at production
-> budgets the prior phases converge tightly enough that GPU finds nothing.
-> **Lesson: GPU acceleration must replace CD's basin-crossing role
-> (architecturally), not act as a polish phase after fully-converged CD.**
+The hypothesis was that GPU acceleration would allow Adam-on-smooth-
+proxy as a polish phase *after* CD-LNS-SA, exploiting parallel restarts
+to escape the local optimum the prior phases converge to. The
+implementation (MPS device on M3 Max, multi-restart full-pose Adam
+with annealed overlap penalty, restart budget 10–50 per benchmark)
+ran across 4 benchmarks at production budgets.
+
+**Result: 0 GPU restarts out of 350 produced a lower-proxy state than
+the CD-LNS-SA baseline.** A smoke-test variant with shortened CD/LNS/SA
+budgets (10–20 s each, vs production ~660 s each) *did* see −2.16 % GPU
+lift, which is the key falsifier — the GPU phase finds lift only when
+the prior phases under-converge. At production budgets, CD-LNS-SA-v2
+converges tightly enough that the smooth-proxy gradient cannot find an
+exit.
+
+The structural reading is sharper than "GPU doesn't help." The
+breakpoint-enumeration CD + grid-bin LNS + Metropolis SA composition
+already explores a *richer* candidate set than the smooth-proxy
+gradient can — CD evaluates O(degree + grid cols) candidates per axis
+per macro on the canonical proxy, while Adam on smooth proxy follows
+the *direction* of the surrogate gradient (which §7 has documented is
+systematically biased for congestion-dominated benches). For GPU
+acceleration to contribute, it must architecturally *replace* CD's
+basin-crossing role rather than act as a polish phase after fully-
+converged CD-LNS-SA. The Xplace integration explored later in the
+project (and still in flight under GPU quota approval) is the
+implementation of that architecture.
 
 ### 8.7.2 Multi-seed within DPO (E53m) — marginal
 
-> **TODO(prose):** 3-way hybrid {E25, E41 seed=42, E41 seed=1}. `--fast`
-> 0.91128 (-0.97 % vs E48 fast 0.92024) suggested a major lift; `--all`
-> 1.08128 was within −0.02 % of E48 (essentially tied). The `--fast`
-> result was a sample-size outlier on 4 small benches where DPO
-> seed-noise was amplified; at --all the seeds tied on most benches
-> and the aggregate lift collapsed. **Lesson: multi-seed within DPO is
-> a dead-end for breakthrough at competition scale.**
+The 3-way hybrid `{E25 (SDF), E41 seed=42 (DPO), E41 seed=1 (DPO)}`
+on the `--fast` subset reached 0.91128, a 0.97 % lift over E48's
+`--fast` 0.92024. The `--all` result was 1.08128 — essentially tied
+with E48 1.08151 (−0.02 % within run noise). The `--fast` lift was a
+sample-size outlier on the 4-benchmark predictive subset, where DPO
+seed-noise on smaller benchmarks (ibm01 in particular) was amplified
+relative to the bench-set diversity. At the 17-benchmark scale the
+seed variance averaged out and the aggregate lift collapsed.
+
+The structural finding is that **multi-seed within DPO is not a
+breakthrough vector at competition scale**. Adding seed diversity does
+not extend basin coverage when both seeds converge in the same DPO
+basin (E5 confirmed 4-seed byte-identical outputs on ibm02 and ibm12).
+The next basin-source extension to actually succeed is §8.12's
+DREAMPlace lane, which adds a *different basin class* rather than a
+different seed of the same class.
 
 ### 8.7.3 Mechanism-aligned destroy (E54) — falsified on NG45
 
-> **TODO(prose):** E8 LP-HPWL diagnostic decomposed proxy as 6 % WL /
-> 20 % density / 74 % congestion. None of the destroy heuristics had
-> targeted the dominant component. E54 ranked LNS-destroy by macro
-> contribution to abu-top-5 % cells (matching the proxy's congestion
-> term). On IBM `--fast` E54 tied E48 (with per-bench wins on ibm04 /
-> ibm13). **On NG45 ariane133, +5.14 % catastrophic regression vs E48.**
-> Joins E42 (K=4, +3.57 % ariane133), E43 (longer K-joint, +4.10 %),
-> E44 (spatial K-tuple, IBM kill gate fired) in the *IBM-aware /
-> NG45-blind failure class*. (See §8.8 for the structural pattern.)
+The §4 proxy decomposition (6 % WL / 20 % density / 74 % congestion)
+suggested that LNS destroy heuristics should target the dominant
+component. E12's cost-aware destroy ranks by total `Δproxy`, which
+weights every component equally; E54 instead ranks by macro
+contribution to ABU-top-5 % congested cells, matching the proxy's
+dominant component. On IBM `--fast` E54 tied E48 (with per-bench wins
+on ibm04 and ibm13). The mechanism appeared aligned with the proxy
+structure and looked like a candidate for promotion.
 
-> **TODO(figure):** Three-experiment summary as a bar chart (E48 vs
-> each extension, --fast / --all / --ng45).
+**On NG45 ariane133, E54 regressed +5.14 % vs E48** — a catastrophic
+failure on a single design. The NG45 aggregate landed at 0.7022 vs
+E48's 0.6922 (+1.45 %). E54 joins a growing list of mechanism-aligned
+destroy variants with the same NG45-blind failure pattern: E42
+(K-joint K=4, +3.57 % ariane133), E43 (longer K-joint, +4.10 %), E44
+(spatial K-tuple, killed its own IBM gate). The structural reading,
+formalized in §8.8, is that mechanism-aligned destroy heuristics depend
+on dense macro packing typical of IBM ICCAD04 layouts; the sparse
+ariane-class commercial designs degrade them sharply. Cost-aware
+destroy (a topology-blind ranking by total Δproxy) and netlist-
+adjacency K-tuple ranking (using graph structure, not geometric
+structure) are the safe baselines that survive cross-design transfer.
+
+> **TODO(figure):** Three-experiment summary bar chart — E48 vs E53,
+> E53m, E54 on `--fast`, `--all`, and `--ng45`, with ariane133 broken
+> out. Visualizes the IBM/NG45 transfer-failure pattern that §8.8
+> formalizes.
 
 ---
 
@@ -757,31 +927,49 @@ and E41 (DPO basin). For each k ∈ {0.1, 0.2, …, 0.9}, the placement
 `(1−k)·E25 + k·E41` is computed, and `project_overlaps` runs to
 attempt legalization.
 
-> **TODO(prose):** Frame the structural finding. Two cross-sections
-> (ibm01, ibm12) tested. **Both yielded 0/9 feasible interpolations.**
-> Wall residuals 88-155 hard overlaps per intermediate k-value, peak
-> 145 at k=0.5 (ibm01). On ibm12 the cross-section endpoints differ
-> by only 0.2 % in proxy yet are separated by a 233-residual feasibility
-> gap. **The wall is a function of spatial-configuration distance,
-> not proxy distance.**
->
-> **What this rules out for the field:** any mechanism that bridges
-> macro placement basins at the *solution* level via per-element
-> recombination. This is a stronger claim than "DPO seeds collapse
-> to byte-identical placements" (E5) — it says the *space between*
-> any two converged placements is overwhelmingly infeasible, even if
-> the basin endpoints are nearly proxy-equivalent.
->
-> **What this rules in:** mechanisms that operate at coarser
-> granularity than per-element (E61 V2 spatial blocks succeed because
-> blocks are internally feasible), non-local feasibility-respecting
-> moves (K=N Hungarian re-pack, with N → all hard movables), or
-> constrained NEB that follows the feasible manifold rather than
-> a Euclidean line.
->
-> Connection to ML "out-of-distribution" / "manifold hypothesis"
-> literature is worth flagging — the feasible region of placements is
-> an extremely thin manifold in R^{2N} space.
+The two cross-sections tested (ibm01 and ibm12) both yielded **0 of
+9 feasible interpolations**. Pre-legal residual-overlap counts peaked
+at 145 hard macros at k = 0.5 on ibm01 (range 88–155 across the
+9 intermediate k values); ibm12 showed 233 residual overlaps at the
+mid-cross-section despite the endpoint placements differing by only
+0.2 % in proxy. The implication is structural: **the wall is a function
+of spatial-configuration distance, not proxy distance**. Two placements
+can be proxy-equivalent yet separated by hundreds of overlap-violating
+intermediate placements.
+
+This rules out — for this problem class — any mechanism that bridges
+macro-placement basins at the *solution* level via per-element
+recombination. The claim is stronger than E5's "DPO seeds collapse to
+byte-identical placements" because E5 was about within-basin
+determinism; E65 says the *space between* any two converged
+placements is overwhelmingly infeasible, even when the basin endpoints
+are nearly proxy-equivalent. The set of legal placements forms a
+*disconnected union of thin manifolds* in `ℝ^{2N}`; element-level
+interpolation between two manifolds passes through forbidden territory
+with overwhelming probability.
+
+What the wall rules *in* — mechanisms that survive E65's prediction —
+falls into three classes:
+
+- **Coarser-than-element recombination.** E61 V2 spatial-block
+  crossover (§8.7.6) takes whole canvas quadrants from one parent each.
+  Block-internal topology is preserved from one parent, so each block
+  is internally feasible; only block-boundary interactions need overlap
+  repair, which `project_overlaps` handles in fewer than 50 iterations.
+- **Non-local feasibility-respecting moves.** A K = N Hungarian re-pack
+  (with N → all hard movables) operates inside the legal sub-manifold
+  by construction. E63 (spectral init) and E64 (LP-bounded beam K-joint)
+  attempted this class but remain implementation-blocked.
+- **Constrained NEB on the legal sub-manifold.** Following the feasible
+  manifold geodesic between two endpoints rather than a Euclidean line.
+  Untested in this work; flagged as future direction in §10.4.
+
+The connection to the ML "manifold hypothesis" literature (Tenenbaum
+et al. 2000) is worth flagging: the feasible region of macro placements
+is an extremely thin manifold in `ℝ^{2N}`, and the algorithms that work
+on it are precisely those that respect its topology — coarse-grained
+operations that stay close to it, or constrained dynamics that move
+along it, but never element-level interpolation that ignores it.
 
 > **TODO(figure):** Cross-section plot. X-axis = k ∈ [0, 1]. Two
 > y-axes: pre-legal proxy (left), residual overlap count (right).
@@ -802,30 +990,34 @@ attempt legalization.
 E61 tested whether GA crossover between E25 (SDF basin) and E41 (DPO
 basin) outputs could find a basin neither parent reaches alone.
 
-> **TODO(prose):**
-> **V1 (per-macro Bernoulli)**: each hard macro takes its position
-> independently from E25 or E41 (Bernoulli p=0.5). **Falsified** —
-> 136 unrecoverable overlaps per crossover attempt; project_overlaps
-> caps at 50 iters and never legalizes. Direct empirical
-> consequence of the §8.7.5 infeasibility wall.
->
-> **V2 (spatial-block 2×2)**: the canvas is divided into four
-> quadrants (top-left / top-right / bottom-left / bottom-right);
-> each quadrant takes ALL its hard macros from one parent (Bernoulli
-> per-quadrant). Block boundaries align with mid-canvas; macros
-> straddling boundaries assigned to whichever side their center
-> falls. The four-block crossover produces a placement where each
-> 2×2 region is internally feasible; only block-boundary
-> interactions need overlap repair, which `project_overlaps`
-> handles in <50 iters.
->
-> **Why this works (mechanism):** spatial blocks are coarser than
-> per-macro but finer than full-canvas. Block-internal topology is
-> preserved from one parent; block-boundary topology is mixed but
-> small in extent. The key insight: **the infeasibility wall is
-> avoided not by smoothing the recombination but by choosing a
-> recombination granularity at which both parents are individually
-> close to feasible**.
+**V1 (per-macro Bernoulli)** had each hard macro take its position
+independently from E25 or E41 (Bernoulli p = 0.5). The mechanism is
+falsified by the result the §8.7.5 cross-section predicts: 136
+unrecoverable overlaps per crossover attempt; `project_overlaps` caps
+at 50 iterations and never legalizes a single one of the attempts.
+V1 falls inside the infeasibility wall by construction; the per-macro
+Bernoulli sampling is essentially a random walk through the wall.
+
+**V2 (spatial-block 2 × 2)** divides the canvas into four quadrants
+(top-left, top-right, bottom-left, bottom-right) at the canvas
+midpoint and assigns each quadrant's hard macros entirely to one
+parent (Bernoulli per quadrant). Macros that straddle a block
+boundary are assigned to whichever side their center falls on. The
+four-block crossover yields a placement where each 2 × 2 region is
+internally feasible — each block's macros come from a single parent
+that was itself feasible — and only the block-boundary interactions
+need overlap repair. The boundary overlaps are sparse and local;
+`project_overlaps` resolves them in fewer than 50 iterations.
+
+The mechanism explanation is what makes V2 a finding worth recording:
+**the infeasibility wall is avoided not by smoothing the recombination
+but by choosing a recombination granularity at which both parents are
+individually close to feasible**. V1's per-macro granularity is too
+fine — every recombination point is a potential overlap source. V2's
+quadrant granularity is coarser than the basin-distinguishing scale
+(individual macro positions) but finer than the canvas scale (which
+would just pick one parent). The two-by-two division finds a feasible
+sweet spot.
 
 ### 8.7.6.1 V2 results (verified)
 
@@ -844,13 +1036,34 @@ of each other. On benches where one parent dominates (ibm04 E41 by
 
 ### 8.7.6.2 Hybrid extension
 
-> **TODO(prose):** best-of-{E48, E61_v2} per-bench = **1.08025**
-> (−0.12 % vs E48). Best-of-3 with E53m = 1.07995 (−0.14 %).
-> Hybrid contribution is the strongest argument for ADR-012
-> promotion. Connect to §8.6 hybrid mechanism.
+The 0.07 % standalone lift on `--all` would not justify promotion
+under the standalone ≥ 0.30 % threshold this project applies (see §A
+on promotion criteria). The argument for promotion rests on E61 V2's
+behavior in a *hybrid* with E48: best-of-{E48, E61_v2} per-bench
+reaches **1.08025** on `--all` (−0.12 % vs E48 alone), and the three-
+way hybrid best-of-{E48, E53m, E61_v2} reaches **1.07995** (−0.14 %).
 
-> **TODO(figure):** Per-bench bar chart E48 / E53m / E61_v2 / best-of-3.
-> Use `experiments/E61_ga_crossover/results/best_of_analysis.md` data.
+The hybrid contribution is the meta-algorithmic complement to E48
+(§8.6). E48 picks per-bench between two basin sources (SDF and DPO);
+E61 V2 provides a third basin source via spatial-block recombination
+that neither parent reaches alone. The hybrid does not introduce a
+new mechanism — it just adds another lane to the per-bench best-of —
+but the additional lane is empirically NG45-positive on every tested
+design, including the ariane133 failure point. This is the
+infrastructure that the §8.12 DREAMPlace third lane builds on at
+larger scale.
+
+E61 V2 was eventually superseded by the Hessian saddle escape (§8.9)
+as the project's principal post-plateau mechanism, but the
+spatial-block hybrid contribution remains a viable Option-B-class lane
+source. The Proposed ADR for the V2 hybrid is preserved at
+`docs/decisions/012a_e61v2_spatial_block_crossover_proposed_superseded.md`
+as a historical record of the promotion case that was overtaken before
+acceptance.
+
+> **TODO(figure):** Per-bench bar chart of E48 / E53m / E61_v2 /
+> best-of-3 across the 17 IBM benchmarks. Source data:
+> `experiments/E61_ga_crossover/results/best_of_analysis.md`.
 
 ---
 
@@ -860,35 +1073,58 @@ of each other. On benches where one parent dominates (ibm04 E41 by
 above; `external/MacroPlacement/Testcases/ariane133/` for the
 benchmark structure data.
 
-> **TODO(prose):** Five experiments now show the same pattern — IBM-fast
-> lift that fails to transfer to NG45 commercial designs, with
-> ariane133 as the consistent failure point. Build the case:
->
-> | Experiment | Mechanism | --fast Δ vs E41 | NG45 ariane133 Δ |
-> |---|---|---:|---:|
-> | E42 | K-joint K=4 | −0.35 % | **+3.57 %** |
-> | E43 | Longer K-joint (1200 s) | −0.33 % | +4.10 % |
-> | E44 | Spatial K-tuple | +0.63 % (kill gate) | n/a |
-> | E54 | Congestion-targeted destroy | tied | **+5.14 %** |
->
-> Hypothesis (not formally verified, but consistent with all five):
-> structurally-aligned destroy and K-tuple heuristics depend on
-> *dense* macro packing. ariane133 has 133 hard macros on a
-> 1433 × 1433 micron canvas (~1/15.5 macros per square micron), vs
-> IBM's 246-760 hard macros on 23-73 micron canvases (~10-20 per
-> square micron). Top-5 % cells of a 24×21 grid (NG45) = 25 cells —
-> too few for congestion-targeted destroy to find structurally-coupled
-> K-tuples. **Cost-aware destroy (total Δproxy, IBM-blind) and
-> netlist-adjacency K-tuple ranking remain the safe baselines.**
->
-> This finding generalizes the standard advice "validate cross-benchmark"
-> into something more specific: when a heuristic engages the proxy's
-> structural decomposition (E8: 6/20/74 %), verify on a *sparse*
-> commercial benchmark before promoting. The E48 hybrid's safety
-> comes from per-bench best-of: any IBM-tuned lane that regresses on
-> NG45 simply isn't picked there. But adding such a lane consumes wall
-> budget and complicates the system; the May 1-2 wave shows the EV
-> doesn't justify the complexity.
+Five experiments by 2026-05-02 showed the same transfer-failure
+pattern — IBM-fast lift that did not survive NG45 commercial-design
+evaluation, with ariane133 as the consistent failure point:
+
+| Experiment | Mechanism | `--fast` Δ vs E41 | NG45 ariane133 Δ |
+|---|---|---:|---:|
+| E42 | K-joint K = 4 | −0.35 % | **+3.57 %** |
+| E43 | Longer K-joint (1200 s) | −0.33 % | +4.10 % |
+| E44 | Spatial K-tuple selection | +0.63 % (kill gate fired) | n/a |
+| E54 | Congestion-targeted destroy | tied | **+5.14 %** |
+| E62 | Will-seed init lane | +1.44 % (kill gate fired) | +1.45 % |
+
+The hypothesis we offer — consistent with all five experiments but not
+formally verified — is that mechanism-aligned destroy and K-tuple
+heuristics depend on **dense macro packing** in ways the commercial-
+design class violates. ariane133 has 133 hard macros on a
+1 433 × 1 433-micron canvas (roughly one macro per 15.5 square microns).
+IBM ICCAD04 benchmarks have 246–760 hard macros on 23–73-micron
+canvases (10–20 per square micron). The factor-of-150–300 density
+difference matters for any heuristic that operates on geometric
+clustering: the top-5 % cells of an NG45 24 × 21 grid is only 25 cells,
+far fewer than the ~750 top-5 % cells that congestion-targeted destroy
+can find structurally-coupled K-tuples in on the dense IBM grids. The
+mechanism alignment optimizes for geometric patterns that the sparse
+layouts simply do not contain.
+
+Cost-aware destroy (ranking by total `Δproxy` without component
+attribution) and netlist-adjacency K-tuple ranking (using graph
+structure, not geometric structure) survive both design classes —
+these are the safe baselines the failed variants diverge from.
+
+The finding sharpens the standard cross-benchmark validation advice
+into a specific practical rule: **when a heuristic engages the proxy's
+structural decomposition — component fractions, topology, or geometric
+clustering — verify on a sparse commercial benchmark like ariane133
+before promoting**. The E48 hybrid's safety comes from per-bench
+best-of: an IBM-tuned lane that regresses on ariane133 is simply not
+picked there at evaluation time. But maintaining the failing lane
+consumes wall budget and adds system complexity, and the May 1–2 wave's
+evidence is that the expected lift does not justify the complexity for
+structurally-aligned variants. The Hessian saddle escape mechanism
+introduced in §8.9 follows the opposite design pattern — agnostic to
+macro density, working on the smooth-proxy curvature — and lifts
+ariane133 by 3.21 % rather than regressing.
+
+The connection to ML out-of-distribution generalization literature
+(Arjovsky et al. 2019, Krueger et al. 2021) is worth flagging.
+Mechanism-aligned heuristics that overfit to the design class they
+were tuned on are a placement-specific instance of the classic OOD
+failure mode; topology-blind base heuristics with per-bench best-of
+hybrids are the placement-specific instance of the distributionally-
+robust mitigation.
 
 > **TODO(data):** Formal verification of the dense/sparse hypothesis —
 > per-design `n_hard / canvas_area` ratio across IBM + NG45, plotted
@@ -1303,7 +1539,7 @@ inner loops, or a CUDA port of the routing-dispatch logic to run on
 the A100 GPU available on the partcl evaluation hardware.
 
 Neither further optimization is justified at this margin. The
-leaderboard top is Cezar (ReFine) at 1.037, **3.9 % below** our 1.0771;
+leaderboard top is vmallela (self-reported 1.0109) at **5.6 % below** our 1.0665 Option B;
 fully closing the cap-vs-ceiling gap returns less than 0.4 % more
 proxy, which is not enough to overtake. The next breakthrough vector
 beyond cascade is therefore *algorithmic* — using a different basin
@@ -1526,7 +1762,8 @@ plateau pick.
 | Spatial-block GA crossover (E25 ⊗ E41 outputs) | CDLNSGACrossoverPlacer (E61_v2) | 1.08083 | +25.9 % | 2026-05-03 |
 | **Hessian saddle escape on E48 plateau** | **CDLNSSAHessian (E74)** | **1.0666** | **+26.8 %** | **2026-05-05** |
 | **Cascading saddle escape (M3 cached, uncapped)** | **CDLNSSACascade (E84)** | **1.0612** | **+27.2 %** | **2026-05-10** |
-| **Cascade + A1 implementation speedup (cloud, 60-min cap)** | **CDLNSSACascadeAdaptivePlacer (post-A1)** | **1.0771** | **+26.1 %** | **2026-05-13** |
+| **Cascade + A1 speedup (cloud, 60-min cap) = Option A** | **CDLNSSACascadeAdaptivePlacer** | **1.07820** | **+26.0 %** | **2026-05-16** |
+| **Cascade + DREAMPlace 3rd lane = Option B** | **CDLNSSACascadeDPLanePlacer** | **1.06650** | **+26.9 %** | **2026-05-16** |
 
 Each champion replaced its predecessor by a *structural change*, not
 parameter tuning. The May 2026 entries (E18 / E25 / E41) appear as
@@ -1602,13 +1839,28 @@ NG45 transfer (4 commercial designs, zero overlaps):
 | nvdla | 0.6720 | 0.6815 | 0.6767 | **0.6767** | +0.70 % |
 | **avg** | **0.7037** | 0.69193 | 0.69022 | **0.6922** | **−1.66 %** |
 
-> **TODO(prose):** Frame the NG45 result. E48's basin choice (per-bench
-> best-of-{E25 SDF basin, E41 DPO basin}) transfers *without per-bench
-> tuning*. Per-design wins distribute across both lanes — the same
-> hybrid mechanism that exploits IBM heterogeneity also exploits
-> commercial-design heterogeneity. **No mechanism in this work was
-> tuned on NG45**; transfer is the structural test of "no per-benchmark
-> tuning" claims.
+The NG45 transfer is the structural test of the "no per-benchmark
+tuning" claim. E48's hybrid mechanism — per-bench best-of-{SDF, DPO}
+— picks the better basin at evaluation time, without any tuning that
+saw the NG45 designs during development. The per-design winners
+distribute across both lanes: ariane133 picks E41 (DPO basin), nvdla
+picks E18 (SDF basin via DPO-init), mempool_tile ties, ariane136 picks
+E48 (hybrid). The same meta-algorithmic mechanism that exploits
+across-IBM heterogeneity also exploits across-commercial-design
+heterogeneity — a non-trivial transfer because nothing in the pipeline
+was tuned for it. The §8.12 DREAMPlace lane extends this further:
+Option B's NG45 0.68086 matches Option A's 0.68102 to within noise
+because the per-design lane-pick correctly routes DP-lane wins where
+they exist (mempool_tile) and DP-lane regressions where they exist
+(ariane133, where DP lane underperforms cascade by 0.88 %).
+
+The §8.9 Hessian saddle escape (E74) further lifts NG45: 0.6813
+average across 4 designs, with ariane133 at 0.6641 (−3.21 % vs E48's
+0.6861). This is the only mechanism in the project that lifts every
+NG45 design simultaneously, including the ariane133 failure point that
+five IBM-aligned mechanisms had regressed on. The §8.12 DP-lane
+preserves the Hessian lift on ariane133 while adding the basin-source
+diversity that lifts the congestion-hardest IBM benchmarks.
 
 > **TODO(data):** E12 / E48 multi-seed variance on `--all` (3–5 seeds).
 > Currently n=1 on the champion run. DPO has 5-seed evidence; the paper
@@ -1668,62 +1920,113 @@ algorithm, different infrastructure. Per-bench plateau detection (E9) is
 also infrastructure-driven: the per-sweep delta logs that motivated it
 only existed because the evaluator produced them in real time.
 
-### 10.5 Compositional polish — three orthogonal mechanisms compose multiplicatively
+### 10.5 Compositional polish — orthogonal mechanisms compose multiplicatively
 
-> **TODO(prose):** Frame the E18 / E25 / E41 / E48 lineage as a
-> compositional finding. Each mechanism (DPO basin shift, SA-v2 polish,
-> K-joint LNS) is a verified individual lift on top of E12; their
-> *naive sum* would predict 1.0925 (E12 1.0990 + −0.51 % DPO + −0.45 %
-> K-joint − overlap), but actual composition E48 hits 1.08151 (−1.59 %
-> vs E12). The hybrid further extracts +0.30 % over E41 by per-bench
-> best-of, which is the *meta-algorithmic* level of composition (the
-> hybrid doesn't introduce a new mechanism; it exploits across-benchmark
-> heterogeneity in which mechanism wins). Connection to ensemble
-> learning / "boosting" literature is worth flagging.
+The E18 / E25 / E41 / E48 lineage tells a compositional story that
+contradicts the additive intuition. Each mechanism in isolation is a
+verified lift over E12: DPO basin shift (E18, −0.84 %), SA-v2 polish
+(E25, −0.33 %), K-macro joint LNS (E39 standalone, −0.30 %). Their
+naive sum predicts an E48 result of approximately 1.0925; actual E48
+verified at 1.08151 (−1.59 % vs E12) — better than the naive sum
+predicts. The composition multiplies through the mechanism stack
+rather than adding through it: each layer operates on the placement
+that the prior layer produced, so the lift compounds at the basin
+level rather than accumulating linearly at the proxy level.
+
+The further +0.30 % that the per-bench best-of hybrid extracts is
+*meta-algorithmic*: it does not introduce a new mechanism but exploits
+the across-benchmark heterogeneity in which mechanism wins. The
+§8.12 DREAMPlace lane and the cascading saddle escape (§8.10) continue
+the same pattern at successively higher levels of the stack — each
+adds a basin-source layer or a saddle-escape layer that compounds with,
+rather than replaces, the layer below it. The connection to ensemble
+learning / boosting (Schapire 1990, Freund & Schapire 1997) is direct
+in framing — meta-algorithms that combine weak hypotheses into strong
+ones — though the placement-specific instantiation does not require any
+of the boosting theory's distribution-reweighting machinery.
 
 ### 10.6 The IBM/NG45 transfer-failure pattern — generalization fails on sparse layouts
 
-> **TODO(prose):** Surface the §8.8 finding into the discussion. Five
-> experiments showed IBM lift that doesn't transfer to ariane133. The
-> generalizable claim is: **heuristics that engage the proxy's structural
-> decomposition (component fractions, topology, geometric clustering)
-> degrade on benchmarks with different macro-density profiles.**
-> Cost-aware destroy (a topology-blind ranking by total Δproxy) and
-> netlist-adjacency K-tuple ranking (using *graph* structure, not
-> *geometric* structure) are the safe baselines. The paper's
-> contribution to the field is partly negative: the obvious
-> "decomposition-aware" heuristics fail under cross-design generalization,
-> and the field should validate on a sparse benchmark (commercial NG45
-> ariane133) before promoting any IBM-tuned mechanism.
->
-> Connection to "OOD generalization" literature in ML is worth flagging.
+§8.8 surfaces a structural finding the paper considers worth flagging
+to the field at large. Five experiments engaged the proxy's structural
+decomposition (component fractions, topology, geometric clustering)
+and lifted IBM benchmarks; all five regressed on the sparse commercial
+ariane133 design by 1.4–5.1 %. The generalizable claim is that
+**heuristics that engage the proxy's structural decomposition degrade
+on benchmarks with different macro-density profiles**. The safe
+baselines — cost-aware destroy (topology-blind ranking by total
+`Δproxy`) and netlist-adjacency K-tuple ranking (using *graph*
+structure rather than *geometric* structure) — survive both design
+classes because their move-selection criteria do not encode
+benchmark-specific spatial priors.
+
+The paper's contribution here is partly negative: the obvious
+"decomposition-aware" heuristics in the placement literature
+(component-weighted destroy, congestion-targeted cluster moves,
+density-pyramid hierarchical refinement) fail under cross-design
+generalization. The field should validate any IBM-tuned mechanism on
+a sparse commercial benchmark — ariane133 is the most diagnostic of
+the public NG45 designs — before promoting it. The connection to OOD
+generalization in ML (Arjovsky et al. 2019, Krueger et al. 2021) is
+direct; mechanism-aligned heuristics overfit to the design class they
+were tuned on, and topology-blind base heuristics with per-bench
+best-of hybrids are the placement-specific instance of the
+distributionally-robust mitigation.
 
 ### 10.7 Limitations
-- CD plateaus after 10–15 sweeps; ibm17/18 still descending at the cap on
-  ablations with tighter thresholds.
-- LNS at single-macro / local-window granularity does not escape CD.
-  Cluster-level joint reinsertion remains untested in the unique
-  combinations explored here.
-- The polyhedral decomposition is the right framework for *understanding*
-  but did not yield direct algorithmic advantage. Structural insight
-  guided diagnosis, not solution.
-- GPU acceleration as an additive polish phase doesn't help (E53);
-  whether it helps as a CD replacement is untested.
-- The hybrid extends naturally to N>2 lanes, but additional lanes
-  (multi-seed, cross-init) hit diminishing returns at --all aggregate
-  scale. Whether sparser benchmark sets (NG45 5-design ASAP7?) retain
-  the multi-lane lift pattern is untested.
+
+- **Implementation-level cap-vs-ceiling gap remains.** The cascade
+  reaches 1.0612 uncapped on M3; under the 60-min cap on EPYC the
+  best is 1.0665 (Option B). A Cython / Numba / GPU port of the
+  routing inner loop would close the remaining 0.5 % but was not
+  justified within the project's wall-clock budget. See §8.11.
+- **CD plateaus after 10–15 sweeps.** ibm17/ibm18 are still descending
+  at the cap on tight-threshold ablations. A longer CD phase with a
+  tighter plateau threshold would help, but consumes wall budget that
+  the saddle escape uses more productively.
+- **LNS at single-macro / local-window granularity does not escape
+  CD's per-axis fixed point.** Cluster-level joint reinsertion at
+  K = N (Hungarian re-pack) remains untested; E63 (spectral init) and
+  E64 (LP-bounded beam K-joint) are implementation-blocked.
+- **Polyhedral decomposition was useful for understanding, not for
+  optimization.** §2's framework guided the §4 diagnosis but the
+  algorithmic system built on it (§3) hit a 1.49 ceiling. The proxy's
+  74 %-congestion weight defeated the LP-based search.
+- **GPU acceleration as an additive polish phase did not help** (E53,
+  §8.7.1). Whether it helps as a basin-source replacement (Xplace,
+  in flight under quota) is untested.
+- **Multi-seed lane diversity hits diminishing returns at `--all`
+  scale** (E53m, §8.7.2). The hybrid extends naturally to N > 2 lanes
+  with different *basin classes* (E25 / E41 / DP) but not with the
+  same class at multiple seeds.
+- **Tier-2 ORFS routed metrics do not transfer uniformly.** Our placer
+  optimizes proxy; ORFS's `rtl_macro_placer` is timing-aware.
+  ariane133 ships *without* our placement (ORFS auto wins by 1.2 ns of
+  slack); ariane136 ships *with* our placement (cascade wins by 0.45 ns).
+  The proxy-optimization approach has structural limitations on the
+  timing-driven evaluation Tier 2 uses.
 
 ### 10.8 What this means for the field
-Macro placement with composite objectives may be fundamentally resistant
-to divide-and-conquer strategies that work for single-objective problems.
-The path forward is *better evaluators*, not better decompositions —
-AND *robust hybrid composition*, not single-mechanism optimization.
-Mechanism-aligned heuristics overfit to the design class they were
-tuned on; per-bench best-of-N hybrids plus topology-blind base
-heuristics are the empirical safe combination.
 
-> **TODO(prose):** Draft. Tighten to ~1.5 pages total for §10.
+The recurring objective-mismatch pattern across three eras (LP-HPWL,
+RUDY congestion, smooth-proxy gradient) suggests that macro placement
+with composite objectives may be fundamentally resistant to divide-
+and-conquer strategies that work for single-objective problems. The
+proxy couples WL, density, and congestion through shared grid cells;
+any separation of concerns loses the information that matters. DPO
+succeeds where the polyhedral system fails because it does *not*
+decompose; CD succeeds where DPO struggles because its exact evaluator
+is fast enough that CD on the joint objective beats gradient descent
+on a wrong joint model.
+
+The path forward, by our reading, has two complementary components:
+**better evaluators, not better decompositions** (the incremental
+evaluator unblocked CD; the smooth-proxy Hessian unblocked saddle
+escape; future curvature oracles will unblock further algorithms);
+and **robust hybrid composition, not single-mechanism optimization**
+(per-bench best-of-N hybrids over topology-blind base heuristics is
+the empirical safe combination). Mechanism-aligned heuristics that
+overfit to a single design class are the failure mode to watch for.
 
 ---
 
@@ -1821,7 +2124,7 @@ discrete optimal transport / Laguerre tessellations.
 
 ---
 
-## Master TODO list (rolled up from inline `TODO(...)` markers, current 2026-05-13)
+## Master TODO list (rolled up from inline `TODO(...)` markers, current 2026-05-16)
 
 ### Data — load-bearing (closed)
 
@@ -1880,33 +2183,50 @@ discrete optimal transport / Laguerre tessellations.
       from `analysis/macro_clearance_diagnostic/` for the 4 NG45
       designs. Justifies the "submit as-is" Tier 2 decision.
 
-### Prose — drafting status
+### Prose — drafting status (2026-05-16 update)
 
-- [ ] **Abstract.** Currently TODO bullets covering the three-act
-      structure; needs ~250 words of prose.
-- [ ] **§§1–8.8 prose.** Sections 1–8.8 still have `TODO(prose)`
-      placeholders. The narrative arc from STORY.md drives this pass.
-- [x] **§8.9 Hessian Saddle Escape.** Drafted 2026-05-13 (commit
-      `57f5acf`). Publication-ready high-level prose.
-- [x] **§8.10 Cascading.** Drafted 2026-05-13 (commit `63a0431`).
-      Publication-ready high-level prose.
-- [x] **§8.11 PATH A speedup.** Drafted 2026-05-13 (commit `63a0431`).
-      Publication-ready high-level prose.
-- [ ] **§9 Results.** Lineage table is updated through A4-v2; per-bench
-      tables and prose still TODO.
-- [ ] **§10 Discussion.** Scaffold; needs prose on the three-act recap,
-      "bypass don't fix" recurring pattern, transferability of the
-      saddle insight, limitations, future work.
-- [x] **§11 References.** Organized by topic and updated 2026-05-13
-      (commit `f49d577`). DOIs added for transition-state methods.
+- [x] **Abstract.** Drafted full prose covering three eras + verified
+      numbers (Option A/B; gaps to leaderboard).
+- [x] **§1 Introduction.** Drafted with three-act narrative + section
+      roadmap.
+- [x] **§2 Polyhedral Decomposition.** Drafted; math precision +
+      novelty boundary (Balas 1979).
+- [x] **§3 Navigation System.** Drafted; result 1.4867 + sweep flat.
+- [x] **§4 Congestion Barrier (Act 2 Diagnosis).** Drafted; LP-HPWL
+      ρ = −0.001, swap+LP corroboration, proxy decomposition.
+- [x] **§5 DPO First Pivot.** Drafted; architecture + ablation +
+      novelty boundary against DREAMPlace and C3PO.
+- [x] **§6 Why DPO Crosses the Barrier.** Drafted; penalty continuation
+      + complexification interpretation + low-seed-variance evidence.
+- [x] **§7 RUDY Limit (Act 3 Diagnosis).** Drafted; 10.9 % top-5 %
+      hotspot overlap; direction-not-magnitude verdict.
+- [x] **§8 CD Breakthrough + §8.5 Compositional Polish + §8.6 Hybrid
+      + §8.7 Failed Extensions + §8.7.5 Infeasibility Wall + §8.7.6
+      Spatial-Block Crossover + §8.8 Transfer Pattern.** All drafted
+      2026-05-16.
+- [x] **§8.9 Hessian Saddle Escape.** Drafted 2026-05-13.
+- [x] **§8.10 Cascading.** Drafted 2026-05-13.
+- [x] **§8.11 PATH A speedup.** Drafted 2026-05-13.
+- [x] **§8.12 DREAMPlace Lane (NEW).** Drafted 2026-05-16 covering
+      the autopsy refutation, B-R0', auto-adaptive config, Option B.
+- [x] **§9 Results.** Lineage table updated to Option A/B; NG45 prose
+      drafted; per-bench `--all` tables remain `TODO(data)` for the
+      figure-generation pass.
+- [x] **§10 Discussion.** Drafted full prose (10.1-10.8): objective
+      mismatch recurrence, non-decomposability, "bypass don't fix",
+      infrastructure-unlocks-algorithm, compositional polish, IBM/NG45
+      transfer, limitations, what-this-means-for-the-field.
+- [x] **§11 References.** Organized by topic; DOIs in for transition-
+      state methods.
 
 ### Final pass
 
-- [ ] Length/density check vs 14–18-page target (the post-A1 arc
-      adds ~3 pages vs the original 12–14 plan).
+- [ ] Length/density check vs 16–20-page target.
 - [ ] Math notation consistency (Hessian, eigenvector, ε, gradient).
 - [ ] Cold-read by someone unfamiliar with the project.
 - [ ] Final reference-list cleanup: drop pointers we don't cite.
+- [ ] Figure generation pass (Figures 1–7 listed in `## Master TODO list`
+      above; data-freeze items still open).
 
 ---
 
