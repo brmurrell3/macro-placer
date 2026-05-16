@@ -1,22 +1,25 @@
-# Morning handoff (E107) — 2026-05-16 08:26 EDT
+# Morning handoff (E107) — 2026-05-16 09:00 EDT
 
 ## TL;DR
 
-Periphery wrapper VALIDATED on 4 fresh NG45 runs (3 succeeded, 1 E25 error).
-Wrapper SAFE everywhere; periphery polish rejected on all 4 because Lévy
+Periphery wrapper VALIDATED on 4 fresh NG45 runs (3 wrapper + 1 patched).
+Wrapper SAFE everywhere; periphery polish rejected on all because Lévy
 cascade output is already a tight optimum.
 
-**NEW NG45 bests (M3 Max overnight)**:
-- ariane133: **0.65212** (vs E74 0.6641, **-1.8%**)
-- ariane136: **0.64980** (vs E74 0.6518, -0.31%)
-- mempool_tile: **0.73750** (≈ E74 0.7376)
-- nvdla: fresh attempt errored on E25 strict check; using E74 0.6716
+**NEW NG45 bests (M3 Max overnight, all FRESH)**:
+- ariane133: **0.65212** (vs E74 0.6641, **-1.80%**) ⭐
+- ariane136: **0.64980** (vs E74 0.6518, **-0.31%**) ⭐
+- mempool_tile: **0.73750** (vs E74 0.7376, tied)
+- nvdla: **0.67646** (vs E74 0.6716, **-0.76%**) ⭐ [via patched wrapper]
 
-NG45 4-bench aggregate: **0.67775** (beats PATH B 0.68086 by -0.5%)
+NG45 4-bench aggregate: **0.67897** (-0.34% vs E74 0.68128, -0.28% vs PATH B 0.68086)
 
 **IBM 17 (AWS-cpu overnight)**: aggregate **1.07564** (matches rank-6 score 1.0771)
 
-**21-bench combined** (17 IBM + 4 NG45): **0.99985** ≈ 1.000
+**21-bench combined** (17 IBM + 4 NG45): **1.00009** ≈ 1.000 🎯
+
+Patch shipped: `cd_lns_sa_cascade_levy/placer.py` now catches E25 errors and
+falls back to E41-only. Prevents nvdla-style failures.
 
 ## Where things stand
 
