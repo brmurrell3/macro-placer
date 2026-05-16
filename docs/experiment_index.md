@@ -1,11 +1,12 @@
 # Experiment Index
 
-> ⚠️ **HISTORICAL body — last updated 2026-05-05/06.** Section §Post-E84
-> wave (2026-05-11 → 2026-05-16) was appended 2026-05-16 with one-line
-> verdicts for the experiments not yet reflected in the body's tables.
-> Body tables are still valid for the E1 → E84 lineage.
+Catalog of every experiment run during the Partcl/HRT Macro Placement
+Challenge 2026 — failures alongside wins. Two eras:
+**§Post-E84 wave (2026-05-11 → 2026-05-16)** lists the recent
+experiments and submission-day candidates. The historical body covers
+E1 → E84.
 
-Last updated: 2026-05-06 (body) / 2026-05-16 (post-E84 wave section)
+Last updated: 2026-05-16
 
 ## Post-E84 wave (2026-05-11 → 2026-05-16)
 

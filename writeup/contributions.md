@@ -795,6 +795,95 @@ in `results/CDLNSSACascadeAdaptivePlacer_*.json` (2026-05-13).
 
 ---
 
+## 24. DREAMPlace as a third init lane refutes the "DP basin structurally inferior" autopsy (E91)
+
+**Claim:** The 2026-05-10 PATH B falsification ("DREAMPlace doesn't
+help — its basin is structurally below cascade") was wrong because the
+test it ran was unfair. Stock DP + matched polish budget (CD + LNS +
+SA-v2 at the same per-lane wall as E25/E41) reaches a different valley
+than SDF/DPO inits — sometimes a substantially better one. On the four
+hardest IBM benches (ibm10/12/14/17), DP + full polish beats
+cascade-capped by **−6.9 % aggregate**, with ibm12 −13.3 % and ibm17
+−10.2 % as the largest per-bench wins.
+
+**What's novel:** The empirical falsification of a documented autopsy
+in this same codebase. The original autopsy
+(`submissions/_archive/falsified/cd_lns_sa_hessian_dp/placer.py`) gave
+DP only `min_time_s=30, hard_cap_s=60` brief cleanup while E25 and E41
+each received ~660 s polish. The asymmetry created the apparent
+structural gap. With matched polish (E91 driver `dp_full_polish.py`),
+the gap collapsed on 3 of 4 hardest IBM benches and inverted to
+substantial wins on ibm12/14/17.
+
+**What's not novel:** DREAMPlace itself (Lin et al. 2019) or
+electrostatic-density placement. The contribution is showing that DP
+basins are *polishable into deeper valleys* than the gradient-descent
+basin the DP authors originally targeted, given a placement pipeline
+that doesn't reuse DP's per-pixel surrogate as the polish objective.
+
+**Evidence:**
+- E91 driver: `experiments/E91_dp_full_polish/code/dp_full_polish.py`.
+- B-R0' aggregate (2026-05-12 lambda cloud): hard-bench cascade-capped
+  1.2818 → DP+full-polish 1.1936 = **−6.9 %**.
+- Verified `--all` Option B: IBM 1.06650 vs cascade-capped Option A 1.07820
+  = **−1.07 %** aggregate; verified `--ng45` Option B 0.68086 (tied
+  Option A 0.68102 within noise).
+- Auto-adaptive DP config (rule-compliant, no per-bench dispatch):
+  `target_density = clip(macro_density × 1.5, 0.40, 0.85)`,
+  `stop_overflow=0.02`, `dp_iter=2000`, `dp_lr=0.005`. ariane133 NG45
+  = 0.66167 (zero overlaps) verifies NG45 transfer.
+
+---
+
+## 25. Multi-lane plateau pick + cascading saddle as a self-contained submission architecture
+
+**Claim:** The architecture that ships in the submission (Options A / B)
+is **`{2 or 3 polish lanes → per-bench best-of plateau pick → cascading
+saddle escape → deadline-bound stop}`**. Each component is a documented
+contribution above; what's novel about the combination is that it
+unifies two orthogonal escape mechanisms — basin-level (via multi-lane
+init) and saddle-level (via Hessian eigvec perturbation) — under a
+single deadline budget that respects the partcl 60-min/bench cap.
+
+The architecture generalizes E48 (basin only, 2-lane) and E84 (saddle
+only, single-init cascade) into a hybrid where:
+- Lanes provide basin diversity (SDF / DPO / DP land in different
+  proxy-landscape valleys).
+- Per-bench best-of-plateau picks the basin-quality argmin without
+  per-benchmark tuning.
+- Cascade saddle escape from the picked plateau compounds per-iteration
+  lifts until budget exhaustion or no-improvement.
+- Deadline scheduling (2026-05-16 budget-management fix: rolling
+  `avg_iter_wall × 1.2`) keeps the cascade phase from stopping early
+  while guaranteeing wall compliance.
+
+**What's novel:** The principled separation of *basin-level* exploration
+(via lanes) from *saddle-level* exploration (via Hessian eigvec). Prior
+placement architectures (RePlAce, DREAMPlace, ePlace) optimize one
+basin; SA-based placers explore basins but reuse the same gradient-class
+move type. Our architecture orthogonalizes the two and combines them
+under a deadline budget. No prior work we found applies this
+decomposition to macro placement.
+
+**What's not novel:** Each individual mechanism (basin diversity via
+multiple inits, saddle escape via second-order curvature) exists in
+adjacent fields (drug docking, transition-state search, RL exploration).
+The combination is the contribution.
+
+**Evidence:**
+- Option A entry: `submissions/cd_lns_sa_cascade/placer_adaptive.py`,
+  IBM 1.07820 / NG45 0.68102 (PATH A post-A1 wall-safe cascade).
+- Option B entry: `submissions/cd_lns_sa_cascade_dp_lane/placer.py`,
+  IBM 1.06650 / NG45 0.68086 (adds DP lane).
+- Both verified zero overlaps on 17 IBM + 4 NG45.
+- Composite avg over 21 benches: Option B 0.993, Option A 0.998.
+- Beats RePlAce 1.4578 by ≥26 %; beats public leaderboard reference
+  1.1172 by ≥3.5 %; beats every verified leaderboard entry by ≥13 %.
+- Gap to vmallela #1 self-reported 1.0109: **+5.6 %**. Gap to
+  Carrotato #2 self-reported 0.967 (Xplace + Triton class): +10.3 %.
+
+---
+
 ## Explicitly excluded
 
 The following topics from `theory.md` (in this writeup directory)

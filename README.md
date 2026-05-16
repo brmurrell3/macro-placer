@@ -22,6 +22,37 @@ Default `budget_seconds=3000` (50 min/bench, safe under the 60-min cap on EPYC).
 Single global algorithm; no per-benchmark hyperparameters; no benchmark-identity
 dispatch (only canvas-area property dispatch, see MECHANISM.md).
 
+A verified-better Option B exists at
+[`submissions/cd_lns_sa_cascade_dp_lane/placer.py`](submissions/cd_lns_sa_cascade_dp_lane/placer.py)
+(IBM 1.06650 / NG45 0.68086) that adds a DREAMPlace lane to the cascade.
+Falls back to Option A if `DREAMPLACE_ROOT` is unset. See
+[`submissions/README.md`](submissions/README.md) for the full
+candidate comparison and the no-swap context.
+
+## Where to find things in this repo
+
+| Path | Purpose |
+|---|---|
+| [`submissions/README.md`](submissions/README.md) | Tier-1 entry candidates (Options A, B) + Tier-2 ORFS strategy |
+| [`docs/results.md`](docs/results.md) | Verified per-benchmark proxy scores (§Post-2026-05-06 is current) |
+| [`docs/approach.md`](docs/approach.md) | Algorithm description (cascade + Hessian saddle + optional DP lane) |
+| [`docs/roadmap.md`](docs/roadmap.md) | Submission timeline + priorities |
+| [`docs/experiment_index.md`](docs/experiment_index.md) | Every experiment — live + falsified |
+| [`docs/decisions/`](docs/decisions/) | Architecture Decision Records (immutable, structural) |
+| [`docs/handoffs/`](docs/handoffs/) | Dated session-end notes (overnight runs, breakthrough reports) |
+| [`docs/gotchas.md`](docs/gotchas.md) | Codebase footguns |
+| [`docs/problem.md`](docs/problem.md) | Formal mathematical problem statement |
+| [`writeup/paper.md`](writeup/paper.md) | Innovation prize draft |
+| [`writeup/evidence.md`](writeup/evidence.md) | Frozen-number archive cited by `paper.md` |
+| [`writeup/contributions.md`](writeup/contributions.md) | Claim / novelty / evidence registry |
+| [`writeup/theory.md`](writeup/theory.md) | Supplementary mathematical material |
+| [`experiments/`](experiments/) | Per-experiment manifests, code, and notes |
+| [`macro_place/`](macro_place/) | Library (incremental evaluator, CD core, smooth proxy) |
+| [`TODO.md`](TODO.md) | Current task list |
+| [`SETUP.md`](SETUP.md) | Setup + API reference |
+| [`SCORING.md`](SCORING.md) | Tier-2 ORFS scoring rules |
+| [`CLAUDE.md`](CLAUDE.md) | Project context for Claude Code agents (canonical state lives here) |
+
 ---
 
 **Win $20,000 by developing better macro placement algorithms!**

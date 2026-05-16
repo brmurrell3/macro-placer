@@ -1,231 +1,208 @@
 # Approach
 
-> ⚠️ **HISTORICAL — last updated 2026-05-05/06.** Current plan is in repo-root `TODO.md` (two-path structure: Path A cascade speedup, Path B DREAMPlace exploration). Submission target as of 2026-05-11: `submissions/cd_lns_sa_cascade/placer_adaptive.py`.
+The current submission optimizes the canonical proxy directly via
+**cascading Hessian saddle escape on top of a multi-lane init + polish
+pipeline**, with an optional DREAMPlace lane.
 
-Last updated: 2026-04-28
+```
+SDF init       -> CD + LNS + SA-v2 polish (E25 lane)
+DPO init       -> CD + LNS + SA-v2 + K-joint polish (E41 lane)
+[Option B only] DREAMPlace -> greedy_macro_legalize -> matched polish (DP lane)
+plateau pick: argmin over the 2 or 3 lane outputs
+cascading saddle escape:
+    while remaining time > 1.2 * avg_iter_wall:
+        smooth-proxy Hessian -> Lanczos smallest-algebraic eigvec
+        ±ε perturb along soft mode -> CD-adaptive polish
+        if no improvement: break
+deadline budget: 3000s default (50min/bench, 60-min cap)
+validate zero overlaps
+```
 
-The current approach is **full-proxy coordinate descent on an incremental evaluator with per-benchmark plateau detection, followed by a grid-bin LNS escape phase (E12)**. The CD core superseded the DPO and polyhedra-navigation approaches; the LNS overlay (ADR-007) supersedes plain CDAdaptive (ADR-003) as the champion-bearing decision. The earlier approaches are documented further down — keep them in mind for the writeup, since the failures motivated the architecture that won.
+Both submission options share the cascade base; Option B adds the DP lane.
+
+Last updated: 2026-05-16
 
 ---
 
-## 1. Current approach: CD + grid-bin LNS overlay (CHAMPION)
+## 1. Current submission
 
-**Result:** avg proxy **1.0990** on --all (17 IBM benchmarks), beats leaderboard 1.1172 by **-1.63%**, beats RePlAce 1.4578 by **-24.6%**. Zero overlaps. Total runtime 28 256 s (7.85 hr). Entry: `submissions/cd_lns_gridbin/placer.py`. ADR: [007](decisions/007_cd_lns_gridbin_promotion.md).
+### 1.1 Tier-1 entry candidates
 
-### 1.1 The pipeline
+| Option | Placer | IBM `--all` | NG45 `--ng45` | External deps |
+|---|---|---:|---:|---|
+| **A** | [`submissions/cd_lns_sa_cascade/placer_adaptive.py`](../submissions/cd_lns_sa_cascade/placer_adaptive.py) | **1.07820** | **0.68102** | none |
+| **B** | [`submissions/cd_lns_sa_cascade_dp_lane/placer.py`](../submissions/cd_lns_sa_cascade_dp_lane/placer.py) | **1.06650** | **0.68086** | DREAMPlace (optional; falls back to A) |
 
-```
-SDF init
-  -> push-apart projection (clean residual overlaps)
-  -> IncrementalProxyEvaluator (full-proxy: WL + density + congestion)
-  -> coordinate descent sweeps (per-axis breakpoint enumeration)
-       with per-benchmark plateau detection (CD ≤ 3 000 s)
-  -> grid-bin LNS escape phase (LNS ≤ 600 s; (col × row) candidate
-       enumeration per destroyed macro; cost-aware destroy ranking)
-  -> validate (zero overlaps, fixed macros not moved)
-```
+Both verified zero overlaps on 17 IBM + 4 NG45 with walls under 60 min.
+Option B beats RePlAce 1.4578 by **−26.9 %**; beats public leaderboard
+reference 1.1172 by **−4.5 %**. Gap to leaderboard #1 (vmallela
+self-reported 1.0109) is **+5.6 %**.
 
-Total per-benchmark wall budget: CD ≤ 3 000 s + LNS ≤ 600 s = 3 600 s
-(matches the contest 1-hour-per-bench legal cap).
+Submission-day decision: ship Option B if eval environment has
+DREAMPlace; ship Option A otherwise.
 
-### 1.2 Components
+### 1.2 Mechanism (shared cascade base)
 
-**SDF init.** Same as DPO — analytical spreading via signed distance fields produces a non-overlapping starting placement that respects density. Lives in `macro_place/sdf_init.py`.
+- **Multi-lane polish.** Two (or three) initializations are independently
+  polished to plateau. Per-bench best wins. This isolates basin-quality
+  variance: DPO vs SDF basins polish to different valleys on different
+  benches; the DP basin opens a third valley that wins on 3 of 4 hardest
+  IBM benches (E91 finding).
+- **Cascading Hessian saddle escape** (E84, built on E74). Once the
+  plateau is fixed, the cascade phase:
+  1. Builds the smooth-proxy Hessian-vector product via
+     `torch.autograd.functional.hvp` on `SmoothProxy(plc)`.
+  2. Runs scipy `eigsh` with a `LinearOperator` for the smallest-
+     algebraic eigenvector (the softest mode).
+  3. Perturbs the placement ±ε along that mode and runs a short
+     CD-adaptive polish on each branch.
+  4. Picks the lower-proxy branch as the new plateau.
+  5. Stops when no improvement, or the predicted next-iter cost exceeds
+     remaining budget (2026-05-16 budget-management fix uses rolling
+     `avg_iter_wall × 1.2` vs the previous fixed 60s safety floor).
+- **PATH A delta acceleration** (post-A1). The incremental evaluator
+  now exposes a `delta_cost(macro_idx, new_xy)` API that computes the
+  smooth-proxy delta *without* mutating state, eliminating the
+  move-then-revert pattern. Plus `delta_cost_axis_batch` for vectorized
+  K-candidate evaluation. **5.36×** CD speedup on ibm10.
 
-**Incremental proxy evaluator (E1).** `macro_place/incremental_evaluator.py`. Caches per-net min/max trackers, per-cell density, per-cell macro routing, per-net WL bbox; updates only what a single-macro move touches. Re-uses bit-for-bit the smoothing pass from `compute_proxy_cost` for parity. **4657× speedup per move on ibm10**, parity at 1e-15 absolute, revert tested. This is load-bearing — without it, 600s/bench wouldn't be enough sweeps to converge.
+### 1.3 Why DREAMPlace as a third lane
 
-**Coordinate descent.** For each non-fixed macro, search both x and y axes via breakpoint enumeration:
-- *Breakpoints* = net endpoints (HPWL change-points) + grid bin lines (density change-points) + congestion change-points within the legal range.
-- *Legal range* per axis = `legal_axis_range(macro, axis)` — clamps to canvas + non-overlap with all other macros at the current other-axis value.
-- *Best position* on the axis = the breakpoint that minimizes proxy under the incremental evaluator. Closed-form when breakpoint count is tractable; falls back to golden section if too dense.
-- *Acceptance* = monotone, only commit if proxy strictly drops by > 1e-9.
+E91 ("DP-full-polish autopsy") falsified the prior PATH B falsification.
+The original autopsy compared **DP basins** (no polish) against
+**cascade post-polish** — apples to oranges. With matched polish
+budgets, DP basins polish to a different valley than SDF/DPO inits —
+sometimes deeper:
 
-**Per-benchmark plateau detection (E9 — the first leaderboard-beating change).** Each benchmark exits CD when:
-- 3 consecutive sweep-deltas drop below `plateau_threshold` (E9 default 0.005; E12 production 0.001), AND
-- `elapsed >= min_time_s = 300` (don't exit too early on a noisy first few sweeps).
+| Bench | Cascade | DP + matched polish | Δ |
+|---|---:|---:|---:|
+| ibm12 | 1.3031 | **1.129** | **−13.3 %** |
+| ibm17 | 1.4546 | **1.307** | **−10.2 %** |
+| ibm14 | 1.2919 | **1.243** | **−3.8 %** |
+| ibm10 | 1.0775 | 1.095 | +1.6 % (hint of regression) |
 
-Or hard-caps at `hard_cap_s` (E12 production 3 000 s — leaves 600 s for the LNS phase within the contest 3 600 s legal cap). Easy benchmarks exit at ~5-10 min; hard benchmarks get 25-50 min when still descending.
+Hard-bench aggregate: cascade 1.2818 → DP+polish 1.1936 = **−6.9 %**.
 
-**Grid-bin LNS overlay (E12 — the current-champion change).** After CD plateaus, the LNS phase runs as a polish:
+The DP lane in Option B takes ~12 s for the DP basin (CPU build on
+cloud, CUDA build hit nvcc 11.0 vs compute_86 incompatibility) + ~1100 s
+for polish (matched to E25/E41 lanes) + ~800 s for cascade saddle on
+the picked plateau. Total per-bench wall well within the 60-min cap.
 
-- *Destroy.* Pick K = max(1, min(30, 0.05 × |movable hard macros|)) macros for destruction. Default destroy strategy is **cost-aware ranking**: each candidate macro is scored by the proxy delta produced by temporarily moving it to canvas center; the K most costly are destroyed. (Ablation: random destroy on `--fast` matched cost-aware within noise — see §1.4.)
-- *Reinsert.* For each destroyed macro, enumerate every `(grid_col × grid_row)` cell center as a candidate position. Reject candidates that violate canvas bounds or non-overlap; commit the legal candidate that minimizes proxy under the incremental evaluator. This is a **different move type than CD's per-axis breakpoint search** — it considers full 2D grid positions outside CD's reachable set.
-- *Iterate.* Repeat destroy/reinsert until either (a) a sample produces no improvement, or (b) the LNS phase wall budget (`lns_budget_s = 600 s`) expires.
+### 1.4 Why this works (basin-level and saddle-level both matter)
 
-The LNS overlay is what carries the result from 1.1055 (CDAdaptive) to 1.0990 (E12). Its escape mechanism is move-type, not random restart, not basin-hopping: grid-bin candidates exist outside CD's per-axis breakpoint enumeration. Three earlier escape mechanisms (E3 single-macro LNS, multi-init via SDF jitter, subset-CD destroy/reinsert) all reused CD's per-axis move type and produced flat results.
+The proxy decomposition is **6 % WL / 20 % density / 74 % congestion**
+(E8 LP-HPWL diagnostic). On congestion-dominated benches:
 
-### 1.3 Why this works
+- **Basin-level.** Different inits (SDF, DPO, DP) reach different basins
+  after polish. No init dominates universally; per-bench best-of is the
+  robust strategy (E48 hybrid finding, generalized to 3 lanes in E91).
+- **Saddle-level.** Within a basin, the polished plateau is a local-move
+  fixed point. Hessian saddle escape via smooth-proxy eigvec + ε perturb
+  pushes through the plateau to a lower minimum (E74 finding;
+  ariane133 broke from 0.6861 to 0.6641 = **−3.21 %**, ending the
+  E42/E43/E44/E54/E62 NG45 failure chain).
+- **Cascade.** Iterating saddle escape until no improvement compounds
+  per-iteration lifts. Uncapped E84 hit IBM 1.0612 (8/17 walls over
+  55-min cap). The wall-safe descendants trade ~0.005 aggregate for
+  guaranteed 60-min/bench compliance.
 
-The 2026-04-26 LP-HPWL diagnostic decomposed proxy as **6% WL, 20% density, 74% congestion**. That falsified two prior framings:
+### 1.5 Why this transfers to NG45 + hidden designs
 
-1. *Pure HPWL CD* (Miftari weighted-median) caps at ~5% gain. WL alone is a small fraction.
-2. *DPO via gradient on smooth proxy* hits a basin ceiling at ~1.38; gradients can't cross discrete topology barriers (proven by 4-seed verification on `best_of_v2`: ibm02/ibm12 byte-identical).
+- Plateau-detection thresholds are **per-benchmark, per-run** — adapt
+  to the actual descent trajectory rather than IBM-tuned priors.
+- Saddle escape operates on the smooth-proxy Hessian, which is built
+  from the placement state — no implicit IBM dependence.
+- DP-lane uses **auto-adaptive config** (E91 rule-compliance fix):
+  `target_density = clip(macro_density × 1.5, 0.40, 0.85)` per
+  observable bench geometry; no benchmark-name dispatch. Verified on
+  ariane133 NG45 = 0.66167 (auto-config) vs cascade-uncapped 0.6641.
 
-Full-proxy CD with breakpoint enumeration is **basin-changing**:
-- Each per-axis search considers all O(degree) net endpoints + O(grid_col) bin lines as candidates. That's typically 30-300 candidates per axis per macro, not a continuous gradient step.
-- Across a sweep, every macro tries to relocate to a globally cost-minimizing position given the current state of all others. Topology can flip without going through "infeasible" intermediates.
-- ibm02 (DPO basin-locked at 1.6888 across 4 seeds) drops to 1.1534 in 600s of CD — proves CD reaches a different fixed point.
+### 1.6 Why this does NOT transfer to Tier-2 ORFS uniformly
 
-### 1.4 Lineage refinements that compose into the champion
+Tier-2 ORFS uses real PnR routed metrics (WNS/TNS/Area), not proxy.
+Our placer optimizes proxy; ORFS's `rtl_macro_placer` is timing-aware.
+Per-design verification (2026-05-15/16, [`handoffs/2026-05-16_tier2_orfs_findings.md`](handoffs/2026-05-16_tier2_orfs_findings.md)):
 
-#### 1.4.1 Plateau detection (E9)
-
-CDOnly's fixed 600s/bench was one-size-fits-all. Easy benchmarks (ibm09 ~3 min) plateaued early and wasted the rest. Hard benchmarks (ibm17/18 sweep deltas at 0.001-0.003 at the 600s mark) ran out mid-descent. CDAdaptive lets hard benchmarks use the time the easy ones save:
-
-| Bench | E9 wall (s) | CDOnly wall (s) | E9 vs CDOnly |
-|---|---|---|---|
-| ibm09 (easy) | 449 | 600 | +0.06% (tied; saved 151s) |
-| ibm14 (hard) | 1572 | 600 | -1.96% |
-| ibm17 (hardest) | 2238 | 600 | **-3.64%** |
-
-Total wall 17480s (E9) vs 10316s (CDOnly) — 70% more compute, but every minute spent on a hard benchmark.
-
-#### 1.4.2 Grid-bin LNS overlay (E12)
-
-E9's run signature revealed it was *plateau-bound*, not budget-bound: every benchmark exited via plateau, none hit the 1-hour cap. The plateau is a per-axis fixed point — same wall-clock with the same move type cannot escape it. E12's grid-bin LNS (described in §1.2) layers a **different move type** on top of CD's plateau, picking up an additional -0.59% (1.1055 → 1.0990) at the cost of +3 hr wall (4.85 → 7.85 hr on `--all`).
-
-**Cost-aware destroy ranking is not load-bearing.** A `--fast` ablation (`experiments/E12_grid_bin_lns/code/cd_lns_gridbin_random.py`) with random destroy averaged 0.9372 on ibm01/04/09/13 — matching cost-aware within noise. On ibm09, random (0.8541) actually beat cost-aware (0.8591). Cost ranking adds ~10% wall per LNS sample but does not change quality. Stays cost-aware in production for now to avoid mid-deadline changes; future simplification is to drop the ranking.
-
-### 1.5 Why this transfers to the hidden NG45 test
-
-The plateau-detection policy is **per-benchmark, per-run**. It adapts to the actual descent trajectory rather than to priors set on IBM. On a benchmark we've never seen, this is the only sane policy.
-
-The 1-hour hard cap matches the competition rule, so we never overshoot the per-benchmark compute limit even on the hardest case.
-
----
-
-## 2. Prior approach: DPO (superseded — useful for writeup)
-
-**Best result:** avg proxy **1.3834** on --all (`best_of_v2`). Replaced by CDOnly on 2026-04-27.
-
-DPO differentiates through the actual proxy cost formula `f(p) = WL + 0.5*D + 0.5*C`:
-
-1. **SDF init** (~3s) — non-overlapping starting placement.
-2. **LSE-HPWL** — log-sum-exp smooth HPWL with annealed `gamma`.
-3. **Differentiable grid density** — exact grid overlap, top-10% via `torch.topk`.
-4. **Differentiable RUDY congestion** — smooth bbox → grid overlap → ABU-5%.
-5. **Overlap penalty** — pairwise ReLU, annealed across 3 phases.
-6. **Adam optimizer** — 3-phase penalty continuation (exploration → refinement → sharpening).
-7. **Legalization** — iterative overlap repair for zero hard-macro overlaps.
-8. **Best-of selection** — evaluate both SDF init and DPO output, return better per benchmark.
-
-### 2.1 Why DPO hit a ceiling
-
-Multi-seed verification (E5, 4 seeds: 43, 44, 45, 46) showed `best_of_v2` was within 1% across seeds on --all, and **ibm02/ibm12 were byte-identical** across all 4 seeds. DPO converges to a deterministic local minimum that gradient steps cannot escape. Within-DPO refinements consistently capped at 1-2%:
-
-| Falsified DPO extension | Best (--all) | Lesson |
+| Design | Strategy | Why |
 |---|---|---|
-| E5: batched seeds, sigma=0.04·canvas | 1.3790 | All seeds collapse to same basin |
-| E10: congestion-only refinement | 1.3788 | Marginal -0.33%; ibm02 *worse* +2.3% |
-| E11: diverse priors (SDF + Will + greedy + random) | 1.3839 | Fast set -0.8%; --all FLAT +0.04%; ibm02/12 worse |
+| ariane133 | Ship **without** `MACRO_PLACEMENT_TCL` | ORFS auto-place beats every cascade variant by 1.2 ns of slack. |
+| ariane136 | Ship **with** cascade `MACRO_PLACEMENT_TCL` | Cascade +0.4935 ns vs auto +0.0457 ns. |
+| mempool_tile | Untested with the macro-tcl fix | Default: ship cascade pending re-test. |
+| nvdla | Auto-place fallback | Cascade triggered PDN failure on pathological E74-class placement. |
 
-The diagnosis: DPO's smooth-proxy gradient cannot make discrete topology jumps. CD's breakpoint enumeration can.
-
----
-
-## 3. Pre-DPO approach: Polyhedra navigation (superseded — kept for writeup)
-
-**Best result:** avg proxy **1.4867** on --all (300s nav). Hit a ceiling at ~1.49.
-
-The feasible region of non-overlapping placements is a **union of convex polyhedra**. Each polyhedron = a fixed L/R/A/B pairwise assignment. Within any polyhedron, the problem is a linear program. The framework decomposes:
-1. **Which polyhedron** (discrete, NP-hard) — the topology
-2. **Where within it** (continuous, polynomial) — solved exactly via LP
-
-Implementation: SDF v5 init → assignment extraction + HPWL LP solve (HiGHS) + dual extraction → GridSurrogate (~0.1ms) for fast candidate evaluation → surrogate-guided navigation with SA acceptance → cluster moves (net-correlated + macro-centered multi-pair flips) → ClusterScreener (multi-tier pre-projection pruning) → robust projection (cascade repair + overlap repair).
-
-### 3.1 Why polyhedra navigation hit a ceiling
-
-Phase 5 (overnight Apr 14-15, 22 automated experiments across 3 subproblems) systematically falsified the levers:
-
-- **SP3 (Surrogate fixes):** Surrogate is already well-calibrated. Top-k verify=20 helped marginally (1.4919, noise).
-- **SP1 (Alternative inits):** SDF is genuinely hard to beat. Spectral (1.78), HMetis (1.91), greedy (1.75) all far worse.
-- **SP4 (LP modifications):** Washed out by 50s of navigation. McCormick area penalty best at 1.4918 (noise).
-- **Phase 4 (Tunneling):** Soft-pair flips, group cascade, sequence pairs all failed to cross the congestion barrier. Barrier is hundreds of flips wide.
-
-### 3.2 The congestion barrier (the deep lesson)
-
-Six experiments established that **local navigation cannot reach better congestion**:
-
-| Experiment | Cong delta | Density delta | Conclusion |
-|---|---|---|---|
-| Real-proxy pair flips (300s) | <1% | -2.8% to -5.6% | Local flips only move density |
-| Swap + LP | **-44%** | +180% | Different topologies CAN have better congestion |
-| Swap only (no LP) | <0.5% | ~0% | Single swaps don't change routing structure |
-| Group topology cascade | LP infeasible | N/A | Changing 200+ pairs creates constraint cycles |
-| Sequence pair (1-500 steps) | +1-2% (worse) | +2-5% (worse) | Random distant topologies are worse |
-| Position blending (SDF↔LP) | Monotonically worse until pure LP | -- | No smooth path in position space |
-
-The barrier was **structural**, not surrogate quality. SDF's basin was locally optimal; nearby topologies were worse.
-
-### 3.3 The LP-proxy disconnect
-
-The LP optimizes HPWL, but **HPWL has zero correlation with proxy cost** (rho=-0.001, Miftari experiments). HPWL and density anti-correlate physically (tighter WL = denser); congestion is uncorrelated with HPWL (rho=0.072). This invalidated:
-- Branch-and-bound with LP relaxation (bounds the wrong objective)
-- Lagrangian bounds from LP duals (predict LP-HPWL not proxy)
-- MCMC/SA weighted by LP cost (samples wrong distribution)
-- Partial-commitment LP (bounds wrong objective)
-
-**This is the unblock that motivated the incremental real-proxy evaluator** (E1) and ultimately CD on full proxy. See `analysis/lp_hpwl_diagnostic/lp_hpwl_diagnostic.md` for the formal decomposition (6% WL, 20% density, 74% congestion).
+This is a *limitation* of the proxy-optimization approach, not a bug.
 
 ---
 
-## 4. Comparison vs traditional approaches
+## 2. Lineage (prior approaches — useful for writeup context)
 
-| Approach | Paradigm | Overlap handling | Congestion strategy | Our verdict |
-|---|---|---|---|---|
-| RePlAce | Nesterov on smooth relaxation | Continuous penalty → one-shot legalize | Implicit via density spreading | Beat by -24.2% |
-| ePlace / DREAMPlace | Same as RePlAce, GPU-accelerated | Same | Same | Same paradigm |
-| SA on B*-tree / Seq. Pair | Stochastic combinatorial search | Always feasible (compact repr.) | Evaluated but not optimized | Slow at N=500 |
-| Partitioning (Capo) | Recursive bisection | Top-down slot assignment | Coarse: only at partition boundaries | Greedy, loses global structure |
-| MaskPlace (RL) | Learned policy, sequential | Sequential feasible placement | Reward shaping | Generalization is poor |
-| **Polyhedra navigation (ours, 1.49)** | LP inside combinatorial navigation | Always feasible by construction | Surrogate (RUDY) guides search | Hit congestion barrier |
-| **DPO (ours, 1.38)** | Differentiable proxy + gradient steps | Iterative legalization | Smooth congestion gradient | Basin lock — within-basin only |
-| **CD on incremental evaluator (ours, 1.10)** | Per-axis breakpoint enumeration on full proxy | Strict per-axis legality | Direct in evaluator | superseded |
-| **CD-adaptive (ours, 1.1055)** | CD + per-benchmark plateau detection | Same | Same | prior champion (E9) |
-| **CD + grid-bin LNS (ours, 1.0990)** | CD plateau + (col×row) destroy/reinsert overlay | Strict per-axis + per-reinsertion legality | Direct in evaluator | **CHAMPION (E12, 2026-04-28)** |
+Each generation replaced its predecessor by a **structural change** to
+the algorithm, not parameter tuning.
 
----
+| Era | Method | Best `--all` | Replaced because |
+|---|---|---:|---|
+| RePlAce baseline | — | 1.4578 | — |
+| Polyhedra navigation | LP within disjunctive feasible region | 1.4867 | Congestion barrier structural (E8) |
+| DPO | best_of_v2 | 1.3834 | Smooth-proxy gradient cannot cross discrete topology barriers (basin lock byte-identical across 4 seeds) |
+| CD-only | fixed 600 s/bench | 1.1193 | Fixed budget undershot hard benches |
+| CD-adaptive (E9) | per-bench plateau | 1.1055 | Plateau-bound; couldn't escape per-axis fixed point |
+| CD + LNS (E12) | + grid-bin (col × row) escape | 1.0990 | Different move type cleared E9 plateau; ADR-007 |
+| E25 (SDF+CD+LNS+SA-v2) | + SA-v2 polish on breakpoints | 1.0954 | Component of E48 hybrid |
+| E41 (DPO+CD+LNS+SA-v2+K-joint) | DPO basin variant | 1.0848 | Component of E48 hybrid |
+| E48 hybrid | per-bench best-of-{E25, E41} | 1.08151 | ADR-011; superseded by E74 saddle |
+| E74 Hessian saddle | smooth-proxy eigvec + ε perturb on E48 plateau | 1.0666 | ADR-012; subsumed by cascade |
+| E84 cascade (uncapped) | iterate E74 saddle until no improvement | 1.0612 | 8/17 walls > 55 min |
+| **Option A (PATH A post-A1)** | wall-safe E84 + delta-cost CD | **1.07820** | submission floor 2026-05-16 |
+| **Option B (cascade + DP-lane)** | + DREAMPlace as 3rd init | **1.06650** | strongest verified 2026-05-16 |
 
-## 5. Subproblem decomposition (revised post-CD)
-
-The proxy `f(p) = WL + 0.5*D + 0.5*C`:
-
-### 5.1 Wirelength (6%) — solved
-LP-optimal within any topology; CD breakpoint enumeration captures the per-axis median exactly.
-
-### 5.2 Density (20%) — solved
-Top-10% is a non-convex order statistic, but the incremental evaluator updates per-cell density in O(touched cells) per move. CD descends density without surrogate error.
-
-### 5.3 Congestion (74%) — handled by full-proxy CD
-RUDY congestion *is* decomposable per single-macro move (per-net congestion contributions, per-cell macro routing, per-cell density). The smoothing pass on `current_cost()` is the dominant per-call cost. CD's breakpoint enumeration finds positions that minimize all three components simultaneously.
-
-### 5.4 Feasibility — solved
-`legal_axis_range` enforces strict per-axis non-overlap. Every CD move is legal by construction; final placement validated against `compute_overlap_metrics`. Zero overlaps on all 17 IBM benchmarks.
+Full per-experiment archive at [`experiment_index.md`](experiment_index.md).
 
 ---
 
-## 6. Innovation contributions (for writeup)
+## 3. Innovation contributions (for paper)
 
-1. **Proxy decomposition diagnostic (E8).** First (in our exploration) to formally decompose Partcl proxy as 6%/20%/74% via LP-HPWL lower bound. Reframes the problem from "WL optimization with constraints" to "congestion-dominated multi-component objective". `scripts/lp_hpwl_lower_bound.py`.
+1. **Empirical falsification of the "DP basin is structurally inferior"
+   autopsy** (E91). Stock DP + full polish beats cascade-capped by
+   6.9 % on hard-bench aggregate. The original autopsy's basin-only
+   comparison was unfair; with matched polish budgets, DP basins
+   polish to a different valley than SDF/DPO inits.
 
-2. **Incremental evaluator with full-proxy parity (E1).** First (in our exploration) to update RUDY congestion deltas per single-macro move at bit-for-bit parity with `compute_proxy_cost`. 4657× speedup unlocks coordinate-descent inside the 1hr/bench compute budget. `macro_place/incremental_evaluator.py`.
+2. **Cascading Hessian saddle escape** (E74 → E84). Iterating smooth-
+   proxy Lanczos + ε perturb on a CD plateau is a novel application of
+   transition-state methods (Henkelman & Jónsson 2000 climbing-image
+   NEB; dimer / gentlest-ascent) to combinatorial macro placement.
+   The ariane133 breakthrough (−3.21 % vs E48) ended a long chain of
+   NG45-blind heuristic failures (E42/E43/E44/E54/E62).
 
-3. **Per-benchmark plateau detection (E9).** Adapts compute budget to each benchmark's actual descent trajectory rather than fixed budget or per-benchmark prior. Transfers to hidden NG45 without manual tuning. `submissions/cd_adaptive/placer.py`.
+3. **Delta-cost incremental evaluator** (PATH A post-A1). 5.36× CD
+   speedup via `delta_cost(macro_idx, new_xy)` returning the smooth-
+   proxy delta *without* mutating state, plus `delta_cost_axis_batch`
+   for vectorized K-candidate evaluation. Makes the wall-safe cascade
+   fit under 60-min/bench.
 
-4. **Grid-bin LNS escape (E12).** A different move type (full (col × row) candidate enumeration per destroyed macro) layered on top of CD's plateau. Escapes per-axis fixed points that single-axis LNS cannot. `submissions/cd_lns_gridbin/placer.py`. ADR-007.
+4. **Multi-lane plateau pick + cascade**. Combining basin-quality
+   variance (2-3 inits × per-bench best-of) with saddle-escape
+   compounding produces consistent lifts across IBM and NG45 without
+   per-benchmark tuning.
 
-5. **Falsification record.** 60+ experiments documented in `docs/experiment_index.md`. The LP-proxy disconnect (LP-HPWL doesn't correlate with proxy), the basin lock (DPO byte-identical across seeds), and the three failed CD-escape attempts (E3 LNS, SDF jitter, subset-CD destroy — all reusing CD's move type) are the deep findings that motivated the working approach.
+5. **Falsification record**: 100+ experiments documented in
+   [`experiment_index.md`](experiment_index.md). Key signposts —
+   the LP-HPWL disconnect (E8), the basin lock (DPO byte-identical
+   across 4 seeds), the infeasibility wall (E65: linear path E25→E41
+   has 0/9 legal intermediate placements), and the smooth-RUDY /
+   canonical mismatch on hard benches (E92/E95/E98 falsified) — are
+   the negative results that motivated the working approach.
 
 ---
 
-## See also
+## 4. See also
 
-- [problem.md](problem.md) — formal mathematical formulation
-- [results.md](results.md) — per-benchmark champion tables
-- [roadmap.md](roadmap.md) — submission plan
-- [experiment_index.md](experiment_index.md) — full catalog including falsified hypotheses
-- [lp_hpwl_diagnostic.md](lp_hpwl_diagnostic.md) — E8 (the unblock)
-- `writeup/theory.md` — polyhedra theory, complexification, tunneling frameworks
-- `writeup/cd_ibm10_results.md` — E2 single-bench breakthrough
-- `writeup/closing_the_gap.md` — leaderboard-beating run narrative + E3/E4 algorithm sketches
-- `writeup/eval_pipeline_design.md` — earlier surrogate-eval pipeline (superseded by E1 incremental evaluator)
+- [`problem.md`](problem.md) — formal mathematical formulation
+- [`results.md`](results.md) — verified per-benchmark tables
+- [`roadmap.md`](roadmap.md) — submission timeline
+- [`experiment_index.md`](experiment_index.md) — every experiment, live + falsified
+- [`decisions/`](decisions/) — Architecture Decision Records
+- [`gotchas.md`](gotchas.md) — codebase footguns
+- `writeup/evidence.md` §1, §1.1 — frozen-number archive
+- `writeup/paper.md` — innovation prize draft
+- `writeup/theory.md` — supplementary mathematical material

@@ -1,13 +1,12 @@
 # Results
 
-> ⚠️ **HISTORICAL body — last updated 2026-05-05/06.** Section §Post-2026-05-06
-> status below was appended 2026-05-16 with the verified-but-not-yet-merged
-> state. The body's "ADR-012 *Proposed*" lines were correct on 2026-05-05; ADR-012
-> was *Accepted* the same day for E74. Treat the 2026-05-06 tables below as
-> still-valid for the E12 → E48 → E74 lineage; treat §Post-2026-05-06 as
-> canonical for the post-E74 wave (E84 cascade → dp_lane).
+This doc is split into two eras. **§Post-2026-05-06 status (verified, 2026-05-16)** is
+the live submission-day record (Tier-1 Option A/B + post-E84 wave). The
+historical body sections (Baselines, Champion lineage table, per-bench
+champion tables) cover the E1 → E74 lineage and were stable as of
+2026-05-06.
 
-Last updated: 2026-05-06 (body) / 2026-05-16 (post-E74 status section)
+Last updated: 2026-05-16
 
 ## Post-2026-05-06 status (verified, 2026-05-16)
 
