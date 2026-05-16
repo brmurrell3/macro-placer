@@ -75,16 +75,24 @@ def cascading_saddle_escape(
     iter_log = []
     t_start = time.time()
     smooth = SmoothProxy(benchmark, plc)
+    avg_iter_wall = 0.0  # rolling estimate of per-iter cost
 
     for it in range(max_iters):
         elapsed = time.time() - t_start
         remaining = total_budget_s - elapsed
-        if remaining < 60.0:
-            log(f"[cascade] iter {it}: budget exhausted (elapsed={elapsed:.0f}s)")
+        # Stop if remaining is less than the predicted next-iter cost. For
+        # the first iter, fall back to a 60s safety floor; subsequent iters
+        # use 1.2 * avg_iter_wall to leave a safety margin.
+        threshold = 60.0 if avg_iter_wall == 0.0 else max(60.0, avg_iter_wall * 1.2)
+        if remaining < threshold:
+            log(f"[cascade] iter {it}: budget would be exceeded "
+                f"(elapsed={elapsed:.0f}s, remaining={remaining:.0f}s, "
+                f"threshold={threshold:.0f}s based on avg iter {avg_iter_wall:.0f}s)")
             break
 
+        iter_t_start = time.time()
         log(f"[cascade] iter {it+1}/{max_iters} (elapsed={elapsed:.0f}s, "
-            f"remaining={remaining:.0f}s)")
+            f"remaining={remaining:.0f}s, predicted_iter_wall={threshold:.0f}s)")
 
         # Find soft mode.
         t_eig = time.time()
@@ -154,11 +162,21 @@ def cascading_saddle_escape(
                     log(f"  iter{it+1} sign={sign:+.0f} eps={eps:.1f}: "
                         f"NEW BEST {pol_proxy:.5f} (Δ vs init={pol_proxy - init_proxy:+.5f})")
 
+        # Update rolling avg iter wall (used to predict next-iter cost)
+        iter_wall = time.time() - iter_t_start
+        if avg_iter_wall == 0.0:
+            avg_iter_wall = iter_wall
+        else:
+            # Exponential moving avg with alpha=0.5 — biases toward recent
+            # iters in case contention is changing over time.
+            avg_iter_wall = 0.5 * avg_iter_wall + 0.5 * iter_wall
+
         iter_log.append({
             "iter": it,
             "lam_min": lam_min,
             "proxy_after": best_proxy,
             "improvement_this_iter": prev_iter_proxy - best_proxy,
+            "iter_wall": iter_wall,
         })
 
         if best_proxy >= prev_iter_proxy - min_improvement:
