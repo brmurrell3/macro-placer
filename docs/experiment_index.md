@@ -1,8 +1,60 @@
 # Experiment Index
 
-> ⚠️ **HISTORICAL — last updated 2026-05-05/06.** Current plan is in repo-root `TODO.md` (two-path structure: Path A cascade speedup, Path B DREAMPlace exploration). Submission target as of 2026-05-11: `submissions/cd_lns_sa_cascade/placer_adaptive.py`.
+> ⚠️ **HISTORICAL body — last updated 2026-05-05/06.** Section §Post-E84
+> wave (2026-05-11 → 2026-05-16) was appended 2026-05-16 with one-line
+> verdicts for the experiments not yet reflected in the body's tables.
+> Body tables are still valid for the E1 → E84 lineage.
 
-Last updated: 2026-05-06
+Last updated: 2026-05-06 (body) / 2026-05-16 (post-E84 wave section)
+
+## Post-E84 wave (2026-05-11 → 2026-05-16)
+
+Body tables below cover E1-E84. The post-E84 wave was driven by two
+parallel paths (per `CLAUDE.md` §TWO-PATH WORK PLAN): PATH A cascade
+speedup, PATH B DREAMPlace exploration; an unplanned PATH C (E97-E101
+Lévy/portfolio/cong-grad probes) ran in parallel.
+
+Verified candidates (Tier-1):
+
+| Placer | IBM `--all` | NG45 `--ng45` | Notes |
+|---|---:|---:|---|
+| `cd_lns_sa_cascade_dp_lane/placer.py` | **1.06650** | **0.68086** | E91 hybrid: cascade + DP-polished as third init lane; verified 2026-05-14. |
+| `cd_lns_sa_cascade/placer_adaptive.py` | **1.07820** | **0.68102** | PATH A post-A1 (LNS-delta + commit() accelerations); verified 2026-05-16 aws-cpu. |
+
+Per-experiment summary (one-liners; full manifests pending for some):
+
+| ID | Hypothesis | Best | Verdict | Date |
+|---|---|---|---|---|
+| E76-E83 | Wall-safe E74 variants | E83: 1.0859 --all | E83 marginal (5/17 within 1-min cap); not promoted | 2026-05-06 |
+| E84 | Cascading saddle escape (iterate E74 saddle until min/no-improvement) | 1.0612 --all (uncapped) | **Verified canonical**; wall-safe at `cd_lns_sa_cascade/placer.py` | 2026-05-11 |
+| E91 | DP-full-polish autopsy | hybrid IBM 1.0665 | **Falsifies the "DP basin structurally inferior" autopsy** — DP+full-polish wins ibm12 −13.3 %, ibm17 −10.2 %, ibm14 −3.8 % vs cascade-capped; ibm10 +1.6 % | 2026-05-12 |
+| E92 | Diff-trace-route RUDY (rebuild for hard benches) | n/a | Blocked — smooth-RUDY/canonical mismatch 3-4× on hard benches; ~2-3 days dev | 2026-05-13 |
+| E93 | DP top-K density | landed in DP-lane | Pipeline component | 2026-05-13 |
+| E94 | DP canonical full | landed in DP-lane | Pipeline component | 2026-05-13 |
+| E95 | Differentiable proxy v2 (calibrated LSE-HPWL+Gaussian+RUDY) | n/a | Falsified — AdamW destroyed cascade basin step 1; ρ=0.929 calibration necessary not sufficient | 2026-05-13 |
+| E96 | Multi-config DP K=4 basin selector | partial | Verified WIN on ibm10 (−2.0 %) and ibm14 (−7.7 %); DP basin proxy bimodal | 2026-05-13 |
+| E97 | Lévy heavy-tail ε saddle escape | +0.13-0.23 % on 3 H2H | **Shipped into dual_levy submission**; portfolio multi-eigvec validated | 2026-05-13 |
+| E98 | Congestion-gradient hybrid | n/a | Falsified — 3rd smooth-RUDY mismatch on hard benches | 2026-05-13 |
+| E99 | Tabu cascade | marginal | Partial | 2026-05-14 |
+| E100 | Weight-portfolio saddle (cong-only Hessian softer eigvec) | +0.11 % extra ibm03 | Validated over single-eigvec Lévy | 2026-05-14 |
+| E101 | Lévy curvature-adaptive | partial | Submission variant at `cascade_levy_curvadapt/` | 2026-05-14 |
+| E102 | GPU Lévy LBFGS | blocked | GPU box not provisioned; variant at `cascade_xplace_levy/` | 2026-05-14 |
+| E103 | Diff-trace-route RUDY rebuild | blocked | Same gap as E92 | 2026-05-14 |
+| E104 | Worse-init saddle (probe whether bad init reveals more saddles) | partial | Probe; not promotion-class | 2026-05-14 |
+| E107 | Periphery bias init | NEW BEST ariane133 **0.65212** (−1.8 % vs E74 0.6641) | 12-test multi-seed; 10-bench sweep table | 2026-05-16 |
+| Xplace integration | Bookshelf converters + runner for 21 benches | blocked | GPU quota approval pending; targets Carrotato 0.967 mechanism | 2026-05-16 |
+| Tier-2 ORFS | Per-design ship-with vs ship-without `MACRO_PLACEMENT_TCL` | partial | ariane133 ship-without (auto wins by 1.2 ns); ariane136 ship-with (cascade wins by 0.45 ns); mempool/nvdla untested | 2026-05-15/16 |
+
+Sources:
+[`handoffs/2026-05-14_champion_found_dp_lane.md`](handoffs/2026-05-14_champion_found_dp_lane.md),
+[`handoffs/2026-05-16_morning_handoff.md`](handoffs/2026-05-16_morning_handoff.md),
+[`handoffs/2026-05-16_tier2_orfs_findings.md`](handoffs/2026-05-16_tier2_orfs_findings.md).
+Per-experiment manifests exist for E91-E107 directories but not all
+have populated `status:` fields yet.
+
+---
+
+## (Historical body — 2026-05-06)
 
 A rigorous catalog of every experiment run during the Partcl/HRT Macro Placement
 Challenge 2026. Includes the failures alongside the wins — both are part of the

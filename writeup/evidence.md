@@ -7,6 +7,7 @@
 ## Contents
 
 1. [Champion lineage (verified, `--all`)](#1-champion-lineage-verified---all)
+   1.1. [Post-E25 lineage (2026-05-02 → 2026-05-16)](#11-post-e25-lineage-2026-05-02--2026-05-16)
 2. [Per-benchmark champion tables](#2-per-benchmark-champion-tables)
 3. [DPO ablation study](#3-dpo-ablation-study)
 4. [The congestion barrier (Act-2 diagnosis)](#4-the-congestion-barrier-act-2-diagnosis)
@@ -54,6 +55,65 @@ Each champion replaced its predecessor by a *structural change*, not parameter t
 
 The 1.0666 from Cezar re-verified at 1.2224 — a 14 % discrepancy. Treat
 unverified self-reports with skepticism.
+
+---
+
+## 1.1. Post-E25 lineage (2026-05-02 → 2026-05-16)
+
+> Appended 2026-05-16. Body sections 2-11 still reflect the
+> E1 → E25 era; this section captures the verified post-E25 lineage that
+> drives the current submission options. Per-experiment manifests live
+> at `experiments/E48_*`, `experiments/E74_*`, `experiments/E84_*`,
+> `experiments/E91-E107/`. Per-bench numbers in
+> [`docs/handoffs/2026-05-14_champion_found_dp_lane.md`](../docs/handoffs/2026-05-14_champion_found_dp_lane.md).
+
+| Era | Method | Best avg (`--all`) | NG45 `--ng45` | Δ vs RePlAce | ADR | Date |
+|-----|--------|-------------------:|--------------:|-------------:|-----|------|
+| CD-LNS-SA | CDLNSSA (E25) | 1.0954 | — | +24.8 % | ADR-008 *Proposed* | 2026-04-29 |
+| DPO init | CDLNSSADPOInit (E18) | 1.08979 | 0.69193 (4/4 NG45 wins) | +25.2 % | ADR-009 *Proposed* (superseded) | 2026-04-30 |
+| DPO+K-joint | CDLNSSADPOKJoint (E41) | 1.0848 | 0.69022 | +25.6 % | ADR-010 *Proposed* (superseded) | 2026-04-30 |
+| Hybrid best-of-{E25, E41} | CDLNSSAHybrid (E48) | **1.08151** | 0.6922 | +25.8 % | **ADR-011 *Accepted*** | **2026-05-02** |
+| Hessian saddle escape on E48 plateau | CDLNSSAHessian (E74) | **1.0666** | **0.6813** (ariane133 **0.6641**, −3.21 % vs E48) | **+26.8 %** | **ADR-012 *Accepted*** (supersedes ADR-011) | **2026-05-05** |
+| Cascading saddle iteration (uncapped) | E84 cascade | **1.0612** | — | +27.2 % | ADR-013 *forthcoming* | 2026-05-11 |
+| Wall-safe cascade descendant (PATH A post-A1) | CDLNSSACascadeAdaptive | **1.07820** | 0.68102 | +26.0 % | (wall-safe variant) | 2026-05-12/16 |
+| Cascade + DREAMPlace third lane | CDLNSSACascadeDPLane | **1.06650** | 0.68086 | +26.9 % | ADR-013 *forthcoming* | 2026-05-14 |
+
+**Key falsifications and unique wins in this wave** (full manifests in
+`experiments/`):
+
+- **E54** congestion-targeted destroy — falsified on NG45 (ariane133 +5.14 % regression). Same failure pattern as E42-E44.
+- **E61_v2** spatial-block GA crossover — first NG45-positive mechanism since E18 (ariane133 −1.47 %); marginal on `--all` (−0.07 %). ADR-012 *Proposed* (the alt path; superseded before acceptance by E74 Hessian).
+- **E65** linear-path NEB E25→E41 — 0/9 intermediate k-values legalize; basins separated by *infeasibility wall*, not proxy barrier. Rules out interpolation/crossover/local-move bridging.
+- **E74** Hessian saddle escape — first mechanism to break the E42/E43/E44/E54/E62 NG45 failure point on ariane133 (E48 0.6861 → 0.6641 = −3.21 %).
+- **E84** cascading saddle escape — iterate E74 saddle until min/no-improvement; **1.0612 uncapped, zero overlaps**. 8/17 walls over 55-min cap; wall-safe descendant ships under 60-min.
+- **E91** DP-full-polish autopsy — falsifies the "DP basin structurally inferior" autopsy. DP+full-polish beats cascade-capped on 3 of 4 hardest IBM (ibm12 −13.3 %, ibm17 −10.2 %, ibm14 −3.8 %). Drives the DP-lane hybrid 1.06650.
+- **E95** differentiable proxy v2 — calibrated smooth proxy (LSE-HPWL+Gaussian-density+RUDY) at ρ=0.929 with canonical; AdamW destroys cascade basin in step 1. Calibration is necessary but not sufficient.
+- **E96** multi-config DP K=4 basin selector — verified WIN on ibm10 (−2.0 %) and ibm14 (−7.7 %) vs cascade-capped. DP basin proxy is bimodal (1.2-1.5 typical / 2.0-2.5 catastrophic) for same auto-config; basin variance dominates.
+- **E97** Lévy heavy-tail ε saddle escape — shipped into dual_levy submission (+0.13-0.23 % on 3 H2H). Portfolio multi-eigvec (cong-only Hessian softer eigvec) +0.11 % extra ibm03.
+- **E107** periphery bias init — NEW BEST ariane133 **0.65212** (−1.8 % vs E74 0.6641); fresh-wrapper multi-seed validation across 12 tests.
+
+**Theoretical ceiling.** Per-bench best across all 121 cached `.pt`
+files = **1.05156 IBM**. Not directly usable (per-bench tuning
+prohibited) but is the upper bound for any select-by-canonical
+ensemble: cascade wins 10/17, DP wins ibm09/12, multi-DP ibm14,
+Hessian-on-E61v2 ibm15. See
+[`memory/cached_best_aggregate_1051.md`](../%2EClaude%2FMemory/cached_best_aggregate_1051.md)
+in user-memory.
+
+**Verified leaderboard standings (2026-05-16):**
+
+| Rank | Team | Verified score | Method |
+|------|------|----------------|--------|
+| 1 | vmallela | 1.011 (unverified self-report) | "Incremental CD+LNS" — same Hessian saddle algorithm class as our E74 |
+| 2 | Carrotato | 0.967 (unverified self-report) | Xplace + Triton, 3.8 min/bench |
+| (us, Option B) | CDLNSSACascadeDPLane | **1.0665** verified | Cascade + DREAMPlace 3rd init lane |
+| (us, Option A) | CDLNSSACascadeAdaptive | **1.0782** verified | PATH A post-A1 wall-safe cascade |
+| (us, prior) | CDLNSSAHessian (E74) | 1.0666 verified | Hessian saddle escape on E48 plateau (now subsumed by cascade) |
+| (us, prior) | CDLNSSAHybrid (E48) | 1.08151 verified | Per-bench best-of-{E25, E41} |
+
+Gap to leaderboard #1 (vmallela 1.011): **+5.6 %** to Option B; gap to
+Carrotato #2 (0.967): +10.3 %. Xplace integration in flight to target
+the Carrotato mechanism class.
 
 ---
 

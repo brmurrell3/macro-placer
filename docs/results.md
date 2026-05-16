@@ -1,8 +1,57 @@
 # Results
 
-> ⚠️ **HISTORICAL — last updated 2026-05-05/06.** Current plan is in repo-root `TODO.md` (two-path structure: Path A cascade speedup, Path B DREAMPlace exploration). Submission target as of 2026-05-11: `submissions/cd_lns_sa_cascade/placer_adaptive.py`.
+> ⚠️ **HISTORICAL body — last updated 2026-05-05/06.** Section §Post-2026-05-06
+> status below was appended 2026-05-16 with the verified-but-not-yet-merged
+> state. The body's "ADR-012 *Proposed*" lines were correct on 2026-05-05; ADR-012
+> was *Accepted* the same day for E74. Treat the 2026-05-06 tables below as
+> still-valid for the E12 → E48 → E74 lineage; treat §Post-2026-05-06 as
+> canonical for the post-E74 wave (E84 cascade → dp_lane).
 
-Last updated: 2026-05-06
+Last updated: 2026-05-06 (body) / 2026-05-16 (post-E74 status section)
+
+## Post-2026-05-06 status (verified, 2026-05-16)
+
+Two Tier-1 entry candidates verified; submission-day pick still open.
+Sources: [`handoffs/2026-05-14_champion_found_dp_lane.md`](handoffs/2026-05-14_champion_found_dp_lane.md),
+[`handoffs/2026-05-16_morning_handoff.md`](handoffs/2026-05-16_morning_handoff.md).
+
+| Placer | IBM `--all` | NG45 `--ng45` | Composite (21) | Verified | Wall (max) | Notes |
+|---|---:|---:|---:|---|---:|---|
+| `cd_lns_sa_cascade_dp_lane/placer.py` (Option B) | **1.06650** | **0.68086** | **0.993** | 2026-05-14 lambda 129.213.89.145 | <60 min | E25 + E41 + DP-polished, plateau picks best; cascade saddle on plateau. Requires `DREAMPLACE_ROOT`; falls back to Option A otherwise. |
+| `cd_lns_sa_cascade/placer_adaptive.py` (Option A) | **1.07820** | **0.68102** | 0.998 | 2026-05-16 aws-cpu in flight | 57 min | PATH A post-A1 (LNS-delta + commit() landed). No external deps. |
+
+E84 uncapped cascade saddle (3300+s budget removed) was the validation
+parent for both. Cached-best per-bench across all 121 cached `.pt`
+files = **1.05156 IBM** — a theoretical ceiling, not directly usable
+under the no-per-bench-tuning rule.
+
+### Post-E74 lineage (one-line summary per experiment)
+
+| Hypothesis | Verdict | Best | Date |
+|---|---|---:|---|
+| E76-E83 wall-safe E74 variants | E83 marginal; not promoted (5/17 within 1-min of cap) | E83: 1.0859 --all | 2026-05-06 |
+| E84 cascading saddle escape | **Verified canonical 1.0612 uncapped** (8/17 walls over 55-min cap); wall-safe descendant `cd_lns_sa_cascade/placer.py` ships under 60-min | 1.0612 --all (uncapped) | 2026-05-11 |
+| E91 DP-full-polish autopsy | DP+full-polish beats cascade-capped on 3/4 hardest IBM (ibm12 −13.3 %, ibm17 −10.2 %, ibm14 −3.8 %); falsifies "DP basin is structurally inferior" | hybrid IBM 1.0665 | 2026-05-12 |
+| E92 diff-trace-route RUDY | Blocked — smooth RUDY bbox-uniform vs canonical per-net trace mismatches 3-4× on hard benches | n/a | 2026-05-13 |
+| E93 DP top-K density | Sub-experiment of E91; landed in DP-lane | n/a | 2026-05-13 |
+| E94 DP canonical full | DP-lane canonical configuration; pipeline component | n/a | 2026-05-13 |
+| E95 diff-proxy v2 | Calibrated smooth proxy (LSE-HPWL+Gaussian-density+RUDY); ρ=0.929 necessary but not sufficient; AdamW destroyed cascade basin in step 1 | falsified | 2026-05-13 |
+| E96 multi-config DP K=4 | Verified WIN on ibm10 (−2.0 % vs cascade-capped) and ibm14 (−7.7 %); DP basin proxy bimodal (1.2-1.5 typical / 2.0-2.5 catastrophic) | partial | 2026-05-13 |
+| E97 Lévy heavy-tail saddle | SHIPPED into dual_levy submission (+0.13-0.23 % on 3 H2H benches) | partial | 2026-05-13 |
+| E98 congestion-gradient | Falsified — 3rd smooth-RUDY mismatch on hard benches | falsified | 2026-05-13 |
+| E99 tabu cascade | Marginal | partial | 2026-05-14 |
+| E100 weight-portfolio saddle | Validated +0.11 % extra on ibm03 over single-eigvec Lévy via cong-only Hessian softer eigvec | partial | 2026-05-14 |
+| E101 Lévy curvature-adaptive | Partial — submission variant `cascade_levy_curvadapt/` | partial | 2026-05-14 |
+| E102 GPU Lévy LBFGS | Blocked on GPU; submission variant `cascade_xplace_levy/` scaffolded | blocked | 2026-05-14 |
+| E103 diff-trace-route RUDY (rebuild) | Blocked — same gap as E92 | blocked | 2026-05-14 |
+| E104 worse-init saddle | Probe; not promotion-class | partial | 2026-05-14 |
+| E107 periphery bias | NEW BEST ariane133 0.65212 (−1.8 % vs E74 0.6641); fresh wrapper completes 12-test multi-seed validation; final 10-bench periphery sweep results table | partial | 2026-05-16 |
+| Xplace integration | Pipeline ready (bookshelf converters for 21 benches; runner + setup scripts in `experiments/Xplace_integration/code/`); blocked on AWS GPU quota approval | blocked | 2026-05-16 |
+| Tier-2 ORFS | Per-design strategy verified: ariane133 ship-without-tcl, ariane136 ship-with-cascade (1.2 ns and 0.45 ns gaps respectively) | partial | 2026-05-16 |
+
+---
+
+## (Historical body, 2026-05-06)
 
 Operational doc — current champion only. Historical per-benchmark
 tables for DPO / Polyhedra / Overnight Sweep / Miftari live in

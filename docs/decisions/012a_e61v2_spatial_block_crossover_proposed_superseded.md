@@ -1,6 +1,14 @@
-# ADR-012: Promote E61_v2 spatial-block GA crossover hybrid (best-of-{E48, E61_v2}) as champion
+# ADR-012a: Promote E61_v2 spatial-block GA crossover hybrid (best-of-{E48, E61_v2}) as champion
 
-**Status:** **Proposed** — awaiting human decision. E61_v2
+> **Status: Proposed → Superseded before acceptance.** This ADR claimed
+> slot 012 first (2026-05-03) but was never moved past *Proposed*. Two
+> days later, ADR-012 (E74 Hessian saddle promotion) was *Accepted*
+> 2026-05-05, taking the canonical ADR-012 slot. This file is renumbered
+> to **012a** and retained for the historical record. References to
+> "ADR-012 *Proposed*" in earlier docs may point here.
+
+**Status:** **Proposed → superseded before acceptance** (renumbered
+2026-05-16 to resolve filename collision with ADR-012 E74). E61_v2
 spatial-block GA crossover finished `--all` overnight 2026-05-03
 07:32 EDT: avg **1.08083**, zero overlaps, ~6.7 hr wall-clock
 (`--jobs 4` parallel; 95871 s aggregate CPU-time across workers).

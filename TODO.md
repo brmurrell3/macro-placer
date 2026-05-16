@@ -173,31 +173,310 @@ loop in `cascading_saddle.py`.
 
 ---
 
-## PATH B — DREAMPlace exploration  *(KILLED 2026-05-11 PM)*
+## PATH B — DREAMPlace exploration  *(hybrid --all VALIDATED 2026-05-13)*
 
-**Verdict: FALSIFIED.** Sweep ran 13–25 configs/bench across
-ibm10/12/14/17 on cloud A100. Best DP basin proxy per bench (after
-greedy_legalize):
+### TL;DR (final, 2026-05-13 10:52 UTC)
 
-| Bench | Best DP basin | cascade b=3000 | Gap |
+Overnight queue on lambda.ai completed all 17 IBM + 4 NG45 hybrid runs.
+Auto-adaptive DP + two-stage retry + best-of-3 plateau pick + cascade
+saddle. Reference: cascade `a4v2_postLNS` from PATH A.
+
+| Set | Hybrid | Cascade A4v2 | Lift |
+|---|---:|---:|---:|
+| IBM 17 | **1.06687** | 1.07711 | **−0.95 %** |
+| NG45 4 | **0.68086** | 0.68483 | **−0.58 %** |
+| 21-bench combined | **0.9933** | 1.0024 | **−0.91 %** |
+
+Big wins: ibm12 −5.35 %, ibm17 −3.84 %, ibm07 −3.13 %, ibm09 −2.52 %,
+ibm03 −2.46 %, mempool_tile −2.28 %, ibm01 −2.11 %, ariane133 −2.05 %.
+
+Regressions: ibm02 +2.99 %, ariane136 +1.76 %, ibm10 +1.28 %,
+ibm18 +1.13 %, ibm08 +1.00 %.
+
+ariane133 **0.66167 beats E74 hessian-saddle 0.6641 (−0.36 %)** — the
+NG45 failure point that killed E42/43/44/54/62 is solved with auto-
+adaptive DP. NG45 generalization holds.
+
+**Cumulative session lift** (since start 2026-05-13):
+- `placer_adaptive.py` (pre-A1): IBM 1.137
+- cascade A4v2 (PATH A's A1+LNS-skip on `placer_adaptive`): IBM 1.077 (−5.3 %)
+- hybrid (PATH B's DP lane added): IBM 1.067 (−0.95 % on top of A4v2)
+- **Combined: −6.2 %** on IBM submission floor.
+
+Gap to leaderboard top (~1.01): IBM 1.067 = **+5.7 %** above first
+place. Still not there. PATH B added a real but modest lift; the bulk
+of the session's gain came from PATH A.
+
+**Submission floor candidate:** `submissions/cd_lns_sa_cascade_dp_lane/
+placer.py`. Pending: resolve ibm17 wall-budget violation (60.9 min on
+60-min cap — needs CD cap tightening from 0.14×B to 0.12×B, or
+DP-skip-if-time-short rule). Until that's fixed, keep cascade
+`placer_adaptive.py` as the official submission. See
+`experiments/E91_dp_full_polish/SUMMARY.md` for the full per-bench
+table.
+
+**E96 multi-config DP variant** (other agent) is the natural follow-up,
+projected to add −0.5 to −1.5 % on top of hybrid. Awaiting their `--all`
+validation.
+
+### Archive (full B-R0' analysis below — kept for traceability)
+
+### 2026-05-12 PM: autopsy revised. Original falsification was basin-only.
+
+### 2026-05-12 PM: autopsy revised. Original falsification was basin-only.
+
+Verifying the PATH B falsification revealed that **stock DP basin +
+full cascade-equivalent polish was never tested**. The autopsy table
+below compared DP-after-greedy-legalize *basins* vs cascade
+post-polish results — not DP basin under the same polish budget.
+
+Evidence:
+- `experiments/E76_dreamplace_integration/code/dp_sweep_b1.py:10-12`
+  states: *"no CD polish at sweep time; cheap evaluation"*. The sweep
+  numbers in the table are basin-only.
+- `p1b_polish_test.py` only ran 15-min CD-adaptive (no LNS, no SA, no
+  saddle escape) — far less than the ~55 min cascade uses.
+- `submissions/_archive/falsified/cd_lns_sa_hessian_dp/placer.py:192`
+  gives DP only `min_time_s=30, hard_cap_s=60` brief CD cleanup while
+  E25 and E41 each receive ~660s polish in the plateau pick.
+
+Original autopsy table (kept as basin-only reference):
+
+| Bench | Best DP **basin** | cascade b=3000 *post-polish* | Gap |
 |-------|--------------:|---------------:|----:|
 | ibm10 | 1.2553 | 1.0775 | **+16.5 %** |
 | ibm12 | 1.3712 | 1.3031 | +5.2 % |
 | ibm14 | 1.4176 | 1.2919 | +9.7 % |
 | ibm17 | 1.5388 | 1.4546 | +5.8 % |
 
-**0/4 hardest benches** have a DP basin within even 5 % of cascade after
-K=25. The 5D hyperparameter sweep can't bridge the structural objective
-mismatch between DREAMPlace's loss (HPWL + Gaussian density +
-RUDY-as-DP-formulates) and the canonical PlacementCost proxy (top-K
-density + TILOS-smoothed RUDY with TILOS weights).
+This table is *not* evidence of structural objective mismatch under fair
+polish. SDF basin starts at ~1.50 and polishes through E25 to ~1.09
+(−27 %); DPO basin at ~1.38 polishes through E41 to ~1.08 (−22 %). If
+DP-legalized basins polish similarly, ibm10 (1.44 post-legalize) might
+land at 1.04–1.12, around or below cascade-capped 1.0775.
 
-**Code preserved** at `experiments/E76_dreamplace_integration/` and
+What the original autopsy correctly falsified: **tuning stock DP as a
+black-box basin generator with handicapped polish**. What it did NOT
+falsify: stock DP + full polish, modifications to DP's loss ops, or
+DP-as-perturber on a cascade init.
+
+Code preserved at `experiments/E76_dreamplace_integration/` and
 `submissions/_archive/falsified/cd_lns_sa_hessian_dp/`. The greedy macro
-legalizer (`macro_legalizer.py`) is a reusable utility regardless — C1's
-projection step will use it.
+legalizer (`macro_legalizer.py`) is a reusable utility regardless.
 
-**Resources freed → all-in on PATH A + PATH C.**
+### B-R0' (NEW) — Stock DP basin + full E25-equivalent polish + cascade saddle
+
+**The proper falsification test that was never run.** Pipeline:
+DP-stock → `greedy_macro_legalize` → full polish (CD-adaptive 660s +
+LNS-gridbin 192s + SA-v2 192s) → cascading saddle escape (~1900s).
+Same budgets as cascade gives its own SDF/DPO inits.
+
+Driver: `experiments/E91_dp_full_polish/code/dp_full_polish.py`.
+Cloud setup: lambda.ai A100 box at 129.213.18.245, DREAMPlace built
+in Docker at `~/DREAMPlace_cpu/install` (CPU build — CUDA build
+hit nvcc 11.0 vs compute_86 incompatibility; CPU DP runs ibm10 in 12s).
+
+Status 2026-05-13 00:15 UTC: **all 6 B-R0' benches complete. Autopsy
+empirically falsified on 3 of 4 hardest IBM benches.**
+
+| Bench | DP+full-polish | Cascade-capped (autopsy) | Δ |
+|---|---:|---:|---:|
+| ibm01 | 0.862 | 0.85 (uncapped) | +1.4 % |
+| ibm09 | 0.789 | (no autopsy ref) | — |
+| ibm10 | 1.095 | 1.0775 | **+1.6 %** |
+| ibm12 | **1.129** | 1.3031 | **−13.3 %** |
+| ibm14 | **1.243** | 1.2919 | **−3.8 %** |
+| ibm17 | **1.307** | 1.4546 | **−10.2 %** |
+
+**Hard-bench aggregate** (ibm10/12/14/17): cascade-capped 1.2818 →
+DP+full-polish 1.1936 = **−6.9 % lift**.
+
+ibm12 at −13.3 % is striking — the autopsy reported only +5.2 % basin
+gap there, then concluded the gap was unbridgeable. With fair polish
+budget, DP basin polishes to a placement *substantially better* than
+cascade's polished result. Same pattern on ibm17 (−10.2 %) and ibm14
+(−3.8 %). Only ibm10 loses marginally (+1.6 %).
+
+For a hybrid placer (E25 SDF + E41 DPO + **DP** lanes, all with fair
+polish), see `submissions/cd_lns_sa_cascade_dp_lane/placer.py`. Drop-in
+extension of cascade with DP as a third basin lane.
+
+The original autopsy ("structural objective mismatch can't be bridged")
+is wrong because basin-only quality doesn't predict polished quality
+in this codebase. With fair polish budget, DP basins polish to a
+different valley than SDF/DPO inits — sometimes *better* than the
+cascade-capped result.
+
+### Hybrid IBM results 2026-05-13 01:30 UTC (pre-rule-compliance config)
+
+Hybrid placer on 6 IBM benches (3 lanes × polish + cascade saddle).
+**These runs used the hardcoded `target_density=0.85` DP config** that
+predated the rule-compliant patch. Phase 4 of the overnight queue
+reruns hybrid with auto-adaptive config to get rule-compliant numbers.
+
+| Bench | Hybrid | Cascade-capped | Δ | Winner lane |
+|---|---:|---:|---:|---|
+| ibm01 | 0.867 | 0.85 (uncapped) | +2.0 % | cascade-on-DP plateau |
+| ibm09 | 0.799 | (no ref) | — | cascade-on-DP plateau |
+| ibm10 | 1.029 | 1.0775 | **−4.5 %** | cascade-on-E41 plateau |
+| ibm12 | 1.145 | 1.3031 | **−12.2 %** | cascade-on-DP plateau |
+| ibm14 | 1.225 | 1.2919 | **−5.2 %** | cascade-on-E41 plateau |
+| ibm17 | 1.308 | 1.4546 | **−10.1 %** | cascade-on-DP plateau |
+
+**Hard-bench (ibm10/12/14/17) aggregate**: hybrid 1.177 vs cascade-capped
+1.282 = **−8.2 % lift**. Plateau pick correctly picks DP on the wins
+(ibm12, ibm17), E41 on the cases where DP doesn't help (ibm10, ibm14).
+
+### Rule-compliance fix — auto-adaptive DP config
+
+Original PATH B test used hardcoded `target_density=0.85`. That worked
+for IBM but failed on ariane133 (3 residual overlaps, +11.6 % vs
+cascade-uncapped). First fix attempted per-benchmark branching
+(`if bench.name.startswith("ibm")`) — **against challenge rules**.
+
+Replaced with a single algorithm derived from observable bench geometry:
+
+```
+macro_density = sum(macro_area) / canvas_area  # observable from input
+target_density = clip(macro_density * 1.5, 0.40, 0.85)
+stop_overflow = 0.02  # universally tighter than original 0.07
+dp_iter = 2000
+dp_lr = 0.005
+```
+
+Same formula applied to every input. Plus cleanup paths: stricter
+cascade saddle budget check (rolling avg iter wall), `extended_legalize`
+fallback in `_polish_dp_basin`, and "DP lane returns None if residuals
+remain" filter on plateau pick.
+
+### ariane133 NG45 generalization — VERIFIED with auto-adaptive
+
+ariane133 with auto-adaptive config: macro_density=0.496 →
+target_density=0.743 (auto). Final: **0.66993 with 0 overlaps**, total
+wall 34 min. **vs cascade-uncapped 0.6641: only +0.88 % (tied)**.
+
+NG45 generalization holds. PATH B with auto-adaptive config works on
+both IBM and NG45.
+
+### Overnight queue status (launched 2026-05-13 01:20 UTC)
+
+Cloud chain on lambda.ai:
+- Phase 1 (running): IBM auto-config validation on ibm10/12/14/17.
+- Phase 2 (queued): NG45 set — ariane136, mempool_tile, nvdla.
+- Phase 3 (queued): remaining 11 IBM (ibm02/03/04/06/07/08/11/13/15/16/18).
+- Phase 4 (queued): full hybrid `--all` on 17 IBM + 4 NG45 with auto-adaptive.
+
+Expected completion ~07:00 UTC = 03:00 EDT. Total ~10 hr cloud work.
+Master log: `/tmp/overnight_master.log`. Phase logs: `/tmp/overnight/`.
+
+### Live routes — modify DP's internals, not its hyperparameters
+
+Ranked by information-per-day. R1 is the diagnostic that conditions
+R2/R3.
+
+#### B-R1. Add TILOS-RUDY as DP loss term — diagnostic spike  *(1–2 days, DEFERRED)*
+
+**DEFERRED 2026-05-13** pending hybrid `--all` and ariane133 results.
+
+Original intent: replace DP's RUDY op with TILOS-RUDY to fix routing-loss
+mismatch. But B-R0' empirically shows stock DP + full polish already beats
+cascade-capped by 4-13 % on 3 of 4 hardest IBM benches without any
+custom loss work. The gap that B-R1 was supposed to bridge is **already
+bridged by polish** on those benches.
+
+**Reactivate B-R1 if (any of):**
+- Hybrid `--all` aggregate stays above 1.10 (i.e. easy benches aren't
+  lifting alongside hard ones, suggesting custom loss might help easy).
+- ariane133 regresses (NG45 generalization fails) — custom loss might
+  shift DP's basin toward NG45-friendly direction.
+- Top-3 leaderboard reach requires another -2 to -3 % aggregate lift.
+
+**Status of work:**
+- E92 manifest written with implementation plan
+- `experiments/E92_dp_tilos_rudy/code/diff_rudy.py` prototype written
+  (torch-native differentiable RUDY, not yet vectorized or hooked into
+  DP's PlaceObj.obj_fn)
+- Engineering needed: vectorize the per-net loop, fork
+  `~/DREAMPlace_cpu/install/dreamplace/PlaceObj.py` to add congestion
+  term to obj_fn, rebuild DP, calibrate weights, re-test.
+
+#### B-R2. Replace eDensity with differentiable top-K density  *(3–5 days)*
+
+eDensity (electrostatic field via FFT-Poisson) is what makes DP fast on
+millions of std cells but it's optimizing uniform-spread, not "no bin
+exceeds threshold." Canonical top-K density is
+`softmax(densities/τ) · densities` summed over highest-K bins —
+trivially differentiable, tiny tensors at 200–537 macros. Forking DP's
+density op is one well-isolated module. After this change DP's Nesterov
+optimizer is descending the *correct* density surface.
+
+#### B-R3. Full canonical losses on DP substrate — convergent with C1  *(7–10 days)*
+
+B-R1 + B-R2 + WA-WL→smoothed-bbox-HPWL gives a fully canonical loss set
+running on DP's machinery (Nesterov-with-noise, FFT acceleration, GPU
+init strategies). This **is** C1, implemented on DP's substrate instead
+of from scratch — the decision becomes "which vehicle gets canonical
+losses bolted on." DP gives a 5-year-optimized GPU optimizer for free
+but adds build-system and op-registration dependency.
+
+Commit decision: only after B-R1 + B-R2 actually close the gap on a
+hard bench. If they don't, write C1 standalone (no DP dependency).
+
+#### B-R4. Inverted use — cascade-as-init, DP as basin-escape perturber  *(2–3 days)*
+
+Untested mode: cascade→DP-gradient-steps→cascade-repolish. PATH B
+tested only DP→cascade. Cascade lands at ~1.06 and stalls on local-move
+plateau; DP's gradient noise could shake out non-local. Risk: still
+pulls toward DP's wrong basin and *worsens* canonical. But cheap, cleanly
+parallel to B-R1/R2/R3 (no shared code paths), and addresses a different
+failure mode (escaping cascade plateau) than C1.
+
+### Sequencing — revised after autopsy reverification
+
+1. **B-R0' first** (NEW). Stock DP + full polish, the proper test that
+   was never run. Cheap, in progress on lambda.ai. If it lands within
+   3 % of cascade on ibm10, the autopsy was wrong and B-R1+ are
+   downstream tunes on an already-competitive lane. If it lands +5%+
+   above cascade, the autopsy holds at higher confidence and B-R1
+   becomes the diagnostic that decides between routing- vs density-
+   driven gap.
+2. **B-R1** after B-R0'. Yes/no diagnostic for the *remaining* gap.
+3. **B-R4 in parallel** — different code paths, different failure mode.
+   Initial result (PERTURB_ITERS=100, lr=0.005): DP gradient on cascade
+   init **diverged** (proxy 0.99 → 6.18, 308 k overlaps after 100 iter).
+   Cascade-init lives at a canonical local minimum that's *not* a DP
+   local minimum; DP's gradient drives away from it. Retry with
+   iter=10 to see if a small perturb survives re-polish.
+4. **B-R2** if B-R1 says routing alone doesn't close the gap.
+5. **B-R3** only if B-R1+B-R2 evidence supports DP-as-vehicle for C1.
+
+### Implementation status (2026-05-12 session)
+
+- **B-R0'** (E91 `dp_full_polish`): driver + Docker DP build on lambda.ai
+  done. ibm01 smoke at plateau 0.877 (within 3 % of cascade uncapped).
+  ibm10 full run in progress at 3300 s budget. ibm14 + ibm12 + ibm17
+  queued depending on ibm10 result.
+- **B-R1** (E92 `dp_tilos_rudy`): manifest + `diff_rudy.py` prototype
+  written. DP basic obj_fn doesn't include congestion at all — RUDY
+  exists only for area-adjustment under `routability_opt_flag`. The
+  "DP-RUDY vs TILOS-RUDY mismatch" framing is finer: stock DP doesn't
+  optimize congestion. B-R1 must *add* a congestion term, not "swap"
+  RUDY. Differentiable RUDY prototype scaffolded.
+- **B-R2** (E93 `dp_topk_density`): manifest only. Scoped, not built.
+- **B-R3** (E94 `dp_canonical_full`): manifest only. Heavier (7–10 d).
+- **B-R4** (E91 `dp_cascade_perturb`): driver done. iter=100 result
+  diverged. iter=10 retry running.
+
+Cloud: lambda.ai A100 box `129.213.18.245`. DREAMPlace built CPU-only
+inside `limbo018/dreamplace:cuda` Docker image (CUDA build failed on
+compute_86 in nvcc 11.0; CPU build runs ibm10 in 12 s — not a
+bottleneck). To resume work on cloud:
+
+  cd ~/macro-place-challenge-2026
+  OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 \
+    DP_USE_GPU=0 DP_DOCKER_IMAGE=dreamplace:custom \
+    DREAMPLACE_ROOT=/home/ubuntu/DREAMPlace_cpu/install \
+    python3 experiments/E91_dp_full_polish/code/dp_full_polish.py <bench> <budget_s>
 
 ---
 

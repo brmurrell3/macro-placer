@@ -23,12 +23,38 @@ See `TODO.md` for the active plan. Two parallel paths:
 Anything outside these two paths is in `submissions/_archive/` or
 `experiments/_archive/` — do not work on it without explicit redirection.
 
-## Current submission floor
+## Current submission floor (Tier-1 proxy)
 
-**`submissions/cd_lns_sa_cascade/placer_adaptive.py`** — IBM 1.137 / NG45
-0.6925 expected on partcl EPYC. Max wall 57 min (3-min margin to 60-min cap).
-Beats RePlAce 1.4578 by −22 %. Loses to leaderboard top (~1.01) by +13 % —
-PATH A is the credible path to closing that gap.
+> Two verified placers as of 2026-05-16. **Submission-day decision is still
+> open** — both ship if uploaded; the higher-confidence pick is dp_lane,
+> the safer fallback is placer_adaptive. Document both numbers downstream;
+> do **not** delete either entry until the human commits.
+
+**Option A — `submissions/cd_lns_sa_cascade/placer_adaptive.py`** —
+IBM **1.07820** / NG45 **0.68102**. Verified on partcl-equivalent EPYC.
+PATH A post-A1 acceleration. No external dependencies. Max wall 57 min
+(3-min margin to 60-min cap). Beats RePlAce 1.4578 by −26 %. Loses to
+leaderboard top (~1.01) by +6.7 %.
+
+**Option B — `submissions/cd_lns_sa_cascade_dp_lane/placer.py`** —
+IBM **1.06650** / NG45 **0.68086** (verified 2026-05-14 on lambda cloud,
+17/17 IBM + 4/4 NG45, zero overlaps). Adds DREAMPlace as a third init
+lane alongside SDF/DPO; plateau picks best of {E25, E41, DP-polished}.
+Falls back to Option A if `DREAMPLACE_ROOT` is not set. Composite avg
+across 21 benches: **0.993** vs Option A 0.998. See
+[`docs/handoffs/2026-05-14_champion_found_dp_lane.md`](docs/handoffs/2026-05-14_champion_found_dp_lane.md)
+for per-bench numbers and the no-swap decision context.
+
+Leaderboard reference: vmallela #1 at 1.011 (gap +5.6 % to Option B),
+Carrotato 0.967 via Xplace+Triton at 3.8 min/bench. Xplace integration
+in flight (gated on GPU box quota approval).
+
+**Tier-2 ORFS** ($20K, separate objective: WNS/TNS/Area from full
+PnR): per-design strategy verified 2026-05-15/16. ariane133 — **ship
+without** `MACRO_PLACEMENT_TCL` (auto-place beats our cascade by 1.2 ns
+of slack). ariane136 — **ship with** cascade (`+0.4935` ns vs
+`+0.0457` ns auto). mempool_tile + nvdla untested. Full report:
+[`docs/handoffs/2026-05-16_tier2_orfs_findings.md`](docs/handoffs/2026-05-16_tier2_orfs_findings.md).
 
 ## Prior champion lineage (now superseded by cascade)
 
@@ -66,18 +92,19 @@ ibm16 −0.91 %, ibm17 −0.29 %, ibm18 −0.38 %. Wall ~50 min/bench (E25 ~25 +
 E41 ~30 + Hessian ~20 + polish per ε); --all ~14 hr serial, ~4 hr `--jobs 4`.
 
 **Champion lineage:**
-- E12 CDLNSGridBin (1.0990) — ADR-007.
-- E48 CDLNSSAHybrid (1.08151) — ADR-011 (now superseded by ADR-012 *Proposed*).
-- E74 CDLNSSAHessian (1.0666) — ADR-012 *Proposed* 2026-05-05.
+- E12 CDLNSGridBin (1.0990) — ADR-007 *Accepted* 2026-04-28.
+- E48 CDLNSSAHybrid (1.08151) — ADR-011 *Accepted* 2026-05-02 (superseded by ADR-012).
+- E74 CDLNSSAHessian (1.0666) — ADR-012 *Accepted* 2026-05-05. Supersedes ADR-011.
+- E84 cascade saddle (uncapped 1.0612) → wall-safe `cd_lns_sa_cascade/placer_adaptive.py` 1.07820 → DP-lane `cd_lns_sa_cascade_dp_lane/placer.py` 1.06650. **ADR-013 forthcoming** for the cascade-DP-lane promotion; pending submission-day decision.
 
-**Next champion candidate (verified, awaits wall-safe validation):** E84
-cascading saddle escape, canonical **1.0612 across 17 IBM, zero overlaps**
-(−1.88 % vs E48, −0.51 % vs E74, gap to RePlAce +27.2 %). 8/17 unbudgeted
-walls over 55-min cap; wall-safe variant at `submissions/cd_lns_sa_cascade/
-placer.py` (budget_seconds default 3300s) — runs E25 → E41 → cascading
-saddle escape on plateau with deadline-bound per-phase budgets, validates
-overlaps before return. ADR-013 forthcoming pending wall-safe --all on
-EPYC.
+**E84 cascading saddle escape (uncapped)** — canonical **1.0612 across 17
+IBM, zero overlaps** (−1.88 % vs E48, −0.51 % vs E74, gap to RePlAce
++27.2 %). 8/17 unbudgeted walls over 55-min cap; the wall-safe
+descendant `submissions/cd_lns_sa_cascade/placer_adaptive.py` (PATH A
+post-A1 acceleration) verified at **1.07820** under 60-min/bench cap.
+DP-lane variant `submissions/cd_lns_sa_cascade_dp_lane/placer.py` adds
+DREAMPlace as a third init lane and verified **1.06650** (−1.07 % vs
+adaptive) on the same 17 IBM + 4 NG45 with zero overlaps.
 
 **Wall-safe variants** (all default budget_seconds=3300s = 55 min, fits
 the 1-hr/bench partcl cap):
@@ -147,7 +174,8 @@ uv run evaluate <placer.py> -b ibm01
    - **fast_gate fail** → tweak parameters, try next variant.
    - **fast_gate pass** → run `--all --json`.
    - **avg < 1.12** → likely noise; verify carefully.
-   - **avg < 1.082 (at-or-below champion)** → STOP. Surface to human (current champion E48 hybrid is 1.08151).
+   - **avg < 1.082 (at-or-below prior champion E48 1.08151)** → STOP. Surface to human.
+   - **avg < 1.068 (at-or-below current Option B cd_lns_sa_cascade_dp_lane 1.06650)** → STOP. New floor territory.
    - **avg < 1.05** → STOP immediately. New champion territory.
 
 4. **If killed:** Set the manifest's `status: falsified`, fill `decided`
@@ -220,12 +248,16 @@ experiments only need a manifest. ADRs are reserved for things like
 | `macro_place/incremental_evaluator.py` | E1 — 4657× speedup; load-bearing for CD |
 | `macro_place/benchmark.py` | Benchmark dataclass (PyTorch tensors) |
 | `macro_place/sdf_init.py` | SDF initialization (used by every champion) |
-| `submissions/cd_lns_sa_hybrid/placer.py` | **CHAMPION** — E48 hybrid best-of-{E25, E41}, 1.08151 (ADR-011) |
-| `submissions/cd_lns_gridbin/placer.py` | Prior champion — E12 CD + grid-bin LNS, 1.0990 (ADR-007) |
-| `submissions/cd_lns_sa/placer.py` | Component of E48 hybrid (lane 1, SDF basin) — E25 CDLNSSA, 1.0954 standalone |
-| `submissions/cd_adaptive/placer.py` | Prior champion — E9 CDAdaptive, 1.1055 |
-| `submissions/cd_only/placer.py` | Prior-prior — CDOnly fixed-budget, 1.1193 |
-| `submissions/examples/` | Reference placers (greedy, random) |
+| `submissions/cd_lns_sa_cascade_dp_lane/placer.py` | **TIER-1 OPTION B (verified, awaiting submission-day pick)** — cascade + DREAMPlace third lane, IBM 1.06650 / NG45 0.68086 (2026-05-14) |
+| `submissions/cd_lns_sa_cascade/placer_adaptive.py` | **TIER-1 OPTION A (verified, awaiting submission-day pick)** — PATH A post-A1 wall-safe cascade, IBM 1.07820 / NG45 0.68102 (2026-05-16) |
+| `submissions/cd_lns_sa_cascade/placer.py` | Wall-safe E84 cascade (E25 → E41 → cascading saddle, deadline-bound). Component of Option A. |
+| `submissions/cd_lns_sa/placer.py` | Component of E48 hybrid / cascade (lane 1, SDF basin) — E25 CDLNSSA, 1.0954 standalone |
+| `submissions/_archive/cd_lns_sa_hessian/placer.py` | Prior champion — E74 Hessian saddle, 1.0666 (ADR-012). Logic absorbed by cascade. |
+| `submissions/_archive/cd_lns_sa_hybrid/placer.py` | Prior champion — E48 best-of-{E25, E41}, 1.08151 (ADR-011, superseded by ADR-012). |
+| `submissions/_archive/cd_lns_gridbin/placer.py` | Prior champion — E12 CD + grid-bin LNS, 1.0990 (ADR-007). |
+| `submissions/_archive/cd_adaptive/placer.py` | Prior champion — E9 CDAdaptive, 1.1055. |
+| `submissions/_archive/cd_only/placer.py` | Prior-prior — CDOnly fixed-budget, 1.1193. |
+| `submissions/examples/` | Reference placers (greedy, random). |
 
 ### Writeup (innovation prize)
 
