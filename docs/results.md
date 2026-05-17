@@ -6,18 +6,20 @@ historical body sections (Baselines, Champion lineage table, per-bench
 champion tables) cover the E1 → E74 lineage and were stable as of
 2026-05-06.
 
-Last updated: 2026-05-16
+Last updated: 2026-05-17
 
-## Post-2026-05-06 status (verified, 2026-05-16)
+## Post-2026-05-06 status (verified, 2026-05-17)
 
-Two Tier-1 entry candidates verified; submission-day pick still open.
-Sources: [`handoffs/2026-05-14_champion_found_dp_lane.md`](handoffs/2026-05-14_champion_found_dp_lane.md),
-[`handoffs/2026-05-16_morning_handoff.md`](handoffs/2026-05-16_morning_handoff.md).
+Three Tier-1 entry candidates verified; submission-day pick is Option C
+(stacked_periphery champion). Sources:
+[`handoffs/2026-05-17_morning_champion.md`](handoffs/2026-05-17_morning_champion.md),
+[`handoffs/2026-05-14_champion_found_dp_lane.md`](handoffs/2026-05-14_champion_found_dp_lane.md).
 
 | Placer | IBM `--all` | NG45 `--ng45` | Composite (21) | Verified | Wall (max) | Notes |
 |---|---:|---:|---:|---|---:|---|
-| `cd_lns_sa_cascade_dp_lane/placer.py` (Option B) | **1.06650** | **0.68086** | **0.993** | 2026-05-14 lambda 129.213.89.145 | <60 min | E25 + E41 + DP-polished, plateau picks best; cascade saddle on plateau. Requires `DREAMPLACE_ROOT`; falls back to Option A otherwise. |
-| `cd_lns_sa_cascade/placer_adaptive.py` (Option A) | **1.07820** | **0.68102** | 0.998 | 2026-05-16 aws-cpu in flight | 57 min | PATH A post-A1 (LNS-delta + commit() landed). No external deps. |
+| `cd_lns_sa_cascade_stacked_periphery/placer.py` (**Option C, NEW CHAMPION**) | **1.05750** | **0.68930** | **0.987** | 2026-05-17 M3 | 56 min | Cascade saddle (canonical) → portfolio saddle (3 non-canonical Hessian weights). Periphery wrapper as safety. No external deps. |
+| `cd_lns_sa_cascade_dp_lane/placer.py` (Option B) | 1.06650 | 0.68086 | 0.993 | 2026-05-14 lambda 129.213.89.145 | <60 min | E25 + E41 + DP-polished, plateau picks best. Requires `DREAMPLACE_ROOT`; falls back to Option A otherwise. |
+| `cd_lns_sa_cascade/placer_adaptive.py` (Option A) | 1.07820 | 0.68102 | 1.003 | 2026-05-16 aws-cpu | 57 min | PATH A post-A1. No external deps. Safest fallback. |
 
 E84 uncapped cascade saddle (3300+s budget removed) was the validation
 parent for both. Cached-best per-bench across all 121 cached `.pt`
