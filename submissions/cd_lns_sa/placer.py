@@ -609,10 +609,22 @@ class CDLNSSAPlacer:
 
         overlaps = compute_overlap_metrics(final_placement, benchmark)
         if overlaps["overlap_count"] > 0:
-            raise RuntimeError(
-                f"CDLNSSAPlacer produced {overlaps['overlap_count']} overlaps "
-                f"(area {overlaps['total_overlap_area']:.4f}) on '{benchmark.name}'"
+            # SA-v2 occasionally produces tiny residual overlaps (1-3 macros)
+            # because best-so-far restore can land on stale validity state.
+            # Project once before failing; keeps the lane usable in ensembles.
+            self._log(
+                f"  WARN: {overlaps['overlap_count']} residual overlaps after "
+                f"SA-v2 restore — projecting"
             )
+            final_placement, _ = project_overlaps(final_placement, benchmark)
+            if fixed_mask.any():
+                final_placement[fixed_mask] = benchmark.macro_positions[fixed_mask]
+            overlaps = compute_overlap_metrics(final_placement, benchmark)
+            if overlaps["overlap_count"] > 0:
+                raise RuntimeError(
+                    f"CDLNSSAPlacer produced {overlaps['overlap_count']} overlaps "
+                    f"(area {overlaps['total_overlap_area']:.4f}) on '{benchmark.name}'"
+                )
 
         self._log(
             f"  total wall: {time.perf_counter() - t_total0:.1f} s "
