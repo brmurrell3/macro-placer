@@ -25,29 +25,34 @@ Anything outside these two paths is in `submissions/_archive/` or
 
 ## Current submission floor (Tier-1 proxy)
 
-> Two verified placers as of 2026-05-16. **Submission-day decision is still
-> open** — both ship if uploaded; the higher-confidence pick is dp_lane,
-> the safer fallback is placer_adaptive. Document both numbers downstream;
-> do **not** delete either entry until the human commits.
+> Three verified placers as of 2026-05-17. **Submission-day pick is
+> Option C** — beats both A and B on combined 21-bench avg and has
+> zero external dependencies. Keep A and B as fallback if C has issues
+> on the partcl judge box.
 
-**Option A — `submissions/cd_lns_sa_cascade/placer_adaptive.py`** —
-IBM **1.07820** / NG45 **0.68102**. Verified on partcl-equivalent EPYC.
-PATH A post-A1 acceleration. No external dependencies. Max wall 57 min
-(3-min margin to 60-min cap). Beats RePlAce 1.4578 by −26 %. Loses to
-leaderboard top (~1.01) by +6.7 %.
+**Option C (NEW CHAMPION 2026-05-17) — `submissions/cd_lns_sa_cascade_stacked_periphery/placer.py`** —
+IBM **1.05750** / NG45 **0.68930** / combined **0.987**. Cascade saddle
+(canonical eigvec) → portfolio saddle (3 non-canonical Hessian weights:
+cong-focus, density-focus, non-WL) → periphery wrapper (strict-
+conservative). No external dependencies. Beats Option B by −0.85 % IBM
+and −0.6 % combined. See
+[`docs/handoffs/2026-05-17_morning_champion.md`](docs/handoffs/2026-05-17_morning_champion.md)
+for per-bench numbers, architecture details, and failed parallel attempts.
 
 **Option B — `submissions/cd_lns_sa_cascade_dp_lane/placer.py`** —
-IBM **1.06650** / NG45 **0.68086** (verified 2026-05-14 on lambda cloud,
-17/17 IBM + 4/4 NG45, zero overlaps). Adds DREAMPlace as a third init
-lane alongside SDF/DPO; plateau picks best of {E25, E41, DP-polished}.
-Falls back to Option A if `DREAMPLACE_ROOT` is not set. Composite avg
-across 21 benches: **0.993** vs Option A 0.998. See
-[`docs/handoffs/2026-05-14_champion_found_dp_lane.md`](docs/handoffs/2026-05-14_champion_found_dp_lane.md)
-for per-bench numbers and the no-swap decision context.
+IBM 1.06650 / NG45 0.68086 / combined 0.993. Adds DREAMPlace as a third
+init lane alongside SDF/DPO; plateau picks best of {E25, E41, DP-
+polished}. Falls back to Option A if `DREAMPLACE_ROOT` is not set.
 
-Leaderboard reference: vmallela #1 at 1.011 (gap +5.6 % to Option B),
-Carrotato 0.967 via Xplace+Triton at 3.8 min/bench. Xplace integration
-in flight (gated on GPU box quota approval).
+**Option A — `submissions/cd_lns_sa_cascade/placer_adaptive.py`** —
+IBM 1.07820 / NG45 0.68102 / combined 1.003. PATH A post-A1 wall-safe
+cascade. No external dependencies. Safest fallback.
+
+Leaderboard reference: vmallela #1 at 1.011 (gap +4.6 % to Option C),
+Carrotato 0.967 via Xplace+Triton at 3.8 min/bench (gap +9.4 %). Xplace
+integration attempted 2026-05-16/17 and FALSIFIED — see handoff doc; our
+Xplace produces 1.41 polish on ibm01 vs SDF-cascade 0.85, basin
+structurally inferior, must require patched Xplace internals we don't have.
 
 **Tier-2 ORFS** ($20K, separate objective: WNS/TNS/Area from full
 PnR): per-design strategy verified 2026-05-15/16. ariane133 — **ship
