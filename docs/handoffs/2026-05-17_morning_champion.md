@@ -104,3 +104,50 @@ vs cached cascade uncapped (1.0612). 8 wins / 5 ties / 4 small losses
 
 - `memory/champion_2026_05_17_stacked_periphery.md` — new champion details
 - `memory/MEMORY.md` — index updated at top
+
+## Submission packaging (added 2026-05-17 ~09:00)
+
+Per partcl `eval_docker/Dockerfile` + `run_eval.sh` (GitHub PR #38):
+- Base image: `pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime`
+- Mounts: placer's parent dir at `/submission` (ro)
+- Extra args mounted at `/submission/<basename>` (ro)
+- Flags: `--gpus all`, `--memory 64g`, `--cpus 16`, `--network none`, `timeout 7200`
+- Judges have: RHEL9, AMD Turin 24c, RTX A6000 40GB, CUDA driver ≥590
+
+Run command (from official `run_eval.sh`):
+```bash
+./eval_docker/run_eval.sh team_name path/to/placer.py path/to/extras_dir
+```
+
+Our champion has cross-dir imports (`experiments/`, `submissions/cd_lns_sa`,
+etc). The placer's parent-only mount won't include those. Solution shipped:
+**`submit/placer.py` is a launcher** that:
+
+  1. Discovers `/submission/repo` (mounted via run_eval.sh extras arg)
+  2. Adds it to `sys.path`
+  3. Imports + re-exports `CDLNSSACascadeStackedPeripheryPlacer`
+
+Submission command:
+```bash
+./eval_docker/run_eval.sh thinkorplace path/to/repo/submit/placer.py path/to/repo
+```
+
+**DREAMPlace not needed** for our submission. Option C beats Option B
+(1.0575 vs 1.06650) without DREAMPlace. If the team later wants to ADD
+DREAMPlace as a 4th lane to stacked_periphery, would need to bundle a
+pre-built install dir (compatible with PyTorch 2.5.1 + CUDA 12.4) as
+another extra mount, then update placer to check for `DREAMPLACE_ROOT`.
+
+## Overnight iteration after 1.0575 champion
+
+- **K_eps=3 variant --all**: 1.0569 (−0.06% vs 1.0575). Marginal win
+  within noise. Wins 9 benches, loses 7. Not worth promoting.
+- **tabu_stacked --all** (running on M3, ETA ~12:30 PM): E99
+  tabu_levy_saddle replaces standard cascading_saddle for orthogonal
+  eigvec diversity across cascade iters. Hypothesis: direction
+  diversity complementary to portfolio's weight diversity.
+- **no_e41_deep --all** (queued, M3 after tabu): Skips E41 lane,
+  reallocates 0.32×B to cascade (0.20→0.36) + portfolio (0.13→0.29).
+  Doubles saddle budget.
+
+If neither variant beats 1.0575 by >0.5%, ship Option C as is.
