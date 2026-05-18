@@ -37,38 +37,119 @@ H2_ENABLED = os.environ.get("MPC_V2_H2", "0") == "1"
 _patches_applied = []
 
 
-def _apply_patches():
-    """Install monkey-patches into cd_lns_sa.placer based on env flags.
+def _collect_target_modules():
+    """Find every module that holds a reference to either
+    `_cost_aware_destroy` or `run_sa_polish_v2`. Returns two lists:
+    (modules_with_destroy, modules_with_sa).
 
-    Idempotent — multiple imports of this module won't double-patch.
+    Three sources:
+      1. Private modules from `_optc._stacked._E25_MOD` (cd_lns_sa loaded
+         as "e25_placer" via importlib, NOT in sys.modules).
+      2. `cd_lns_sa_kjoint` (E39, in sys.modules) — has its own inlined
+         copies of both functions.
+      3. `cd_lns_sa_dpo_kjoint` (E41, in sys.modules) — imports
+         `run_sa_polish_v2` from E39 by reference, so we must patch
+         E41's module-level name independently (Python's `from X import Y`
+         copies the reference at import time).
+    """
+    import types
+
+    targets_destroy: list = []
+    targets_sa: list = []
+    visited = set()
+    max_depth = 6
+
+    def visit_private(obj, depth: int):
+        if depth > max_depth:
+            return
+        oid = id(obj)
+        if oid in visited:
+            return
+        visited.add(oid)
+        if not isinstance(obj, types.ModuleType):
+            return
+        if hasattr(obj, "_cost_aware_destroy"):
+            if obj not in targets_destroy:
+                targets_destroy.append(obj)
+        if hasattr(obj, "run_sa_polish_v2"):
+            if obj not in targets_sa:
+                targets_sa.append(obj)
+        for attr_name in vars(obj):
+            if attr_name.startswith("__"):
+                continue
+            if not (attr_name.startswith("_") or attr_name in ("stacked", "cascade")):
+                continue
+            try:
+                val = getattr(obj, attr_name)
+            except Exception:
+                continue
+            if isinstance(val, types.ModuleType):
+                visit_private(val, depth + 1)
+
+    # Source 1: private cascade-chain modules.
+    visit_private(_optc, 0)
+
+    # Sources 2 + 3: sys.modules scan.
+    for name, mod in list(sys.modules.items()):
+        if not isinstance(mod, types.ModuleType):
+            continue
+        if name.startswith("torch.") or name.startswith("numpy.") or name.startswith("scipy."):
+            continue
+        # Restrict to our repo's modules (filename-based filter avoids
+        # touching anything unrelated).
+        f = getattr(mod, "__file__", None)
+        if not f or "/home/user/macro-placer/" not in f:
+            continue
+        try:
+            if hasattr(mod, "_cost_aware_destroy") and mod not in targets_destroy:
+                targets_destroy.append(mod)
+        except Exception:
+            pass
+        try:
+            if hasattr(mod, "run_sa_polish_v2") and mod not in targets_sa:
+                targets_sa.append(mod)
+        except Exception:
+            pass
+
+    return targets_destroy, targets_sa
+
+
+def _apply_patches():
+    """Install monkey-patches into every cascade-chain module that holds
+    `_cost_aware_destroy` or `run_sa_polish_v2`. Idempotent.
     """
     if _patches_applied:
         return
 
-    # We must import cd_lns_sa as a module to patch it.
-    cdlns_path = _ROOT / "submissions" / "cd_lns_sa" / "placer.py"
-    cdlns_spec = importlib.util.spec_from_file_location("submissions.cd_lns_sa.placer", str(cdlns_path))
-    cdlns_mod = importlib.util.module_from_spec(cdlns_spec)
-    # Register before exec so internal `from submissions.cd_lns_sa.placer import ...`
-    # references resolve consistently.
-    sys.modules["submissions.cd_lns_sa.placer"] = cdlns_mod
-    cdlns_spec.loader.exec_module(cdlns_mod)
+    destroy_targets, sa_targets = _collect_target_modules()
 
     if H1_ENABLED:
-        h1_dir = _ROOT / "experiments" / "E110_lp_dual_congestion" / "code"
-        if str(h1_dir) not in sys.path:
-            sys.path.insert(0, str(h1_dir))
-        from lp_destroy_rank import lp_dual_destroy
-        cdlns_mod._cost_aware_destroy = lp_dual_destroy  # type: ignore[attr-defined]
-        _patches_applied.append("H1:lp_dual_destroy")
+        if not destroy_targets:
+            print("[v2] WARNING: no _cost_aware_destroy targets found", flush=True)
+        else:
+            h1_dir = _ROOT / "experiments" / "E110_lp_dual_congestion" / "code"
+            if str(h1_dir) not in sys.path:
+                sys.path.insert(0, str(h1_dir))
+            from lp_destroy_rank import lp_dual_destroy
+            patched_names = []
+            for m in destroy_targets:
+                m._cost_aware_destroy = lp_dual_destroy
+                patched_names.append(getattr(m, "__name__", "?"))
+            _patches_applied.append(f"H1:lp_dual_destroy[{','.join(patched_names)}]")
 
     if H2_ENABLED:
-        h2_dir = _ROOT / "experiments" / "E111_population_annealing" / "code"
-        if str(h2_dir) not in sys.path:
-            sys.path.insert(0, str(h2_dir))
-        from pa_core import run_pa_polish
-        cdlns_mod.run_sa_polish_v2 = run_pa_polish  # type: ignore[attr-defined]
-        _patches_applied.append("H2:run_pa_polish")
+        if not sa_targets:
+            print("[v2] WARNING: no run_sa_polish_v2 targets found", flush=True)
+        else:
+            h2_dir = _ROOT / "experiments" / "E111_population_annealing" / "code"
+            if str(h2_dir) not in sys.path:
+                sys.path.insert(0, str(h2_dir))
+            from pa_core import run_pa_polish
+            patched_names = []
+            for m in sa_targets:
+                m.run_sa_polish_v2 = run_pa_polish
+                patched_names.append(getattr(m, "__name__", "?"))
+            _patches_applied.append(f"H2:run_pa_polish[{','.join(patched_names)}]")
 
 
 _apply_patches()
