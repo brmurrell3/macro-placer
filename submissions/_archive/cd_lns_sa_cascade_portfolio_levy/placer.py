@@ -112,9 +112,14 @@ class CDLNSSACascadePortfolioLevyPlacer:
             e25_kwargs = e41_kwargs = {}
 
         log("  Phase 1: E25 (CDLNSSAPlacer)")
-        e25 = CDLNSSAPlacer(**e25_kwargs).place(benchmark)
-        e25_proxy = float(compute_proxy_cost(e25, benchmark, plc)["proxy_cost"])
-        log(f"  E25 done: proxy={e25_proxy:.5f} (wall={time.time() - t0:.0f}s)")
+        e25 = None
+        e25_proxy = float("inf")
+        try:
+            e25 = CDLNSSAPlacer(**e25_kwargs).place(benchmark)
+            e25_proxy = float(compute_proxy_cost(e25, benchmark, plc)["proxy_cost"])
+            log(f"  E25 done: proxy={e25_proxy:.5f} (wall={time.time() - t0:.0f}s)")
+        except Exception as exc:
+            log(f"  E25 FAILED ({exc}); continuing with E41 only")
 
         e41 = None
         e41_proxy = float("inf")
@@ -126,7 +131,11 @@ class CDLNSSACascadePortfolioLevyPlacer:
             e41_proxy = float(compute_proxy_cost(e41, benchmark, plc)["proxy_cost"])
             log(f"  E41 done: proxy={e41_proxy:.5f} (wall={time.time() - t0:.0f}s)")
 
-        if e41 is None or e25_proxy <= e41_proxy:
+        if e25 is None and e41 is None:
+            raise RuntimeError("Both E25 and E41 placers failed; cannot proceed")
+        if e25 is None:
+            plateau, plateau_label, plateau_proxy = e41, "E41", e41_proxy
+        elif e41 is None or e25_proxy <= e41_proxy:
             plateau, plateau_label, plateau_proxy = e25, "E25", e25_proxy
         else:
             plateau, plateau_label, plateau_proxy = e41, "E41", e41_proxy
