@@ -171,8 +171,15 @@ def _try_run_dreamplace(benchmark, plc, log) -> Optional[torch.Tensor]:
                 ]
             else:
                 # Direct Python invocation (eval_docker default).
+                # Placer.py uses sibling-module imports (e.g. `import Params`)
+                # so the dreamplace/ subdir must be on PYTHONPATH. The
+                # install root also goes on PYTHONPATH for `dreamplace.ops`
+                # subpackage discovery.
                 env = os.environ.copy()
-                env["PYTHONPATH"] = f"{dp_root}:{env.get('PYTHONPATH', '')}"
+                env["PYTHONPATH"] = (
+                    f"{dp_root / 'dreamplace'}:{dp_root}"
+                    f":{env.get('PYTHONPATH', '')}"
+                )
                 cmd = [sys.executable,
                        str(dp_root / "dreamplace" / "Placer.py"),
                        str(cfg)]
