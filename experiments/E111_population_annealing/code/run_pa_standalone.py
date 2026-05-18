@@ -37,6 +37,9 @@ def main() -> int:
     p.add_argument("--pa-budget-s", type=float, default=200.0)
     p.add_argument("--baseline", action="store_true",
                    help="Run SA-v2 instead of PA for baseline comparison")
+    p.add_argument("--multistart", action="store_true",
+                   help="Run multi-start SA-v2 instead of PA")
+    p.add_argument("--n-chains", type=int, default=4)
     p.add_argument("--n-replicas", type=int, default=12)
     p.add_argument("--n-ladder", type=int, default=20)
     p.add_argument("--sweeps-per-step", type=int, default=300)
@@ -44,7 +47,12 @@ def main() -> int:
     args = p.parse_args()
 
     print(f"=" * 72)
-    label = "BASELINE-SA-v2" if args.baseline else "PA"
+    if args.baseline:
+        label = "BASELINE-SA-v2"
+    elif args.multistart:
+        label = f"MULTI-START-SA-v2 (N={args.n_chains})"
+    else:
+        label = "PA"
     print(f"E111 standalone {label} smoke")
     print(f"=" * 72)
     print(f"bench={args.bench} cd_budget={args.cd_budget_s}s pa_budget={args.pa_budget_s}s")
@@ -94,6 +102,20 @@ def main() -> int:
             evaluator, benchmark, plc, hard_movable,
             time_budget_s=args.pa_budget_s,
             seed=args.seed, log_fn=log_fn,
+        )
+    elif args.multistart:
+        from multistart_sa import run_multistart_sa_polish
+
+        def log_fn(s):
+            print(s, flush=True)
+
+        print(f"[{time.perf_counter()-t0:5.1f}s] multi-start SA-v2 "
+              f"(N={args.n_chains}, budget {args.pa_budget_s}s)...")
+        stats = run_multistart_sa_polish(
+            evaluator, benchmark, plc, hard_movable,
+            time_budget_s=args.pa_budget_s,
+            seed=args.seed, log_fn=log_fn,
+            n_chains=args.n_chains,
         )
     else:
         def log_fn(s):

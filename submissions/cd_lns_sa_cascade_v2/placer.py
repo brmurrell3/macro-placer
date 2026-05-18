@@ -202,7 +202,7 @@ class CDLNSSACascadeV2Placer:
         if not H2_ENABLED or self.pa_polish_budget < 30.0:
             return placement
 
-        # Dedicated post-cascade PA polish.
+        # Dedicated post-cascade polish phase.
         from macro_place.bench_paths import find_benchmark_dir
         from macro_place.loader import load_benchmark_from_dir
         from macro_place.objective import compute_proxy_cost, compute_overlap_metrics
@@ -211,31 +211,46 @@ class CDLNSSACascadeV2Placer:
             bench_dir = find_benchmark_dir(benchmark.name)
             _bench_reload, plc = load_benchmark_from_dir(str(bench_dir))
         except Exception as exc:
-            print(f"[v2] PA polish skipped (couldn't reload plc): {exc!r}", flush=True)
+            print(f"[v2] H2 polish skipped (couldn't reload plc): {exc!r}", flush=True)
             return placement
 
         from macro_place.incremental_evaluator import IncrementalProxyEvaluator
         evaluator = IncrementalProxyEvaluator(benchmark, plc, placement)
-        pre_pa_proxy = float(evaluator.current_cost()["proxy"])
+        pre_proxy = float(evaluator.current_cost()["proxy"])
         hard_movable = [
             i for i in range(benchmark.num_hard_macros)
             if not bool(benchmark.macro_fixed[i])
         ]
 
+        # Select polish variant. `multistart` is the post-PA-falsification
+        # default; `pa` keeps the original Hukushima-Iba population annealing.
+        variant = os.environ.get("MPC_V2_H2_VARIANT", "multistart")
         sys.path.insert(0, str(_ROOT / "experiments" / "E111_population_annealing" / "code"))
-        from pa_core import run_pa_polish
 
-        print(f"[v2] post-cascade PA polish: budget={self.pa_polish_budget:.0f}s "
-              f"pre_proxy={pre_pa_proxy:.5f}", flush=True)
+        if variant == "pa":
+            from pa_core import run_pa_polish
+            polish_fn = run_pa_polish
+            variant_label = "PA"
+        else:
+            from multistart_sa import run_multistart_sa_polish
+            polish_fn = run_multistart_sa_polish
+            variant_label = "multistart-SA"
+
+        print(f"[v2] post-cascade {variant_label} polish: "
+              f"budget={self.pa_polish_budget:.0f}s pre_proxy={pre_proxy:.5f}",
+              flush=True)
 
         try:
-            stats = run_pa_polish(
+            stats = polish_fn(
                 evaluator, benchmark, plc, hard_movable,
                 time_budget_s=self.pa_polish_budget,
                 log_fn=lambda s: print(s, flush=True),
             )
         except Exception as exc:
-            print(f"[v2] PA polish raised: {exc!r}; using pre-PA placement", flush=True)
+            import traceback
+            print(f"[v2] {variant_label} raised: {exc!r}; using pre-polish placement",
+                  flush=True)
+            traceback.print_exc()
             return placement
 
         new_placement = evaluator.placement.detach().clone().to(torch.float32)
@@ -243,12 +258,13 @@ class CDLNSSACascadeV2Placer:
         new_ovl = int(compute_overlap_metrics(new_placement, benchmark)["overlap_count"])
 
         if new_ovl > 0:
-            print(f"[v2] PA produced {new_ovl} overlaps; reverting to pre-PA placement", flush=True)
+            print(f"[v2] {variant_label} produced {new_ovl} overlaps; "
+                  "reverting to pre-polish placement", flush=True)
             return placement
-        if new_proxy > pre_pa_proxy + 1e-5:
-            print(f"[v2] PA regressed ({pre_pa_proxy:.5f} → {new_proxy:.5f}); "
-                  "reverting", flush=True)
+        if new_proxy > pre_proxy + 1e-5:
+            print(f"[v2] {variant_label} regressed ({pre_proxy:.5f} → "
+                  f"{new_proxy:.5f}); reverting", flush=True)
             return placement
-        print(f"[v2] PA accepted: {pre_pa_proxy:.5f} → {new_proxy:.5f} "
-              f"({(new_proxy-pre_pa_proxy)/pre_pa_proxy*100:+.3f}%)", flush=True)
+        print(f"[v2] {variant_label} accepted: {pre_proxy:.5f} → {new_proxy:.5f} "
+              f"({(new_proxy-pre_proxy)/pre_proxy*100:+.3f}%)", flush=True)
         return new_placement
