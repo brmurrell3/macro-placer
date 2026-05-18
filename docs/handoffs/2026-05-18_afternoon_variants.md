@@ -20,7 +20,9 @@ is the dominant uncertainty.
 | 6w_k2 portfolio K=2 | aws-gpu --fast | 0.91411 | +1.74% (--fast) | Truncated by deadline, **FALSIFIED** |
 | **4w portfolio (+1,1,1)** | M3 --all | **1.05870** | **+0.11%** | 5W/12L per-bench, noise |
 | **dualseed portfolio** | aws-gpu --all | **1.08280** | +2.42% | Hardware variance dominates; mechanism gives <0.05% |
-| **finalsa (T₀=1e-3 SA at end)** | M3 --all | in progress 8/17 | tracking −0.07% | Phase 4 SA mostly REJECTed |
+| **finalsa (T₀=1e-3 SA at end)** | M3 --all | **1.05759** | +0.009% (TIED) | Phase 4 SA REJECTed 15/16; only ibm02 ACCEPT (+0.45% lift) |
+| aws-gpu baseline --fast (calibration) | aws-gpu --fast | 0.91108 | +1.41% vs M3 --fast | Definitive hardware variance measurement |
+| finalsa_v2 (extended Phase 4 budget) | aws-gpu --fast | in progress | ? | Trim other phases by 0.16 B to give Phase 4 ~500s |
 
 ## Key insights
 
