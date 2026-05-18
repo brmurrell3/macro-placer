@@ -4,27 +4,41 @@
 
 ## Submission entry (for judges)
 
-**One-line run** (after cloning this repo):
+**Setup** (one-time, after cloning):
 
 ```bash
-./eval_docker/run_eval.sh thinkorplace placer.py
+git submodule update --init external/MacroPlacement
 ```
 
-That builds the eval Docker image on first run, then evaluates our placer
-across all 17 IBM benchmarks. Results land in `eval_docker/results/thinkorplace.log`.
+The `external/MacroPlacement` submodule provides the benchmark testcases and
+PlacementCost evaluator that `eval_docker/Dockerfile` bakes into the image.
+
+**One-line run** (after submodule init):
+
+```bash
+./eval_docker/run_eval.sh thinkorplace placer.py submit_deps/dreamplace_install
+```
+
+That builds the eval Docker image on first run (~10 min, includes
+DREAMPlace Python deps), mounts our DREAMPlace install, then evaluates
+our placer across all 17 IBM benchmarks (~50 min/bench, ~14 hr total
+serial — runs sequentially via partcl's `evaluate` harness). Results
+land in `eval_docker/results/thinkorplace.log`.
 
 **Entry placer:** [`placer.py`](placer.py) at the repo root — a thin
 launcher that adds the repo to `sys.path` and dispatches to
 [`submissions/cd_lns_sa_cascade_dp_lane/placer.py`](submissions/cd_lns_sa_cascade_dp_lane/placer.py)
 (`CDLNSSACascadeDPLanePlacer`).
 
-**Optional DREAMPlace 3rd lane** (recommended, ~1.1 % better IBM aggregate):
+**Without DREAMPlace** (faster setup, 2-lane fallback, ~1.1 % worse IBM):
+
 ```bash
-./eval_docker/run_eval.sh thinkorplace placer.py submit_deps/dreamplace_install
+./eval_docker/run_eval.sh thinkorplace placer.py
 ```
-The placer auto-discovers DREAMPlace at `/submission/dreamplace_install` and
-enables the DP-polished init lane. Without it, the placer falls back to a
-2-lane (SDF + DPO) configuration.
+
+The placer auto-discovers DREAMPlace at `/submission/dreamplace_install` when
+the extras arg points at the bundled install. Without it, the placer falls
+back to a 2-lane (SDF + DPO) configuration.
 
 | Mode | IBM `--all` | NG45 `--ng45` | Overlaps | Verified |
 |---|---:|---:|---:|---|
