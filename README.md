@@ -4,30 +4,46 @@
 
 ## Submission entry (for judges)
 
-**Placer file:** [`submissions/cd_lns_sa_cascade/placer_adaptive.py`](submissions/cd_lns_sa_cascade/placer_adaptive.py) — `CDLNSSACascadeAdaptivePlacer`
-
-**Run command:**
+**One-line run** (after cloning this repo):
 
 ```bash
-git submodule update --init external/MacroPlacement
-uv sync
-export OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8 MKL_NUM_THREADS=8
-uv run evaluate submissions/cd_lns_sa_cascade/placer_adaptive.py --all --json
-uv run evaluate submissions/cd_lns_sa_cascade/placer_adaptive.py --ng45 --json
+./eval_docker/run_eval.sh thinkorplace placer.py
 ```
+
+That builds the eval Docker image on first run, then evaluates our placer
+across all 17 IBM benchmarks. Results land in `eval_docker/results/thinkorplace.log`.
+
+**Entry placer:** [`placer.py`](placer.py) at the repo root — a thin
+launcher that adds the repo to `sys.path` and dispatches to
+[`submissions/cd_lns_sa_cascade_dp_lane/placer.py`](submissions/cd_lns_sa_cascade_dp_lane/placer.py)
+(`CDLNSSACascadeDPLanePlacer`).
+
+**Optional DREAMPlace 3rd lane** (recommended, ~1.1 % better IBM aggregate):
+```bash
+./eval_docker/run_eval.sh thinkorplace placer.py submit_deps/dreamplace_install
+```
+The placer auto-discovers DREAMPlace at `/submission/dreamplace_install` and
+enables the DP-polished init lane. Without it, the placer falls back to a
+2-lane (SDF + DPO) configuration.
+
+| Mode | IBM `--all` | NG45 `--ng45` | Overlaps | Verified |
+|---|---:|---:|---:|---|
+| 3-lane (with DREAMPlace) | **1.06650** | **0.68086** | 0 | 2026-05-14 lambda cloud (A100) |
+| 2-lane fallback (no DREAMPlace) | 1.07820 | 0.68102 | 0 | 2026-05-16 AWS EPYC c6a.4xlarge |
 
 **Algorithm description:** [`submissions/cd_lns_sa_cascade/MECHANISM.md`](submissions/cd_lns_sa_cascade/MECHANISM.md)
 
-Default `budget_seconds=3000` (50 min/bench, safe under the 60-min cap on EPYC).
-Single global algorithm; no per-benchmark hyperparameters; no benchmark-identity
-dispatch (only canvas-area property dispatch, see MECHANISM.md).
+Default `budget_seconds=3300` (55 min/bench, safe under the 60-min cap on EPYC).
+Single global algorithm; no per-benchmark hyperparameters; no benchmark-
+identity dispatch (only canvas-area property dispatch, see MECHANISM.md).
 
-A verified-better Option B exists at
-[`submissions/cd_lns_sa_cascade_dp_lane/placer.py`](submissions/cd_lns_sa_cascade_dp_lane/placer.py)
-(IBM 1.06650 / NG45 0.68086) that adds a DREAMPlace lane to the cascade.
-Falls back to Option A if `DREAMPLACE_ROOT` is unset. See
-[`submissions/README.md`](submissions/README.md) for the full
-candidate comparison and the no-swap context.
+**Run outside Docker** (development sanity check, requires `uv sync` first):
+```bash
+uv run evaluate placer.py --all --json
+uv run evaluate placer.py --ng45 --json
+```
+
+**Full submission guide:** [`SUBMISSION.md`](SUBMISSION.md).
 
 ## Where to find things in this repo
 
