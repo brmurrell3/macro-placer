@@ -79,20 +79,41 @@ from extended_legalize import extended_legalize
 
 
 def _try_run_dreamplace(benchmark, plc, log) -> Optional[torch.Tensor]:
-    """Run DREAMPlace in Docker; return raw placement or None on failure.
+    """Run DREAMPlace; return raw placement or None on failure.
 
-    Same config as `submissions/_archive/falsified/cd_lns_sa_hessian_dp/placer.py`
-    so basin proxies are comparable to PATH B autopsy data.
+    Discovery order for DREAMPlace install:
+      1. ``DREAMPLACE_ROOT`` env var (if set + exists)
+      2. ``/submission/dreamplace_install`` (eval_docker bundled extras)
+      3. ``submit_deps/dreamplace_install/`` relative to repo root
+
+    Invocation mode:
+      - If ``DP_USE_NESTED_DOCKER=1``: legacy nested-Docker mode (requires
+        Docker socket; will NOT work in eval_docker's air-gapped runtime).
+      - Default: direct ``sys.executable Placer.py config.json`` subprocess —
+        works inside eval_docker where the host's PyTorch is already
+        DREAMPlace-compatible (2.5.1+cuda12.4).
     """
-    dp_root = os.environ.get("DREAMPLACE_ROOT")
-    if not dp_root or not Path(dp_root).exists():
-        log(f"  [DP] DREAMPLACE_ROOT not set; skipping DP lane")
-        return None
-    placer_py = Path(dp_root) / "dreamplace" / "Placer.py"
-    if not placer_py.exists():
-        log(f"  [DP] {placer_py} missing; skipping")
-        return None
+    dp_root_env = os.environ.get("DREAMPLACE_ROOT")
+    candidates = []
+    if dp_root_env:
+        candidates.append(Path(dp_root_env))
+    candidates.extend([
+        Path("/submission/dreamplace_install"),
+        _ROOT / "submit_deps" / "dreamplace_install",
+    ])
 
+    dp_root = None
+    for c in candidates:
+        if c.exists() and (c / "dreamplace" / "Placer.py").exists():
+            dp_root = c
+            break
+    if dp_root is None:
+        log(f"  [DP] no DREAMPlace install found (tried "
+            f"{[str(c) for c in candidates]}); skipping DP lane")
+        return None
+    log(f"  [DP] using install at {dp_root}")
+
+    use_nested_docker = int(os.environ.get("DP_USE_NESTED_DOCKER", "0"))
     dp_image = os.environ.get("DP_DOCKER_IMAGE", "dreamplace:custom")
     use_gpu = int(os.environ.get("DP_USE_GPU", "1"))
     SCALE = float(_bk_writer.SCALE)
@@ -110,8 +131,16 @@ def _try_run_dreamplace(benchmark, plc, log) -> Optional[torch.Tensor]:
             log(f"  [DP {label}] target_density={target_density:.3f} "
                 f"stop_overflow={stop_overflow} iter={dp_iter} lr={dp_lr}")
             cfg = tmp / "dp.json"
+            # Build DP config. Paths are inside the work tmpdir; the input
+            # aux file path differs between direct-Python (host abs) and
+            # nested-Docker (mount point) modes.
+            aux_path_for_cfg = (
+                f"/work/{benchmark.name}.aux" if use_nested_docker
+                else str(tmp / f"{benchmark.name}.aux")
+            )
+            result_dir_for_cfg = "/work" if use_nested_docker else str(tmp)
             cfg.write_text(json.dumps({
-                "aux_input": f"/work/{benchmark.name}.aux",
+                "aux_input": aux_path_for_cfg,
                 "target_density": target_density,
                 "density_weight": 8e-5,
                 "gpu": use_gpu,
@@ -124,28 +153,44 @@ def _try_run_dreamplace(benchmark, plc, log) -> Optional[torch.Tensor]:
                 "legalize_flag": 0,
                 "detailed_place_flag": 0,
                 "stop_overflow": stop_overflow,
-                "result_dir": "/work",
+                "result_dir": result_dir_for_cfg,
             }))
-            uid, gid = os.getuid(), os.getgid()
-            docker_args = ["sudo", "docker", "run", "--rm",
-                           "--user", f"{uid}:{gid}",
-                           "-v", f"{tmp}:/work",
-                           "-v", f"{dp_root}:/dp_install:ro",
-                           "-w", "/work"]
-            if use_gpu:
-                docker_args.extend(["--gpus", "all"])
-            cmd = docker_args + [
-                dp_image,
-                "python", "/dp_install/dreamplace/Placer.py", "/work/dp.json",
-            ]
+
+            if use_nested_docker:
+                uid, gid = os.getuid(), os.getgid()
+                docker_args = ["sudo", "docker", "run", "--rm",
+                               "--user", f"{uid}:{gid}",
+                               "-v", f"{tmp}:/work",
+                               "-v", f"{dp_root}:/dp_install:ro",
+                               "-w", "/work"]
+                if use_gpu:
+                    docker_args.extend(["--gpus", "all"])
+                cmd = docker_args + [
+                    dp_image,
+                    "python", "/dp_install/dreamplace/Placer.py", "/work/dp.json",
+                ]
+            else:
+                # Direct Python invocation (eval_docker default).
+                env = os.environ.copy()
+                env["PYTHONPATH"] = f"{dp_root}:{env.get('PYTHONPATH', '')}"
+                cmd = [sys.executable,
+                       str(dp_root / "dreamplace" / "Placer.py"),
+                       str(cfg)]
+                env_for_subprocess = env
             t0 = time.time()
             try:
-                proc = subprocess.run(cmd, capture_output=True, text=True, timeout=900)
+                if use_nested_docker:
+                    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=900)
+                else:
+                    proc = subprocess.run(
+                        cmd, capture_output=True, text=True, timeout=900,
+                        env=env_for_subprocess, cwd=str(tmp),
+                    )
             except subprocess.TimeoutExpired:
                 log(f"  [DP {label}] timed out 900 s")
                 return None
             if proc.returncode != 0:
-                log(f"  [DP {label}] failed exit={proc.returncode}")
+                log(f"  [DP {label}] failed exit={proc.returncode}: {proc.stderr[-500:]}")
                 return None
             log(f"  [DP {label}] done in {time.time() - t0:.0f}s")
             gp_pl = tmp / f"{benchmark.name}.gp.pl"
