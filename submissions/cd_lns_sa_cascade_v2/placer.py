@@ -231,6 +231,19 @@ class CDLNSSACascadeV2Placer:
             from pa_core import run_pa_polish
             polish_fn = run_pa_polish
             variant_label = "PA"
+        elif variant == "extended":
+            # Strict-improvement variant: extended single-chain SA-v2 with
+            # best-so-far tracking from the cascade plateau. Standalone smoke
+            # showed SA-v2 outperforms both PA and multi-start at the polish
+            # stage (per-chain depth wins over replica diversity here).
+            import importlib.util as _il
+            _spec = _il.spec_from_file_location(
+                "_orig_e25_polish", str(_ROOT / "submissions" / "cd_lns_sa" / "placer.py")
+            )
+            _orig = _il.module_from_spec(_spec)
+            _spec.loader.exec_module(_orig)
+            polish_fn = _orig.run_sa_polish_v2
+            variant_label = "extended-SA"
         else:
             from multistart_sa import run_multistart_sa_polish
             polish_fn = run_multistart_sa_polish
