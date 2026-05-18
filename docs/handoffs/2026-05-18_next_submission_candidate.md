@@ -75,23 +75,27 @@ to `cd_lns_sa_cascade_dp_lane`. To switch:
 
 ## Open variants still running (may produce sub-1.05)
 
-- **tabu_stacked --all** on M3 (started 2026-05-17 ~9 PM, ETA ~1-2 AM
-  2026-05-18): cascading_saddle replaced with E99 `tabu_levy_saddle_escape`
-  which forces orthogonal eigvecs across cascade iters (more direction
-  diversity, complementary to portfolio's weight diversity). **Status at
-  2026-05-17 23:45**: 12/17 WINNERs landed, simple sum-avg over the
-  finished 12 = 0.98441. First WINNER was ibm01 at 0.85111 (vs original
-  0.85963 = −1.0 %). Hard benches (ibm17, ibm18) still pending and will
-  raise the final aggregate substantially.
+- **tabu_stacked --all** on M3: complete 2026-05-18 ~01:25 EDT.
+  cascading_saddle replaced with E99 `tabu_levy_saddle_escape`. Final
+  aggregate **1.05657** across 17 IBM benches (0 overlaps,
+  `CDLNSSACascadeTabuStackedPlacer_20260518_011832.json`). vs original
+  stacked_periphery 1.05750 = **−0.09% lift** — within noise floor
+  (K_eps=3 variance was 0.06%). Per-bench: 8 wins / 2 ties / 7 losses,
+  largest individual lift was ibm04 at −1.11%, largest individual
+  regression was ibm16 at +1.30%. **NOT PROMOTION-WORTHY**. Keep
+  stacked_periphery as next candidate.
 - **no_e41_deep --all** on aws-gpu CPU (started 2026-05-17 ~9 PM):
   skips E41 lane, reallocates its 0.32×B to cascade (0.20→0.36) and
-  portfolio (0.13→0.29). 3/17 WINNERs landed; this run is slower
-  (aws-gpu only --jobs 3 vs M3's --jobs 4). First WINNER 0.87179 (vs
-  ibm01 baseline 0.85963 = +1.4 % regression). Hypothesis weakening.
+  portfolio (0.13→0.29). 6/17 WINNERs landed, then **CRASHED on ibm08
+  at 00:54 EDT**: "E25 FAILED (CDLNSSAPlacer produced 1 overlaps on
+  'ibm08')" — no fallback lane available because E41 was skipped.
+  Single-lane configurations are unsafe (E25 has known fragility on
+  ibm08). **Hypothesis FALSIFIED** — kill, don't promote.
 
-If tabu_stacked lands < 1.0575 (current best), re-promote and update
-`placer.py` to point at it. If no_e41_deep doesn't show a lift on early
-benches by morning, kill it.
+**Outcome (2026-05-18 morning):** Neither variant lifted above the
+stacked_periphery champion. tabu_stacked landed at 1.05657 (−0.09%,
+within noise). no_e41_deep crashed on ibm08 (single-lane unsafe).
+**Stacked_periphery (1.0575) stands as the next submission candidate.**
 
 ## How to verify
 

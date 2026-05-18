@@ -30,33 +30,32 @@ for the switch instructions if you want to flip to Option C.
 Both started 2026-05-17 ~9 PM. See `Monitor` task `bqs912901` for
 tabu_stacked WINNERs (real-time).
 
-### tabu_stacked --all on M3 (`E108_tabu_stacked_all`)
+### tabu_stacked --all on M3 (`E108_tabu_stacked_all`) — COMPLETE
 
 Hypothesis: replace `cascading_saddle` (canonical (1,0.5,0.5) Hessian
 eigvec) with `tabu_levy_saddle_escape` from E99 — forces orthogonal
 eigvecs across iters for more direction diversity, complementary to
 portfolio's weight diversity.
 
-**Status at 23:45 EDT:** 12/17 WINNERs landed. Simple sum-avg over
-finished 12 = **0.98441**. Hard benches (ibm17, ibm18) still pending.
-**ETA: ~1-2 AM** for completion. Log: `/tmp/tabu_stacked_all.log`.
+**Final result (2026-05-18 ~01:25 EDT):** **1.05657** across 17 IBM
+benches, **0 overlaps**. vs stacked_periphery 1.05750 = **−0.09%**
+(within noise). Per-bench: 8 wins / 2 ties / 7 losses. Largest lift
+ibm04 −1.11%; largest regression ibm16 +1.30%. **NOT promotion-worthy.**
 
-Decision logic: if final avg < 1.0575, promote tabu_stacked over
-stacked_periphery as next candidate.
+Decision: keep stacked_periphery as next candidate.
 
-### no_e41_deep --all on aws-gpu (`E108_no_e41_deep_all`)
+### no_e41_deep --all on aws-gpu (`E108_no_e41_deep_all`) — FALSIFIED
 
 Hypothesis: skip E41 lane, reallocate its 0.32×B budget to cascade
 (0.20→0.36) and portfolio (0.13→0.29). Maybe more saddle iters
 compensate for worse starting plateau.
 
-**Status at 23:45 EDT:** 3/17 WINNERs landed. First bench 0.87179
-vs original 0.85963 = **+1.4 % regression**. Hypothesis weakening
-already. ETA late tomorrow morning (aws-gpu is slower, --jobs 3 CPU).
-Log on aws-gpu: `~/no_e41_deep_all.log`.
-
-Decision logic: if any of the first 5 benches shows ≥1 % regression,
-kill it. Current trend: kill.
+**Outcome (2026-05-18 ~00:54 EDT, after 6/17 benches):** CRASHED on
+ibm08 — "E25 FAILED (CDLNSSAPlacer produced 1 overlaps)" with no
+fallback lane because E41 was skipped. Single-lane configurations are
+unsafe. **Hypothesis falsified.** Process continues on remaining
+benches but ibm08 is a permanent data hole. See memory:
+`single_lane_unsafe.md`.
 
 ## DREAMPlace situation
 
@@ -87,25 +86,23 @@ kill it. Current trend: kill.
 
 ## What to check first thing in the morning
 
-1. Look at `Monitor bqs912901` events for tabu_stacked WINNERs. If 17/17
-   done, run:
-   ```bash
-   grep WINNER /tmp/tabu_stacked_all.log | sed -E 's/.*proxy=([0-9.]+).*/\1/' | \
-     awk '{sum+=$1; n+=1} END {printf "avg=%.5f over n=%d\n", sum/n, n}'
-   ```
-   If `avg < 1.0575`: promote tabu_stacked. Update
-   `2026-05-18_next_submission_candidate.md` to point at it.
+1. **Variant runs complete / falsified — no action needed.** Both
+   variants resolved overnight: tabu_stacked landed within noise of
+   stacked_periphery (no promotion), no_e41_deep crashed on ibm08
+   (single-lane unsafe, falsified). Documented in detail above.
 
-2. Check aws-gpu no_e41_deep status:
-   ```bash
-   ssh aws-gpu "grep WINNER ~/no_e41_deep_all.log"
-   ```
-   If still regressing on most benches, kill (`ssh aws-gpu "pkill -f no_e41_deep"`).
-
-3. Submission-day decision (B vs C): the user owns this. Both are
+2. **Submission-day decision (B vs C): the user owns this.** Both are
    wall-safe and verified. C is **better** (1.0575 vs 1.0782) **and
    simpler** (no DREAMPlace dependency). Switch instructions are in
-   `2026-05-18_next_submission_candidate.md`.
+   `2026-05-18_next_submission_candidate.md`. Recommendation: switch
+   to C.
+
+3. If switching to C, the steps are:
+   - Edit `placer.py` lines 63 and 69 to point at
+     `cd_lns_sa_cascade_stacked_periphery` / `CDLNSSACascadeStackedPeripheryPlacer`
+   - Update README.md and SUBMISSION.md to drop DREAMPlace references
+   - Re-verify: `uv run evaluate placer.py -b ibm03 --json`
+   - Push to origin/main
 
 ## Files modified tonight
 
@@ -115,6 +112,7 @@ kill it. Current trend: kill.
 - `placer.py` — docstring updated
 - `docs/handoffs/2026-05-18_next_submission_candidate.md` — variant status
 - `docs/handoffs/2026-05-18_morning_status.md` — this file
+- Memory: added `single_lane_unsafe.md`
 
 No code changes to placers; only documentation/README work + variant
-runs in flight.
+runs that resolved without producing a new champion.
