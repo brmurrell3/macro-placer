@@ -16,7 +16,10 @@ import logging
 import Params
 import dreamplace
 import dreamplace.ops.place_io.place_io as place_io
-import dreamplace.ops.fence_region.fence_region as fence_region
+try:
+    import dreamplace.ops.fence_region.fence_region as fence_region
+except ImportError:
+    fence_region = None
 import pdb
 
 datatypes = {

@@ -5,8 +5,11 @@
 # @brief  Main file to run the entire placement flow.
 #
 
-import matplotlib
-matplotlib.use('Agg')
+try:
+    import matplotlib
+except ImportError:
+    matplotlib = None
+if matplotlib: matplotlib.use('Agg')
 import os
 import sys
 import time

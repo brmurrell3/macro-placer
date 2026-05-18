@@ -3,7 +3,10 @@ from math import sqrt
 
 import numpy as np
 import torch
-from shapely import affinity
+try:
+    from shapely import affinity
+except ImportError:
+    affinity = None
 from shapely.geometry import GeometryCollection, LineString, MultiPolygon, Polygon, box
 from shapely.ops import unary_union
 

@@ -25,7 +25,10 @@ import dreamplace.ops.macro_legalize.macro_legalize as macro_legalize
 import dreamplace.ops.greedy_legalize.greedy_legalize as greedy_legalize
 import dreamplace.ops.abacus_legalize.abacus_legalize as abacus_legalize
 import dreamplace.ops.legality_check.legality_check as legality_check
-import dreamplace.ops.draw_place.draw_place as draw_place
+try:
+    import dreamplace.ops.draw_place.draw_place as draw_place
+except ImportError:
+    draw_place = None
 import dreamplace.ops.pin_pos.pin_pos as pin_pos
 import dreamplace.ops.global_swap.global_swap as global_swap
 import dreamplace.ops.k_reorder.k_reorder as k_reorder

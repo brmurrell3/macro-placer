@@ -33,6 +33,20 @@ RUN pip install --no-cache-dir -e . && \
 # (cheaper to bake in than install at runtime)
 RUN pip install --no-cache-dir cvxpy dccp numba
 
+# Install DREAMPlace Python deps (for our cd_lns_sa_cascade_dp_lane 3rd lane).
+# Includes shapely (fence_region), matplotlib (plotting), cairocffi (drawing),
+# torch_optimizer / ncg_optimizer (DREAMPlace's NesterovAccelerated and other
+# optimizers), pandas (some ops). The corresponding C++ extensions
+# (place_io_cpp, etc.) ship as part of submit_deps/dreamplace_install/ and
+# get mounted at runtime.
+RUN pip install --no-cache-dir shapely matplotlib cairocffi torch_optimizer \
+    ncg_optimizer pandas
+
+# Install libcairo system library for cairocffi (used by DREAMPlace's PlaceDrawer)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libcairo2 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Entrypoint: run the evaluator on a mounted placer file
 # Usage: docker run ... -v /path/to/placer.py:/submission/placer.py evaluate /submission/placer.py --all
 ENTRYPOINT ["python", "-m", "macro_place.evaluate"]

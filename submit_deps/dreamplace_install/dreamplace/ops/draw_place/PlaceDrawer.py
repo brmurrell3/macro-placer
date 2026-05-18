@@ -9,7 +9,10 @@ import sys
 import os
 import time
 import math
-import cairocffi as cairo
+try:
+    import cairocffi as cairo
+except (ImportError, OSError, Exception):
+    cairo = None
 import numpy as np
 
 
