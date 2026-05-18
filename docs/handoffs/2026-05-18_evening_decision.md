@@ -79,9 +79,33 @@ Trimmed earlier phases by 0.16 B to guarantee Phase 4 SA ~500s budget.
 
 All 4 M3 benches REJECTed Phase 4 SA. Budget reallocation **FALSIFIED**
 — cascade+portfolio basin is already saturated against high-T SA.
-The Phase 4 polish finds nothing to improve.
 
 **All 5 algorithm tweaks today tied or worse than baseline 1.0575.**
+
+## M3 baseline noise floor (2026-05-18 19:00)
+
+Re-ran identical stacked_periphery --fast on M3 (same hardware,
+~1 day apart):
+
+| Bench | Original (2026-05-17) | Re-run (2026-05-18 18:15) | Δ |
+|---|---:|---:|---:|
+| ibm01 | 0.85963 | **0.84691** | **−1.48%** |
+| ibm04 | 0.97285 | 0.97285 | 0.00% (exact tie) |
+| ibm09 | 0.82494 | 0.82328 | −0.20% |
+| ibm13 | 0.93633 | 0.93765 | +0.14% |
+| **AVG** | **0.89844** | **0.89517** | **−0.36%** |
+
+**Critical insight:** M3 run-to-run variance is **~0.3-0.5% aggregate,
+~1.5% per-bench worst case** — much higher than the ±0.1% I was using
+to compare variants. **Today's 5 algorithm tweaks (4w, finalsa,
+finalsa_v2, tabu, dualseed mechanism, 6w-fast) are all WELL WITHIN
+the actual noise floor** — none can be statistically distinguished
+from baseline.
+
+**Implication for the 1.05750 verified number:** It has uncertainty
+of about **±0.4% on M3**, so true M3 baseline ≈ 1.054-1.062. Plus
+the ~1.4-2.4% hardware variance to EPYC, judges may see anywhere
+from **1.07 to 1.09**.
 
 ## Files modified today
 
