@@ -39,11 +39,12 @@ detail.
 | 2-lane (bundled install, or no DP) | **1.07820** | **0.68102** | 0 | 2026-05-16 AWS EPYC c6a.4xlarge |
 | 3-lane (with CUDA-enabled DREAMPlace) | 1.06650 | 0.68086 | 0 | 2026-05-14 lambda cloud (A100) |
 
-**Algorithm description:** [`submissions/cd_lns_sa_cascade/MECHANISM.md`](submissions/cd_lns_sa_cascade/MECHANISM.md)
+**Algorithm description:** [`docs/approach.md`](docs/approach.md)
 
 Default `budget_seconds=3300` (55 min/bench, safe under the 60-min cap on EPYC).
 Single global algorithm; no per-benchmark hyperparameters; no benchmark-
-identity dispatch (only canvas-area property dispatch, see MECHANISM.md).
+identity dispatch (only canvas-area property dispatch, see
+[`docs/approach.md`](docs/approach.md)).
 
 **Run outside Docker** (development sanity check, requires `uv sync` first):
 ```bash
