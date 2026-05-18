@@ -50,12 +50,18 @@ Hypothesis: skip E41 lane, reallocate its 0.32×B budget to cascade
 (0.20→0.36) and portfolio (0.13→0.29). Maybe more saddle iters
 compensate for worse starting plateau.
 
-**Outcome (2026-05-18 ~00:54 EDT, after 6/17 benches):** CRASHED on
-ibm08 — "E25 FAILED (CDLNSSAPlacer produced 1 overlaps)" with no
-fallback lane because E41 was skipped. Single-lane configurations are
-unsafe. **Hypothesis falsified.** Process continues on remaining
-benches but ibm08 is a permanent data hole. See memory:
-`single_lane_unsafe.md`.
+**Outcome (2026-05-18 04:15 EDT, after full ~7 hour run):**
+- Crashed on ibm08 at ~00:54 EDT: "E25 FAILED (CDLNSSAPlacer produced
+  1 overlaps)" — no fallback because E41 was skipped.
+- Run continued on remaining benches; 16/17 produced valid WINNERs.
+- Aggregate over the 16 valid benches: **1.10907** — substantially
+  worse than stacked_periphery's 1.05750. Confirmed regression even
+  ignoring the crash.
+- Parallel runner re-raised the cached ibm08 exception at the end so
+  no JSON was written. Process is dead (PID gone).
+
+**Hypothesis falsified on both fronts: crash AND regression.**
+See memory: `single_lane_unsafe.md`.
 
 ## DREAMPlace situation
 
