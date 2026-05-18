@@ -32,22 +32,45 @@ from pa_replica import Replica, build_replicas, sweep_replica
 from pa_resample import systematic_resample
 
 
+def _sa_fallback(*args, **kwargs):
+    """Lazy import of run_sa_polish_v2 to avoid circular issues at module load.
+
+    PA's monkey-patch overwrites run_sa_polish_v2 in cd_lns_sa modules, so we
+    can't `from cd_lns_sa.placer import run_sa_polish_v2` at top of file —
+    it'd just import our own PA. Instead, we re-load the original via importlib
+    from the canonical source file once and cache.
+    """
+    global _ORIGINAL_SA
+    if _ORIGINAL_SA is None:
+        import importlib.util as _il
+        _ROOT = Path(__file__).resolve().parents[3]
+        _spec = _il.spec_from_file_location("_orig_e25", str(_ROOT / "submissions" / "cd_lns_sa" / "placer.py"))
+        _mod = _il.module_from_spec(_spec)
+        _spec.loader.exec_module(_mod)
+        _ORIGINAL_SA = _mod.run_sa_polish_v2
+    return _ORIGINAL_SA(*args, **kwargs)
+
+
+_ORIGINAL_SA = None
+
+
 def run_pa_polish(
     evaluator: IncrementalProxyEvaluator,
     benchmark,
     plc,
     hard_movable: List[int],
     time_budget_s: float,
-    T0: float = 1e-3,
+    T0: float = 5e-4,
     Tf: float = 1e-6,
     seed: int = 42,
     breakpoint_budget: int = 12,
     log_fn: Optional[Callable[[str], None]] = None,
     *,
-    n_replicas: int = 24,
-    n_ladder: int = 40,
-    sweeps_per_step: int = 500,
-    pre_ladder_diversify_steps: int = 100,
+    n_replicas: int = 12,
+    n_ladder: int = 20,
+    sweeps_per_step: int = 300,
+    pre_ladder_diversify_steps: int = 50,
+    fallback_min_budget_s: float = 30.0,
     **_unused,
 ) -> dict:
     """Population-annealing polish on canonical proxy.
@@ -64,6 +87,36 @@ def run_pa_polish(
         if log_fn:
             log_fn("  PA: no hard movable macros; skipping")
         return _empty_stats(init_proxy)
+
+    # Bail to SA-v2 if budget is too small for PA to do useful work.
+    # Replica build alone is ~1s × n_replicas, plus diversification — under
+    # ~30s PA degenerates to "diversify and quit" with zero ladder steps.
+    if time_budget_s < fallback_min_budget_s:
+        if log_fn:
+            log_fn(f"  PA: budget {time_budget_s:.0f}s < {fallback_min_budget_s:.0f}s "
+                   f"min; falling back to SA-v2")
+        return _sa_fallback(
+            evaluator, benchmark, plc, hard_movable, time_budget_s,
+            T0=T0, Tf=Tf, seed=seed, breakpoint_budget=breakpoint_budget,
+            log_fn=log_fn,
+        )
+
+    # Adaptive sizing: estimate the per-step cost and shrink N / sweeps if
+    # budget is tight. Empirical: replica build ~1s each, sweep ~0.6 ms each.
+    est_build_s = 1.0 * n_replicas + 0.05 * n_replicas * pre_ladder_diversify_steps
+    est_ladder_s = 0.6e-3 * n_replicas * sweeps_per_step * n_ladder
+    est_clone_s = 0.5 * n_replicas * n_ladder  # rough — ~0.5s × #clones × steps
+    est_total = est_build_s + est_ladder_s + est_clone_s
+    if est_total > time_budget_s and time_budget_s >= fallback_min_budget_s:
+        # Scale down: keep N at minimum 6, reduce ladder+sweeps proportionally.
+        shrink = time_budget_s / max(est_total, 1.0)
+        n_replicas = max(6, int(n_replicas * (shrink ** 0.5)))
+        sweeps_per_step = max(50, int(sweeps_per_step * shrink))
+        n_ladder = max(5, int(n_ladder * (shrink ** 0.5)))
+        if log_fn:
+            log_fn(f"  PA: budget-adapted N={n_replicas} ladder={n_ladder} "
+                   f"sweeps={sweeps_per_step} (estimated {est_total:.0f}s → "
+                   f"target {time_budget_s:.0f}s)")
 
     if log_fn:
         log_fn(
