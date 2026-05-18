@@ -1,24 +1,21 @@
 # Submissions
 
-## Tier-1 entry candidates (verified 2026-05-17)
+## Tier-1 entry candidates (verified, submission-day pick open as of 2026-05-16)
 
-Three placers verified on the 17-IBM `--all` gate + 4-NG45 `--ng45`
-gate with zero overlaps. Final pick is a submission-day decision.
+Two placers ship cleanly under the 60-min/bench cap and both have been
+verified on the 17-IBM `--all` gate + 4-NG45 `--ng45` gate with zero
+overlaps. Final choice is a submission-day decision; see
+[`../docs/handoffs/2026-05-14_champion_found_dp_lane.md`](../docs/handoffs/2026-05-14_champion_found_dp_lane.md)
+for the comparison data and the no-swap context.
 
-| Option | Placer | IBM `--all` | NG45 `--ng45` | Combined | External deps | Notes |
-|---|---|---:|---:|---:|---|---|
-| **C (NEW CHAMPION)** | [`cd_lns_sa_cascade_stacked_periphery/placer.py`](cd_lns_sa_cascade_stacked_periphery/placer.py) (`CDLNSSACascadeStackedPeripheryPlacer`) | **1.05750** | **0.68930** | **0.987** | none | Cascade (canonical) → portfolio_saddle (3 non-canonical Hessian weights) → periphery safety wrapper. E25 try/except for NG45 nvdla. |
-| **B** | [`cd_lns_sa_cascade_dp_lane/placer.py`](cd_lns_sa_cascade_dp_lane/placer.py) (`CDLNSSACascadeDPLanePlacer`) | 1.06650 | **0.68086** | 0.993 | DREAMPlace (optional; falls back to A if `DREAMPLACE_ROOT` unset) | Adds DREAMPlace as a 3rd init lane; plateau picks best of {E25, E41, DP-polished}. |
-| **A** | [`cd_lns_sa_cascade/placer_adaptive.py`](cd_lns_sa_cascade/placer_adaptive.py) (`CDLNSSACascadeAdaptivePlacer`) | 1.07820 | 0.68102 | 1.003 | none | PATH A post-A1 wall-safe cascade. Simpler; safest fallback. |
+| Option | Placer | IBM `--all` | NG45 `--ng45` | External deps | Notes |
+|---|---|---:|---:|---|---|
+| **A** | [`cd_lns_sa_cascade/placer_adaptive.py`](cd_lns_sa_cascade/placer_adaptive.py) (`CDLNSSACascadeAdaptivePlacer`) | **1.07820** | **0.68102** | none | PATH A post-A1 wall-safe cascade. Simpler; safer fallback. |
+| **B** | [`cd_lns_sa_cascade_dp_lane/placer.py`](cd_lns_sa_cascade_dp_lane/placer.py) (`CDLNSSACascadeDPLanePlacer`) | **1.06650** | **0.68086** | DREAMPlace (optional; falls back to A if `DREAMPLACE_ROOT` unset) | Adds DREAMPlace as a 3rd init lane; plateau picks best of {E25, E41, DP-polished}. |
 
-Option C beats Option B by **−0.85 % IBM** and **−0.6 % combined**, with
-no external dependencies (no DREAMPlace required). 13/17 IBM benches
-beat or tie cached cascade. NG45 nvdla used E41-only lane (E25 had 2
-residual overlaps that project_overlaps couldn't clean — try/except
-fallback engaged).
-
-Both Option C and Option B beat the leaderboard reference 1.1172 by
-≥4.5 % IBM; all three beat RePlAce 1.4578 by ≥26 %.
+Composite avg across 21 benches: Option B **0.993** vs Option A 0.998
+(−0.5 % composite). Both beat the leaderboard reference 1.1172 by
+≥3.5 %; both beat RePlAce 1.4578 by ≥26 %.
 
 See each placer's `README.md` for the run command, algorithm
 description, and per-bench verified results.
