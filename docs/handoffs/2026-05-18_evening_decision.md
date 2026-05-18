@@ -68,14 +68,20 @@ unreachable from our basin.
 3. **Switch placer.py to Option C** (1-line change, see switch instructions).
 4. **Push to origin/main** so judges get the final version.
 
-## Open variants still in flight (as of 17:00)
+## finalsa_v2 result (2026-05-18 18:00)
 
-- finalsa_v2 (--fast on aws-gpu): launched 16:00, ETA ~17:30. Tests
-  whether trimming earlier phases to give Phase 4 SA a guaranteed ~500s
-  budget unlocks lift. Low confidence given finalsa was tied.
+Trimmed earlier phases by 0.16 B to guarantee Phase 4 SA ~500s budget.
 
-If finalsa_v2 --fast shows >0.5% lift, can launch --all overnight.
-Otherwise final.
+| Hardware | finalsa_v2 --fast | baseline --fast | Δ |
+|---|---:|---:|---:|
+| M3 | 0.89782 | 0.89844 | −0.07% (tied) |
+| aws-gpu | 0.89852 | 0.91108 | −1.38% (but vs aws-gpu baseline, not M3) |
+
+All 4 M3 benches REJECTed Phase 4 SA. Budget reallocation **FALSIFIED**
+— cascade+portfolio basin is already saturated against high-T SA.
+The Phase 4 polish finds nothing to improve.
+
+**All 5 algorithm tweaks today tied or worse than baseline 1.0575.**
 
 ## Files modified today
 
