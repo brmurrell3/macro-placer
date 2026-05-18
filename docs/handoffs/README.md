@@ -12,6 +12,8 @@ decided that day," not as current truth. Canonical state lives in
 
 | Date | File | One-line summary |
 |------|------|------------------|
+| 2026-05-17 | [`2026-05-17_morning_champion.md`](2026-05-17_morning_champion.md) | NEW CHAMPION: `cd_lns_sa_cascade_stacked_periphery` IBM **1.0575** / NG45 **0.6893** / combined **0.987** (beats Option B by −0.85% IBM, no DP dep). Cascade saddle → portfolio saddle → periphery wrap. |
+| 2026-05-17 | [`2026-05-17_levy_periphery_results.md`](2026-05-17_levy_periphery_results.md) | E107 agent cross-variant table: Lévy 1.07268 / Portfolio 1.07404 / Multidir 1.07415 (best NG45 at 0.6779). Periphery wrapper safe but only helps if OpenROAD validates the periphery shift. |
 | 2026-05-16 | [`2026-05-16_morning_handoff.md`](2026-05-16_morning_handoff.md) | AWS CPU 17-IBM cross-validation of `placer_adaptive` (1.078 floor) in flight; GPU box blocked on quota; Xplace integration ready. Cached-best ceiling 1.05156. |
 | 2026-05-16 | [`2026-05-16_tier2_orfs_findings.md`](2026-05-16_tier2_orfs_findings.md) | Tier-2 ORFS results overnight: ariane133 ships **without** macros.tcl (auto-place wins by 1.2 ns); ariane136 ships **with** cascade. Per-design strategy, not universal. |
 | 2026-05-15 | [`2026-05-15_priorities.md`](2026-05-15_priorities.md) | Top-priority work items (post-research). |
@@ -22,8 +24,6 @@ decided that day," not as current truth. Canonical state lives in
 | 2026-05-12 | [`2026-05-12_morning_report_2.md`](2026-05-12_morning_report_2.md) | Overnight 8+ cloud experiments, 80+ lane-hours; identified `finegrain` cascade as new winner. |
 | 2026-05-11 | [`2026-05-11_overnight_queue.md`](2026-05-11_overnight_queue.md) | Overnight autonomous queue snapshot: 5 cascade variants × 4 benches ETA ~21:00. |
 
-## Still at repo root (not filed here — parallel-agent territory)
+## Still at repo root (not filed here — operational)
 
-- `TIER2_FINDINGS.md` — Tier-2 ORFS findings (canonical copy in this dir; root version is the Tier-2 ORFS agent's working copy).
-- `MORNING_HANDOFF_BRENDAN.md` — E107 morning handoff (E107 periphery work agent's territory).
 - `LEADERBOARD.md` — operational doc tracking every placer run (kept at root alongside `SCORING.md`, `SETUP.md`).
