@@ -38,7 +38,7 @@ from typing import Optional
 
 import torch
 
-_ROOT = Path(__file__).resolve().parents[2]
+_ROOT = Path(__file__).resolve().parents[3]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
@@ -47,7 +47,7 @@ from macro_place.bench_paths import find_benchmark_dir
 from macro_place.loader import load_benchmark_from_dir
 from macro_place.objective import compute_overlap_metrics, compute_proxy_cost
 
-_E25_PATH = _ROOT / "submissions" / "cd_lns_sa" / "placer.py"
+_E25_PATH = _ROOT / "submissions" / "common" / "cd_lns_sa" / "placer.py"
 _E25_SPEC = importlib.util.spec_from_file_location("e25_placer", str(_E25_PATH))
 _E25_MOD = importlib.util.module_from_spec(_E25_SPEC)
 _E25_SPEC.loader.exec_module(_E25_MOD)

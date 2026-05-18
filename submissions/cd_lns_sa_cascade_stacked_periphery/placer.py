@@ -40,7 +40,7 @@ from macro_place.loader import load_benchmark_from_dir
 from macro_place.objective import compute_overlap_metrics, compute_proxy_cost
 
 # Reuse the cascade-stacked placer (E84 cascade + E100 portfolio).
-_STACKED_PATH = _ROOT / "submissions" / "cd_lns_sa_cascade_stacked" / "placer.py"
+_STACKED_PATH = _ROOT / "submissions" / "common" / "cd_lns_sa_cascade_stacked" / "placer.py"
 _spec = importlib.util.spec_from_file_location("stacked_placer", str(_STACKED_PATH))
 _stacked = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_stacked)

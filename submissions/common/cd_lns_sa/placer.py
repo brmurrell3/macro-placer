@@ -54,7 +54,7 @@ import torch
 # The eval harness loads placers via importlib.spec_from_file_location, which
 # does NOT add the repo root to sys.path. We need it on sys.path so the
 # `macro_place.*` imports resolve.
-_ROOT = Path(__file__).resolve().parents[2]
+_ROOT = Path(__file__).resolve().parents[3]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
