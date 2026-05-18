@@ -22,25 +22,35 @@ repo on `sys.path` and dispatches to
   3. DP lane (optional, see below): DREAMPlace GP → polish
   4. Plateau pick = best of {E25, E41, DP-polished}; cascade saddle escape on plateau
 
-## Optional DREAMPlace 3rd lane (recommended)
+## Optional DREAMPlace 3rd lane
 
 The placer **falls back gracefully** to a 2-lane configuration (Option A
-equivalent) if no DREAMPlace install is found, landing at IBM 1.0782 /
-NG45 0.6810. To enable the 3rd lane (IBM 1.0665 / NG45 0.6809, verified
-2026-05-14), mount a DREAMPlace install:
+equivalent) if DREAMPlace is unavailable, landing at IBM 1.0782 /
+NG45 0.6810.
+
+The bundled `submit_deps/dreamplace_install/` is a **CPU-only** build
+(no CUDA kernels — built for portability). The placer defaults to
+`gpu=1` and will log a "CANNOT enable GPU without CUDA compiled" error,
+then return None — at which point the 2-lane fallback runs cleanly. So
+the bundled install gives the **2-lane number** (1.0782), not the 3-lane
+number (1.0665).
+
+To get the 3-lane lift (IBM 1.0665 / NG45 0.6809, verified
+2026-05-14 on lambda cloud A100), supply a CUDA-enabled DREAMPlace via
+`$DREAMPLACE_ROOT`:
 
 ```bash
-./eval_docker/run_eval.sh thinkorplace placer.py submit_deps/dreamplace_install
+DREAMPLACE_ROOT=/path/to/cuda-dreamplace ./eval_docker/run_eval.sh thinkorplace placer.py
 ```
 
 The placer auto-discovers DREAMPlace at:
-  1. `$DREAMPLACE_ROOT` (env var, if set)
+  1. `$DREAMPLACE_ROOT` (env var, if set + has `dreamplace/Placer.py`)
   2. `/submission/dreamplace_install` (eval_docker extras mount)
-  3. `submit_deps/dreamplace_install/` (relative to repo root)
+  3. `submit_deps/dreamplace_install/` (relative to repo root — the
+     bundled CPU-only fallback)
 
-DREAMPlace must be built against PyTorch 2.5.1 + CUDA 12.4 to match the
-eval_docker base image. If you want to use a different DREAMPlace, set
-`DREAMPLACE_ROOT` to point at it.
+For a CUDA build, follow upstream DREAMPlace install instructions against
+PyTorch 2.5.1 + CUDA 12.4 to match the eval_docker base image.
 
 ## Outside Docker (development / sanity check)
 

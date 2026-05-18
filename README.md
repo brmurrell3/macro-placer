@@ -16,34 +16,28 @@ PlacementCost evaluator that `eval_docker/Dockerfile` bakes into the image.
 **One-line run** (after submodule init):
 
 ```bash
-./eval_docker/run_eval.sh thinkorplace placer.py submit_deps/dreamplace_install
+./eval_docker/run_eval.sh thinkorplace placer.py
 ```
 
 That builds the eval Docker image on first run (~10 min, includes
-DREAMPlace Python deps), mounts our DREAMPlace install, then evaluates
-our placer across all 17 IBM benchmarks (~50 min/bench, ~14 hr total
-serial — runs sequentially via partcl's `evaluate` harness). Results
-land in `eval_docker/results/thinkorplace.log`.
+DREAMPlace Python deps), then evaluates our placer across all 17 IBM
+benchmarks (~50 min/bench, ~14 hr total serial — runs sequentially via
+partcl's `evaluate` harness). Results land in
+`eval_docker/results/thinkorplace.log`.
 
 **Entry placer:** [`placer.py`](placer.py) at the repo root — a thin
 launcher that adds the repo to `sys.path` and dispatches to
 [`submissions/cd_lns_sa_cascade_dp_lane/placer.py`](submissions/cd_lns_sa_cascade_dp_lane/placer.py)
-(`CDLNSSACascadeDPLanePlacer`).
-
-**Without DREAMPlace** (faster setup, 2-lane fallback, ~1.1 % worse IBM):
-
-```bash
-./eval_docker/run_eval.sh thinkorplace placer.py
-```
-
-The placer auto-discovers DREAMPlace at `/submission/dreamplace_install` when
-the extras arg points at the bundled install. Without it, the placer falls
-back to a 2-lane (SDF + DPO) configuration.
+(`CDLNSSACascadeDPLanePlacer`). The placer's 3rd lane uses DREAMPlace
+when available; without it (or when the bundled CPU-only install is
+used), the placer cleanly falls back to a 2-lane (SDF + DPO)
+configuration. See [`SUBMISSION.md`](SUBMISSION.md) for the DREAMPlace
+detail.
 
 | Mode | IBM `--all` | NG45 `--ng45` | Overlaps | Verified |
 |---|---:|---:|---:|---|
-| 3-lane (with DREAMPlace) | **1.06650** | **0.68086** | 0 | 2026-05-14 lambda cloud (A100) |
-| 2-lane fallback (no DREAMPlace) | 1.07820 | 0.68102 | 0 | 2026-05-16 AWS EPYC c6a.4xlarge |
+| 2-lane (bundled install, or no DP) | **1.07820** | **0.68102** | 0 | 2026-05-16 AWS EPYC c6a.4xlarge |
+| 3-lane (with CUDA-enabled DREAMPlace) | 1.06650 | 0.68086 | 0 | 2026-05-14 lambda cloud (A100) |
 
 **Algorithm description:** [`submissions/cd_lns_sa_cascade/MECHANISM.md`](submissions/cd_lns_sa_cascade/MECHANISM.md)
 

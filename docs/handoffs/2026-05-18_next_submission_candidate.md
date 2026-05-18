@@ -75,18 +75,23 @@ to `cd_lns_sa_cascade_dp_lane`. To switch:
 
 ## Open variants still running (may produce sub-1.05)
 
-- **tabu_stacked --all** on M3 (started 2026-05-17 ~9 PM, ETA ~1 AM
+- **tabu_stacked --all** on M3 (started 2026-05-17 ~9 PM, ETA ~1-2 AM
   2026-05-18): cascading_saddle replaced with E99 `tabu_levy_saddle_escape`
   which forces orthogonal eigvecs across cascade iters (more direction
-  diversity, complementary to portfolio's weight diversity). First WINNER
-  was ibm01 at 0.85111 (vs original 0.85963 = −1.0 %), so the variant is
-  showing real lift. Aggregate unclear until all 17 are in.
-- **no_e41_deep --all** queued (will run on M3 or aws-gpu CPU after tabu):
+  diversity, complementary to portfolio's weight diversity). **Status at
+  2026-05-17 23:45**: 12/17 WINNERs landed, simple sum-avg over the
+  finished 12 = 0.98441. First WINNER was ibm01 at 0.85111 (vs original
+  0.85963 = −1.0 %). Hard benches (ibm17, ibm18) still pending and will
+  raise the final aggregate substantially.
+- **no_e41_deep --all** on aws-gpu CPU (started 2026-05-17 ~9 PM):
   skips E41 lane, reallocates its 0.32×B to cascade (0.20→0.36) and
-  portfolio (0.13→0.29). Hypothesis: more saddle iters compensate for
-  worse starting plateau.
+  portfolio (0.13→0.29). 3/17 WINNERs landed; this run is slower
+  (aws-gpu only --jobs 3 vs M3's --jobs 4). First WINNER 0.87179 (vs
+  ibm01 baseline 0.85963 = +1.4 % regression). Hypothesis weakening.
 
-If either lands a new best, document and re-promote.
+If tabu_stacked lands < 1.0575 (current best), re-promote and update
+`placer.py` to point at it. If no_e41_deep doesn't show a lift on early
+benches by morning, kill it.
 
 ## How to verify
 

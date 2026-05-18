@@ -20,8 +20,13 @@ uv run evaluate submissions/cd_lns_sa_cascade_dp_lane/placer.py --ng45 --json
 
 | Mode | IBM | NG45 | Overlaps |
 |---|---:|---:|---:|
-| 3-lane (with DREAMPlace) | **1.06650** | **0.68086** | 0 |
-| 2-lane fallback | 1.07820 | 0.68102 | 0 |
+| 2-lane (bundled CPU DP install or no DP) | **1.07820** | **0.68102** | 0 |
+| 3-lane (CUDA-enabled DREAMPlace) | 1.06650 | 0.68086 | 0 |
 
-See [`../SUBMISSION.md`](../SUBMISSION.md) for full details, optional
-DREAMPlace mount instructions, and resource expectations.
+The bundled `submit_deps/dreamplace_install/` is a CPU-only build; the
+placer's GPU-required DP lane fails gracefully and the 2-lane fallback
+takes over. Supply a CUDA DREAMPlace via `$DREAMPLACE_ROOT` for the
+1.06650 number.
+
+See [`../SUBMISSION.md`](../SUBMISSION.md) for full details and resource
+expectations.

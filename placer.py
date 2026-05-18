@@ -8,12 +8,13 @@ Standard invocation:
 
   ./eval_docker/run_eval.sh thinkorplace placer.py
 
-Optional DREAMPlace mount (enables the 3rd init lane):
-
-  ./eval_docker/run_eval.sh thinkorplace placer.py submit_deps/dreamplace_install
+The bundled `submit_deps/dreamplace_install/` is auto-discovered. It is
+CPU-only — the placer falls back cleanly to a 2-lane (SDF + DPO)
+configuration and lands at IBM 1.0782. For the 3-lane (1.0665), supply
+a CUDA-enabled DREAMPlace via `$DREAMPLACE_ROOT`. See SUBMISSION.md.
 
 This launcher adds the repo root to `sys.path` and loads
-`submissions/cd_lns_sa_cascade_dp_lane/placer.py` (Option B).
+`submissions/cd_lns_sa_cascade_dp_lane/placer.py`.
 """
 from __future__ import annotations
 
