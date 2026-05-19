@@ -58,19 +58,30 @@ def _find_repo_root():
 _REPO = _find_repo_root()
 sys.path.insert(0, str(_REPO))
 
-# Load the real placer (cd_lns_sa_cascade_dp_lane).
+# Load the real placer (cd_lns_sa_cascade_stacked_wiremask_periphery).
 import importlib.util  # noqa: E402
 
-_PLACER_PATH = _REPO / "submissions" / "cd_lns_sa_cascade_dp_lane" / "placer.py"
+_PLACER_PATH = (
+    _REPO / "submissions" / "cd_lns_sa_cascade_stacked_wiremask_periphery" / "placer.py"
+)
 _spec = importlib.util.spec_from_file_location("_thinkorplace_inner", str(_PLACER_PATH))
 _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
 
 
-class Placer(_mod.CDLNSSACascadeDPLanePlacer):
-    """thinkorplace submission: cascade pipeline + (optional) DREAMPlace
-    3rd init lane. Mount `submit_deps/dreamplace_install/` to enable the
-    DP lane. Without DREAMPlace: 1.0782 IBM / 0.6810 NG45 (2-lane fallback).
-    With DREAMPlace: 1.0665 IBM / 0.6809 NG45 (3-lane verified 2026-05-14).
+class Placer(_mod.CDLNSSACascadeStackedWireMaskPeripheryPlacer):
+    """thinkorplace submission: Option C + WireMask greedy reposition polish.
+
+    Pipeline (cascade-stacked with WireMask): SDF/DPO init → CD → LNS →
+    SA-v2 → plateau pick (best of E25 / E41) → cascade saddle (canonical
+    Hessian eigvec) → portfolio saddle (3 non-canonical weights) →
+    **WireMask greedy 2D reposition polish** → periphery wrapper.
+
+    Validated 2026-05-19 on Intel Xeon EPYC-like @1500s budget:
+      ibm01 0.87824 (vs OC 0.88448, -0.71%)
+      ibm04 0.98312 (vs OC 0.98665, -0.36%)
+      ibm09 0.83098 (vs OC 0.83080, +0.02% noise)
+      ibm13 0.96734 (vs OC 0.96739, tied)
+      --fast avg: -0.26% lift over Option C.
     """
     pass
