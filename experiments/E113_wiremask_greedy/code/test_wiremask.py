@@ -17,6 +17,7 @@ _ROOT = Path(__file__).resolve().parents[3]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(_ROOT / "experiments" / "E114_pair_swap" / "code"))
 
 from macro_place.bench_paths import find_benchmark_dir
 from macro_place.cd_core import run_cd, sdf_init
@@ -24,6 +25,7 @@ from macro_place.incremental_evaluator import IncrementalProxyEvaluator
 from macro_place.loader import load_benchmark_from_dir
 from macro_place.objective import compute_overlap_metrics, compute_proxy_cost
 from wiremask_polish import wiremask_polish
+from pair_swap_polish import pair_swap_polish
 
 
 def main() -> int:
@@ -36,6 +38,8 @@ def main() -> int:
     ap.add_argument("--top-k", type=int, default=None)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--methods", nargs="+", default=["sa_v2", "wiremask"])
+    ap.add_argument("--pairswap-pairs-per-pass", type=int, default=500)
+    ap.add_argument("--pairswap-passes", type=int, default=3)
     args = ap.parse_args()
 
     torch.set_num_threads(1)
@@ -125,6 +129,38 @@ def main() -> int:
                 log=log_fn,
             )
             stats = {"sa_v2": stats, "wiremask": stats2}
+        elif method == "sa_wm_pairswap":
+            sa_b = args.polish_budget_s * 0.4
+            wm_b = args.polish_budget_s * 0.4
+            ps_b = args.polish_budget_s * 0.2
+            stats = sa_v2(
+                ev, benchmark, plc, hard_movable,
+                time_budget_s=sa_b,
+                seed=args.seed, log_fn=log_fn,
+            )
+            stats2 = wiremask_polish(
+                ev, benchmark, movable_all,
+                n_per_axis=args.n_per_axis,
+                local_radius_frac=args.local_radius_frac,
+                top_k=args.top_k,
+                max_passes=3, time_budget_s=wm_b, log=log_fn,
+            )
+            stats3 = pair_swap_polish(
+                ev, benchmark, hard_movable,
+                n_pairs_per_pass=args.pairswap_pairs_per_pass,
+                max_passes=args.pairswap_passes,
+                time_budget_s=ps_b,
+                log=log_fn,
+            )
+            stats = {"sa_v2": stats, "wiremask": stats2, "pair_swap": stats3}
+        elif method == "pair_swap":
+            stats = pair_swap_polish(
+                ev, benchmark, hard_movable,
+                n_pairs_per_pass=args.pairswap_pairs_per_pass,
+                max_passes=args.pairswap_passes,
+                time_budget_s=args.polish_budget_s,
+                log=log_fn,
+            )
         else:
             print(f"  unknown method {method}; skipping")
             continue
