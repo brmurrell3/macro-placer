@@ -39,7 +39,11 @@ def main() -> int:
                    help="Run SA-v2 instead of PA for baseline comparison")
     p.add_argument("--multistart", action="store_true",
                    help="Run multi-start SA-v2 instead of PA")
+    p.add_argument("--lsmc", action="store_true",
+                   help="Run LSMC/ILS double-bridge polish")
     p.add_argument("--n-chains", type=int, default=4)
+    p.add_argument("--k-cycle", type=int, default=4)
+    p.add_argument("--inner-budget-s", type=float, default=30.0)
     p.add_argument("--n-replicas", type=int, default=12)
     p.add_argument("--n-ladder", type=int, default=20)
     p.add_argument("--sweeps-per-step", type=int, default=300)
@@ -51,6 +55,8 @@ def main() -> int:
         label = "BASELINE-SA-v2"
     elif args.multistart:
         label = f"MULTI-START-SA-v2 (N={args.n_chains})"
+    elif args.lsmc:
+        label = f"LSMC (K={args.k_cycle}, inner={args.inner_budget_s:.0f}s)"
     else:
         label = "PA"
     print(f"E111 standalone {label} smoke")
@@ -116,6 +122,22 @@ def main() -> int:
             time_budget_s=args.pa_budget_s,
             seed=args.seed, log_fn=log_fn,
             n_chains=args.n_chains,
+        )
+    elif args.lsmc:
+        from lsmc_polish import run_lsmc_polish
+
+        def log_fn(s):
+            print(s, flush=True)
+
+        print(f"[{time.perf_counter()-t0:5.1f}s] LSMC polish "
+              f"(K={args.k_cycle}, inner={args.inner_budget_s:.0f}s, "
+              f"budget {args.pa_budget_s}s)...")
+        stats = run_lsmc_polish(
+            evaluator, benchmark, plc, hard_movable,
+            time_budget_s=args.pa_budget_s,
+            seed=args.seed, log_fn=log_fn,
+            K_cycle=args.k_cycle,
+            inner_budget_s=args.inner_budget_s,
         )
     else:
         def log_fn(s):
