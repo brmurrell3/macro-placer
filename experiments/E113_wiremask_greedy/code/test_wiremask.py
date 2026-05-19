@@ -33,6 +33,7 @@ def main() -> int:
     ap.add_argument("--polish-budget-s", type=float, default=180.0)
     ap.add_argument("--n-per-axis", type=int, default=9)
     ap.add_argument("--local-radius-frac", type=float, default=0.30)
+    ap.add_argument("--top-k", type=int, default=None)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--methods", nargs="+", default=["sa_v2", "wiremask"])
     args = ap.parse_args()
@@ -87,6 +88,7 @@ def main() -> int:
                 ev, benchmark, movable_all,
                 n_per_axis=args.n_per_axis,
                 local_radius_frac=args.local_radius_frac,
+                top_k=args.top_k,
                 max_passes=5,
                 time_budget_s=args.polish_budget_s,
                 log=log_fn,
@@ -96,6 +98,7 @@ def main() -> int:
                 ev, benchmark, movable_all,
                 n_per_axis=args.n_per_axis,
                 local_radius_frac=args.local_radius_frac,
+                top_k=args.top_k,
                 max_passes=3,
                 time_budget_s=args.polish_budget_s * 0.5,
                 log=log_fn,
@@ -116,6 +119,7 @@ def main() -> int:
                 ev, benchmark, movable_all,
                 n_per_axis=args.n_per_axis,
                 local_radius_frac=args.local_radius_frac,
+                top_k=args.top_k,
                 max_passes=3,
                 time_budget_s=args.polish_budget_s * 0.5,
                 log=log_fn,
