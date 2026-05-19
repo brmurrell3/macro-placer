@@ -113,9 +113,10 @@ class CDLNSSACascadeStackedWireMaskPeripheryPlacer:
         rng_seed: int = 42,
         periphery_alpha: float = 0.01,
         periphery_polish_s: float = 120.0,
-        wiremask_n_per_axis: int = 7,
-        wiremask_local_radius_frac: float = 0.25,
-        wiremask_max_passes: int = 3,
+        wiremask_n_per_axis: int = 5,
+        wiremask_local_radius_frac: float = 0.15,
+        wiremask_top_k: Optional[int] = 300,
+        wiremask_max_passes: int = 8,
         wiremask_budget_s: float = 180.0,
         verbose: bool = True,
     ):
@@ -132,6 +133,7 @@ class CDLNSSACascadeStackedWireMaskPeripheryPlacer:
         self.periphery_polish_s = periphery_polish_s
         self.wiremask_n_per_axis = wiremask_n_per_axis
         self.wiremask_local_radius_frac = wiremask_local_radius_frac
+        self.wiremask_top_k = wiremask_top_k
         self.wiremask_max_passes = wiremask_max_passes
         self.wiremask_budget_s = wiremask_budget_s
         self.verbose = verbose
@@ -198,6 +200,7 @@ class CDLNSSACascadeStackedWireMaskPeripheryPlacer:
                     ev_wm, benchmark, movable_all,
                     n_per_axis=self.wiremask_n_per_axis,
                     local_radius_frac=self.wiremask_local_radius_frac,
+                    top_k=self.wiremask_top_k,
                     max_passes=self.wiremask_max_passes,
                     time_budget_s=wm_budget,
                     log=lambda s: None,
