@@ -69,8 +69,17 @@ _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
 
 
+import os
+
+_DEFAULT_BUDGET = float(os.environ.get("PLACER_BUDGET", "3300"))
+
+
 class Placer(_mod.CDLNSSACascadeStackedWireMaskPeripheryPlacer):
-    """thinkorplace submission: Option C + WireMask greedy reposition polish.
+    def __init__(self, **kwargs):
+        kwargs.setdefault("budget_seconds", _DEFAULT_BUDGET)
+        super().__init__(**kwargs)
+
+    __doc__ = """thinkorplace submission: Option C + WireMask greedy reposition polish.
 
     Pipeline (cascade-stacked with WireMask): SDF/DPO init → CD → LNS →
     SA-v2 → plateau pick (best of E25 / E41) → cascade saddle (canonical
