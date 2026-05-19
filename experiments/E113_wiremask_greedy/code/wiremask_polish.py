@@ -87,6 +87,7 @@ def wiremask_greedy_pass(
     *,
     n_per_axis: int = 9,
     local_radius_frac: Optional[float] = 0.30,
+    top_k: Optional[int] = None,
     time_budget_s: Optional[float] = None,
     log: Optional[Callable[[str], None]] = None,
 ) -> dict:
@@ -118,6 +119,8 @@ def wiremask_greedy_pass(
     )
 
     order = _criticality_order(ev, movable_idx)
+    if top_k is not None and top_k > 0:
+        order = order[:top_k]
     init_proxy = float(ev.current_cost()["proxy"])
 
     n_moves = 0
@@ -201,6 +204,7 @@ def wiremask_polish(
     *,
     n_per_axis: int = 9,
     local_radius_frac: Optional[float] = 0.30,
+    top_k: Optional[int] = None,
     max_passes: int = 5,
     min_improvement: float = 1e-4,
     time_budget_s: Optional[float] = None,
@@ -228,6 +232,7 @@ def wiremask_polish(
             ev, benchmark, movable_idx,
             n_per_axis=n_per_axis,
             local_radius_frac=local_radius_frac,
+            top_k=top_k,
             time_budget_s=remaining,
             log=log,
         )
