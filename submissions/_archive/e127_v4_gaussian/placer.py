@@ -1,27 +1,10 @@
-"""thinkorplace-v2 — V4 FastDiffProxy + Gaussian density + CD polish.
+"""E127 V4 + Gaussian density submission wrapper.
 
-The 2026-05-21 submission. Three architectural changes vs v1's cascade:
+Mirrors thinkorplace-v2 pipeline: smooth descent + project_overlaps +
+CD polish. Uses V4 backbone (E115 FastDiffProxy) + Gaussian density
+(E117 erf-smeared) for both speed AND quality lifts.
 
-1. **Per-net-trace congestion** (E111) — matches canonical PlacementCost
-   within 15-25 % (vs the bbox-uniform ±200-260 %).
-2. **Gaussian-smeared erf density** (E117) — replaces piecewise-linear
-   `_grid_density`. C∞ smooth at cell boundaries → Adam descent finds
-   a lower basin on dense benches (ibm12/14/17/18).
-3. **FastDiffProxy backbone** (E115) — drops the per-net pair_chunk loop
-   and uses `index_select` for advanced indexing → 3-16x faster forward
-   + backward on GPU vs the V3 reference proxy.
-
-Adam descent → greedy legalize → project_overlaps → CD polish. ~12
-min/bench.
-
-Verified:
-  - M3 Max --all = 0.98003 (vs prior V3 1.003 = -2.27% lift)
-  - AWS g5.2xlarge CUDA --all = 0.99115 (qualified, 0 ovl)
-  - Projected rank #3 (beats vmallela 1.011, MultiDreamPlace 1.012)
-
-Device selection: prefers CUDA → MPS → CPU. On the partcl judges' EPYC
-9655P + RTX 6000 Ada, the CUDA path runs the fast V4 forward + backward;
-on Mac dev, the MPS path runs at parity.
+UNTESTED at --all level. Test on --fast first.
 """
 from __future__ import annotations
 
@@ -56,7 +39,7 @@ from macro_place.incremental_evaluator import IncrementalProxyEvaluator
 from macro_place.loader import load_benchmark_from_dir
 from macro_place.objective import compute_overlap_metrics, compute_proxy_cost
 
-from smooth_global_placer_v4_gaussian import SmoothGlobalPlacerV4Gaussian  # noqa: E402
+from smooth_global_placer_v4_gaussian import SmoothGlobalPlacerV4Gaussian
 
 
 def _best_device() -> str:
@@ -67,8 +50,8 @@ def _best_device() -> str:
     return "cpu"
 
 
-class Placer:
-    """V4 + Gaussian density + CD polish; verified M3 0.98 / EPYC CUDA 0.99."""
+class E127V4GaussianPlacer:
+    """V4 fast backbone + Gaussian density + CD polish."""
 
     def __init__(
         self,
@@ -105,7 +88,7 @@ class Placer:
     def place(self, benchmark: Benchmark) -> torch.Tensor:
         t0 = time.time()
         deadline = t0 + self.budget_seconds if self.budget_seconds else None
-        self._log(f"=== thinkorplace-v2 ({benchmark.name}) ===")
+        self._log(f"=== E127 V4+Gaussian ({benchmark.name}) ===")
 
         bench_dir = find_benchmark_dir(benchmark.name)
         _, plc = load_benchmark_from_dir(str(bench_dir))
@@ -115,9 +98,9 @@ class Placer:
 
         pos = None
         for attempt, cfg in enumerate([
-            dict(overlap_lambda_end=self.overlap_lambda_end),     # primary cfg
-            dict(overlap_lambda_end=50.0),                          # fallback: stronger overlap
-            dict(overlap_lambda_end=100.0, num_steps=300),          # fallback: aggressive overlap
+            dict(overlap_lambda_end=self.overlap_lambda_end),
+            dict(overlap_lambda_end=50.0),
+            dict(overlap_lambda_end=100.0, num_steps=300),
         ]):
             try:
                 num_steps = cfg.get("num_steps", self.num_steps)
@@ -138,32 +121,31 @@ class Placer:
                 pos_try = descender.place(benchmark)
                 ovl_try = compute_overlap_metrics(pos_try, benchmark)["overlap_count"]
                 if ovl_try == 0:
-                    pos = pos_try
-                    self._log(f"  attempt {attempt+1}: ovl=0")
-                    break
-                pos_try2, _ = project_overlaps(pos_try, benchmark)
-                if compute_overlap_metrics(pos_try2, benchmark)["overlap_count"] == 0:
-                    pos = pos_try2
-                    self._log(f"  attempt {attempt+1}: ovl=0 after project_overlaps")
-                    break
-                self._log(f"  attempt {attempt+1}: still {ovl_try} overlaps, retrying...")
+                    pos_try2, _ = project_overlaps(pos_try, benchmark)
+                    if compute_overlap_metrics(pos_try2, benchmark)["overlap_count"] == 0:
+                        pos = pos_try2
+                        self._log(f"  attempt {attempt+1}: ovl=0")
+                        break
+                else:
+                    pos_try2, _ = project_overlaps(pos_try, benchmark)
+                    if compute_overlap_metrics(pos_try2, benchmark)["overlap_count"] == 0:
+                        pos = pos_try2
+                        self._log(f"  attempt {attempt+1}: ovl=0 after project")
+                        break
             except Exception as exc:
                 self._log(f"  attempt {attempt+1} EXCEPTION: {exc}")
                 continue
-
             if deadline is not None and time.time() > deadline - 60:
                 break
 
         if pos is None:
-            self._log("  fallback: SDF + project_overlaps + CD polish")
+            self._log("  fallback: SDF + project_overlaps")
             pos = sdf_init(benchmark)
             pos, _ = project_overlaps(pos, benchmark)
 
         descent_wall = time.time() - t0
         descent_proxy = float(compute_proxy_cost(pos, benchmark, plc)["proxy_cost"])
-        self._log(
-            f"  basin: proxy={descent_proxy:.5f} wall={descent_wall:.0f}s"
-        )
+        self._log(f"  basin: proxy={descent_proxy:.5f} wall={descent_wall:.0f}s")
 
         if deadline is not None:
             remaining = deadline - time.time() - 10.0
@@ -173,10 +155,7 @@ class Placer:
         self._log(f"  CD polish budget={cd_budget:.0f}s")
 
         evaluator = IncrementalProxyEvaluator(benchmark, plc, pos)
-        movable = [
-            i for i in range(benchmark.num_macros)
-            if not bool(benchmark.macro_fixed[i])
-        ]
+        movable = [i for i in range(benchmark.num_macros) if not bool(benchmark.macro_fixed[i])]
         run_cd_adaptive(
             evaluator, benchmark, plc, movable,
             min_time_s=cd_budget * 0.5,
@@ -188,10 +167,7 @@ class Placer:
         final = evaluator.placement.detach().clone().to(torch.float32)
         final_proxy = float(compute_proxy_cost(final, benchmark, plc)["proxy_cost"])
         final_ovl = compute_overlap_metrics(final, benchmark)["overlap_count"]
-        self._log(
-            f"  Final: proxy={final_proxy:.5f} ovl={final_ovl} "
-            f"total_wall={time.time()-t0:.0f}s"
-        )
+        self._log(f"  Final: proxy={final_proxy:.5f} ovl={final_ovl} total_wall={time.time()-t0:.0f}s")
         if final_ovl > 0:
             raise RuntimeError(f"Final placement has {final_ovl} overlaps")
         return final

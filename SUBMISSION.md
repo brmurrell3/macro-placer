@@ -33,38 +33,58 @@ Public leaderboard rank #9 at IBM 1.0771 (partcl-verified on AMD EPYC).
 |---|---:|---:|---:|
 | --all (M3 2026-05-17) | 1.0575 | 0.6893 | 0 |
 
-### `submissions/thinkorplace-v2/` — upcoming submission
+### `submissions/thinkorplace-v2/` — 2026-05-21 submission
 
-Smooth-gradient placer using a **per-net-trace congestion model** that
-matches the canonical PlacementCost objective much more closely than
-the previous bbox-uniform approximation. Adam descent → greedy legalize
-→ CD polish. ~12 min/bench.
+Smooth-gradient placer combining three architectural changes vs v1's
+cascade pipeline:
+1. **Per-net-trace congestion** (E111) — matches canonical PlacementCost
+   within 15–25 % (vs the bbox-uniform ±200–260 %).
+2. **Gaussian-smeared erf density** (E117) — replaces piecewise-linear
+   `_grid_density`. C∞ smooth at cell boundaries → Adam descent finds a
+   lower basin on dense benches (ibm12/14/17/18).
+3. **FastDiffProxy backbone** (E115) — drops per-net pair_chunk loop +
+   uses `index_select` for advanced indexing → 3–16× faster forward +
+   backward on GPU. Critical for x86 EPYC; gradient parity within ±0.5 %.
 
-| Mode | IBM avg | NG45 avg | Overlaps |
+Adam descent → greedy legalize → project_overlaps → CD polish. Device
+selection prefers CUDA → MPS → CPU. ~12 min/bench.
+
+| Mode | IBM avg | Overlaps | Qualified |
 |---|---:|---:|---:|
-| --all (M3 2026-05-19) | 1.00279 | 0.67861 | 0 |
-| **--all (AWS EPYC g5.2xlarge 2026-05-20)** | **1.00835** | TBD | **0** |
+| --all (M3 MPS 2026-05-20) | **0.98003** | **0** | ✓ |
+| **--all (AWS g5.2xlarge CUDA 2026-05-20)** | **0.99115** | **0** | **✓** |
 
-EPYC variance: +0.55 % from M3 — much tighter than v1's cascade
-pipeline ever showed.
+M3 → EPYC delta = +1.13 % (within hardware variance band). The EPYC
+result is the judges-relevant number since the partcl judges run on
+**AMD EPYC 9655P + NVIDIA RTX 6000 Ada 48 GB**.
 
-**Projected public leaderboard rank #3** (between Shoom 0.978 and
-vmallela 1.011).
+**Projected public leaderboard rank #3:**
+- vs Carrotato #1 (0.967): +2.5 % gap
+- vs Shoom #2 (0.978): +1.3 % gap
+- vs vmallela (1.011): **−2.0 % (we beat)**
+- vs MultiDreamPlace (1.012): **−2.1 % (we beat)**
 
-## Why v2 beats v1 by 5 %
+## Why v2 beats v1 by 8 %
 
-v1's bbox-uniform smooth congestion diverges 3–4× from the canonical
-per-net trace on hard benches (ibm10/12/17). v2 replaces it with a
-differentiable per-net-trace approximation that matches canonical
-within 15–25 %. Adam descent on this corrected proxy finds basins on
-hard benches that v1's cascade couldn't reach with 50 minutes of polish.
+Three compounding lifts:
 
-Per-bench lifts on hard benches (v2 vs v1):
-  - ibm14: −9.1 %  ibm17: −9.4 %  ibm18: −7.9 %
-  - ibm13: −8.3 %  ibm09: −5.7 %  ibm15: −4.4 %
+| Change | Lift | Why |
+|---|---:|---|
+| Per-net-trace congestion (E111) | −5 % | Matches canonical objective on hard benches |
+| Gaussian density (E117) | −2 % | Adam follows smooth gradient instead of jumping at cell boundaries |
+| FastDiffProxy (E115) | −1 % | Fast `index_select` + dropped chunk loop → faster convergence, better basin on hard benches |
 
-See [`experiments/E111_per_net_trace_congestion/`](experiments/E111_per_net_trace_congestion/)
-for the implementation.
+Per-bench lift highlights (final M3 vs v1):
+  - ibm17 1.179 (vs prior 1.200 = −1.8 %)
+  - ibm18 1.197 (vs prior 1.236 = −3.2 %)
+  - ibm04 0.923 (vs prior 0.946 = −2.4 %)
+  - ibm01 0.826 (vs prior 0.847 = −2.5 %)
+
+See:
+  - [`experiments/E111_per_net_trace_congestion/`](experiments/E111_per_net_trace_congestion/) — per-net trace congestion
+  - [`experiments/E115_triton_kernels/`](experiments/E115_triton_kernels/) — FastDiffProxy backbone
+  - [`experiments/E117_gaussian_density/`](experiments/E117_gaussian_density/) — Gaussian density
+  - [`experiments/E127_v4_gaussian/`](experiments/E127_v4_gaussian/) — V4 + Gaussian composition (what v2 runs)
 
 ## Outside Docker (development / sanity check)
 

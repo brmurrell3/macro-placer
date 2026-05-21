@@ -46,6 +46,7 @@ Per-experiment summary (one-liners; full manifests pending for some):
 | E110 | Smooth global placer (Adam on DiffProxyV2 + greedy_legalize) | partial | ibm01 raw 0.91, +CD60s 0.86 (vs cascade 0.85); lane-4 fallback | 2026-05-18 |
 | E111 | Per-net-trace differentiable congestion | NEW HARD-BENCH win ibm17 +CD60s **1.246** (−24.9 % vs E110 bbox-uniform 1.66) | Drop-in replacement for `_rudy_congestion`; matches canonical ±15-25 % | 2026-05-19 |
 | E113 | Xplace-recipe optimizer + margin overlap penalty | NEW best ibm01 +CD60s **0.840** (vs cascade 0.85, vs V3 0.846); --fast 4-bench mean **0.866** | Nesterov-BB falsified (worse than Adam); margin + multi-stage Adam wins | 2026-05-19 |
+| E115 | Triton kernels / per-step proxy acceleration | marginal | per-step ibm17 CUDA 267 ms → 16 ms (16.8×) via `index_select` fix; no champion impact (smooth-global track) | 2026-05-20 |
 | Xplace integration | Bookshelf converters + runner for 21 benches | blocked | GPU quota approval pending; targets Carrotato 0.967 mechanism | 2026-05-16 |
 | Tier-2 ORFS | Per-design ship-with vs ship-without `MACRO_PLACEMENT_TCL` | partial | ariane133 ship-without (auto wins by 1.2 ns); ariane136 ship-with (cascade wins by 0.45 ns); mempool/nvdla untested | 2026-05-15/16 |
 
