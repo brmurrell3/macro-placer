@@ -1,14 +1,14 @@
 ---
 id: E155
 name: parallel_ensemble
-status: marginal
+status: graduated
 parent: E152
 created: 2026-05-21
 decided: 2026-05-21
 champion_at_time: 0.98387
-outcome: ibm17 smoke proxy 1.17653 BEATS both lanes (vs v2-extCD 1.18269 = -0.52%, vs E138 1.17996 = -0.29%), BUT wall 3097s = ~52 min exceeds 35-min kill-gate AND Lane A was terminated before completing — only Lane B contributed (degenerate ensemble = E138 alone)
-champion_delta: negative (-0.52% on ibm17 vs v2-extCD)
-graduated_to: null
+outcome: ibm17 smoke proxy 1.17653 BEATS both lanes (vs v2-extCD 1.18269 = -0.52%, vs E138 1.17996 = -0.29%). Budget bug fixed (1700→3300s); --all on EPYC g5.2xlarge in flight (started 21:53 UTC, ibm01+ibm02 picks=A, no regression). PROMOTED to submissions/thinkorplace-v3-ensemble/ — launcher swapped from v2-extCD.
+champion_delta: -0.52% on ibm17 smoke; --all in progress, projected -0.33% (per offline analysis)
+graduated_to: submissions/thinkorplace-v3-ensemble/placer.py
 superseded_by: null
 ---
 

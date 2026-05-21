@@ -31,7 +31,7 @@ sys.path.insert(0, str(_REPO))
 
 import importlib.util  # noqa: E402
 
-_PLACER_PATH = _REPO / "submissions/thinkorplace-v2" / "placer.py"
+_PLACER_PATH = _REPO / "submissions/thinkorplace-v3-ensemble" / "placer.py"
 _spec = importlib.util.spec_from_file_location("_thinkorplace_inner", str(_PLACER_PATH))
 _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
