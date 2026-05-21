@@ -36,7 +36,8 @@ Public leaderboard rank #9 at IBM 1.0771 (partcl-verified on AMD EPYC).
 ### `submissions/thinkorplace-v2/` — 2026-05-21 submission
 
 Smooth-gradient placer combining three architectural changes vs v1's
-cascade pipeline:
+cascade pipeline, **plus extended CD polish budget**:
+
 1. **Per-net-trace congestion** (E111) — matches canonical PlacementCost
    within 15–25 % (vs the bbox-uniform ±200–260 %).
 2. **Gaussian-smeared erf density** (E117) — replaces piecewise-linear
@@ -44,25 +45,28 @@ cascade pipeline:
    lower basin on dense benches (ibm12/14/17/18).
 3. **FastDiffProxy backbone** (E115) — drops per-net pair_chunk loop +
    uses `index_select` for advanced indexing → 3–16× faster forward +
-   backward on GPU. Critical for x86 EPYC; gradient parity within ±0.5 %.
+   backward on GPU.
+4. **Extended CD polish budget** (2026-05-21) — `cd_polish_s` 600 → 900s,
+   `budget_seconds` 720 → 1500s. CD on hard benches (ibm12/14/16/17) was
+   budget-limited, not plateau-saturated. +0.7 % lift on EPYC.
 
 Adam descent → greedy legalize → project_overlaps → CD polish. Device
-selection prefers CUDA → MPS → CPU. ~12 min/bench.
+selection prefers CUDA → MPS → CPU. ~25 min/bench at extended budget
+(well under the 60 min/bench partcl cap).
 
 | Mode | IBM avg | Overlaps | Qualified |
 |---|---:|---:|---:|
-| --all (M3 MPS 2026-05-20) | **0.98003** | **0** | ✓ |
-| **--all (AWS g5.2xlarge CUDA 2026-05-20)** | **0.99115** | **0** | **✓** |
+| --all (AWS g5.2xlarge CUDA, 4-way) | 0.99115 | 0 | ✓ (prior config) |
+| **--all (AWS g5.2xlarge CUDA, 2-way, extCD)** | **0.98387** | **0** | **✓** |
 
-M3 → EPYC delta = +1.13 % (within hardware variance band). The EPYC
-result is the judges-relevant number since the partcl judges run on
-**AMD EPYC 9655P + NVIDIA RTX 6000 Ada 48 GB**.
+The 2-way result models the judges' 16-core EPYC: ≥4 vCPU per worker, no CD
+contention. The 4-way result on 8-vCPU EPYC was CD-contention-limited.
 
-**Projected public leaderboard rank #3:**
-- vs Carrotato #1 (0.967): +2.5 % gap
-- vs Shoom #2 (0.978): +1.3 % gap
-- vs vmallela (1.011): **−2.0 % (we beat)**
-- vs MultiDreamPlace (1.012): **−2.1 % (we beat)**
+**Projected public leaderboard rank #2-#3:**
+- vs Carrotato #1 (0.967): +1.7 % gap
+- vs Shoom #2 (0.978): **+0.6 % gap** (was +1.3 %)
+- vs vmallela (1.011): **−2.7 % (we beat)**
+- vs MultiDreamPlace (1.012): **−2.8 % (we beat)**
 
 ## Why v2 beats v1 by 8 %
 

@@ -1,37 +1,23 @@
-"""thinkorplace-v2 — V4 FastDiffProxy + Gaussian density + extended CD polish.
+"""E133 — Reverse-time overlap_lambda schedule on V4Gaussian.
 
-The 2026-05-21 submission. Three architectural changes vs v1's cascade plus
-extended CD polish budget to capitalize on CD being budget-limited (not
-plateau-saturated) on hard benches:
+Hypothesis: with Gaussian density the basin is smooth, so HIGH lambda
+early (50) cleanly separates macros while they can still re-arrange,
+and LOW lambda late (5) lets WL + congestion dominate the final basin
+choice. This is the reverse of the default forward-time schedule
+(start=0 → end=10/50/100) used by thinkorplace-v2 / E127.
 
-1. **Per-net-trace congestion** (E111) — matches canonical PlacementCost
-   within 15-25 % (vs the bbox-uniform ±200-260 %).
-2. **Gaussian-smeared erf density** (E117) — replaces piecewise-linear
-   `_grid_density`. C∞ smooth at cell boundaries → Adam descent finds
-   a lower basin on dense benches (ibm12/14/17/18).
-3. **FastDiffProxy backbone** (E115) — drops the per-net pair_chunk loop
-   and uses `index_select` for advanced indexing → 3-16x faster forward
-   + backward on GPU vs the V3 reference proxy.
-4. **Extended CD polish budget** (2026-05-21) — cd_polish_s bumped 600→900s,
-   budget_seconds bumped 720→1500s. CD polish on hard benches (ibm12/14/17/18)
-   was running out of budget, not plateau-converging. Extended budget lifts
-   −0.7 % on EPYC at 2-way parallel.
+No modifications to shipped V4 / V4Gaussian — `SmoothGlobalPlacerV4`
+already accepts `overlap_lambda_start` kwarg (line 58 of
+`smooth_global_placer_v4.py`) and `SmoothGlobalPlacerV4Gaussian` forwards
+`*args, **kwargs` to the parent. The descend loop already computes:
 
-Adam descent → greedy legalize → project_overlaps → CD polish. ~25
-min/bench at extended budget.
+    overlap_lambda = start + ramp_t * (end - start)
 
-Verified:
-  - M3 Max --all = 0.984 (similar, M3 CD already plateau-saturated)
-  - AWS g5.2xlarge CUDA --all 2-way = 0.98387 (vs prior 0.99115 = -0.73% lift)
-  - Projected rank #2-#3 (close to Shoom 0.978, beats MultiDreamPlace 1.012)
+so `start=50, end=5` produces a strictly decreasing schedule.
 
-Note on parallelism: --all 4-way on 8-vCPU EPYC = CPU contention, regresses
-to 1.007. Judges run on 16-core EPYC where 4-way parallel = 4 vCPU/worker =
-contention-free. Extended CD designed for that environment.
-
-Device selection: prefers CUDA → MPS → CPU. On the partcl judges' EPYC
-9655P + RTX 6000 Ada, the CUDA path runs the fast V4 forward + backward;
-on Mac dev, the MPS path runs at parity.
+Retry chain: attempt 1 = reverse-time (the hypothesis), attempts 2/3
+fall back to forward-time strong overlap as a safety net so we still
+produce a legal placement if reverse-time leaves overlaps.
 """
 from __future__ import annotations
 
@@ -43,7 +29,7 @@ from typing import Optional
 import torch
 
 _HERE = Path(__file__).resolve().parent
-_ROOT = _HERE.parents[1]
+_ROOT = _HERE.parents[2]
 for p in (
     _ROOT,
     _ROOT / "experiments" / "E88_diff_proxy" / "code",
@@ -77,20 +63,22 @@ def _best_device() -> str:
     return "cpu"
 
 
-class Placer:
-    """V4 + Gaussian density + CD polish; verified M3 0.98 / EPYC CUDA 0.99."""
+class E133ReverseLambdaPlacer:
+    """V4 + Gaussian density with reverse-time overlap_lambda schedule + CD polish."""
 
     def __init__(
         self,
-        budget_seconds: Optional[float] = 1500.0,
+        budget_seconds: Optional[float] = 720.0,
         num_steps: int = 500,
         lr_frac: float = 0.005,
         gamma_start_frac: float = 5e-3,
         gamma_end_frac: float = 5e-5,
-        overlap_lambda_end: float = 10.0,
+        # REVERSE-TIME schedule (the hypothesis).
+        overlap_lambda_start: float = 50.0,
+        overlap_lambda_end: float = 5.0,
         overlap_ramp_pct: float = 0.7,
         init: str = "sdf",
-        cd_polish_s: float = 900.0,
+        cd_polish_s: float = 600.0,
         cd_plateau_threshold: float = 0.001,
         rng_seed: int = 42,
         verbose: bool = True,
@@ -100,6 +88,7 @@ class Placer:
         self.lr_frac = lr_frac
         self.gamma_start_frac = gamma_start_frac
         self.gamma_end_frac = gamma_end_frac
+        self.overlap_lambda_start = overlap_lambda_start
         self.overlap_lambda_end = overlap_lambda_end
         self.overlap_ramp_pct = overlap_ramp_pct
         self.init = init
@@ -115,7 +104,7 @@ class Placer:
     def place(self, benchmark: Benchmark) -> torch.Tensor:
         t0 = time.time()
         deadline = t0 + self.budget_seconds if self.budget_seconds else None
-        self._log(f"=== thinkorplace-v2 ({benchmark.name}) ===")
+        self._log(f"=== E133 reverse_lambda ({benchmark.name}) ===")
 
         bench_dir = find_benchmark_dir(benchmark.name)
         _, plc = load_benchmark_from_dir(str(bench_dir))
@@ -124,20 +113,31 @@ class Placer:
         self._log(f"  device={device}")
 
         pos = None
+        # Attempt 1 = the hypothesis (reverse-time start=50, end=5).
+        # Attempts 2/3 = forward-time strong-overlap safety nets so we
+        # always produce a legal placement.
         for attempt, cfg in enumerate([
-            dict(overlap_lambda_end=self.overlap_lambda_end),     # primary cfg
-            dict(overlap_lambda_end=50.0),                          # fallback: stronger overlap
-            dict(overlap_lambda_end=100.0, num_steps=300),          # fallback: aggressive overlap
+            dict(
+                overlap_lambda_start=self.overlap_lambda_start,
+                overlap_lambda_end=self.overlap_lambda_end,
+            ),
+            dict(overlap_lambda_start=0.0, overlap_lambda_end=50.0),
+            dict(overlap_lambda_start=0.0, overlap_lambda_end=100.0, num_steps=300),
         ]):
             try:
                 num_steps = cfg.get("num_steps", self.num_steps)
+                ovl_start = cfg["overlap_lambda_start"]
                 ovl_end = cfg["overlap_lambda_end"]
-                self._log(f"  attempt {attempt+1}: ovl_end={ovl_end} steps={num_steps}")
+                self._log(
+                    f"  attempt {attempt+1}: "
+                    f"ovl={ovl_start}->{ovl_end} steps={num_steps}"
+                )
                 descender = SmoothGlobalPlacerV4Gaussian(
                     num_steps=num_steps,
                     lr_frac=self.lr_frac,
                     gamma_start_frac=self.gamma_start_frac,
                     gamma_end_frac=self.gamma_end_frac,
+                    overlap_lambda_start=ovl_start,
                     overlap_lambda_end=ovl_end,
                     overlap_ramp_pct=self.overlap_ramp_pct,
                     init=self.init,
