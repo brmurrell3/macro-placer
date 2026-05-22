@@ -1,72 +1,48 @@
-"""thinkorplace-v2 — V4 FastDiffProxy + Gaussian density + extended CD polish.
+"""thinkorplace-v2 — 3-lane parallel ensemble (V4+Gaussian + saddle + Hungarian).
 
-Pipeline:
-  V4+Gaussian Adam descent → greedy legalize → project_overlaps → CD polish
+Three pipelines per bench, each in its own subprocess:
 
-Three architectural changes vs the v1 cascade plus extended CD polish budget
-(CD on hard benches was budget-limited, not plateau-saturated):
+  A: V4+Gaussian descent → legalize → CD polish.
+  B: A + bounded Hessian saddle escape between two CD passes.
+  C: A + K=50 Hungarian joint permutation between two CD passes.
 
-  1. Per-net-trace congestion (E111) — matches canonical within 15-25 %.
-  2. Gaussian-smeared erf density (E117) — C∞ at cell boundaries; Adam
-     finds a lower basin on dense benches (ibm12/14/17/18).
-  3. FastDiffProxy backbone (E115) — drops per-net pair_chunk loop, uses
-     index_select; 3-16× faster fwd+bwd on GPU.
-  4. Extended budget — cd_polish_s 600→900s, budget_seconds 720→1500s,
-     +0.73 % EPYC lift verified.
+Master joins all 3 and returns the canonical-best placement (monotone:
+v2 output ≥ Lane A output ≥ prior v2-extCD).
 """
 from __future__ import annotations
 
+import multiprocessing as _mp
+import pickle
 import sys
+import tempfile
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
 
 import torch
 
 _HERE = Path(__file__).resolve().parent
 _ROOT = _HERE.parents[1]
-for p in (_ROOT, _HERE / "lib"):
-    sp = str(p)
-    if sp not in sys.path:
-        sys.path.insert(0, sp)
+_EXP_PATHS: Tuple[str, ...] = (str(_ROOT), str(_HERE), str(_HERE / "lib"))
+for _p in _EXP_PATHS:
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
-from macro_place.benchmark import Benchmark
-from macro_place.bench_paths import find_benchmark_dir
-from macro_place.cd_core import project_overlaps, run_cd_adaptive, sdf_init
-from macro_place.incremental_evaluator import IncrementalProxyEvaluator
-from macro_place.loader import load_benchmark_from_dir
-from macro_place.objective import compute_overlap_metrics, compute_proxy_cost
+import lane_worker  # noqa: E402  — spawn re-imports this by name
 
-from smooth_global_placer_v4_gaussian import SmoothGlobalPlacerV4Gaussian  # noqa: E402
-
-
-# Defensive retry chain — escalate overlap penalty if a previous attempt
-# leaves residual overlaps. Each entry overrides the placer's defaults.
-_DESCENT_RETRIES = (
-    {},                                            # primary cfg (use defaults)
-    {"overlap_lambda_end": 50.0},                  # stronger overlap
-    {"overlap_lambda_end": 100.0, "num_steps": 300},  # aggressive
-)
-
-
-def _best_device() -> str:
-    if torch.cuda.is_available():
-        return "cuda"
-    if torch.backends.mps.is_available():
-        return "mps"
-    return "cpu"
+_LANE_NAMES: Tuple[str, ...] = ("A", "B", "C")
 
 
 class Placer:
-    """V4 + Gaussian density + extended CD polish.
+    """3-lane parallel ensemble (A=v2-extCD, B=+Hessian saddle, C=+Hungarian).
 
-    ``place(benchmark)`` returns a ``[num_macros, 2]`` float32 tensor of
-    macro center coordinates with zero hard-macro overlaps.
+    ``place(benchmark)`` returns a [num_macros, 2] float32 tensor with zero
+    hard-macro overlaps. Worst case: SDF + project_overlaps fallback.
     """
 
     def __init__(
         self,
-        budget_seconds: Optional[float] = 1500.0,
+        budget_seconds: Optional[float] = 2700.0,
         num_steps: int = 500,
         lr_frac: float = 0.005,
         gamma_start_frac: float = 5e-3,
@@ -76,7 +52,18 @@ class Placer:
         init: str = "sdf",
         cd_polish_s: float = 900.0,
         cd_plateau_threshold: float = 0.001,
-        rng_seed: int = 42,
+        saddle_budget_s: float = 120.0,
+        saddle_max_iters: int = 2,
+        eigsh_maxiter: int = 50,
+        eigsh_tol: float = 1e-2,
+        hung_budget_s: float = 300.0,
+        hung_k: int = 50,
+        hung_n_slots: int = 100,
+        hung_reject_patience: int = 15,
+        hung_seed_base: int = 42,
+        lane_a_seed: int = 42,
+        lane_b_seed: int = 142,
+        lane_c_seed: int = 242,
         verbose: bool = True,
     ):
         self.budget_seconds = budget_seconds
@@ -89,102 +76,148 @@ class Placer:
         self.init = init
         self.cd_polish_s = cd_polish_s
         self.cd_plateau_threshold = cd_plateau_threshold
-        self.rng_seed = rng_seed
+        self.saddle_budget_s = saddle_budget_s
+        self.saddle_max_iters = saddle_max_iters
+        self.eigsh_maxiter = eigsh_maxiter
+        self.eigsh_tol = eigsh_tol
+        self.hung_budget_s = hung_budget_s
+        self.hung_k = hung_k
+        self.hung_n_slots = hung_n_slots
+        self.hung_reject_patience = hung_reject_patience
+        self.hung_seed_base = hung_seed_base
+        self.lane_a_seed = lane_a_seed
+        self.lane_b_seed = lane_b_seed
+        self.lane_c_seed = lane_c_seed
         self.verbose = verbose
 
     def _log(self, s: str) -> None:
         if self.verbose:
             print(s, flush=True)
 
-    def _try_descent(self, benchmark, device, attempt, cfg):
-        """One descent attempt; return clean positions or None."""
-        num_steps = cfg.get("num_steps", self.num_steps)
-        ovl_end = cfg.get("overlap_lambda_end", self.overlap_lambda_end)
-        self._log(f"  attempt {attempt + 1}: ovl_end={ovl_end} steps={num_steps}")
-        descender = SmoothGlobalPlacerV4Gaussian(
-            num_steps=num_steps,
-            lr_frac=self.lr_frac,
-            gamma_start_frac=self.gamma_start_frac,
-            gamma_end_frac=self.gamma_end_frac,
-            overlap_lambda_end=ovl_end,
-            overlap_ramp_pct=self.overlap_ramp_pct,
-            init=self.init,
-            device=device,
-            rng_seed=self.rng_seed + attempt * 100,
-            verbose=False,
+    def _lane_seed_and_budgets(self, lane_idx: int) -> Tuple[int, float, float]:
+        if lane_idx == 0:
+            return self.lane_a_seed, 0.0, 0.0
+        if lane_idx == 1:
+            return self.lane_b_seed, self.saddle_budget_s, 0.0
+        return self.lane_c_seed, 0.0, self.hung_budget_s
+
+    def _spawn_lane(self, ctx, lane_idx, bench_name, result_path, log_path):
+        seed, saddle_budget, hung_budget = self._lane_seed_and_budgets(lane_idx)
+        args = (
+            lane_idx, bench_name, result_path, log_path, seed,
+            self.num_steps, self.lr_frac,
+            self.gamma_start_frac, self.gamma_end_frac,
+            self.overlap_lambda_end, self.overlap_ramp_pct, self.init,
+            float(self.cd_polish_s), self.cd_plateau_threshold,
+            float(saddle_budget), self.saddle_max_iters,
+            self.eigsh_maxiter, self.eigsh_tol,
+            float(hung_budget), self.hung_k, self.hung_n_slots,
+            self.hung_reject_patience, self.hung_seed_base,
+            list(_EXP_PATHS),
         )
-        pos = descender.place(benchmark)
-        if compute_overlap_metrics(pos, benchmark)["overlap_count"] == 0:
-            self._log(f"  attempt {attempt + 1}: ovl=0")
-            return pos
-        pos, _ = project_overlaps(pos, benchmark)
-        if compute_overlap_metrics(pos, benchmark)["overlap_count"] == 0:
-            self._log(f"  attempt {attempt + 1}: ovl=0 after project_overlaps")
-            return pos
-        self._log(f"  attempt {attempt + 1}: still overlapping, retrying")
-        return None
+        p = ctx.Process(target=lane_worker.lane_entry, args=args,
+                        name=f"v2_lane{_LANE_NAMES[lane_idx]}")
+        p.start()
+        return p
 
-    def _safe_init(self, benchmark):
-        """SDF init + project_overlaps. Always-legal fallback."""
-        self._log("  fallback: SDF + project_overlaps")
-        pos = sdf_init(benchmark)
-        pos, _ = project_overlaps(pos, benchmark)
-        return pos
+    def _collect(self, n_lanes, result_paths):
+        out = []
+        for i in range(n_lanes):
+            name = _LANE_NAMES[i]
+            if not Path(result_paths[i]).exists():
+                self._log(f"  lane{name}: no result file")
+                out.append(None)
+                continue
+            try:
+                with open(result_paths[i], "rb") as f:
+                    r = pickle.load(f)
+                for line in r.get("log_lines", []):
+                    self._log(f"  [lane{name}] {line}")
+                if r.get("status") == "ok":
+                    self._log(f"  lane{name} OK: proxy={r['proxy']:.5f} wall={r['wall']:.0f}s")
+                else:
+                    note = (r.get("reason") or r.get("traceback", ""))[:200]
+                    self._log(f"  lane{name} status={r.get('status')!r} note={note!r}")
+                out.append(r)
+            except Exception as exc:
+                self._log(f"  lane{name}: pickle load failed: {exc!r}")
+                out.append(None)
+        return out
 
-    def place(self, benchmark: Benchmark) -> torch.Tensor:
+    def place(self, benchmark) -> torch.Tensor:
+        from macro_place.cd_core import project_overlaps, sdf_init
+        from macro_place.objective import compute_overlap_metrics
+
         t0 = time.time()
         deadline = t0 + self.budget_seconds if self.budget_seconds else None
         self._log(f"=== thinkorplace-v2 ({benchmark.name}) ===")
 
-        bench_dir = find_benchmark_dir(benchmark.name)
-        _, plc = load_benchmark_from_dir(str(bench_dir))
+        n_lanes = 3
+        tmp_dir = Path(tempfile.mkdtemp(prefix=f"v2_3lane_{benchmark.name}_"))
+        result_paths = [str(tmp_dir / f"lane{i}.pkl") for i in range(n_lanes)]
+        log_paths = [str(tmp_dir / f"lane{i}.log") for i in range(n_lanes)]
 
-        device = _best_device()
-        self._log(f"  device={device}")
+        ctx = _mp.get_context("spawn")
+        self._log(f"  spawning {n_lanes} lanes (A/B/C), tmp={tmp_dir}")
+        procs = [
+            self._spawn_lane(ctx, i, benchmark.name, result_paths[i], log_paths[i])
+            for i in range(n_lanes)
+        ]
+        self._log("  lane PIDs: " + " ".join(
+            f"{_LANE_NAMES[i]}={p.pid}" for i, p in enumerate(procs)))
 
-        pos = None
-        for attempt, cfg in enumerate(_DESCENT_RETRIES):
-            try:
-                pos = self._try_descent(benchmark, device, attempt, cfg)
-                if pos is not None:
-                    break
-            except Exception as exc:
-                self._log(f"  attempt {attempt + 1} EXCEPTION: {exc}")
-            if deadline is not None and time.time() > deadline - 60:
-                break
+        for i, p in enumerate(procs):
+            name = _LANE_NAMES[i]
+            remaining = (deadline - time.time() - 15.0) if deadline is not None else None
+            timeout = remaining if (remaining is not None and remaining > 0) else None
+            self._log(f"  joining lane{name} (timeout={timeout})")
+            p.join(timeout=timeout)
+            if p.is_alive():
+                self._log(f"  lane{name} OVER WALL — terminating")
+                p.terminate()
+                p.join(timeout=10.0)
+                if p.is_alive():
+                    p.kill()
+                    p.join(timeout=5.0)
 
-        if pos is None:
-            pos = self._safe_init(benchmark)
+        results = self._collect(n_lanes, result_paths)
+        ok = [(r["proxy"], i, r) for i, r in enumerate(results)
+              if r is not None and r.get("status") == "ok"]
 
-        basin_proxy = float(compute_proxy_cost(pos, benchmark, plc)["proxy_cost"])
-        self._log(f"  basin: proxy={basin_proxy:.5f} wall={time.time() - t0:.0f}s")
+        if not ok:
+            self._log("  ALL LANES FAILED — SDF + project_overlaps fallback")
+            pos = sdf_init(benchmark)
+            pos, _ = project_overlaps(pos, benchmark)
+            return pos.to(torch.float32)
 
-        if deadline is not None:
-            remaining = deadline - time.time() - 10.0
-            cd_budget = max(30.0, min(remaining, self.cd_polish_s))
-        else:
-            cd_budget = self.cd_polish_s
-        self._log(f"  CD polish budget={cd_budget:.0f}s")
+        ok.sort(key=lambda x: x[0])
+        picked_proxy, picked_idx, picked_r = ok[0]
 
-        evaluator = IncrementalProxyEvaluator(benchmark, plc, pos)
-        movable = [i for i in range(benchmark.num_macros)
-                   if not bool(benchmark.macro_fixed[i])]
-        run_cd_adaptive(
-            evaluator, benchmark, plc, movable,
-            min_time_s=cd_budget * 0.5,
-            hard_cap_s=cd_budget,
-            patience=5,
-            plateau_threshold=self.cd_plateau_threshold,
-            log_fn=None,
-        )
-
-        final = evaluator.placement.detach().clone().to(torch.float32)
-        final_proxy = float(compute_proxy_cost(final, benchmark, plc)["proxy_cost"])
-        final_ovl = compute_overlap_metrics(final, benchmark)["overlap_count"]
+        parts, walls = [], []
+        for li in range(n_lanes):
+            r = results[li]
+            tag = _LANE_NAMES[li]
+            if r is not None and r.get("status") == "ok":
+                parts.append(f"{tag}={r['proxy']:.5f}")
+                walls.append(f"{tag}={r['wall']:.0f}s")
+            else:
+                parts.append(f"{tag}=FAIL")
+                walls.append(f"{tag}=FAIL")
         self._log(
-            f"  Final: proxy={final_proxy:.5f} ovl={final_ovl} "
-            f"total_wall={time.time() - t0:.0f}s"
+            f"=== v2 PICK={_LANE_NAMES[picked_idx]}: {' '.join(parts)} "
+            f"-> final={picked_proxy:.5f} walls=[{' '.join(walls)}] "
+            f"total_wall={time.time() - t0:.0f}s ==="
         )
-        if final_ovl > 0:
-            raise RuntimeError(f"Final placement has {final_ovl} overlaps")
-        return final
+
+        pos = torch.from_numpy(picked_r["pos_np"]).to(torch.float32)
+
+        if compute_overlap_metrics(pos, benchmark)["overlap_count"] > 0:
+            self._log("  picked lane has overlaps; trying next-best lanes")
+            for proxy, _idx, r in ok[1:]:
+                pos2 = torch.from_numpy(r["pos_np"]).to(torch.float32)
+                if compute_overlap_metrics(pos2, benchmark)["overlap_count"] == 0:
+                    self._log(f"  fallback to lane proxy={proxy:.5f}")
+                    return pos2
+            raise RuntimeError("All ok-status lanes' placements have overlaps")
+
+        return pos
