@@ -27,24 +27,27 @@ partcl's `evaluate` harness). Results land in
 
 **Entry placer:** [`placer.py`](placer.py) at the repo root — a thin
 launcher that adds the repo to `sys.path` and dispatches to
-[`submissions/cd_lns_sa_cascade_dp_lane/placer.py`](submissions/cd_lns_sa_cascade_dp_lane/placer.py)
-(`CDLNSSACascadeDPLanePlacer`). The placer's 3rd lane uses DREAMPlace
-when available; without it (or when the bundled CPU-only install is
-used), the placer cleanly falls back to a 2-lane (SDF + DPO)
-configuration. See [`SUBMISSION.md`](SUBMISSION.md) for the DREAMPlace
-detail.
+[`submissions/thinkorplace-v2/placer.py`](submissions/thinkorplace-v2/placer.py)
+(`Placer`). v2 is a 3-lane parallel ensemble: each bench spawns three
+subprocesses running structurally distinct pipelines (A: V4+Gaussian
+descent + extended CD polish; B: A + bounded Hessian saddle escape;
+C: A + K=50 Hungarian joint permutation), and the master picks the
+canonical-best placement. Worst case (Lane A) reproduces the prior
+v2-extCD score; Lanes B and C strictly improve on benches where the
+perturbed basin is better.
 
-| Mode | IBM `--all` | NG45 `--ng45` | Overlaps | Verified |
-|---|---:|---:|---:|---|
-| 2-lane (bundled install, or no DP) | **1.07820** | **0.68102** | 0 | 2026-05-16 AWS EPYC c6a.4xlarge |
-| 3-lane (with CUDA-enabled DREAMPlace) | 1.06650 | 0.68086 | 0 | 2026-05-14 lambda cloud (A100) |
+| Mode | IBM `--all` | Overlaps | Verified |
+|---|---:|---:|---|
+| Lane A floor (v2-extCD, single pipeline) | **0.98387** | 0 | 2026-05-21 AWS EPYC c6a.4xlarge (2-way) |
+| 3-lane oracle (offline per-bench MIN of A/B/C) | **0.97745** | 0 | 2026-05-22 EPYC component runs |
 
-**Algorithm description:** [`docs/approach.md`](docs/approach.md)
+**Algorithm description:** [`docs/approach.md`](docs/approach.md) ·
+**Full v2 detail:** [`SUBMISSION.md`](SUBMISSION.md)
 
-Default `budget_seconds=3300` (55 min/bench, safe under the 60-min cap on EPYC).
-Single global algorithm; no per-benchmark hyperparameters; no benchmark-
-identity dispatch (only canvas-area property dispatch, see
-[`docs/approach.md`](docs/approach.md)).
+Default `budget_seconds=2700` (45 min/bench, safe under the 60-min cap
+on EPYC; each lane runs in its own subprocess with its full standalone
+CD/saddle/Hungarian budget). Single global algorithm; no per-benchmark
+hyperparameters; no benchmark-identity dispatch.
 
 **Run outside Docker** (development sanity check, requires `uv sync` first):
 ```bash

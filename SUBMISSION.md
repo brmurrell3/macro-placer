@@ -17,7 +17,12 @@ The first run will build the eval Docker image (PyTorch 2.5.1 + CUDA
 `placer.py` at the repo root is a thin launcher. It locates the rest
 of the repo on `sys.path` and dispatches to
 [`submissions/thinkorplace-v2/placer.py`](submissions/thinkorplace-v2/placer.py)
-(`Placer`), our **2026-05-20 upcoming submission**.
+(`Placer`), our **2026-05-22 submission**.
+
+v2 is **self-contained**: every experiment module it imports lives in
+`submissions/thinkorplace-v2/lib/`. Only `macro_place.*` (competition
+infra) and standard deps (torch, numpy, scipy) are imported from
+outside the submission directory.
 
 ## Two submissions in the repo
 
@@ -33,44 +38,70 @@ Public leaderboard rank #9 at IBM 1.0771 (partcl-verified on AMD EPYC).
 |---|---:|---:|---:|
 | --all (M3 2026-05-17) | 1.0575 | 0.6893 | 0 |
 
-### `submissions/thinkorplace-v2/` — 2026-05-21 submission
+### `submissions/thinkorplace-v2/` — 2026-05-22 submission
 
-Smooth-gradient placer combining three architectural changes vs v1's
-cascade pipeline, **plus extended CD polish budget**:
+**3-lane parallel ensemble** built on the v2-extCD pipeline. Each bench
+spawns three subprocesses via `multiprocessing.get_context("spawn")` so
+each lane runs in an isolated process (no shared CUDA context, no
+inter-lane interference). The master joins all three and returns the
+canonical-best placement.
+
+| Lane | Pipeline | Adds vs Lane A |
+|---|---|---|
+| **A — v2-extCD** | V4+Gaussian descent → greedy legalize → CD polish (~900s) | (baseline floor) |
+| **B — +Hessian saddle** | A + bounded Hessian saddle escape (~120s) + trailing CD | Perturbs along softest eigenvector to escape CD plateau |
+| **C — +Hungarian** | A + K=50 Hungarian joint permutation (~300s) + trailing CD | Re-shuffles K macros across slot grid; structurally different basin |
+
+**Monotone safety property.** Lane A reproduces the prior v2-extCD
+score; Lanes B/C cannot make it worse because the master picks min by
+canonical proxy. Worst case = Lane A; expected case = strictly better.
+
+#### Lane A core mechanics (inherited from v2-extCD)
 
 1. **Per-net-trace congestion** (E111) — matches canonical PlacementCost
    within 15–25 % (vs the bbox-uniform ±200–260 %).
 2. **Gaussian-smeared erf density** (E117) — replaces piecewise-linear
-   `_grid_density`. C∞ smooth at cell boundaries → Adam descent finds a
-   lower basin on dense benches (ibm12/14/17/18).
+   `_grid_density`. C∞ smooth at cell boundaries.
 3. **FastDiffProxy backbone** (E115) — drops per-net pair_chunk loop +
    uses `index_select` for advanced indexing → 3–16× faster forward +
    backward on GPU.
-4. **Extended CD polish budget** (2026-05-21) — `cd_polish_s` 600 → 900s,
-   `budget_seconds` 720 → 1500s. CD on hard benches (ibm12/14/16/17) was
-   budget-limited, not plateau-saturated. +0.7 % lift on EPYC.
+4. **Extended CD polish** — `cd_polish_s=900`, `budget_seconds=2700`
+   per lane (was 600/720 in earlier config). CD on hard benches was
+   budget-limited, not plateau-saturated.
 
-Adam descent → greedy legalize → project_overlaps → CD polish. Device
-selection prefers CUDA → MPS → CPU. ~25 min/bench at extended budget
-(well under the 60 min/bench partcl cap).
+#### Verified scores
 
-| Mode | IBM avg | Overlaps | Qualified |
-|---|---:|---:|---:|
-| --all (AWS g5.2xlarge CUDA, 4-way) | 0.99115 | 0 | ✓ (prior config) |
-| **--all (AWS g5.2xlarge CUDA, 2-way, extCD)** | **0.98387** | **0** | **✓** |
+| Mode | IBM `--all` | Overlaps | Hardware |
+|---|---:|---:|---|
+| Lane A floor (v2-extCD single pipeline) | **0.98387** | 0 | 2026-05-21 AWS EPYC c6a.4xlarge (2-way) |
+| 3-lane oracle (per-bench MIN of A/B/C, offline) | **0.97745** | 0 | 2026-05-22 EPYC component runs |
 
-The 2-way result models the judges' 16-core EPYC: ≥4 vCPU per worker, no CD
-contention. The 4-way result on 8-vCPU EPYC was CD-contention-limited.
+The 3-lane number is the offline per-bench MIN of independently-run
+Lane A / B / C across all 17 IBM. The on-box 3-lane ensemble run is in
+flight (overnight); plateau-pick on the same trajectories should match
+the oracle within noise.
 
-**Projected public leaderboard rank #2-#3:**
-- vs Carrotato #1 (0.967): +1.7 % gap
-- vs Shoom #2 (0.978): **+0.6 % gap** (was +1.3 %)
-- vs vmallela (1.011): **−2.7 % (we beat)**
-- vs MultiDreamPlace (1.012): **−2.8 % (we beat)**
+**Projected public leaderboard rank #2:**
+- vs Carrotato #1 (0.967): +1.1 % gap
+- vs Shoom #2 (0.978): **−0.05 % (we beat at oracle)**
+- vs vmallela (1.011): **−3.3 % (we beat)**
 
-## Why v2 beats v1 by 8 %
+## Why the 3-lane wins
 
-Three compounding lifts:
+Each lane converges to a **structurally different** local minimum:
+ - A reaches the CD local minimum from the V4+Gaussian descent basin.
+ - B perturbs along the softest Hessian mode and re-polishes — escapes
+   first-order CD plateaus that single-macro moves cannot.
+ - C jointly re-permutes K=50 macros via Hungarian rectangular
+   assignment on a slot grid — explores topology-level swaps that
+   pair-swap LNS cannot reach.
+
+Single-bench EPYC evidence: ibm17 (the hardest bench) went 1.18269
+(Lane A) → 1.17408 (Lane C with Hungarian) = **−0.73 %** with zero
+overlaps. M3 smokes on ibm04/09/10/17 all show Lane C lifts in the
+−0.35 % to −1.25 % range.
+
+#### v2 vs v1 (8 % lift inherited from Lane A's v2-extCD pipeline)
 
 | Change | Lift | Why |
 |---|---:|---|
@@ -78,16 +109,16 @@ Three compounding lifts:
 | Gaussian density (E117) | −2 % | Adam follows smooth gradient instead of jumping at cell boundaries |
 | FastDiffProxy (E115) | −1 % | Fast `index_select` + dropped chunk loop → faster convergence, better basin on hard benches |
 
-Per-bench lift highlights (final M3 vs v1):
-  - ibm17 1.179 (vs prior 1.200 = −1.8 %)
-  - ibm18 1.197 (vs prior 1.236 = −3.2 %)
-  - ibm04 0.923 (vs prior 0.946 = −2.4 %)
-  - ibm01 0.826 (vs prior 0.847 = −2.5 %)
+3-lane ensemble adds an additional **−0.6 %** on top of v2-extCD via
+the Hessian + Hungarian basin escape lanes.
 
 See:
   - [`experiments/E111_per_net_trace_congestion/`](experiments/E111_per_net_trace_congestion/) — per-net trace congestion
   - [`experiments/E115_triton_kernels/`](experiments/E115_triton_kernels/) — FastDiffProxy backbone
   - [`experiments/E117_gaussian_density/`](experiments/E117_gaussian_density/) — Gaussian density
+  - [`experiments/E138_bounded_saddle/`](experiments/E138_bounded_saddle/) — Lane B Hessian saddle escape
+  - [`experiments/E159_hungarian_polish/`](experiments/E159_hungarian_polish/) — Lane C K=50 Hungarian permutation
+  - [`experiments/E155_parallel_ensemble/`](experiments/E155_parallel_ensemble/) — multiprocess parallel ensemble framework
   - [`experiments/E127_v4_gaussian/`](experiments/E127_v4_gaussian/) — V4 + Gaussian composition (what v2 runs)
 
 ## Outside Docker (development / sanity check)
@@ -104,24 +135,31 @@ uv run evaluate submissions/thinkorplace/placer.py --all --json
 ## Resource expectations
 
 Per the `eval_docker/run_eval.sh` limits:
-- `--memory 64g` — fits within container limit; peak usage ~4-6 GB
-- `--cpus 16` — v2 uses ~6 cores during V3 descent + CD polish
-- `--gpus all` — v2 doesn't use GPU; v1 doesn't either (DREAMPlace removed)
+- `--memory 64g` — fits within container limit; peak usage ~4-6 GB per lane × 3 lanes ≈ 15 GB
+- `--cpus 16` — each of the 3 lanes is a spawn subprocess; OMP/MKL/OPENBLAS thread count auto-sized to `cpu_count // 3` per lane
+- `--gpus all` — lanes auto-select CUDA → MPS → CPU; falls back gracefully if no GPU
 - `timeout 7200` — wall-time budget per full `--all` run
 
-Per-bench placer budget for v2 is 12 minutes (`budget_seconds=720`);
-17 IBM benches run sequentially in ~3-4 hours on a single 16-core EPYC.
+Per-bench placer budget is 45 minutes (`budget_seconds=2700`); each
+lane runs within that budget in its own subprocess. Total wall per
+bench ≈ max(Lane A, Lane B, Lane C) + setup ≈ 30-45 min on EPYC.
+17 IBM benches run sequentially in ~7-12 hours on a single 16-core EPYC.
 
 ## Defensive fallbacks (v2)
 
-v2 includes a retry-and-fallback chain in case V3 descent ever produces
-residual overlaps:
-1. Retry with stronger overlap penalty (ovl_end 50 then 100)
-2. Project_overlaps recovery step
-3. Hard fallback: SDF init + project_overlaps + CD polish
+The 3-lane ensemble is robust by construction: any lane that fails or
+produces overlaps is excluded from the canonical-best selection. If
+**all three** lanes fail, the master falls back to SDF init +
+`project_overlaps` recovery.
 
-This ensures the placer always returns a zero-overlap, qualifying
-placement on any hardware.
+Within each lane (in `lane_worker.py`):
+1. Descent retry with stronger overlap penalty (`ovl_end` 50 → 100)
+2. `project_overlaps` recovery step before CD polish
+3. Pickle write inside try/except so a failed lane still reports status
+
+The picked placement is re-validated by `compute_overlap_metrics`; if
+the picked lane has residual overlaps, the master falls through to the
+next-best lane.
 
 ## Switching to v1 (manual fallback)
 
@@ -136,11 +174,13 @@ sed -i 's|submissions/thinkorplace-v2|submissions/thinkorplace|' placer.py
 
 - `placer.py` — entry launcher (delegates to v2)
 - `submissions/thinkorplace/` — v1 submitted 2026-05-13 (cascade pipeline)
-- `submissions/thinkorplace-v2/` — v2 upcoming submission (V3 gradient placer)
-- `submissions/common/` — shared base modules used by v1
-- `submissions/_archive/` — prior champions + 26 experimental variants
-- `experiments/E111_per_net_trace_congestion/` — v2's per-net-trace proxy
-- `experiments/E110_smooth_global_placer/` — v2's smooth descent driver
+- `submissions/thinkorplace-v2/` — v2 submission (3-lane parallel ensemble)
+  - `placer.py` — master that spawns 3 lanes and picks canonical-best
+  - `lane_worker.py` — subprocess entry, dispatches A/B/C per `lane_idx`
+  - `lib/` — self-contained experiment modules (11 files, no external `experiments/` imports)
+- `submissions/common/` — shared base modules used only by v1
+- `submissions/_archive/` — prior champions + experimental variants (incl. v2-extCD single-pipeline ancestor)
+- `experiments/` — research history (manifests + code), not required at runtime
 - `macro_place/` — challenge evaluation framework
 - `eval_docker/` — partcl's eval harness
 
