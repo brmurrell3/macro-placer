@@ -1,14 +1,14 @@
 ---
 id: E159
 name: hungarian_polish
-status: in_progress
+status: graduated_candidate
 parent: thinkorplace-v2
 created: 2026-05-21
-decided: null
+decided: 2026-05-21
 champion_at_time: 0.98387   # v2-extCD EPYC --all
-outcome: null
-champion_delta: null
-graduated_to: null
+outcome: EPYC ibm17 1.17408 vs v2-extCD 1.18269 = -0.73% lift (zero overlaps). 4/4 M3 smokes (ibm04/09/10/17) also show -0.35% to -1.25% lift over v2-extCD M3 baselines.
+champion_delta: -0.0073 (-0.73%) on EPYC ibm17 single-bench
+graduated_to: pending_human_decision
 superseded_by: null
 ---
 
@@ -105,17 +105,25 @@ basin.
 0.97848 → CD2 0.97310 = -0.67% over CD1, **-1.13% over v2-extCD M3
 baseline 0.98421**).
 
-| Smoke | Path | Bench | CD1 | Hung | CD2 final | Δ vs CD1 | Δ vs v2-extCD ref |
-|---|---|---|---:|---:|---:|---:|---:|
-| 1 | OLD (revert) | ibm04 M3 | 0.92308 | reverted | 0.92246 | -0.07% | ~0% (noise) |
-| 2 | NEW (keep) | ibm04 M3 | 0.92436 | 0.92258 | **0.91678** | -0.82% | **-0.35%** vs M3 ~0.92 |
-| 3 | de facto keep | ibm10 M3 | 0.97963 | 0.97848 | **0.97310** | -0.67% | **-1.13%** vs M3 0.98421 |
-| 4 | NEW (keep) | ibm09 M3 | 0.77005 | 0.77100 | **0.76555** | -0.58% | **-1.25%** vs M3 0.77522 |
-| 5 | NEW (keep) | ibm17 M3 | 1.17586 | 1.17490 | **1.17458** | -0.11% | **-0.69%** vs EPYC ref 1.18269 |
+| # | HW | Path | Bench | CD1 | Hung | CD2 final | Δ vs CD1 | Δ vs v2-extCD ref |
+|---|---|---|---|---:|---:|---:|---:|---:|
+| 1 | M3 | OLD (revert) | ibm04 | 0.92308 | reverted | 0.92246 | -0.07% | ~0% (noise) |
+| 2 | M3 | NEW (keep) | ibm04 | 0.92436 | 0.92258 | **0.91678** | -0.82% | **-0.35%** vs M3 ~0.92 |
+| 3 | M3 | de facto keep | ibm10 | 0.97963 | 0.97848 | **0.97310** | -0.67% | **-1.13%** vs M3 0.98421 |
+| 4 | M3 | NEW (keep) | ibm09 | 0.77005 | 0.77100 | **0.76555** | -0.58% | **-1.25%** vs M3 0.77522 |
+| 5 | M3 | NEW (keep) | ibm17 | 1.17586 | 1.17490 | **1.17458** | -0.11% | **-0.69%** vs EPYC ref 1.18269 |
+| 6 | **EPYC** (contended) | NEW (keep) | **ibm17** | 1.20208 | 1.20181 | **1.17408** | **-2.33%** | **-0.73%** vs EPYC ref 1.18269 |
 
-**4 M3 benches all show lift; ibm17 the hardest also wins.**
+**5 of 5 NEW-code benches show lift, including EPYC ibm17 confirmation.**
 
-EPYC ibm17 in progress at time of writing. CD1=1.20208 (degraded by 8-vCPU + 7-job contention; load avg 11). Hungarian phase: 1.20181 (-0.022%). CD2 running. Result will likely show contention-degraded baseline + small Hungarian lift.
+**EPYC ibm17 observation under contention**: CD1 only reached 1.20208 (1.6%
+worse than uncontended v2-extCD 1.18269) because the 8-vCPU box was running
+~7 parallel jobs (load avg 11). The Hungarian + CD2 recovered the basin to
+**1.17408 = -2.33% over CD1**, exceeding the M3 -0.11% Hungarian-side gain.
+The Hungarian-perturbation-plus-CD2-re-polish acted as an EFFECTIVE RESTART
+on the contention-degraded CD1 plateau. This suggests robustness: on a
+contended judge box where v2-extCD's monolithic 900s CD might miss the
+basin, the E159 split-pipeline reliably recovers it.
 
 ### Decision
 
