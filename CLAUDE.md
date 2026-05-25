@@ -48,22 +48,6 @@ polished}. Falls back to Option A if `DREAMPLACE_ROOT` is not set.
 IBM 1.07820 / NG45 0.68102 / combined 1.003. PATH A post-A1 wall-safe
 cascade. No external dependencies. Safest fallback.
 
-**Option D (LIVE SUBMISSION 2026-05-21 — root placer.py routes here) — `experiments/E171_adaptive_kjoint_gate/code/placer.py`** —
-adaptive size-gated stack on V4-Gaussian basin. Movables < 400: E166 lane
-(V4 multi-init + 3-seed multi-seed + cascade + portfolio saddle with
-`portfolio_max_iters=3` per E169). Movables ≥ 400: E143 lane (E166 +
-K-joint LNS K=3 + SA-v2 polish). Per-bench dispatch by
-`benchmark.num_hard_macros` — algorithmically legal (input-dimension gate).
-**Verified so far:** ibm03 0.8870 (E166), --fast 0.8384 (E166), ibm10
-0.95671 (E143, −3.0 % vs Option C baseline on hard bench); E169 ibm03
-tracking ≤0.880 in portfolio iter 2/3. **--all in flight**; target ≤ 0.970
-IBM combined (parity with Carrotato #2 at 0.967). ADR-014 *Accepted*
-with auto-fallback safety (root `placer.py` falls back to thinkorplace-v2
-on any exception or overlap-positive return → worst-case 0.984 combined,
-cannot regress past V4 floor). Components live in `experiments/E166_v4_full_stack/`,
-`experiments/E143_v4_full_kjoint_sa/`, `experiments/E169_v4_portfolio_3iter/`,
-`experiments/E171_adaptive_kjoint_gate/`.
-
 Leaderboard reference: vmallela #1 at 1.011 (gap +4.6 % to Option C),
 Carrotato 0.967 via Xplace+Triton at 3.8 min/bench (gap +9.4 %). Xplace
 integration attempted 2026-05-16/17 and FALSIFIED — see handoff doc; our
