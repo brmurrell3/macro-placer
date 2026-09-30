@@ -117,6 +117,72 @@ the Carrotato mechanism class.
 
 ---
 
+## 1.2. V4-stacked adaptive wave (2026-05-21)
+
+> Appended 2026-05-21. The post-thinkorplace-v2 wave (E136–E174) layered
+> four mechanism-axes onto the V4-Gaussian Adam basin (`--all` combined
+> ~0.984) targeting parity with Carrotato (#2 at 0.967). Per-experiment
+> manifests live at `experiments/E136_*` through `experiments/E174_*`.
+
+| Era | Method | Best avg (`--all`) | Δ vs prior | ADR | Date |
+|-----|--------|-------------------:|-----------:|-----|------|
+| V4-Gaussian (prior) | thinkorplace-v2 V4 | 0.984 (combined) | — | ADR-013 *forthcoming* | 2026-05-19 |
+| V4 multi-init + multi-seed + cascade + portfolio | E166 | --fast **0.8384**; ibm03 **0.8870**; **--ng45 0.6629** (−4.2% vs E74) | --fast −1.4 % vs V4; --ng45 −2.3% vs thinkorplace-v2 | (component of ADR-014) | 2026-05-21 |
+| E166 + K-joint LNS + SA-v2 polish | E143 | ibm10 **0.95671** (−3.0 %); **--fast 0.8316** (−0.81% vs E164) | scale-gated win, --fast benefit even on small benches | (component of ADR-014) | 2026-05-21 |
+| E166 + portfolio_max_iters=3 | E169 | ibm03 **0.87964** (VERIFIED) | −0.83 % vs E166 | (component of ADR-014) | 2026-05-21 |
+| Adaptive size-gated stack | E171 | `--all` in flight | proj. ≤ 0.97 | **ADR-014 *Proposed*** | 2026-05-21 |
+
+**Mechanisms validated this wave:**
+
+- **Multi-seed stacking on V4-Gaussian basin (E164/E166).** 3-seed
+  (42, 123, 999) cascade beats single-seed by −1.4 % on `--fast`
+  (0.8501 → 0.8384). Confirms V4-Gaussian basin variance is not
+  noise-dominated — orthogonal RNG-seeded trajectories find lower
+  attractors at full polish budget. DPO init lane (E165) FALSIFIED on
+  V4: DPO basin worse than SDF on ibm03 (+0.46 %); V4's Adam descent
+  washes out the DPO-init advantage seen in E25/E41 era.
+- **Portfolio saddle escape (E166/E169).** 4-weight Hessian portfolio
+  (canonical + cong-focus + density-focus + non-WL) finds escape
+  directions invisible to canonical softest-eigvec. E166 ibm03:
+  −1.36 % cascade-to-final. E169 (3-iter) adds another −0.5 % per
+  iteration through iter 3 (matches E97 dual_levy diminishing-returns
+  curve).
+- **K-joint LNS scale-gated (E143).** Joint-tuple optimization scales
+  with movable count: 786-movable ibm10 −3.0 % (167 of 262 tuples
+  committed, 64 % accept rate); 393-movable ibm15 −0.42 % (82 commits);
+  290-movable ibm03 ~0 % (22 of 96 commits, 23 %). Productive only at
+  ≥400 movables.
+
+**Kill gates passed (E136–E174 set):**
+
+- E136 cascade-on-V4 — kill gate passed on ibm03 (−1.0 % lift); --fast
+  marginal (−0.15 %, ibm03 was an outlier).
+- E161 unblocked SDF/DPO legalize — passes legalize but two-lane
+  diversity neutral on V4.
+- E162 multi-seed standalone — kill gate passed (basin spread 1.24 %
+  on ibm17 pre-CD); subsumed by E164.
+- E163 Lévy ε on V4 basin — FALSIFIED (smallest Lévy ε=0.824 missed
+  fixed-grid's eps=0.5 sweet spot; saturated iter 1 with 0 lift).
+- E165 DPO lane on V4 — FALSIFIED (DPO basin worse than SDF).
+- E144 periphery wrapper on V4 — strict-conservative; rejected on ibm03
+  (37 overlaps after push); fallback only.
+- E145 hyperparameter-diverse lanes (λ=10/30/100) — FALSIFIED; λ=10
+  default optimal, larger λ regresses basin.
+- E167 Poisson refinement v1 — FALSIFIED by bug (loss omitted V4 terms).
+- E170 Poisson refinement v2 (fixed loss) — FALSIFIED; Poisson penalty
+  pulls Adam away from canonical-good basins. DCGP route requires
+  deeper integration than V4-add-on.
+
+**Open follow-ups:**
+
+- E171 `--all` confirmation (gate to ADR-014 acceptance).
+- E166 `--ng45` confirmation (must not regress ariane133 vs 0.66410
+  floor from E74).
+- Wall-budget audit on ≥400-movable benches under K-joint stage; cap
+  appears honored at 50 min/bench on ibm10 solo.
+
+---
+
 ## 2. Per-benchmark champion tables
 
 ### 2.1 CDLNSGridBin (E12) — current champion, 1.0990 (`--all`, zero overlaps)
