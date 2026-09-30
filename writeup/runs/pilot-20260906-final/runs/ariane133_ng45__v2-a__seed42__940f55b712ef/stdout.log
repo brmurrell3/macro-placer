@@ -1,0 +1,27 @@
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 24, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+[lane0] start lane0 bench=ariane133_ng45 device=cpu seed=42 pid=42475 nthr=3
+  [laneA] start lane0 bench=ariane133_ng45 device=cpu seed=42 pid=42475 nthr=3
+  [laneA] FATAL TRACEBACK:
+Traceback (most recent call last):
+  File "/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v2/worker.py", line 166, in lane_entry
+    bench_dir = find_benchmark_dir(bench_name)
+  File "/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/common/bench_paths.py", line 69, in find_benchmark_dir
+    raise FileNotFoundError(
+FileNotFoundError: Benchmark 'ariane133_ng45': no source dir found.
+  Tried: ['/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45/netlist/output_CT_Grouping', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ariane133_ng45/netlist/output_CT_Grouping', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/NG45/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/NG45/ariane133_ng45/netlist/output_CT_Grouping', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45/netlist/output_CT_Grouping']
+  Set $BENCH_ROOT to override the search root.
+
+  laneA status='exception' note='Traceback (most recent call last):\n  File "/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v2/worker.py", line 166, in lane_entry\n    bench_dir = find_benchmark_dir(bench_name)\n  File'
+Traceback (most recent call last):
+  File "/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py", line 603, in main
+    result = run_request(request)
+  File "/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py", line 492, in run_request
+    placement = placer.place(benchmark)
+  File "/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v2/placer.py", line 256, in place
+    raise RuntimeError("All lanes failed without a valid checkpoint")
+RuntimeError: All lanes failed without a valid checkpoint

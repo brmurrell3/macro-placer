@@ -1,0 +1,7 @@
+start lane0 bench=ariane133_ng45 device=cpu seed=42 pid=58450 nthr=1
+loaded bench dir=/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping
+  descent attempt 1: ovl_end=10.0 steps=500
+  descent attempt 1: ovl=0
+  basin: proxy=0.69553 wall=38s
+  [A] CD polish budget=30s
+  FINAL lane0: proxy=0.64911 ovl=0 wall=85s

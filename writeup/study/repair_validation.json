@@ -1,0 +1,26 @@
+{
+  "benchmarks": [
+    "ibm01",
+    "ibm10",
+    "ibm17",
+    "ariane133_ng45"
+  ],
+  "budget_seconds": 180,
+  "cd_seconds": 30,
+  "device": "cpu",
+  "fail_on_degraded": false,
+  "jobs": 3,
+  "num_steps": 500,
+  "seeds": [
+    42
+  ],
+  "study_kind": "post-pilot-repair-validation",
+  "study_notes": "engineering only, concurrent jobs; not pooled with primary or causal quality comparison",
+  "threads": 3,
+  "timeout_seconds": 240,
+  "variants": [
+    "v1",
+    "v2-a",
+    "v2-abc"
+  ]
+}

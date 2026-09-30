@@ -1,0 +1,26 @@
+{
+  "benchmarks": [
+    "ibm01",
+    "ibm10",
+    "ibm17",
+    "ariane133_ng45"
+  ],
+  "budget_seconds": 180,
+  "cd_seconds": 30,
+  "device": "cpu",
+  "fail_on_degraded": true,
+  "jobs": 1,
+  "num_steps": 500,
+  "seeds": [
+    42
+  ],
+  "study_kind": "limited-budget-pilot",
+  "study_notes": "Twelve-run readiness pilot; the 180-second solver budget is not the publication study budget.",
+  "threads": 3,
+  "timeout_seconds": 240,
+  "variants": [
+    "v1",
+    "v2-a",
+    "v2-abc"
+  ]
+}

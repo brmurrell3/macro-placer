@@ -1,0 +1,984 @@
+{
+  "schema_version": 1,
+  "kind": "canonical_validate_placement_crosscheck_and_boundary_offender_audit",
+  "created_utc": "2026-09-08T03:34:28.179245+00:00",
+  "script": {
+    "path": "scripts/audit_publication_e74_e84_geometry.py",
+    "sha256": "c2d4b6ada95c9a7e0eddc274737aa98d306371c89e4714cd316a512dbe95cbd8"
+  },
+  "source_rescore": {
+    "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+    "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+  },
+  "canonical_validation_source": {
+    "path": "macro_place/utils.py",
+    "sha256": "ba6dab0810a791754f14174d91cee12d85fc9650f2c08c57b81f9911c3fd5386"
+  },
+  "summary": {
+    "placements_checked": 34,
+    "canonical_agreement_count": 34,
+    "fully_legal_count": 22,
+    "strict_bounds_failure_count": 12,
+    "failure_ids": [
+      "ibm03_E84",
+      "ibm07_E74",
+      "ibm07_E84",
+      "ibm09_E74",
+      "ibm09_E84",
+      "ibm13_E74",
+      "ibm13_E84",
+      "ibm15_E74",
+      "ibm15_E84",
+      "ibm16_E74",
+      "ibm16_E84",
+      "ibm17_E84"
+    ],
+    "all_failures_have_zero_recorded_overlap": true,
+    "maximum_boundary_excess": 7.62939453125e-06,
+    "offending_hard_macro_instances": 9,
+    "offending_soft_macro_instances": 11
+  },
+  "placements": [
+    {
+      "benchmark": "ibm01",
+      "stage": "E74",
+      "tensor_path": "writeup/data/publication/raw/placements/hessian_ibm01.pt",
+      "tensor_sha256": "27af4f140326827e21ac2201a1b089c71b1d6bb7bbd84273c9b73e53e8ddc8c4",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm01",
+      "stage": "E84",
+      "tensor_path": "writeup/data/publication/raw/placements/cascade_ibm01.pt",
+      "tensor_sha256": "7c3cf87b6fa5c6985593862b476c1ac0372aa0a554793527501402fce12949e1",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm02",
+      "stage": "E74",
+      "tensor_path": "writeup/data/publication/raw/placements/hessian_ibm02.pt",
+      "tensor_sha256": "e83e294101a5bef7ab95795d78c8cd65d463288055212b14284c99a873e11204",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm02",
+      "stage": "E84",
+      "tensor_path": "writeup/data/publication/raw/placements/cascade_ibm02.pt",
+      "tensor_sha256": "20ca7a213295e8bd456b2ad1e769ceda7d2865194d804717d58dce8fbfbc334a",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm03",
+      "stage": "E74",
+      "tensor_path": "writeup/data/publication/raw/placements/hessian_ibm03.pt",
+      "tensor_sha256": "98d4022e6e386cf011262872acc82d78a99c1cfd33e03f5a097c43e9ec0621a4",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm03",
+      "stage": "E84",
+      "tensor_path": "writeup/data/publication/raw/placements/cascade_ibm03.pt",
+      "tensor_sha256": "b28182b200409bae242c6222429866dd2082351bd08bacfd6850e314cf02fabb",
+      "canonical_validate_placement": {
+        "full_legal": false,
+        "violations": [
+          "Macros outside horizontal canvas bounds"
+        ]
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [
+        {
+          "row": 452,
+          "plc_module_index": 4355,
+          "macro_name": "Grp_181",
+          "kind": "soft",
+          "fixed": false,
+          "center": [
+            34.571250915527344,
+            14.778809547424316
+          ],
+          "size": [
+            1.097499966621399,
+            0.005831434857100248
+          ],
+          "boundary_excess": {
+            "x_above": 3.814697265625e-06
+          }
+        }
+      ],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 1,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": "sidecar reports zero hard-macro overlaps but does not encode bounds legality"
+    },
+    {
+      "benchmark": "ibm04",
+      "stage": "E74",
+      "tensor_path": "writeup/data/publication/raw/placements/hessian_ibm04.pt",
+      "tensor_sha256": "670b769fe283707d516c853755cb5b6c09411aa51b84668e443167a33fea0fe8",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm04",
+      "stage": "E84",
+      "tensor_path": "writeup/data/publication/raw/placements/cascade_ibm04.pt",
+      "tensor_sha256": "b55679a767024a86da05c7e2b7abf2cd813c734422d922f9983083861c59ad02",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm06",
+      "stage": "E74",
+      "tensor_path": "writeup/data/publication/raw/placements/hessian_ibm06.pt",
+      "tensor_sha256": "53f006e1303c3457c4c7986539755f8c39ff234a053c39ae5b433751c52241c3",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm06",
+      "stage": "E84",
+      "tensor_path": "writeup/data/publication/raw/placements/cascade_ibm06.pt",
+      "tensor_sha256": "f89328d39713793b69fbd749252ffae3bf89809c354ba7cf6195d55f673b51d7",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm07",
+      "stage": "E74",
+      "tensor_path": "writeup/data/publication/raw/placements/hessian_ibm07.pt",
+      "tensor_sha256": "ae77151779c3fc759d1e85fd41cf3c99ca3722ec14ba82a4f6f1c51a4541cbf8",
+      "canonical_validate_placement": {
+        "full_legal": false,
+        "violations": [
+          "Macros outside horizontal canvas bounds"
+        ]
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [
+        {
+          "row": 123,
+          "plc_module_index": 1506,
+          "macro_name": "a20581",
+          "kind": "hard",
+          "fixed": false,
+          "center": [
+            34.005001068115234,
+            3.119999885559082
+          ],
+          "size": [
+            9.010000228881836,
+            6.239999771118164
+          ],
+          "boundary_excess": {
+            "x_above": 3.814697265625e-06
+          }
+        },
+        {
+          "row": 414,
+          "plc_module_index": 4489,
+          "macro_name": "Grp_388",
+          "kind": "soft",
+          "fixed": false,
+          "center": [
+            37.95985794067383,
+            12.855361938476562
+          ],
+          "size": [
+            1.1002857685089111,
+            0.3344585597515106
+          ],
+          "boundary_excess": {
+            "x_above": 3.814697265625e-06
+          }
+        },
+        {
+          "row": 607,
+          "plc_module_index": 7151,
+          "macro_name": "Grp_594",
+          "kind": "soft",
+          "fixed": false,
+          "center": [
+            37.95985794067383,
+            36.33009719848633
+          ],
+          "size": [
+            1.1002857685089111,
+            0.6601921319961548
+          ],
+          "boundary_excess": {
+            "x_above": 3.814697265625e-06
+          }
+        },
+        {
+          "row": 854,
+          "plc_module_index": 10673,
+          "macro_name": "Grp_850",
+          "kind": "soft",
+          "fixed": false,
+          "center": [
+            37.95985794067383,
+            12.94770336151123
+          ],
+          "size": [
+            1.1002857685089111,
+            0.5845754146575928
+          ],
+          "boundary_excess": {
+            "x_above": 3.814697265625e-06
+          }
+        },
+        {
+          "row": 1318,
+          "plc_module_index": 18021,
+          "macro_name": "Grp_1649",
+          "kind": "soft",
+          "fixed": false,
+          "center": [
+            37.95985794067383,
+            28.798545837402344
+          ],
+          "size": [
+            1.1002857685089111,
+            0.0029083353001624346
+          ],
+          "boundary_excess": {
+            "x_above": 3.814697265625e-06
+          }
+        },
+        {
+          "row": 1319,
+          "plc_module_index": 18024,
+          "macro_name": "Grp_1660",
+          "kind": "soft",
+          "fixed": false,
+          "center": [
+            37.95985794067383,
+            23.99709129333496
+          ],
+          "size": [
+            1.1002857685089111,
+            0.005816670600324869
+          ],
+          "boundary_excess": {
+            "x_above": 3.814697265625e-06
+          }
+        }
+      ],
+      "out_of_bounds_hard_count": 1,
+      "out_of_bounds_soft_count": 5,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": "sidecar reports zero hard-macro overlaps but does not encode bounds legality"
+    },
+    {
+      "benchmark": "ibm07",
+      "stage": "E84",
+      "tensor_path": "writeup/data/publication/raw/placements/cascade_ibm07.pt",
+      "tensor_sha256": "acaf59a98c8c7ce7dd3fbbdc436662388bc06904aa742de1d2e838b762ba7907",
+      "canonical_validate_placement": {
+        "full_legal": false,
+        "violations": [
+          "Macros outside horizontal canvas bounds"
+        ]
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [
+        {
+          "row": 123,
+          "plc_module_index": 1506,
+          "macro_name": "a20581",
+          "kind": "hard",
+          "fixed": false,
+          "center": [
+            34.005001068115234,
+            3.119999885559082
+          ],
+          "size": [
+            9.010000228881836,
+            6.239999771118164
+          ],
+          "boundary_excess": {
+            "x_above": 3.814697265625e-06
+          }
+        }
+      ],
+      "out_of_bounds_hard_count": 1,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": "sidecar reports zero hard-macro overlaps but does not encode bounds legality"
+    },
+    {
+      "benchmark": "ibm08",
+      "stage": "E74",
+      "tensor_path": "writeup/data/publication/raw/placements/hessian_ibm08.pt",
+      "tensor_sha256": "10717b0550ca9ca74ddd1e459a22d49fac113b4bec3222e1d342a144d4b4de86",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm08",
+      "stage": "E84",
+      "tensor_path": "writeup/data/publication/raw/placements/cascade_ibm08.pt",
+      "tensor_sha256": "5a8f6c8620734d29e84056639a63cbe34bb574c8856b3db7b8a30ea610de749d",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm09",
+      "stage": "E74",
+      "tensor_path": "writeup/data/publication/raw/placements/hessian_ibm09.pt",
+      "tensor_sha256": "dc2de952e0ae0f5dd441cf5ceaa24c4c3b4256edf88850c9998b065c830ad1f2",
+      "canonical_validate_placement": {
+        "full_legal": false,
+        "violations": [
+          "Macros outside horizontal canvas bounds"
+        ]
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [
+        {
+          "row": 6,
+          "plc_module_index": 340,
+          "macro_name": "a2101",
+          "kind": "hard",
+          "fixed": false,
+          "center": [
+            43.785003662109375,
+            13.941539764404297
+          ],
+          "size": [
+            5.909999847412109,
+            3.8399999141693115
+          ],
+          "boundary_excess": {
+            "x_above": 3.814697265625e-06
+          }
+        }
+      ],
+      "out_of_bounds_hard_count": 1,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": "sidecar reports zero hard-macro overlaps but does not encode bounds legality"
+    },
+    {
+      "benchmark": "ibm09",
+      "stage": "E84",
+      "tensor_path": "writeup/data/publication/raw/placements/cascade_ibm09.pt",
+      "tensor_sha256": "0344f92d09ac3b696e0bc9beb8fb70d651c78150e26aeb7f256d204f510410a5",
+      "canonical_validate_placement": {
+        "full_legal": false,
+        "violations": [
+          "Macros outside horizontal canvas bounds"
+        ]
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [
+        {
+          "row": 6,
+          "plc_module_index": 340,
+          "macro_name": "a2101",
+          "kind": "hard",
+          "fixed": false,
+          "center": [
+            43.785003662109375,
+            13.941539764404297
+          ],
+          "size": [
+            5.909999847412109,
+            3.8399999141693115
+          ],
+          "boundary_excess": {
+            "x_above": 3.814697265625e-06
+          }
+        }
+      ],
+      "out_of_bounds_hard_count": 1,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": "sidecar reports zero hard-macro overlaps but does not encode bounds legality"
+    },
+    {
+      "benchmark": "ibm10",
+      "stage": "E74",
+      "tensor_path": "writeup/data/publication/raw/placements/hessian_ibm10.pt",
+      "tensor_sha256": "ec2a4b85c2df663e26ce19abd6adfc4a0f9d2c04fc78a84cecf03eb9d3708b4f",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm10",
+      "stage": "E84",
+      "tensor_path": "writeup/data/publication/raw/placements/cascade_ibm10.pt",
+      "tensor_sha256": "87207bb021930922e945acc099c77853967fdbf1fbca102386f29422574248b4",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm11",
+      "stage": "E74",
+      "tensor_path": "writeup/data/publication/raw/placements/hessian_ibm11.pt",
+      "tensor_sha256": "a5dd75ed7ce03dca4102c48ae2b5c6e044b2507ae276cba10c02db37a7b6d18d",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm11",
+      "stage": "E84",
+      "tensor_path": "writeup/data/publication/raw/placements/cascade_ibm11.pt",
+      "tensor_sha256": "1f9e28f35c79b6a6a58658d7425f307032781db5aec78c90177e162ef9a2bba4",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm12",
+      "stage": "E74",
+      "tensor_path": "writeup/data/publication/raw/placements/hessian_ibm12.pt",
+      "tensor_sha256": "834907c5916ef11c410ff5f983914d2e06163735b2e1fa5fa4ee8fc44ff1f168",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm12",
+      "stage": "E84",
+      "tensor_path": "writeup/data/publication/raw/placements/cascade_ibm12.pt",
+      "tensor_sha256": "6b6c6d5e68ff31012f71163695932350a091bb8dbcd75e6cf659057c67a6002d",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm13",
+      "stage": "E74",
+      "tensor_path": "writeup/data/publication/raw/placements/hessian_ibm13.pt",
+      "tensor_sha256": "a1e4b3039f1813c4099e6858427f5bfc20bf96d2a622d1d5c3b557635382a329",
+      "canonical_validate_placement": {
+        "full_legal": false,
+        "violations": [
+          "Macros outside horizontal canvas bounds"
+        ]
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [
+        {
+          "row": 1717,
+          "plc_module_index": 23496,
+          "macro_name": "Grp_2384",
+          "kind": "soft",
+          "fixed": false,
+          "center": [
+            55.28953552246094,
+            14.085753440856934
+          ],
+          "size": [
+            1.3009302616119385,
+            0.004919556435197592
+          ],
+          "boundary_excess": {
+            "x_above": 3.814697265625e-06
+          }
+        },
+        {
+          "row": 1722,
+          "plc_module_index": 23513,
+          "macro_name": "Grp_2394",
+          "kind": "soft",
+          "fixed": false,
+          "center": [
+            55.28953552246094,
+            1.3047853708267212
+          ],
+          "size": [
+            1.3009302616119385,
+            0.004919556435197592
+          ],
+          "boundary_excess": {
+            "x_above": 3.814697265625e-06
+          }
+        }
+      ],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 2,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": "sidecar reports zero hard-macro overlaps but does not encode bounds legality"
+    },
+    {
+      "benchmark": "ibm13",
+      "stage": "E84",
+      "tensor_path": "writeup/data/publication/raw/placements/cascade_ibm13.pt",
+      "tensor_sha256": "33235d65cd6bacb5cc1f55afba1d4a58059c37b5e4f527c8bdac1fa55609ded4",
+      "canonical_validate_placement": {
+        "full_legal": false,
+        "violations": [
+          "Macros outside horizontal canvas bounds"
+        ]
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [
+        {
+          "row": 1469,
+          "plc_module_index": 20227,
+          "macro_name": "Grp_1503",
+          "kind": "soft",
+          "fixed": false,
+          "center": [
+            55.28953552246094,
+            7.461102485656738
+          ],
+          "size": [
+            1.3009302616119385,
+            1.8989487886428833
+          ],
+          "boundary_excess": {
+            "x_above": 3.814697265625e-06
+          }
+        }
+      ],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 1,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": "sidecar reports zero hard-macro overlaps but does not encode bounds legality"
+    },
+    {
+      "benchmark": "ibm14",
+      "stage": "E74",
+      "tensor_path": "writeup/data/publication/raw/placements/hessian_ibm14.pt",
+      "tensor_sha256": "99ea99eaa9eedd4f1fac9656a76c3201178842b93ba96fe2106c41ca643f3191",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm14",
+      "stage": "E84",
+      "tensor_path": "writeup/data/publication/raw/placements/cascade_ibm14.pt",
+      "tensor_sha256": "010cd5fa0b493dc7f833d74b695a79d6f385f37631baa14f371cbe30319f5ba2",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm15",
+      "stage": "E74",
+      "tensor_path": "writeup/data/publication/raw/placements/hessian_ibm15.pt",
+      "tensor_sha256": "24c6ed8c761bfc5fe399dde786072e5fb59c0f58fc1874e0dfe6776041bb130a",
+      "canonical_validate_placement": {
+        "full_legal": false,
+        "violations": [
+          "Macros outside horizontal canvas bounds",
+          "Macros outside vertical canvas bounds"
+        ]
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [
+        {
+          "row": 176,
+          "plc_module_index": 2718,
+          "macro_name": "a78918",
+          "kind": "hard",
+          "fixed": false,
+          "center": [
+            64.91000366210938,
+            32.386661529541016
+          ],
+          "size": [
+            5.460000038146973,
+            3.359999895095825
+          ],
+          "boundary_excess": {
+            "x_above": 7.62939453125e-06
+          }
+        },
+        {
+          "row": 1126,
+          "plc_module_index": 22898,
+          "macro_name": "Grp_1263",
+          "kind": "soft",
+          "fixed": false,
+          "center": [
+            46.87333297729492,
+            66.53438568115234
+          ],
+          "size": [
+            1.1866666078567505,
+            1.9712358713150024
+          ],
+          "boundary_excess": {
+            "y_above": 7.62939453125e-06
+          }
+        }
+      ],
+      "out_of_bounds_hard_count": 1,
+      "out_of_bounds_soft_count": 1,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": "sidecar reports zero hard-macro overlaps but does not encode bounds legality"
+    },
+    {
+      "benchmark": "ibm15",
+      "stage": "E84",
+      "tensor_path": "writeup/data/publication/raw/placements/cascade_ibm15.pt",
+      "tensor_sha256": "0b03b94eedb21566e3ba7623d1e797676239c48120c8ac1a83b2d564d9d86b5b",
+      "canonical_validate_placement": {
+        "full_legal": false,
+        "violations": [
+          "Macros outside horizontal canvas bounds"
+        ]
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [
+        {
+          "row": 176,
+          "plc_module_index": 2718,
+          "macro_name": "a78918",
+          "kind": "hard",
+          "fixed": false,
+          "center": [
+            64.91000366210938,
+            32.386661529541016
+          ],
+          "size": [
+            5.460000038146973,
+            3.359999895095825
+          ],
+          "boundary_excess": {
+            "x_above": 7.62939453125e-06
+          }
+        }
+      ],
+      "out_of_bounds_hard_count": 1,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": "sidecar reports zero hard-macro overlaps but does not encode bounds legality"
+    },
+    {
+      "benchmark": "ibm16",
+      "stage": "E74",
+      "tensor_path": "writeup/data/publication/raw/placements/hessian_ibm16.pt",
+      "tensor_sha256": "7ad09948dd38a91e8e636c23a5f6ea92129ec53e5bec958ead040570a89497ff",
+      "canonical_validate_placement": {
+        "full_legal": false,
+        "violations": [
+          "Macros outside horizontal canvas bounds"
+        ]
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [
+        {
+          "row": 128,
+          "plc_module_index": 3977,
+          "macro_name": "a54110",
+          "kind": "hard",
+          "fixed": false,
+          "center": [
+            74.55000305175781,
+            47.21009826660156
+          ],
+          "size": [
+            12.960000038146973,
+            7.679999828338623
+          ],
+          "boundary_excess": {
+            "x_above": 7.62939453125e-06
+          }
+        }
+      ],
+      "out_of_bounds_hard_count": 1,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": "sidecar reports zero hard-macro overlaps but does not encode bounds legality"
+    },
+    {
+      "benchmark": "ibm16",
+      "stage": "E84",
+      "tensor_path": "writeup/data/publication/raw/placements/cascade_ibm16.pt",
+      "tensor_sha256": "eb2fd057d92cad37487c37935b6a5175a12be6a7518e849011aeabee00ef2178",
+      "canonical_validate_placement": {
+        "full_legal": false,
+        "violations": [
+          "Macros outside horizontal canvas bounds"
+        ]
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [
+        {
+          "row": 128,
+          "plc_module_index": 3977,
+          "macro_name": "a54110",
+          "kind": "hard",
+          "fixed": false,
+          "center": [
+            74.55000305175781,
+            47.21009826660156
+          ],
+          "size": [
+            12.960000038146973,
+            7.679999828338623
+          ],
+          "boundary_excess": {
+            "x_above": 7.62939453125e-06
+          }
+        }
+      ],
+      "out_of_bounds_hard_count": 1,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": "sidecar reports zero hard-macro overlaps but does not encode bounds legality"
+    },
+    {
+      "benchmark": "ibm17",
+      "stage": "E74",
+      "tensor_path": "writeup/data/publication/raw/placements/hessian_ibm17.pt",
+      "tensor_sha256": "29b450c805d2e0e550de7877928f7dee8543ff32a09dd05ba76b5b7cffe82d0a",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm17",
+      "stage": "E84",
+      "tensor_path": "writeup/data/publication/raw/placements/cascade_ibm17.pt",
+      "tensor_sha256": "eee9902d04c69014acc15203e561343aebea4c445245b5176257a817b1d6da99",
+      "canonical_validate_placement": {
+        "full_legal": false,
+        "violations": [
+          "Macros outside vertical canvas bounds"
+        ]
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [
+        {
+          "row": 491,
+          "plc_module_index": 6390,
+          "macro_name": "a119192",
+          "kind": "hard",
+          "fixed": false,
+          "center": [
+            6.040271759033203,
+            72.16000366210938
+          ],
+          "size": [
+            0.8399999737739563,
+            0.9599999785423279
+          ],
+          "boundary_excess": {
+            "y_above": 7.62939453125e-06
+          }
+        },
+        {
+          "row": 1287,
+          "plc_module_index": 20211,
+          "macro_name": "Grp_1213",
+          "kind": "soft",
+          "fixed": false,
+          "center": [
+            71.88823699951172,
+            71.77567291259766
+          ],
+          "size": [
+            1.4235293865203857,
+            1.728661060333252
+          ],
+          "boundary_excess": {
+            "y_above": 7.62939453125e-06
+          }
+        }
+      ],
+      "out_of_bounds_hard_count": 1,
+      "out_of_bounds_soft_count": 1,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": "sidecar reports zero hard-macro overlaps but does not encode bounds legality"
+    },
+    {
+      "benchmark": "ibm18",
+      "stage": "E74",
+      "tensor_path": "writeup/data/publication/raw/placements/hessian_ibm18.pt",
+      "tensor_sha256": "d762ad558e8dad4137ae0612ae9c04731af878e878931d0ea41cc1940e520193",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    },
+    {
+      "benchmark": "ibm18",
+      "stage": "E84",
+      "tensor_path": "writeup/data/publication/raw/placements/cascade_ibm18.pt",
+      "tensor_sha256": "c43483439be243d4fef66548c47917077bd17ddc65c2297573c086102c38d2a3",
+      "canonical_validate_placement": {
+        "full_legal": true,
+        "violations": []
+      },
+      "agrees_with_rescore_geometry": true,
+      "out_of_bounds_macros": [],
+      "out_of_bounds_hard_count": 0,
+      "out_of_bounds_soft_count": 0,
+      "historical_sidecar_overlap_count": 0,
+      "metadata_scope_mismatch": null
+    }
+  ]
+}

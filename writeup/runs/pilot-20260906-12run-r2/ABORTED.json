@@ -1,0 +1,11 @@
+{
+  "status": "aborted_engineering_preflight",
+  "created_utc": "2026-09-06T16:49:27.113221+00:00",
+  "reason": "Review found checkpoint-vs-canonical float32 overlap predicate mismatch and inaccurate caught-phase completion metadata; stopped before continuing this pilot. Raw partial logs retained; this is not an aggregate result.",
+  "driver_pids": [
+    22481
+  ],
+  "worker_process_groups": [
+    22493
+  ]
+}

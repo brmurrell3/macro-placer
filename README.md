@@ -1,5 +1,17 @@
 # Partcl/HRT Macro Placement Challenge
 
+**Thinkorplace post-competition work (September 2026):** see the
+[technical report source](writeup/latex/main.tex),
+[website summary](writeup/website-summary.md),
+[interactive placement comparison](writeup/interactive/placement-comparison.html),
+and [reproducible study runner](writeup/study/README.md).
+The repaired runtime lives in [`thinkorplace/`](thinkorplace/); submission paths
+remain compatibility entry points. Historical competition instructions and scores
+below predate that cleanup. The final official repository and results are at
+[Partcl EDA's final challenge repository](https://github.com/partcleda/macro-place-challenge-2026).
+Saved local scores are distinguished from final leaderboard verification in the
+[September audit](docs/reviews/2026-09-06-thinkorplace.md).
+
 <img src="assets/HRT.png" alt="Hudson River Trading" height="80"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img src="assets/partcl.png" alt="Partcl" height="80">
 
 ## Submission entry (for judges)

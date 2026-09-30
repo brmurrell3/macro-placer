@@ -1,0 +1,31 @@
+{
+  "classification": "isolated_package_engineering_smoke",
+  "source_directory": "/var/folders/w6/6snk_4gj37x06wxk6n5nvpc00000gn/T/thinkorplace-isolated-smoke-zmeq2dy2",
+  "description": "Agent-run five-step IBM01 Lane A, zero CD; pristine final-upstream infrastructure without experiments or writeup imports. Not a full solver quality comparison.",
+  "files": [
+    {
+      "relative_path": "result.json",
+      "sha256": "b5aac96d967180c489026802d3180e90962eab27e701f3087027e8d20d40a5e3"
+    },
+    {
+      "relative_path": "run-final.log",
+      "sha256": "43a4dc4f590845ee91bfab095d69e807e9446898a299bad8cd66cc608ec38d24"
+    },
+    {
+      "relative_path": "checkpoints/lane0_descent_legalized.pkl",
+      "sha256": "60bf46a3c432cb85360869802d27a55a63010da60f7fef2e609aff6698171c26"
+    },
+    {
+      "relative_path": "checkpoints/lane0_final.pkl",
+      "sha256": "56fa8c841706f1585daa0c0262edccc53c881c0d1d57ace0f423561432f3f541"
+    },
+    {
+      "relative_path": "checkpoints/lane0.pkl",
+      "sha256": "a21be5b2e212c206a176fb064b0c7a5252500dbceadfd2315e58f3c01000491b"
+    },
+    {
+      "relative_path": "checkpoints/lane0_initializer.pkl",
+      "sha256": "375a44b60bd35b661a67df8c09caee13661bf04408ac832a44ca9e87b34ea910"
+    }
+  ]
+}

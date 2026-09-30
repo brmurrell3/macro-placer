@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "classification": "controlled_sdf_topology_extraction_only",
+  "control": "The before and proposed functions differ only in resolving hard-macro pin ownership through the PlacementCost API instead of splitting pin names.",
+  "limits": "No placement optimization, scoring, transfer, or downstream PnR claim.",
+  "diagnostic_script_sha256": "d164fe3dd27ee4533092d65ecb615e6e26a9814096af6d21b7c98c0450d538a7",
+  "runtime_sources": {
+    "thinkorplace/common/sdf_init.py": {
+      "file_sha256": "410d162264df62358ca5dd850f1551c18696845aabebd64617f794241d007f4b",
+      "before_function_sha256": "dfcf33c29179e1544903cf9d8557064bb6c6bf263e22ad6e41dd8c875ec5c209"
+    },
+    "macro_place/sdf_init.py": {
+      "file_sha256": "00da10fec088726be30a5ba36057ffd9eb28199afea77364c8d6f07d6d1579a4",
+      "before_function_sha256": "dfcf33c29179e1544903cf9d8557064bb6c6bf263e22ad6e41dd8c875ec5c209"
+    }
+  },
+  "before_function_source": "def _extract_edges(benchmark, plc):\n    name_to_bidx = {}\n    for bidx, idx in enumerate(benchmark.hard_macro_indices):\n        name_to_bidx[plc.modules_w_pins[idx].get_name()] = bidx\n    edge_dict = {}\n    for driver, sinks in plc.nets.items():\n        macros = set()\n        for pin in [driver] + sinks:\n            parent = pin.split(\"/\")[0]\n            if parent in name_to_bidx:\n                macros.add(name_to_bidx[parent])\n        if len(macros) >= 2:\n            ml = sorted(macros)\n            w = 1.0 / (len(ml) - 1)\n            for i in range(len(ml)):\n                for j in range(i + 1, len(ml)):\n                    pair = (ml[i], ml[j])\n                    edge_dict[pair] = edge_dict.get(pair, 0) + w\n    if not edge_dict:\n        return torch.zeros(0, 2, dtype=torch.long), torch.zeros(0)\n    edges = list(edge_dict.keys())\n    return (torch.tensor(edges, dtype=torch.long),\n            torch.tensor([edge_dict[e] for e in edges], dtype=torch.float32))\n",
+  "before_function_sha256": "dfcf33c29179e1544903cf9d8557064bb6c6bf263e22ad6e41dd8c875ec5c209",
+  "fixed_function_source": "def _extract_edges(benchmark, plc):\n    name_to_bidx = {}\n    for bidx, idx in enumerate(benchmark.hard_macro_indices):\n        name_to_bidx[plc.modules_w_pins[idx].get_name()] = bidx\n    pin_to_bidx = {}\n    for pin_idx in plc.hard_macro_pin_indices:\n        pin = plc.modules_w_pins[pin_idx]\n        parent_bidx = name_to_bidx.get(pin.get_macro_name())\n        if parent_bidx is not None:\n            pin_to_bidx[pin.get_name()] = parent_bidx\n    edge_dict = {}\n    for driver, sinks in plc.nets.items():\n        macros = set()\n        for pin_name in [driver] + sinks:\n            bidx = pin_to_bidx.get(pin_name)\n            if bidx is not None:\n                macros.add(bidx)\n        if len(macros) >= 2:\n            ml = sorted(macros)\n            w = 1.0 / (len(ml) - 1)\n            for i in range(len(ml)):\n                for j in range(i + 1, len(ml)):\n                    pair = (ml[i], ml[j])\n                    edge_dict[pair] = edge_dict.get(pair, 0) + w\n    if not edge_dict:\n        return torch.zeros(0, 2, dtype=torch.long), torch.zeros(0)\n    edges = list(edge_dict.keys())\n    return (torch.tensor(edges, dtype=torch.long),\n            torch.tensor([edge_dict[e] for e in edges], dtype=torch.float32))\n",
+  "fixed_function_sha256": "5ef74739280bbce8a1330e724b6e0dbef62d18acd0f588fb34d84947627d02bd",
+  "benchmarks": [
+    {
+      "benchmark": "ibm01",
+      "hard_macros": 246,
+      "plc_nets": 5993,
+      "raw_hard_pin_objects": 2978,
+      "hard_pin_occurrences_in_net_traversal": 2978,
+      "unique_used_hard_pin_names": 2978,
+      "before_split_owner": {
+        "unique_edge_count": 644,
+        "edge_weight_sum_float32": 964.0,
+        "edge_weight_sum_float64": 963.9999988079071,
+        "edges_sha256": "a94d2fe227c3aaa589b46be043e736f38322d2377afa7b9c28d3696b8a1edde6",
+        "weights_sha256": "4299f2cf67d916465534f970c722b2b3ad6e8e93755b436c9ae1f1a1ad020cdd"
+      },
+      "fixed_plc_owner": {
+        "unique_edge_count": 644,
+        "edge_weight_sum_float32": 964.0,
+        "edge_weight_sum_float64": 963.9999988079071,
+        "edges_sha256": "a94d2fe227c3aaa589b46be043e736f38322d2377afa7b9c28d3696b8a1edde6",
+        "weights_sha256": "4299f2cf67d916465534f970c722b2b3ad6e8e93755b436c9ae1f1a1ad020cdd"
+      },
+      "fixed_matches_before_exactly": true,
+      "inputs": {
+        "external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt": "ca97cee4652966bc0afc16562ccc9aec224de31de1cfb317b61972a4ba1a4c96",
+        "external/MacroPlacement/Testcases/ICCAD04/ibm01/initial.plc": "f5202ce7295ba2ae38781a6a658b5affaa0ee933110ec071f41dd14961b133ad"
+      }
+    },
+    {
+      "benchmark": "ariane133",
+      "hard_macros": 133,
+      "plc_nets": 12422,
+      "raw_hard_pin_objects": 7847,
+      "hard_pin_occurrences_in_net_traversal": 5498,
+      "unique_used_hard_pin_names": 5498,
+      "before_split_owner": {
+        "unique_edge_count": 0,
+        "edge_weight_sum_float32": 0.0,
+        "edge_weight_sum_float64": 0.0,
+        "edges_sha256": "843b078ac4bc442c5e82e760b72fbeb4b5313053fd47f12388c84c72318e49c7",
+        "weights_sha256": "08abfc565d2c1d6d5677cd054991081755dab4aae1a1abd515eb4643b7f5c8ce"
+      },
+      "fixed_plc_owner": {
+        "unique_edge_count": 859,
+        "edge_weight_sum_float32": 1665.0001220703125,
+        "edge_weight_sum_float64": 1665.0000021085143,
+        "edges_sha256": "07478284f536ca0794366f05c82cab251b6b68603aeb3ffeadabd5bbe55fce0c",
+        "weights_sha256": "d3e619b35c7ce350bafabb474f9b83ce5d0d9d358c502a532ab5204be751eb37"
+      },
+      "fixed_matches_before_exactly": false,
+      "inputs": {
+        "external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt": "a54bc9ef70a32e2e0b19c312427a46622f5d40bf294a4b7d0594af7e4440efd3",
+        "external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/initial.plc": "6d85f1cce904ceb19ad9726b8d3eee3d17387c2552d74e67e5f9350a5e269bbe"
+      }
+    }
+  ]
+}

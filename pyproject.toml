@@ -59,10 +59,11 @@ Repository = "https://github.com/partcl/partcl-marco-place-challenge"
 Issues = "https://github.com/partcl/partcl-marco-place-challenge/issues"
 
 [tool.setuptools.packages.find]
-include = ["macro_place*"]
+include = ["macro_place*", "thinkorplace*"]
 
 [tool.setuptools.package-data]
 macro_place = ["py.typed"]
+thinkorplace = ["README.md", "MIGRATION.json"]
 
 [tool.black]
 line-length = 100

@@ -33,13 +33,19 @@ def _extract_edges(benchmark, plc):
     name_to_bidx = {}
     for bidx, idx in enumerate(benchmark.hard_macro_indices):
         name_to_bidx[plc.modules_w_pins[idx].get_name()] = bidx
+    pin_to_bidx = {}
+    for pin_idx in plc.hard_macro_pin_indices:
+        pin = plc.modules_w_pins[pin_idx]
+        parent_bidx = name_to_bidx.get(pin.get_macro_name())
+        if parent_bidx is not None:
+            pin_to_bidx[pin.get_name()] = parent_bidx
     edge_dict = {}
     for driver, sinks in plc.nets.items():
         macros = set()
-        for pin in [driver] + sinks:
-            parent = pin.split("/")[0]
-            if parent in name_to_bidx:
-                macros.add(name_to_bidx[parent])
+        for pin_name in [driver] + sinks:
+            bidx = pin_to_bidx.get(pin_name)
+            if bidx is not None:
+                macros.add(bidx)
         if len(macros) >= 2:
             ml = sorted(macros)
             w = 1.0 / (len(ml) - 1)

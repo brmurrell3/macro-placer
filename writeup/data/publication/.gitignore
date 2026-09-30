@@ -1,0 +1,3 @@
+# These small tensors are explicit publication evidence, not disposable runs.
+!raw/placements/*.pt
+!verification/*.log

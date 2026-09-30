@@ -1,0 +1,14 @@
+[
+  {
+    "path": "benchmarks/processed/public/ibm01.pt",
+    "sha256": "9261c2c1cf06af49d5f365eade150553feacf7899e53045f3c8ee21cef9e910a"
+  },
+  {
+    "path": "writeup/data/publication/raw/placements/hessian_ibm01.pt",
+    "sha256": "27af4f140326827e21ac2201a1b089c71b1d6bb7bbd84273c9b73e53e8ddc8c4"
+  },
+  {
+    "path": "writeup/data/publication/raw/placements/cascade_ibm01.pt",
+    "sha256": "7c3cf87b6fa5c6985593862b476c1ac0372aa0a554793527501402fce12949e1"
+  }
+]

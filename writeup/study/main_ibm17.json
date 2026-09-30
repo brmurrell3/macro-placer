@@ -1,0 +1,45 @@
+{
+  "benchmarks": [
+    "ibm01",
+    "ibm02",
+    "ibm03",
+    "ibm04",
+    "ibm06",
+    "ibm07",
+    "ibm08",
+    "ibm09",
+    "ibm10",
+    "ibm11",
+    "ibm12",
+    "ibm13",
+    "ibm14",
+    "ibm15",
+    "ibm16",
+    "ibm17",
+    "ibm18"
+  ],
+  "budget_seconds": 3300,
+  "cd_seconds": 900,
+  "device": "cpu",
+  "jobs": 1,
+  "num_steps": 500,
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "threads": 3,
+  "timeout_seconds": 3600,
+  "variants": [
+    "v1",
+    "v2-a",
+    "v2-abc"
+  ],
+  "variant_parameters": {
+    "v1": {},
+    "v2-a": {},
+    "v2-abc": {}
+  },
+  "study_kind": "planned-controlled-ibm17",
+  "study_notes": "Unexecuted study template. One-hour external cap with 300 seconds reserved for final validation/export after the short pilot exposed size-dependent canonical-scoring overhead. Repetitions share the default SDF seed; do not label them independent starts."
+}

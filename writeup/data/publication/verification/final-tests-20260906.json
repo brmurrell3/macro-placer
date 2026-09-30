@@ -1,0 +1,12 @@
+{
+  "classification": "focused_engineering_tests",
+  "log": "writeup/data/publication/verification/final-tests-20260906.log",
+  "log_sha256": "7d77a4cbf2f61e617ce987ac6fc199b70e6a7e1f05bb7fd71eea7fd738ab3bdd",
+  "passed": 64,
+  "exit_code": 0,
+  "runtime_archive": "corrected-runtime-5aa4c719cf18.tar.gz",
+  "runtime_archive_sha256": "344fedd594631081e94f9df0801cb1ee9bf7a9dcad12a4c5da56880299d74f8b",
+  "source_identity_sha256": "5aa4c719cf18dc2508d9493e581fe08cc54729a88a7f4166383ea15b820ab3e3",
+  "canonical_loader_sha256": "7ac77a987d8cae97126e17589568afa17a21b6ddb2ce914b3785f94bc82c5380",
+  "scope": "Five named test modules; no full-suite solver-quality claim."
+}

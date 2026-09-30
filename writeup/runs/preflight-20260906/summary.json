@@ -1,0 +1,30 @@
+{
+  "finished_run_count": 3,
+  "manifest_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/preflight-20260906/manifest.json",
+  "planned_run_count": 3,
+  "runs": [
+    {
+      "action": "executed",
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/preflight-20260906/runs/ibm01__v1__seed42__7c6f16c10c88/result.json",
+      "run_id": "ibm01__v1__seed42__7c6f16c10c88",
+      "status": "completed",
+      "valid": true
+    },
+    {
+      "action": "executed",
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/preflight-20260906/runs/ibm01__v2-a__seed42__d0b7a6789c51/result.json",
+      "run_id": "ibm01__v2-a__seed42__d0b7a6789c51",
+      "status": "completed",
+      "valid": true
+    },
+    {
+      "action": "executed",
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/preflight-20260906/runs/ibm01__v2-abc__seed42__df17b4998ded/result.json",
+      "run_id": "ibm01__v2-abc__seed42__df17b4998ded",
+      "status": "completed",
+      "valid": true
+    }
+  ],
+  "schema_version": 1,
+  "updated_at": "2026-09-06T16:30:45.917654+00:00"
+}

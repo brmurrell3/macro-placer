@@ -1,0 +1,15 @@
+{
+  "environment": {
+    "python_executable": "/Users/brendan/Developer/macro-place-challenge-2026/.venv/bin/python",
+    "python_version": "3.9.6",
+    "worker_runtime": "worker failed before complete environment capture"
+  },
+  "error": "RuntimeError: Both E25 and E41 placers failed; cannot proceed",
+  "finished_at": "2026-09-06T17:15:13.924746+00:00",
+  "identity_sha256": "65ca7e671ea3ca12196ad56cc94bb283fc385d954b9d337e1f66228c4360ed82",
+  "run_id": "ibm17__v1__seed42__65ca7e671ea3",
+  "schema_version": 1,
+  "status": "error",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 603, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 492, in run_request\n    placement = placer.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v1/placer.py\", line 182, in place\n    base_placement = stacked.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v1/stacked.py\", line 168, in place\n    raise RuntimeError(\"Both E25 and E41 placers failed; cannot proceed\")\nRuntimeError: Both E25 and E41 placers failed; cannot proceed\n",
+  "valid": false
+}

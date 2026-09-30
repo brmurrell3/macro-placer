@@ -27,6 +27,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from macro_place.benchmark import Benchmark
+from submissions.common.runtime_safety import clamp_to_canvas
 
 
 def _aabb_overlap(ax_min, ax_max, ay_min, ay_max,
@@ -134,7 +135,7 @@ def greedy_macro_legalize(
             placed.append((i, pos[i, 0] - hw, pos[i, 0] + hw,
                               pos[i, 1] - hh, pos[i, 1] + hh))
 
-    return torch.tensor(pos, dtype=placement.dtype), {
+    return clamp_to_canvas(torch.tensor(pos, dtype=placement.dtype), benchmark), {
         "n_moved": n_moved,
         "n_failed": n_failed,
         "max_displacement": max_displacement,

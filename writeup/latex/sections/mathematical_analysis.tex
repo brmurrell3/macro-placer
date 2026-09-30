@@ -1,0 +1,316 @@
+\section{Mathematical analysis}\label{sec:mechanisms}
+
+The following elementary results explain the search geometry and the conditions
+needed to trust a proposal. They do not establish convergence of the hybrid
+solver. Coordinates in the derivations are real-valued, macro dimensions and
+orientations are fixed, and touching boundaries are legal. The implementation
+uses floating-point coordinates and separate endpoint validation.
+
+\subsection{Feasible regions and coordinate slices}\label{sec:geometry-analysis}
+
+Let $\mathcal B$ contain all coordinate bounds and fixed-coordinate equalities.
+Let $\mathcal E$ be the unordered hard-macro pairs, with
+$m=|\mathcal E|$, and let $H_{e,b}$ be the closed halfspace corresponding to
+branch $b\in\{1,2,3,4\}$ of Equation~\eqref{eq:disjunction} for pair $e$.
+
+\begin{proposition}[Finite polyhedral decomposition]\label{prop:geometry}
+The feasible set is a union of at most $4^m$ compact convex polyhedra:
+\begin{equation}
+ \mathcal F
+ =\mathcal B\cap\bigcap_{e\in\mathcal E}\bigcup_{b=1}^4 H_{e,b}
+ =\bigcup_{\sigma\in\{1,2,3,4\}^{\mathcal E}} P_\sigma,
+ \qquad
+ P_\sigma=\mathcal B\cap\bigcap_{e\in\mathcal E}H_{e,\sigma(e)}.
+ \label{eq:polyhedral-union}
+\end{equation}
+The polyhedra may overlap or be empty.
+\end{proposition}
+\begin{proof}
+Distributing the finite intersections over unions selects one non-overlap
+inequality for each pair. Each resulting set is an intersection of closed
+halfspaces and fixed-coordinate equalities, hence a closed convex polyhedron.
+The canvas bounds make it bounded, and therefore compact.
+\end{proof}
+
+A coordinate slice need not itself be an interval. Fix a legal placement and
+vary only $x_i$ for a movable hard macro $i$. Write $\mathcal H$ for the hard
+macros, and define the perpendicular blockers and required horizontal separation
+by
+\begin{equation}
+ S_i=\left\{j\in\mathcal H\setminus\{i\}:
+ |y_i-y_j|<\frac{h_i+h_j}{2}\right\},
+ \qquad d_{ij}=\frac{w_i+w_j}{2}.
+\end{equation}
+The exact legal slice is
+\begin{equation}
+ I_i=\left[\frac{w_i}{2},W-\frac{w_i}{2}\right]
+ \setminus\bigcup_{j\in S_i}(x_j-d_{ij},x_j+d_{ij}).
+ \label{eq:coordinate-slice}
+\end{equation}
+Indeed, a nonblocker already satisfies a vertical separation inequality; a
+blocker excludes precisely the open horizontal interval in
+Equation~\eqref{eq:coordinate-slice}. Its endpoints remain legal because contact
+is allowed. Thus $I_i$ is a finite union of closed intervals, including possible
+singletons. The $y_i$ slice follows by exchanging axes; a soft macro has only
+its canvas interval, and a fixed macro has a singleton slice.
+
+The routine \code{legal\_axis\_range} does not enumerate this union. It bounds
+one interval using the current left/right relations to perpendicular blockers
+and adds a numerical clearance. This is a conservative search restriction;
+subsequent perpendicular moves can change those relations. It does not imply
+that all CD sweeps remain in one $P_\sigma$. The smooth stage can move several
+coordinates through overlapping intermediate states, but its legalized output
+is passed to CD without comparison against the initial SDF score. Geometry
+alone therefore supplies no monotonicity guarantee for the complete pipeline.
+
+\subsection{Incremental consistency and acceptance error}\label{sec:incremental-analysis}
+
+Let $\Psi(p)$ denote the cache obtained by recomputing all components at placement
+$p$. For net $n$, let $a_n(p)$ be its weighted HPWL contribution, $d_i(p)$ the
+density-bin vector of macro $i$, $r_n^o(p)$ the raw routing vector of net $n$, and
+$b_i^o(p)$ the hard-macro routing contribution, for orientation $o\in\{H,V\}$.
+Soft macros have $b_i^o=0$. The required aggregate invariant is
+\begin{equation}
+ T=\sum_n a_n(p),\qquad D=\sum_i d_i(p),\qquad
+ R^o=\sum_n r_n^o(p),\qquad M^o=\sum_i b_i^o(p),
+ \label{eq:cache-invariant}
+\end{equation}
+with cached pin positions and net extrema also equal to their values at $p$.
+Normalization, smoothing, and tail aggregation then produce the three scores.
+
+For a move $U_i$ of macro $i$, only its pins, its incident nets, and its own
+geometric contributions change. If these dependencies are complete and each
+contribution is evaluated correctly, subtracting the old terms and adding the
+new ones gives
+\begin{equation}
+ \widehat U_i\Psi(p)=\Psi(U_i p),
+ \label{eq:cache-commutation}
+\end{equation}
+where $\widehat U_i$ is the corresponding cache update. This follows term by
+term from Equation~\eqref{eq:cache-invariant}; induction preserves the invariant
+over a sequence of moves. Reversing the substitutions restores the prior state
+in exact arithmetic. The result is conditional on complete dependency tracking,
+correct extrema updates, and correct grid contributions. Floating-point
+subtract/add operations need not cancel, and their summation order can differ
+from full recomputation.
+
+\begin{proposition}[Acceptance under bounded score error]\label{prop:acceptance}
+Let $S_p$ and $S_q$ be the incremental states at candidate endpoints $p$ and $q$.
+Suppose
+\begin{equation}
+ |\widehat J(S_p)-\proxy(p)|\le\epsilon,\qquad
+ |\widehat J(S_q)-\proxy(q)|\le\epsilon.
+\end{equation}
+If $\widehat J(S_q)\le\widehat J(S_p)-\tau$, then
+\begin{equation}
+ \proxy(q)-\proxy(p)\le-\tau+2\epsilon.
+ \label{eq:acceptance-error}
+\end{equation}
+In particular, $\tau>2\epsilon$ guarantees a strict canonical decrease.
+\end{proposition}
+\begin{proof}
+Add and subtract the incremental endpoint values:
+\begin{align*}
+ \proxy(q)-\proxy(p)
+ &=\bigl[\proxy(q)-\widehat J(S_q)\bigr]
+   +\bigl[\widehat J(S_q)-\widehat J(S_p)\bigr]
+   +\bigl[\widehat J(S_p)-\proxy(p)\bigr]\\
+ &\le\epsilon-\tau+\epsilon. \qedhere
+\end{align*}
+\end{proof}
+
+Absolute component bounds $\epsilon_{\rm wl}$, $\epsilon_{\rm den}$, and
+$\epsilon_{\rm cong}$ imply
+$\epsilon=\epsilon_{\rm wl}+\tfrac12\epsilon_{\rm den}
++\tfrac12\epsilon_{\rm cong}$ by Equation~\eqref{eq:canonical} and the triangle
+inequality. The measured relative discrepancies in Section~\ref{sec:evaluator}
+are samples on prescribed traces, not uniform absolute bounds. They therefore
+do not certify every CD acceptance at its $10^{-9}$ threshold or every
+assignment-batch acceptance at $10^{-7}$. Full endpoint rescoring checks that
+endpoint; it does not reconstruct or certify all preceding decisions.
+
+\subsection{Tail aggregation and the cost of a move}\label{sec:tail-analysis}
+
+For $z\in\mathbb R^G$ and a fixed integer $1\le k\le G$, let
+$z_{(1)}\ge\cdots\ge z_{(G)}$ denote its sorted entries. Define the top-$k$ mean
+$A_k(z)=k^{-1}\sum_{j=1}^k z_{(j)}$.
+
+\begin{lemma}[Tail representation and stability]\label{lem:tail}
+With $(u)_+=\max\{u,0\}$,
+\begin{equation}
+ A_k(z)
+ =\max_{\substack{0\le w_j\le1/k\\\sum_j w_j=1}}w^\top z
+ =\min_{\theta\in\mathbb R}\left\{\theta+
+ \frac1k\sum_{j=1}^G(z_j-\theta)_+\right\}.
+ \label{eq:tail-representation}
+\end{equation}
+It is convex and piecewise affine, and for any $\delta\in\mathbb R^G$,
+\begin{equation}
+ |A_k(z+\delta)-A_k(z)|
+ \le\min\left\{\|\delta\|_\infty,
+          \frac{\|\delta\|_2}{\sqrt{k}},
+          \frac{\|\delta\|_1}{k}\right\}.
+ \label{eq:tail-stability}
+\end{equation}
+\end{lemma}
+\begin{proof}
+The maximizing weights put mass $1/k$ on $k$ largest entries. For any $\theta$,
+$\sum_{j=1}^k z_{(j)}\le k\theta+\sum_j(z_j-\theta)_+$, with equality at
+$\theta=z_{(k)}$, proving the threshold form. The maximum is equivalently over
+finitely many $k$-element subsets, so it is convex and piecewise affine. For any
+admissible $w$, its norms satisfy $\|w\|_1=1$,
+$\|w\|_2\le1/\sqrt{k}$, and $\|w\|_\infty\le1/k$.
+Bounding the difference between the two maxima by
+$\max_w|w^\top\delta|$ and applying H\"older's inequality gives all three bounds.
+\end{proof}
+
+For a grid with $G\ge10$ cells and nonnegative normalized density loads $\rho$,
+the canonical density rule is
+$C_{\rm den}=\tfrac12 A_{\lfloor0.1G\rfloor}(\rho)$. The implementation drops
+zero cells but retains the denominator $\lfloor0.1G\rfloor$; this is equivalent
+to padding with zeros when fewer cells are occupied. For $G<10$, its separate
+occupied-cell mean rule requires separate treatment. Congestion applies
+$A_{\lfloor0.05(2G)\rfloor}$ to the concatenated horizontal and vertical
+normalized, smoothed, and macro-adjusted loads; when that index is zero, the
+code uses their maximum. Selection ties can make these functions
+nondifferentiable. Convexity in grid loads does not imply convexity in placement
+coordinates, because the load maps themselves depend on the geometry.
+
+Local cache mutation also does not imply local total scoring cost. Let
+$T_{\rm mut}(i)$ be the work to update macro $i$'s pins, incident nets, and
+changed grid contributions, and let $T_{\rm sel}(G,k)$ be the cost of the
+implemented top-$k$ selection, with $T_{\rm sel}(0,0)=0$. For $G\ge10$, set
+$k=\lfloor0.1G\rfloor$ and let $n_{\rm occ}\le G$ count the nonzero density
+cells. The public \code{move} call returns the current score and has the structure
+\begin{equation}
+ T_{\rm move}(i)=T_{\rm mut}(i)+O(G)
+ +T_{\rm sel}(n_{\rm occ},\min\{k,n_{\rm occ}\})
+ +T_{\rm sel}(2G,k).
+ \label{eq:move-cost}
+\end{equation}
+Density normalization, congestion smoothing, and aggregation traverse the grid.
+The present implementation therefore retains at least linear work in $G$ per
+scored move; it does not maintain an incremental order-statistic structure.
+The microbenchmarks measure the savings from localized component updates at the
+reported grid sizes, not a runtime bound depending only on macro degree.
+
+\Needspace{18\baselineskip}
+\subsection{What negative curvature guarantees}\label{sec:curvature}
+
+A negative-curvature direction can give descent even when the gradient is
+nonzero. The guarantee concerns a specified smooth function and an unmodified
+step; feasibility and subsequent legalization impose additional conditions.
+All norms in the following proposition are Euclidean for vectors and the
+induced operator norm for matrices.
+
+\begin{proposition}[Signed curvature decrease]\label{prop:curvature}
+Let $f$ be twice continuously differentiable near $p$, and let $v$ be a unit
+vector with $v^\top\nabla^2 f(p)v\le-\eta<0$. Choose
+$s\in\{-1,1\}$ such that $s\nabla f(p)^\top v\le0$. Fix $t>0$ and suppose $f$ is twice
+continuously differentiable on an open neighborhood of the segment
+$\{p+usv:0\le u\le t\}$, and its Hessian is $L$-Lipschitz there. Then
+\begin{equation}
+ f(p+tsv)-f(p)\le-\frac{\eta}{2}t^2+\frac{L}{6}t^3.
+ \label{eq:curvature-taylor}
+\end{equation}
+For $L>0$ and $0<t\le3\eta/(2L)$, this is at most $-\eta t^2/4$.
+For $L=0$, the first bound is $-\eta t^2/2$ throughout the assumed segment.
+\end{proposition}
+\begin{proof}
+Taylor's theorem with Lipschitz Hessian gives a remainder bounded in absolute
+value by $L\|tsv\|_2^3/6=Lt^3/6$. The linear term
+$ts\nabla f(p)^\top v$ is nonpositive, and the quadratic term is at most
+$-\eta t^2/2$. The stated step bound makes $Lt^3/6\le\eta t^2/4$.
+\end{proof}
+
+The gradient need not vanish. However, the selected sign must admit a feasible
+step for this to yield feasible descent. For example, $f(x)=x-x^2$ on
+$[0,1/4]$ has a strict constrained minimum at $x=0$ despite $f'(0)=1$ and
+$f''(0)=-2$. The favorable sign points outside the interval. Projecting or
+legalizing a step changes its endpoint, so Equation~\eqref{eq:curvature-taylor}
+no longer bounds the resulting value without an additional displacement bound.
+
+Eigensolver accuracy is a separate issue. For a fixed real symmetric operator
+$\mathsf H$, a unit vector $v$, Rayleigh quotient $\rho=v^\top\mathsf H v$,
+and residual $r=\mathsf H v-\rho v$,
+\begin{equation}
+ \operatorname{dist}(\rho,\operatorname{spec}\mathsf H)\le\|r\|_2.
+ \label{eq:eigen-residual}
+\end{equation}
+To see this, expand $v=\sum_j a_j u_j$ in an orthonormal eigenbasis. Then
+$\|r\|_2^2=\sum_j a_j^2(\lambda_j-\rho)^2
+\ge\min_j|\lambda_j-\rho|^2$, since $\sum_j a_j^2=1$.
+A small residual locates some eigenvalue, not necessarily the smallest one;
+$\rho<0$ itself implies $\lambda_{\min}(\mathsf H)<0$ by the Rayleigh bound.
+Neither statement validates the operator as the Hessian of the scored function.
+
+Lane B applies automatic differentiation to a legacy proxy $J_B$, with rectangle
+intersections, clamps, and top-$k$ selection. A classical Hessian need not exist
+at their branch boundaries. In Section~\ref{sec:curvature-diagnostic}, guarded
+float64 probes remove canvas-branch changes but retain disagreement in the
+piecewise density and congestion terms. Those checks do not validate a classical
+Hessian of the composite proxy at the measured endpoint, despite the small
+same-operator eigensolver residual.
+Moreover, Lane B legalizes and polishes its proposals, then accepts by the
+canonical score rather than $J_B$. Proposition~\ref{prop:curvature} consequently
+explains a proposal rationale; its assumptions have not been established for
+that execution. A matched comparison with random and shuffled directions must
+measure canonical improvement retained after legalization and polish.
+
+\subsection{Assignment interactions}\label{sec:assignment-analysis}
+
+Let $p^0$ be the frozen background and $p^{i\leftarrow j}$ the placement obtained
+by moving only macro $i$ to slot $j$. Using an exact scalar objective $F$ to
+separate modeling error from cache error, define
+$\Delta_{ij}=F(p^{i\leftarrow j})-F(p^0)$. The assignment proposal solves
+\begin{equation}
+ \min_z\sum_{i,j}\Delta_{ij}z_{ij}
+ \quad\text{subject to}\quad
+ \sum_jz_{ij}=1,\quad\sum_iz_{ij}\le1,\quad z_{ij}\in\{0,1\}.
+ \label{eq:assignment-model}
+\end{equation}
+In this ideal model, disallowed edges are excluded. When the model is feasible,
+the Hungarian algorithm finds its optimum \citep{kuhn1955hungarian}.
+For the simultaneous placement $p^z$,
+define its interaction residual by
+\begin{equation}
+ R_F(z)=F(p^z)-F(p^0)-\sum_{i,j}\Delta_{ij}z_{ij}.
+ \label{eq:assignment-residual}
+\end{equation}
+The joint placement improves exactly when
+$\sum_{ij}\Delta_{ij}z_{ij}+R_F(z)<0$; the residual can have either sign.
+For the canonical proxy, linearity of its component weights gives
+$R_{\proxy}=R_{\rm wl}+\tfrac12R_{\rm den}+\tfrac12R_{\rm cong}$.
+A net touched by at most one moved macro has zero HPWL interaction residual;
+shared nets need not. Even disjoint local load changes can interact through
+top-$k$ selection in the density and congestion terms.
+
+A small HPWL example shows that the assignment can worsen the joint objective
+when all proposed positions are legal. Place two movable macros at
+$x_1=2$ and $x_2=12$, at a common vertical coordinate. Each has a zero-offset
+pin on a shared weight-two net and a second, coincident pin on a unit-weight
+net to a fixed terminal at its initial coordinate. Ignoring the fixed positive
+normalization, their HPWL is
+\begin{equation}
+ F(x_1,x_2)=2|x_1-x_2|+|x_1-2|+|x_2-12|.
+ \label{eq:assignment-example}
+\end{equation}
+For candidate slots $3$ and $11$, the frozen-background cost matrix is
+\begin{equation}
+ \Delta=\begin{pmatrix}-1&-9\\-9&-1\end{pmatrix}.
+\end{equation}
+The assignment selects $(x_1,x_2)=(11,3)$ with predicted change $-18$.
+Yet $F(2,12)=20$ and $F(11,3)=34$, giving a realized increase of $14$ and
+residual $32$. Macro widths below one and a sufficiently large canvas make the
+initial, single-move, and final placements non-overlapping. Fixed terminals are
+points and impose no macro-overlap constraint. This is an HPWL counterexample,
+not a claim about a measured full-proxy run.
+
+The implementation uses the incremental replica for matrix entries. Before
+solving, it replaces infinities with finite penalties and sets an all-infinite
+row to zero. It then commits moves sequentially, skipping illegal targets.
+The realized partial batch can
+therefore differ from $p^z$. Its explicit batch-score check measures the
+interactions represented by that replica; full rescoring checks the phase
+endpoint. Those checks are necessary even with a perfectly solved assignment
+and exact individual cost entries.

@@ -1,0 +1,13 @@
+completed valid=True  eligible=True  outcome=partial_phase_completion ibm01__v1__seed42__35e91d781fe5 (executed)
+completed valid=True  eligible=True  outcome=pipeline_completed ibm01__v2-a__seed42__e0d3cab82af9 (executed)
+completed valid=True  eligible=True  outcome=checkpoint_recovery ibm01__v2-abc__seed42__9d66ef78d6a6 (executed)
+error     valid=False eligible=False outcome=worker_did_not_complete ibm10__v1__seed42__8c5b4ff5c291 (executed)
+completed valid=True  eligible=True  outcome=checkpoint_recovery ibm10__v2-a__seed42__092ef5a92391 (executed)
+completed valid=True  eligible=True  outcome=checkpoint_recovery ibm10__v2-abc__seed42__7198ce733fe2 (executed)
+error     valid=False eligible=False outcome=worker_did_not_complete ibm17__v1__seed42__65ca7e671ea3 (executed)
+error     valid=False eligible=False outcome=worker_did_not_complete ibm17__v2-a__seed42__60f27cf83f13 (executed)
+error     valid=False eligible=False outcome=worker_did_not_complete ibm17__v2-abc__seed42__05a0010d5105 (executed)
+error     valid=False eligible=False outcome=worker_did_not_complete ariane133_ng45__v1__seed42__07ce7f88a8b3 (executed)
+error     valid=False eligible=False outcome=worker_did_not_complete ariane133_ng45__v2-a__seed42__940f55b712ef (executed)
+error     valid=False eligible=False outcome=worker_did_not_complete ariane133_ng45__v2-abc__seed42__a2e74642dcad (executed)
+finished 12 runs: 7 non-completed, 7 invalid, 7 study-ineligible

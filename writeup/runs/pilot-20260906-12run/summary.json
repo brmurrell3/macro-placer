@@ -1,0 +1,219 @@
+{
+  "completed_run_count": 0,
+  "degraded_run_count": 12,
+  "finished_run_count": 12,
+  "manifest_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-12run/manifest.json",
+  "pipeline_completed_run_count": 0,
+  "planned_run_count": 12,
+  "runs": [
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-12run/runs/ariane133_ng45__v1__seed42__dba494885d3b/result.json",
+      "run_id": "ariane133_ng45__v1__seed42__dba494885d3b",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "RuntimeError: source tree changed after the run identity was created",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 550, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 398, in run_request\n    verify_frozen_inputs(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 67, in verify_frozen_inputs\n    raise RuntimeError(\"source tree changed after the run identity was created\")\nRuntimeError: source tree changed after the run identity was created\n"
+      }
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-12run/runs/ariane133_ng45__v2-a__seed42__c688e3206813/result.json",
+      "run_id": "ariane133_ng45__v2-a__seed42__c688e3206813",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "RuntimeError: source tree changed after the run identity was created",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 550, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 398, in run_request\n    verify_frozen_inputs(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 67, in verify_frozen_inputs\n    raise RuntimeError(\"source tree changed after the run identity was created\")\nRuntimeError: source tree changed after the run identity was created\n"
+      }
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-12run/runs/ariane133_ng45__v2-abc__seed42__05a7bd72d9a5/result.json",
+      "run_id": "ariane133_ng45__v2-abc__seed42__05a7bd72d9a5",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "RuntimeError: source tree changed after the run identity was created",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 550, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 398, in run_request\n    verify_frozen_inputs(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 67, in verify_frozen_inputs\n    raise RuntimeError(\"source tree changed after the run identity was created\")\nRuntimeError: source tree changed after the run identity was created\n"
+      }
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-12run/runs/ibm01__v1__seed42__42febdeb6671/result.json",
+      "run_id": "ibm01__v1__seed42__42febdeb6671",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "ModuleNotFoundError: No module named 'thinkorplace'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 547, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 429, in run_request\n    placer_class = getattr(importlib.import_module(definition[\"module\"]), definition[\"class\"])\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/importlib/__init__.py\", line 127, in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n  File \"<frozen importlib._bootstrap>\", line 1030, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1007, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 972, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 228, in _call_with_frames_removed\n  File \"<frozen importlib._bootstrap>\", line 1030, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1007, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 972, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 228, in _call_with_frames_removed\n  File \"<frozen importlib._bootstrap>\", line 1030, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1007, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 984, in _find_and_load_unlocked\nModuleNotFoundError: No module named 'thinkorplace'\n"
+      }
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-12run/runs/ibm01__v2-a__seed42__79ebe33629b7/result.json",
+      "run_id": "ibm01__v2-a__seed42__79ebe33629b7",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "ModuleNotFoundError: No module named 'thinkorplace'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 547, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 429, in run_request\n    placer_class = getattr(importlib.import_module(definition[\"module\"]), definition[\"class\"])\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/importlib/__init__.py\", line 127, in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n  File \"<frozen importlib._bootstrap>\", line 1030, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1007, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 972, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 228, in _call_with_frames_removed\n  File \"<frozen importlib._bootstrap>\", line 1030, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1007, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 972, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 228, in _call_with_frames_removed\n  File \"<frozen importlib._bootstrap>\", line 1030, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1007, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 984, in _find_and_load_unlocked\nModuleNotFoundError: No module named 'thinkorplace'\n"
+      }
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-12run/runs/ibm01__v2-abc__seed42__554aa93eac77/result.json",
+      "run_id": "ibm01__v2-abc__seed42__554aa93eac77",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "ModuleNotFoundError: No module named 'thinkorplace'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 547, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 429, in run_request\n    placer_class = getattr(importlib.import_module(definition[\"module\"]), definition[\"class\"])\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/importlib/__init__.py\", line 127, in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n  File \"<frozen importlib._bootstrap>\", line 1030, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1007, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 972, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 228, in _call_with_frames_removed\n  File \"<frozen importlib._bootstrap>\", line 1030, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1007, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 972, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 228, in _call_with_frames_removed\n  File \"<frozen importlib._bootstrap>\", line 1030, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1007, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 984, in _find_and_load_unlocked\nModuleNotFoundError: No module named 'thinkorplace'\n"
+      }
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-12run/runs/ibm10__v1__seed42__b2535c6a79d9/result.json",
+      "run_id": "ibm10__v1__seed42__b2535c6a79d9",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "ModuleNotFoundError: No module named 'thinkorplace'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 547, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 429, in run_request\n    placer_class = getattr(importlib.import_module(definition[\"module\"]), definition[\"class\"])\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/importlib/__init__.py\", line 127, in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n  File \"<frozen importlib._bootstrap>\", line 1030, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1007, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 972, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 228, in _call_with_frames_removed\n  File \"<frozen importlib._bootstrap>\", line 1030, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1007, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 972, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 228, in _call_with_frames_removed\n  File \"<frozen importlib._bootstrap>\", line 1030, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1007, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 984, in _find_and_load_unlocked\nModuleNotFoundError: No module named 'thinkorplace'\n"
+      }
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-12run/runs/ibm10__v2-a__seed42__a1c0a54e8d3c/result.json",
+      "run_id": "ibm10__v2-a__seed42__a1c0a54e8d3c",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "ModuleNotFoundError: No module named 'thinkorplace'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 547, in main\n    request = json.loads(request_path.read_text(encoding=\"utf-8\"))\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 429, in run_request\n    _, plc = load_benchmark_from_dir(str(benchmark_info[\"source_dir\"]))\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/importlib/__init__.py\", line 127, in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n  File \"<frozen importlib._bootstrap>\", line 1030, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1007, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 972, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 228, in _call_with_frames_removed\n  File \"<frozen importlib._bootstrap>\", line 1030, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1007, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 972, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 228, in _call_with_frames_removed\n  File \"<frozen importlib._bootstrap>\", line 1030, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1007, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 984, in _find_and_load_unlocked\nModuleNotFoundError: No module named 'thinkorplace'\n"
+      }
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-12run/runs/ibm10__v2-abc__seed42__407a636cc45f/result.json",
+      "run_id": "ibm10__v2-abc__seed42__407a636cc45f",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "RuntimeError: source tree changed after the run identity was created",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 550, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 398, in run_request\n    verify_frozen_inputs(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 67, in verify_frozen_inputs\n    raise RuntimeError(\"source tree changed after the run identity was created\")\nRuntimeError: source tree changed after the run identity was created\n"
+      }
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-12run/runs/ibm17__v1__seed42__56880dfe5207/result.json",
+      "run_id": "ibm17__v1__seed42__56880dfe5207",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "RuntimeError: source tree changed after the run identity was created",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 550, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 398, in run_request\n    verify_frozen_inputs(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 67, in verify_frozen_inputs\n    raise RuntimeError(\"source tree changed after the run identity was created\")\nRuntimeError: source tree changed after the run identity was created\n"
+      }
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-12run/runs/ibm17__v2-a__seed42__1735e5c43141/result.json",
+      "run_id": "ibm17__v2-a__seed42__1735e5c43141",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "RuntimeError: source tree changed after the run identity was created",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 550, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 398, in run_request\n    verify_frozen_inputs(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 67, in verify_frozen_inputs\n    raise RuntimeError(\"source tree changed after the run identity was created\")\nRuntimeError: source tree changed after the run identity was created\n"
+      }
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-12run/runs/ibm17__v2-abc__seed42__f2b7322c5b7b/result.json",
+      "run_id": "ibm17__v2-abc__seed42__f2b7322c5b7b",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "RuntimeError: source tree changed after the run identity was created",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 550, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 398, in run_request\n    verify_frozen_inputs(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 67, in verify_frozen_inputs\n    raise RuntimeError(\"source tree changed after the run identity was created\")\nRuntimeError: source tree changed after the run identity was created\n"
+      }
+    }
+  ],
+  "schema_version": 1,
+  "study_eligible_run_count": 0,
+  "updated_at": "2026-09-06T16:47:17.699820+00:00",
+  "usable_operating_result_count": 0,
+  "valid_run_count": 0
+}

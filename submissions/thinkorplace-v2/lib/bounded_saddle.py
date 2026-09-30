@@ -30,6 +30,7 @@ for _p in (_ROOT, _HERE):
 
 from hessian_saddle import SmoothProxy, hessian_vector_product  # noqa: E402
 
+from submissions.common.runtime_safety import monotonic_seconds
 from macro_place.cd_core import project_overlaps, run_cd_adaptive  # noqa: E402
 from macro_place.incremental_evaluator import IncrementalProxyEvaluator  # noqa: E402
 from macro_place.objective import compute_overlap_metrics, compute_proxy_cost  # noqa: E402
@@ -43,6 +44,7 @@ def find_softest_eigenvectors_bounded(
     k: int = 1,
     tol: float = 1e-2,
     maxiter: int = 50,
+    deadline=None,
     log: Optional[Callable[[str], None]] = None,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Bounded variant of E74 find_softest_eigenvectors.
@@ -72,6 +74,8 @@ def find_softest_eigenvectors_bounded(
         v_full = np.zeros(n_dim, dtype=np.float64)
         v_full[mask_flat] = v_free
         v_tensor = torch.tensor(v_full.reshape(n_macros, 2), dtype=torch.float32)
+        from submissions.common.runtime_safety import monotonic_seconds, require_time
+        require_time(deadline)
         hv = hessian_vector_product(smooth_proxy, state_full, v_tensor)
         hv_flat = hv.cpu().numpy().reshape(n_dim)
         return hv_flat[mask_flat]
@@ -80,7 +84,7 @@ def find_softest_eigenvectors_bounded(
         shape=(n_free, n_free), matvec=matvec, dtype=np.float64,
     )
 
-    t0 = time.time()
+    t0 = monotonic_seconds()
     eigvals = []
     eigvecs = np.zeros((n_free, 0))
     try:
@@ -123,7 +127,7 @@ def find_softest_eigenvectors_bounded(
         eigvecs = v.reshape(-1, 1)
         log(f"[bounded]   power iteration found lambda_min ~ {lam:.4e}")
 
-    log(f"[bounded] Lanczos done in {time.time() - t0:.1f}s; eigvals = {eigvals}")
+    log(f"[bounded] Lanczos done in {monotonic_seconds() - t0:.1f}s; eigvals = {eigvals}")
     return eigvals, eigvecs
 
 
@@ -136,6 +140,7 @@ def bounded_cascading_saddle_escape(
     eps_values: Tuple[float, ...] = (0.3, 1.0, 3.0),
     polish_budget: float = 180.0,
     total_budget_s: float = 120.0,
+    deadline=None,
     min_improvement: float = 1e-5,
     eigval_tolerance: float = 1e-3,
     eigsh_maxiter: int = 50,
@@ -162,12 +167,13 @@ def bounded_cascading_saddle_escape(
     best_state = state.detach().clone()
 
     iter_log = []
-    t_start = time.time()
+    t_start = monotonic_seconds()
+    deadline = min(deadline, t_start + total_budget_s) if deadline is not None else t_start + total_budget_s
     smooth = SmoothProxy(benchmark, plc)
     avg_iter_wall = 0.0
 
     for it in range(max_iters):
-        elapsed = time.time() - t_start
+        elapsed = monotonic_seconds() - t_start
         remaining = total_budget_s - elapsed
         threshold = 60.0 if avg_iter_wall == 0.0 else max(60.0, avg_iter_wall * 1.2)
         if remaining < threshold:
@@ -176,17 +182,17 @@ def bounded_cascading_saddle_escape(
                 f"threshold={threshold:.0f}s)")
             break
 
-        iter_t_start = time.time()
+        iter_t_start = monotonic_seconds()
         log(f"[bounded-cascade] iter {it+1}/{max_iters} "
             f"(elapsed={elapsed:.0f}s, remaining={remaining:.0f}s)")
 
-        t_eig = time.time()
+        t_eig = monotonic_seconds()
         eigvals, eigvecs = find_softest_eigenvectors_bounded(
             smooth, state, movable_np, k=1,
-            tol=eigsh_tol, maxiter=eigsh_maxiter,
+            tol=eigsh_tol, maxiter=eigsh_maxiter, deadline=deadline,
             log=lambda s: log(f"  {s}"),
         )
-        eig_wall = time.time() - t_eig
+        eig_wall = monotonic_seconds() - t_eig
         if len(eigvals) == 0:
             log(f"  no eigvecs returned; stopping cascade")
             break
@@ -220,7 +226,7 @@ def bounded_cascading_saddle_escape(
         accepted_this_iter = False
         for sign in [+1.0, -1.0]:
             for eps in eps_values:
-                if (time.time() - t_start) > total_budget_s - 30:
+                if (monotonic_seconds() - t_start) > total_budget_s - 30:
                     break
                 pp = state_np + sign * eps * v_unit
                 pp[:, 0] = np.clip(pp[:, 0], hw_np, cw - hw_np)
@@ -232,9 +238,12 @@ def bounded_cascading_saddle_escape(
                 if ovl > 0:
                     continue
                 ev = IncrementalProxyEvaluator(benchmark, plc, cand.clone())
+                cd_remaining = min(polish_budget, max(0.0, total_budget_s - (monotonic_seconds() - t_start)))
+                if cd_remaining <= 0:
+                    break
                 run_cd_adaptive(
                     ev, benchmark, plc, movable_idx,
-                    min_time_s=30.0, hard_cap_s=polish_budget,
+                    min_time_s=min(30.0, cd_remaining), hard_cap_s=cd_remaining,
                     patience=3, plateau_threshold=0.001, log_fn=None,
                 )
                 polished = ev.placement.detach().clone().to(torch.float32)
@@ -248,7 +257,7 @@ def bounded_cascading_saddle_escape(
                     log(f"  iter{it+1} sign={sign:+.0f} eps={eps:.1f}: "
                         f"NEW BEST {pol_proxy:.5f}")
 
-        iter_wall = time.time() - iter_t_start
+        iter_wall = monotonic_seconds() - iter_t_start
         if avg_iter_wall == 0.0:
             avg_iter_wall = iter_wall
         else:
@@ -268,7 +277,7 @@ def bounded_cascading_saddle_escape(
             log(f"  no improvement (< {min_improvement:.0e}); saturated")
             break
 
-    total_wall = time.time() - t_start
+    total_wall = monotonic_seconds() - t_start
     log(f"[bounded-cascade] done: init={init_proxy:.5f} best={best_proxy:.5f} "
         f"delta={best_proxy - init_proxy:+.5f} wall={total_wall:.0f}s "
         f"iters={len(iter_log)}")

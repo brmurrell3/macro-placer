@@ -1,0 +1,4 @@
+completed valid=True  eligible=True  outcome=partial_phase_completion ariane133_ng45__v1__seed42__24678f1b018d (executed)
+completed valid=True  eligible=True  outcome=pipeline_completed ariane133_ng45__v2-a__seed42__7cd2ba1d3e18 (executed)
+completed valid=True  eligible=True  outcome=partial_phase_completion ariane133_ng45__v2-abc__seed42__1428d1916fba (executed)
+finished 3 runs: 0 non-completed, 0 invalid, 0 study-ineligible

@@ -30,14 +30,24 @@ from v4_gaussian_proxy import FastDiffProxyGaussian
 class SmoothGlobalPlacerV4Gaussian(SmoothGlobalPlacerV4):
     """V4 + Gaussian density. Same constructor; descend uses FastDiffProxyGaussian."""
 
-    def __init__(self, *args, sigma_scale: float = 1.0, topk_frac: float = 0.10, **kwargs):
+    def __init__(self, *args, sigma_scale: float = 1.0, topk_frac: float = 0.10, deadline=None, checkpoint_callback=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.deadline = deadline
+        self.checkpoint_callback = checkpoint_callback
         self.sigma_scale = sigma_scale
         self.topk_frac = topk_frac
 
     def descend(self, benchmark: Benchmark, plc) -> Tuple[torch.Tensor, Dict]:
         t0 = time.time()
+        from submissions.common.runtime_safety import require_time
+        require_time(self.deadline)
         init_pos = self._init_positions(benchmark, plc=plc)
+        if self.checkpoint_callback is not None:
+            try:
+                self.checkpoint_callback(init_pos)
+            except ValueError as exc:
+                self._log(f"Initializer is not a usable checkpoint: {exc}")
+        require_time(self.deadline)
         cw = float(benchmark.canvas_width)
         lr = self.lr_frac * cw
 
@@ -77,6 +87,7 @@ class SmoothGlobalPlacerV4Gaussian(SmoothGlobalPlacerV4):
         last_parts = None
         last_loss = None
         for step in range(num_steps):
+            require_time(self.deadline)
             t = step / max(1, num_steps - 1)
             gamma_frac = self.gamma_start_frac + t * (
                 self.gamma_end_frac - self.gamma_start_frac

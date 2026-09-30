@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "classification": "controlled_topology_extraction_only",
+  "control": "Identical extractor with the single parent-ownership line restored to the competition expression.",
+  "limits": "No optimization rerun, transfer score, or downstream PnR claim.",
+  "fixed_function_sha256": "5f0a1b2a9178c03902a36c21198c5f6060f3f3b3034453d19fede592d91886c4",
+  "old_control_function_sha256": "abb336eb15d67966afb4809adf7563f635e5aa8c365ae6bd4776e119c85cc508",
+  "fixed_function_source": "def _extract_net_data(benchmark: Benchmark, plc) -> NetData:\n    \"\"\"Extract pin-level net connectivity from PlacementCost into padded tensors.\"\"\"\n    # Map PlacementCost module index -> benchmark tensor index\n    plc_to_tensor = {}\n    for t_idx, p_idx in enumerate(benchmark.hard_macro_indices):\n        plc_to_tensor[p_idx] = t_idx\n    for i, p_idx in enumerate(benchmark.soft_macro_indices):\n        plc_to_tensor[p_idx] = benchmark.num_hard_macros + i\n\n    port_idx = benchmark.num_macros  # dummy macro at origin for ports\n\n    nets: List[List[tuple]] = []\n    net_weights: List[float] = []\n\n    for driver_name, sink_names in plc.nets.items():\n        d_idx = plc.mod_name_to_indices.get(driver_name)\n        if d_idx is None:\n            continue\n        driver_pin = plc.modules_w_pins[d_idx]\n        weight = driver_pin.get_weight()\n\n        pins = []\n        for pin_name in [driver_name] + sink_names:\n            pidx = plc.mod_name_to_indices.get(pin_name)\n            if pidx is None:\n                continue\n            pin = plc.modules_w_pins[pidx]\n            ptype = pin.get_type()\n\n            if ptype in (\"MACRO_PIN\", \"SOFT_MACRO_PIN\"):\n                # PLC ownership preserves hierarchical macro names.\n                parent_name = pin.get_macro_name()\n                parent_pidx = plc.mod_name_to_indices.get(parent_name)\n                if parent_pidx is None or parent_pidx not in plc_to_tensor:\n                    continue\n                t_idx = plc_to_tensor[parent_pidx]\n                xo, yo = pin.get_offset()\n                pins.append((t_idx, xo, yo))\n            elif ptype == \"PORT\":\n                x, y = pin.get_pos()\n                pins.append((port_idx, x, y))\n\n        if len(pins) >= 2:\n            nets.append(pins)\n            net_weights.append(weight)\n\n    num_nets = len(nets)\n    total_net_count = len(plc.nets)\n\n    if num_nets == 0:\n        return NetData(\n            pin_macro_idx=torch.zeros(0, 1, dtype=torch.long),\n            pin_offsets=torch.zeros(0, 1, 2),\n            mask=torch.zeros(0, 1, dtype=torch.bool),\n            weights=torch.zeros(0),\n            num_macros=benchmark.num_macros,\n            total_net_count=max(total_net_count, 1),\n        )\n\n    max_pins = max(len(n) for n in nets)\n\n    pin_macro_idx = torch.zeros(num_nets, max_pins, dtype=torch.long)\n    pin_offsets = torch.zeros(num_nets, max_pins, 2)\n    mask = torch.zeros(num_nets, max_pins, dtype=torch.bool)\n\n    for j, net in enumerate(nets):\n        for k, (midx, xo, yo) in enumerate(net):\n            pin_macro_idx[j, k] = midx\n            pin_offsets[j, k, 0] = xo\n            pin_offsets[j, k, 1] = yo\n            mask[j, k] = True\n\n    return NetData(\n        pin_macro_idx=pin_macro_idx,\n        pin_offsets=pin_offsets,\n        mask=mask,\n        weights=torch.tensor(net_weights, dtype=torch.float32),\n        num_macros=benchmark.num_macros,\n        total_net_count=max(total_net_count, 1),\n    )\n",
+  "old_control_function_source": "def _extract_net_data(benchmark: Benchmark, plc) -> NetData:\n    \"\"\"Extract pin-level net connectivity from PlacementCost into padded tensors.\"\"\"\n    # Map PlacementCost module index -> benchmark tensor index\n    plc_to_tensor = {}\n    for t_idx, p_idx in enumerate(benchmark.hard_macro_indices):\n        plc_to_tensor[p_idx] = t_idx\n    for i, p_idx in enumerate(benchmark.soft_macro_indices):\n        plc_to_tensor[p_idx] = benchmark.num_hard_macros + i\n\n    port_idx = benchmark.num_macros  # dummy macro at origin for ports\n\n    nets: List[List[tuple]] = []\n    net_weights: List[float] = []\n\n    for driver_name, sink_names in plc.nets.items():\n        d_idx = plc.mod_name_to_indices.get(driver_name)\n        if d_idx is None:\n            continue\n        driver_pin = plc.modules_w_pins[d_idx]\n        weight = driver_pin.get_weight()\n\n        pins = []\n        for pin_name in [driver_name] + sink_names:\n            pidx = plc.mod_name_to_indices.get(pin_name)\n            if pidx is None:\n                continue\n            pin = plc.modules_w_pins[pidx]\n            ptype = pin.get_type()\n\n            if ptype in (\"MACRO_PIN\", \"SOFT_MACRO_PIN\"):\n                # PLC ownership preserves hierarchical macro names.\n                parent_name = pin_name.split(\"/\")[0]\n                parent_pidx = plc.mod_name_to_indices.get(parent_name)\n                if parent_pidx is None or parent_pidx not in plc_to_tensor:\n                    continue\n                t_idx = plc_to_tensor[parent_pidx]\n                xo, yo = pin.get_offset()\n                pins.append((t_idx, xo, yo))\n            elif ptype == \"PORT\":\n                x, y = pin.get_pos()\n                pins.append((port_idx, x, y))\n\n        if len(pins) >= 2:\n            nets.append(pins)\n            net_weights.append(weight)\n\n    num_nets = len(nets)\n    total_net_count = len(plc.nets)\n\n    if num_nets == 0:\n        return NetData(\n            pin_macro_idx=torch.zeros(0, 1, dtype=torch.long),\n            pin_offsets=torch.zeros(0, 1, 2),\n            mask=torch.zeros(0, 1, dtype=torch.bool),\n            weights=torch.zeros(0),\n            num_macros=benchmark.num_macros,\n            total_net_count=max(total_net_count, 1),\n        )\n\n    max_pins = max(len(n) for n in nets)\n\n    pin_macro_idx = torch.zeros(num_nets, max_pins, dtype=torch.long)\n    pin_offsets = torch.zeros(num_nets, max_pins, 2)\n    mask = torch.zeros(num_nets, max_pins, dtype=torch.bool)\n\n    for j, net in enumerate(nets):\n        for k, (midx, xo, yo) in enumerate(net):\n            pin_macro_idx[j, k] = midx\n            pin_offsets[j, k, 0] = xo\n            pin_offsets[j, k, 1] = yo\n            mask[j, k] = True\n\n    return NetData(\n        pin_macro_idx=pin_macro_idx,\n        pin_offsets=pin_offsets,\n        mask=mask,\n        weights=torch.tensor(net_weights, dtype=torch.float32),\n        num_macros=benchmark.num_macros,\n        total_net_count=max(total_net_count, 1),\n    )\n",
+  "benchmarks": [
+    {
+      "benchmark": "ibm01",
+      "hard_macros": 246,
+      "raw_hard_pin_objects": 2978,
+      "hard_pin_occurrences_in_net_traversal": 2978,
+      "unique_used_hard_pin_names": 2978,
+      "plc_nets": 5993,
+      "old_ownership": {
+        "retained_nets": 5993,
+        "retained_pin_occurrences": 16815,
+        "hard_pin_occurrences": 2978
+      },
+      "fixed_ownership": {
+        "retained_nets": 5993,
+        "retained_pin_occurrences": 16815,
+        "hard_pin_occurrences": 2978
+      },
+      "inputs": {
+        "external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt": "ca97cee4652966bc0afc16562ccc9aec224de31de1cfb317b61972a4ba1a4c96",
+        "external/MacroPlacement/Testcases/ICCAD04/ibm01/initial.plc": "f5202ce7295ba2ae38781a6a658b5affaa0ee933110ec071f41dd14961b133ad"
+      }
+    },
+    {
+      "benchmark": "ariane133",
+      "hard_macros": 133,
+      "raw_hard_pin_objects": 7847,
+      "hard_pin_occurrences_in_net_traversal": 5498,
+      "unique_used_hard_pin_names": 5498,
+      "plc_nets": 12422,
+      "old_ownership": {
+        "retained_nets": 10799,
+        "retained_pin_occurrences": 37393,
+        "hard_pin_occurrences": 0
+      },
+      "fixed_ownership": {
+        "retained_nets": 12422,
+        "retained_pin_occurrences": 44514,
+        "hard_pin_occurrences": 5498
+      },
+      "inputs": {
+        "external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt": "a54bc9ef70a32e2e0b19c312427a46622f5d40bf294a4b7d0594af7e4440efd3",
+        "external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/initial.plc": "6d85f1cce904ceb19ad9726b8d3eee3d17387c2552d74e67e5f9350a5e269bbe"
+      }
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "classification": "problem_background_and_referee_integration_revision_verification",
+  "report_version": "0.4",
+  "date": "2026-09-08",
+  "pdf": "output/pdf/thinkorplace-technical-report.pdf",
+  "pdf_sha256": "3c422b549c8e58c0617edbc15c5018b057d3f800537103c26053ff398cab2681",
+  "pages": 27,
+  "sources": {
+    "writeup/latex/main.tex": "fc09c4692653e344cf4fff65d5ae29125a3410786e2ce2702f0b0f2aba007ce0",
+    "writeup/latex/sections/problem_background.tex": "d162611f0869a5f0cb7cf439d40db17f832cdab82f285dfe746c51ea118e3eaa",
+    "writeup/latex/sections/mathematical_analysis.tex": "29f625b3f7f6aeeb390e6dc3108463c10e3149eb3e18f7f220eefe67b349fc24",
+    "writeup/latex/references.bib": "466a960edd611f265f183fb481605d977930835ebd32aa34ec9fc33bfb615b03",
+    "writeup/latex/generated/curvature_diagnostics.tex": "acef38d36f1d6ca6762f247525e72d287b9805cc47730c7d77e70cd22cde072d",
+    "scripts/render_publication_curvature.py": "730dc6cb72a72c9d65202fe25309b8d09e7d3d90d112868e9328a98be65bd5ab",
+    "writeup/latex/README.md": "f98af54e99238b78b5ca71d93dec644ac06cf8d51757b4550c6da1ce312a8a0b",
+    "writeup/latex/CHANGELOG.md": "f9881eb4863947f1145bb44b2b49a271c3df37ababd9f344db6839870249b65d",
+    "writeup/website-summary.md": "6fe7e6138bffdb300e503dec9b59a4b237823c944090d4e7a4c50c30a0f9abac",
+    "writeup/data/publication/README.md": "771b39414677a7785a546d19e194a7641fd8539a0cf7880a8164543ab0b57b74"
+  },
+  "mechanical_check": "make -C writeup/latex check: zero failures; no LaTeX warnings, overflowing boxes, missing citations or references.",
+  "visual_review": "All 27 final pages inspected at rendered reading size. Independent reviews covered pages 3\u201313 and 14\u201327; root reviewed opening, corrected table flow, and final bibliography. Final render changed only pages 8\u20139, both re-inspected; all other final PNGs match reviewed hashes.",
+  "background_review": "Independent factual/prose review; physical-design wording, benchmark-net count, grid-bin terminology, and schematic captions corrected.",
+  "evidence_unchanged": {
+    "runtime_files": 66,
+    "historical_records": 71,
+    "referee_artifacts": 17
+  },
+  "runtime_source_identity": "5aa4c719cf18dc2508d9493e581fe08cc54729a88a7f4166383ea15b820ab3e3",
+  "previous_release": "output/pdf/releases/thinkorplace-technical-report-v0.3-2026-09-07.pdf",
+  "website_package": "output/publication/thinkorplace.zip",
+  "website_package_sha256": "d06913fff71b953dfe58d45038cfb0e61eb1c384c32ad4793f04d56ee59558d0",
+  "package_verification": "Every packaged file matches its manifest and ZIP entry; archive integrity check passed.",
+  "scope": "Added problem background, schematic, two primary documentation references, and completed referee diagnostic findings; no solver edits, new optimization runs, cloud compute, or deployment.",
+  "outstanding": "The controlled 51-run full-suite comparison remains unexecuted."
+}

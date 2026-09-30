@@ -1,0 +1,189 @@
+<div id="thinkorplace-placement-comparison">
+  <h3>Saved placements before and after cascade refinement</h3>
+  <div class="viz-controls">
+    <label class="form-label">Benchmark<select class="form-select" data-benchmark></select></label>
+    <label class="form-label">Inspect macro<select class="form-select" data-macro></select></label>
+  </div>
+  <div class="viz-row text-small">
+    <span><span class="tp-key tp-before"></span>Before cascade · <span class="tabular-nums" data-before-score></span></span>
+    <span><span class="tp-key tp-after"></span>After cascade · <span class="tabular-nums" data-after-score></span></span>
+  </div>
+  <div class="text-small" data-change></div>
+  <div class="tp-plot">
+    <svg role="img" aria-label="Recorded hard macro positions before and after historical cascade refinement on IBM01. A divider compares the two saved snapshots."></svg>
+  </div>
+  <label class="form-label" for="tp-divider">Comparison divider</label>
+  <input class="form-range" id="tp-divider" type="range" min="0" max="100" value="50" aria-valuetext="Before on the left, after on the right; divider at 50 percent">
+  <div class="text-small tp-detail" data-detail aria-live="polite">246 hard macros · historical E74 → E84 snapshots</div>
+  <div class="tooltip tp-tooltip" role="tooltip" hidden></div>
+  <script type="application/json" id="tp-placement-data">__PLACEMENT_DATA__</script>
+</div>
+<style>
+  #thinkorplace-placement-comparison { position: relative; }
+  #thinkorplace-placement-comparison .tp-key { display: inline-block; width: 9px; height: 9px; margin-right: 5px; }
+  #thinkorplace-placement-comparison .tp-before { background: var(--viz-series-1); }
+  #thinkorplace-placement-comparison .tp-after { background: var(--viz-series-2); }
+  #thinkorplace-placement-comparison .tp-plot { width: 100%; max-width: 520px; margin: 0 auto; }
+  #thinkorplace-placement-comparison .tp-plot svg { display: block; width: 100%; }
+  #thinkorplace-placement-comparison .tp-plot text { fill: var(--foreground); font-size: 12px; }
+  #thinkorplace-placement-comparison .tp-detail { overflow-wrap: anywhere; }
+  #thinkorplace-placement-comparison .tp-tooltip { position: absolute; pointer-events: none; max-width: 260px; background: var(--popover); color: var(--popover-foreground); }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script>
+(() => {
+  const root = document.getElementById('thinkorplace-placement-comparison');
+  const records = JSON.parse(document.getElementById('tp-placement-data').textContent);
+  let data = records[0];
+  const svg = d3.select(root.querySelector('svg'));
+  const plot = root.querySelector('.tp-plot');
+  const slider = root.querySelector('#tp-divider');
+  const detail = root.querySelector('[data-detail]');
+  const tooltip = root.querySelector('.tp-tooltip');
+  const benchmarkSelect = root.querySelector('[data-benchmark]');
+  const macroSelect = root.querySelector('[data-macro]');
+  records.forEach(record => {
+    const option = document.createElement('option');
+    option.value = record.benchmark;
+    option.textContent = record.benchmark.toUpperCase();
+    benchmarkSelect.append(option);
+  });
+  let selected = null;
+  function updateLabels() {
+  root.querySelector('[data-before-score]').textContent = data.before.toFixed(5);
+  root.querySelector('[data-after-score]').textContent = data.after.toFixed(5);
+  root.querySelector('[data-change]').textContent =
+    `${((data.after / data.before - 1) * 100).toFixed(2)}% canonical proxy cost · ${data.overlaps} final hard-macro overlaps`;
+    detail.textContent = `${data.n} hard macros · historical E74 → E84 snapshots`;
+    svg.attr('aria-label', `${data.benchmark.toUpperCase()} saved hard macro positions before and after historical cascade refinement.`);
+    macroSelect.replaceChildren();
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Select a macro';
+    macroSelect.append(placeholder);
+    data.macros.forEach((macro, index) => {
+      const option = document.createElement('option');
+      option.value = String(index);
+      option.textContent = macro[0];
+      macroSelect.append(option);
+    });
+  }
+  let geometry = null;
+
+  function selectMacro(macro) {
+    selected = macro;
+    svg.selectAll('rect.tp-macro').attr('fill-opacity', m => !macro || m === macro ? .5 : .2)
+      .attr('stroke-width', m => m === macro ? 1.5 : .6);
+    svg.selectAll('[data-movement]').remove();
+    if (!macro) {
+      detail.textContent = `${data.n} hard macros · historical E74 → E84 snapshots`;
+      return;
+    }
+    const displacement = Math.hypot(macro[5]-macro[3], macro[6]-macro[4]);
+    detail.textContent = `${macro[0]} · ${macro[1].toFixed(2)} × ${macro[2].toFixed(2)} µm · moved ${displacement.toFixed(3)} µm`;
+    macroSelect.value = String(data.macros.indexOf(macro));
+    if (geometry) {
+      const {x,y} = geometry;
+      svg.append('line').attr('data-movement','').attr('x1',x(macro[3])).attr('y1',y(macro[4]))
+        .attr('x2',x(macro[5])).attr('y2',y(macro[6])).attr('stroke','var(--foreground)')
+        .attr('stroke-width',2).attr('pointer-events','none');
+    }
+  }
+
+  function updateDivider() {
+    if (!geometry) return;
+    const {left, top, innerWidth, innerHeight} = geometry;
+    const cut = left + innerWidth * Number(slider.value) / 100;
+    svg.select('#tp-after-clip rect').attr('x',cut).attr('width',left + innerWidth - cut);
+    svg.select('[data-divider]').attr('x1',cut).attr('x2',cut).attr('y1',top).attr('y2',top+innerHeight);
+    slider.setAttribute('aria-valuetext',`Before on the left, after on the right; divider at ${slider.value} percent`);
+    tooltip.hidden = true;
+  }
+
+  function draw() {
+    const width = Math.round(plot.getBoundingClientRect().width);
+    if (width < 1) return;
+    const left=64, right=18, top=18, bottom=52;
+    const innerWidth = width-left-right;
+    const innerHeight = innerWidth * data.height / data.width;
+    const height=top+innerHeight+bottom;
+    const x=d3.scaleLinear().domain([0,data.width]).range([left,left+innerWidth]);
+    const y=d3.scaleLinear().domain([0,data.height]).range([top+innerHeight,top]);
+    geometry={left,top,innerWidth,innerHeight,x,y};
+    svg.attr('viewBox',`0 0 ${width} ${height}`).attr('height',height);
+    svg.selectAll('*').remove();
+    svg.append('title').text(`${data.benchmark.toUpperCase()} hard macros: recorded placements before and after cascade refinement`);
+    svg.append('desc').text('Lower proxy cost is better. Drag the comparison divider to reveal the two saved placements. These are historical E74 and E84 results, not the final v2 ensemble or an optimization replay.');
+    const defs=svg.append('defs');
+    defs.append('clipPath').attr('id','tp-after-clip').append('rect').attr('y',top).attr('height',innerHeight);
+    defs.append('clipPath').attr('id','tp-frame-clip').append('rect').attr('x',left).attr('y',top).attr('width',innerWidth).attr('height',innerHeight);
+    const frame=svg.append('g').attr('clip-path','url(#tp-frame-clip)');
+    const old=frame.append('g');
+    const revised=frame.append('g').attr('clip-path','url(#tp-after-clip)');
+    revised.append('rect').attr('x',left).attr('y',top).attr('width',innerWidth).attr('height',innerHeight).attr('fill','var(--background)');
+    function paint(group, offset, color) {
+      group.selectAll('rect.tp-macro').data(data.macros).join('rect').attr('class','tp-macro')
+        .attr('x',m=>x(m[offset]-m[1]/2)).attr('y',m=>y(m[offset+1]+m[2]/2))
+        .attr('width',m=>m[1]*innerWidth/data.width).attr('height',m=>m[2]*innerHeight/data.height)
+        .attr('fill',color).attr('fill-opacity',0.38).attr('stroke',color).attr('stroke-opacity',0.78).attr('stroke-width',0.6);
+    }
+    paint(old,3,'var(--viz-series-1)');
+    paint(revised,5,'var(--viz-series-2)');
+    svg.append('rect').attr('data-chart-frame','').attr('x',left).attr('y',top).attr('width',innerWidth).attr('height',innerHeight).attr('fill','none').attr('stroke','var(--border)');
+    const xTicks=[0,data.width/2,data.width];
+    xTicks.forEach((v,i)=>svg.append('text').attr('x',x(v)).attr('y',top+innerHeight+21)
+      .attr('text-anchor',i===0?'start':i===2?'end':'middle').text(v===0?'0':v.toFixed(1)));
+    [0,data.height/2,data.height].forEach(v=>svg.append('text').attr('x',left-10).attr('y',y(v)+4).attr('text-anchor','end').text(v===0?'0':v.toFixed(1)));
+    svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('x',left+innerWidth/2).attr('y',height-8).attr('text-anchor','middle').text('x (µm)');
+    svg.append('text').attr('class','axis-title').attr('data-axis','y').attr('transform',`translate(15,${top+innerHeight/2}) rotate(-90)`).attr('text-anchor','middle').text('y (µm)');
+    svg.append('line').attr('data-divider','').attr('stroke','var(--foreground)').attr('stroke-width',1.5);
+    const hit=svg.append('rect').attr('data-chart-hit','').attr('x',left).attr('y',top).attr('width',innerWidth).attr('height',innerHeight).attr('fill','transparent');
+    function inspect(event,pinned) {
+      const [sx,sy]=d3.pointer(event,svg.node());
+      const before=sx <= left+innerWidth*Number(slider.value)/100;
+      const offset=before?3:5, px=x.invert(sx), py=y.invert(sy);
+      let nearest=null, distance=Infinity;
+      for(const m of data.macros) {
+        const dx=Math.max(0,Math.abs(m[offset]-px)-m[1]/2);
+        const dy=Math.max(0,Math.abs(m[offset+1]-py)-m[2]/2);
+        const d=dx*dx+dy*dy;
+        if(d<distance){distance=d;nearest=m;}
+      }
+      if(!nearest) return;
+      const m=nearest;
+      const displacement=Math.hypot(m[5]-m[3],m[6]-m[4]);
+      const message=`${m[0]} · ${m[1].toFixed(2)} × ${m[2].toFixed(2)} µm · moved ${displacement.toFixed(2)} µm`;
+      if(pinned){ selectMacro(m); tooltip.hidden=true; }
+      else {
+        tooltip.textContent=`${before?'Before':'After'} · ${message}`;
+        tooltip.hidden=false;
+        const box=root.getBoundingClientRect();
+        tooltip.style.left=`${Math.max(0,Math.min(event.clientX-box.left+12,box.width-tooltip.offsetWidth))}px`;
+        tooltip.style.top=`${Math.max(0,event.clientY-box.top-tooltip.offsetHeight-12)}px`;
+      }
+    }
+    hit.on('pointermove',event=>{if(event.pointerType!=='touch')inspect(event,false);});
+    hit.on('pointerleave',()=>{tooltip.hidden=true;});
+    hit.on('click',event=>inspect(event,true));
+    updateDivider();
+    selectMacro(selected);
+    requestAnimationFrame(()=>{
+      const bounds=svg.node().getBoundingClientRect();
+      const labels=[...svg.node().querySelectorAll('text')].map(e=>e.getBoundingClientRect());
+      root.dataset.labelsFit=String(labels.every(b=>b.left>=bounds.left-1&&b.top>=bounds.top-1&&b.right<=bounds.right+1&&b.bottom<=bounds.bottom+1));
+    });
+  }
+  slider.addEventListener('input',updateDivider);
+  benchmarkSelect.addEventListener('change', () => {
+    data = records.find(record => record.benchmark === benchmarkSelect.value);
+    selected = null;
+    tooltip.hidden = true;
+    updateLabels();
+    draw();
+  });
+  macroSelect.addEventListener('change', () => selectMacro(macroSelect.value === '' ? null : data.macros[Number(macroSelect.value)]));
+  updateLabels();
+  new ResizeObserver(draw).observe(plot);
+  draw();
+})();
+</script>

@@ -34,7 +34,7 @@ import importlib.util
 import sys
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
 
 import torch
 
@@ -42,6 +42,7 @@ _ROOT = Path(__file__).resolve().parents[3]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
+from submissions.common.runtime_safety import monotonic_seconds, checkpoint, require_time, valid_placement
 from macro_place.benchmark import Benchmark
 from macro_place.bench_paths import find_benchmark_dir
 from macro_place.loader import load_benchmark_from_dir
@@ -88,6 +89,7 @@ class CDLNSSACascadeStackedPlacer:
         budget_seconds: Optional[float] = 3300.0,
         rng_seed: int = 42,
         verbose: bool = True,
+        checkpoint_dir: Optional[str] = None,
     ):
         self.cascade_max_iters = cascade_max_iters
         self.cascade_eps_values = cascade_eps_values
@@ -99,6 +101,7 @@ class CDLNSSACascadeStackedPlacer:
         self.budget_seconds = budget_seconds
         self.rng_seed = rng_seed
         self.verbose = verbose
+        self.checkpoint_dir = checkpoint_dir
         # Three non-canonical weights: canonical is handled by cascade_saddle.
         self.portfolio = [
             (1.0, 0.0, 1.0),  # cong-focus
@@ -109,8 +112,9 @@ class CDLNSSACascadeStackedPlacer:
     def place(self, benchmark: Benchmark) -> torch.Tensor:
         log = lambda s: print(s, flush=True) if self.verbose else None
         log(f"=== CDLNSSACascadeStackedPlacer ({benchmark.name}) ===")
-        t0 = time.time()
-        deadline = t0 + self.budget_seconds if self.budget_seconds else None
+        t0 = monotonic_seconds()
+        deadline = t0 + self.budget_seconds if self.budget_seconds is not None else None
+        require_time(deadline)
 
         bench_dir = find_benchmark_dir(benchmark.name)
         _, plc = load_benchmark_from_dir(str(bench_dir))
@@ -135,27 +139,34 @@ class CDLNSSACascadeStackedPlacer:
             e25_kwargs = e41_kwargs = {}
             cascade_budget_target = portfolio_budget_target = None
 
+        def save(pos, phase):
+            path = Path(self.checkpoint_dir) / f"v1_{phase}.pkl" if self.checkpoint_dir else None
+            return checkpoint(path, pos, benchmark, plc, phase, t0)
+
+        require_time(deadline)
         log("  Phase 1: E25 (CDLNSSAPlacer)")
         e25 = None
         e25_proxy = float("inf")
         try:
             e25 = CDLNSSAPlacer(**e25_kwargs).place(benchmark)
-            e25_proxy = float(compute_proxy_cost(e25, benchmark, plc)["proxy_cost"])
-            log(f"  E25 done: proxy={e25_proxy:.5f} (wall={time.time() - t0:.0f}s)")
+            e25_proxy = save(e25, "e25")["proxy"]
+            log(f"  E25 done: proxy={e25_proxy:.5f} (wall={monotonic_seconds() - t0:.0f}s)")
         except Exception as exc:
+            e25 = None
             log(f"  E25 FAILED ({exc}); continuing with E41 only")
 
         e41 = None
         e41_proxy = float("inf")
-        if deadline is not None and (deadline - time.time()) < 300.0:
-            log(f"  Phase 2: SKIPPED ({deadline - time.time():.0f}s left)")
+        if deadline is not None and (deadline - monotonic_seconds()) < 300.0:
+            log(f"  Phase 2: SKIPPED ({deadline - monotonic_seconds():.0f}s left)")
         else:
             log("  Phase 2: E41 (CDLNSSADPOKJointPlacer)")
             try:
                 e41 = CDLNSSADPOKJointPlacer(**e41_kwargs).place(benchmark)
-                e41_proxy = float(compute_proxy_cost(e41, benchmark, plc)["proxy_cost"])
-                log(f"  E41 done: proxy={e41_proxy:.5f} (wall={time.time() - t0:.0f}s)")
+                e41_proxy = save(e41, "e41")["proxy"]
+                log(f"  E41 done: proxy={e41_proxy:.5f} (wall={monotonic_seconds() - t0:.0f}s)")
             except Exception as exc:
+                e41 = None
                 log(f"  E41 FAILED ({exc}); will skip E41 lane")
 
         if e25 is None and e41 is None:
@@ -173,10 +184,10 @@ class CDLNSSACascadeStackedPlacer:
         cascade_state = plateau
         cascade_proxy = plateau_proxy
         if deadline is not None:
-            remaining = deadline - time.time()
+            remaining = deadline - monotonic_seconds()
             cascade_budget = min(
                 cascade_budget_target if cascade_budget_target else remaining,
-                max(remaining - portfolio_budget_target - 60.0, 60.0)
+                max(remaining - portfolio_budget_target - 60.0, 0.0)
                 if portfolio_budget_target else remaining,
             )
         else:
@@ -196,8 +207,7 @@ class CDLNSSACascadeStackedPlacer:
                     total_budget_s=cascade_budget,
                     log=lambda s: None,
                 )
-                cascade_proxy = float(compute_proxy_cost(
-                    cascade_state, benchmark, plc)["proxy_cost"])
+                cascade_proxy = save(cascade_state, "cascade")["proxy"]
                 log(f"  cascade done: {cascade_proxy:.5f} iters={stats.get('iters_run', '?')}")
             except Exception as exc:
                 log(f"  cascade failed: {exc}; falling back to plateau")
@@ -208,7 +218,7 @@ class CDLNSSACascadeStackedPlacer:
         portfolio_state = cascade_state
         portfolio_proxy = cascade_proxy
         if deadline is not None:
-            remaining = deadline - time.time()
+            remaining = deadline - monotonic_seconds()
             portfolio_budget = remaining - 30.0
         else:
             portfolio_budget = 600.0
@@ -230,8 +240,7 @@ class CDLNSSACascadeStackedPlacer:
                     rng_seed=self.rng_seed,
                     log=lambda s: None,
                 )
-                portfolio_proxy = float(compute_proxy_cost(
-                    portfolio_state, benchmark, plc)["proxy_cost"])
+                portfolio_proxy = save(portfolio_state, "portfolio")["proxy"]
                 log(f"  portfolio done: {portfolio_proxy:.5f} iters={stats.get('iters_run', '?')}")
             except Exception as exc:
                 log(f"  portfolio failed: {exc}; falling back to cascade plateau")
@@ -251,7 +260,7 @@ class CDLNSSACascadeStackedPlacer:
         chosen = None
         for proxy_i, placement_i, name_i in candidates:
             ovl_i = compute_overlap_metrics(placement_i, benchmark)["overlap_count"]
-            if ovl_i == 0:
+            if ovl_i == 0 and valid_placement(placement_i, benchmark)[0]:
                 chosen = (proxy_i, placement_i, name_i)
                 break
             log(f"  WARNING: {name_i} has {ovl_i} overlaps; falling through")
@@ -263,5 +272,5 @@ class CDLNSSACascadeStackedPlacer:
 
         log(f"  WINNER: {best_name} proxy={best_proxy:.5f} "
             f"({', '.join(f'{n}={p:.5f}' for p, _, n in candidates)})  "
-            f"total wall={time.time() - t0:.0f}s")
+            f"total wall={monotonic_seconds() - t0:.0f}s")
         return best_placement

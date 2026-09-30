@@ -1,0 +1,12 @@
+{
+  "classification": "document_and_asset_verification",
+  "pdf": "output/pdf/thinkorplace-technical-report.pdf",
+  "pdf_sha256": "52e7e9d000922438eed8ed07bb1e820d03c2563bf40bb929815375c6a4de1ff7",
+  "pages": 21,
+  "latex_source": "writeup/latex/main.tex",
+  "latex_source_sha256": "5acd1aadb69b83215e035a10a7a03948b9af74b444688ae11686f0e856e0c615",
+  "visual_review": "All pages inspected; changed pages re-rendered and rechecked. Cover, contents, equations, plots, tables, appendix headings, and bibliography reviewed.",
+  "build_check": "latexmk converged; final main.log contains no warnings, undefined references, or overfull boxes.",
+  "browser_check": "writeup/interactive/qa/checks.json",
+  "scope": "Layout and interaction verification; does not establish a controlled solver-quality result."
+}

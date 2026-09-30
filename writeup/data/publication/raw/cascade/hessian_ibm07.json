@@ -1,0 +1,132 @@
+{
+  "bench_name": "ibm07",
+  "start_basin": "E41",
+  "start_proxy": 1.0939724445343018,
+  "starting_proxy_recompute": 1.0939724445343018,
+  "best_proxy": 1.075741171836853,
+  "improvement": 0.01823127269744873,
+  "improvement_frac": 0.016665202847234134,
+  "final_proxy": 1.075741171836853,
+  "final_overlap": 0,
+  "n_eigvecs": 2,
+  "eigenvalues": [
+    -0.05079233486877914,
+    -0.047178557846036126
+  ],
+  "n_attempts": 12,
+  "n_feasible": 10,
+  "attempts": [
+    {
+      "eig": 0,
+      "sign": 1.0,
+      "eps": 0.3,
+      "feasible": true,
+      "polished_proxy": 1.0778937339782715,
+      "polished_overlap": 0,
+      "wall": 250.943500995636
+    },
+    {
+      "eig": 0,
+      "sign": 1.0,
+      "eps": 1.0,
+      "feasible": true,
+      "polished_proxy": 1.0794873237609863,
+      "polished_overlap": 0,
+      "wall": 251.12295508384705
+    },
+    {
+      "eig": 0,
+      "sign": 1.0,
+      "eps": 3.0,
+      "feasible": false,
+      "residual": 1
+    },
+    {
+      "eig": 0,
+      "sign": -1.0,
+      "eps": 0.3,
+      "feasible": true,
+      "polished_proxy": 1.080627202987671,
+      "polished_overlap": 0,
+      "wall": 251.26312899589539
+    },
+    {
+      "eig": 0,
+      "sign": -1.0,
+      "eps": 1.0,
+      "feasible": true,
+      "polished_proxy": 1.0810017585754395,
+      "polished_overlap": 0,
+      "wall": 251.28204107284546
+    },
+    {
+      "eig": 0,
+      "sign": -1.0,
+      "eps": 3.0,
+      "feasible": true,
+      "polished_proxy": 1.0826826095581055,
+      "polished_overlap": 0,
+      "wall": 251.85680174827576
+    },
+    {
+      "eig": 1,
+      "sign": 1.0,
+      "eps": 0.3,
+      "feasible": true,
+      "polished_proxy": 1.0770083665847778,
+      "polished_overlap": 0,
+      "wall": 250.6980800628662
+    },
+    {
+      "eig": 1,
+      "sign": 1.0,
+      "eps": 1.0,
+      "feasible": true,
+      "polished_proxy": 1.0792100429534912,
+      "polished_overlap": 0,
+      "wall": 250.1393280029297
+    },
+    {
+      "eig": 1,
+      "sign": 1.0,
+      "eps": 3.0,
+      "feasible": true,
+      "polished_proxy": 1.0774030685424805,
+      "polished_overlap": 0,
+      "wall": 249.33456110954285
+    },
+    {
+      "eig": 1,
+      "sign": -1.0,
+      "eps": 0.3,
+      "feasible": true,
+      "polished_proxy": 1.075741171836853,
+      "polished_overlap": 0,
+      "wall": 249.09730195999146
+    },
+    {
+      "eig": 1,
+      "sign": -1.0,
+      "eps": 1.0,
+      "feasible": true,
+      "polished_proxy": 1.079094409942627,
+      "polished_overlap": 0,
+      "wall": 248.9646008014679
+    },
+    {
+      "eig": 1,
+      "sign": -1.0,
+      "eps": 3.0,
+      "feasible": false,
+      "residual": 6
+    }
+  ],
+  "wall_seconds": 2543.613161802292,
+  "args": {
+    "bench": "ibm07",
+    "n_eigvecs": 2,
+    "epsilons": "0.3,1.0,3.0",
+    "polish_budget": 240.0,
+    "start_from": "best"
+  }
+}

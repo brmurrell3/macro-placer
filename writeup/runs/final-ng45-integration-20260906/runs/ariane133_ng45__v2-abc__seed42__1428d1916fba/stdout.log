@@ -1,0 +1,109 @@
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 24, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+[lane1] start lane1 bench=ariane133_ng45 device=cpu seed=142 pid=62093 nthr=1
+[lane2] start lane2 bench=ariane133_ng45 device=cpu seed=242 pid=62094 nthr=1
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt
+[lane0] start lane0 bench=ariane133_ng45 device=cpu seed=42 pid=62092 nthr=1
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 24, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 24, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 24, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+[lane1] loaded bench dir=/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping
+[lane1]   descent attempt 1: ovl_end=10.0 steps=5
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt
+[lane0] loaded bench dir=/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping
+[lane0]   descent attempt 1: ovl_end=10.0 steps=5
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt
+[lane2] loaded bench dir=/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping
+[lane2]   descent attempt 1: ovl_end=10.0 steps=5
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 24, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 24, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 24, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 24, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 24, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 24, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+[lane2]   descent attempt 1: ovl=0
+[lane0]   descent attempt 1: ovl=0
+[lane1]   descent attempt 1: ovl=0
+[lane2]   basin: proxy=0.81081 wall=24s
+[lane0]   basin: proxy=0.81081 wall=24s
+[lane0]   [A] CD polish budget=0s
+[lane2]   [C] CD1 polish budget=0s
+[lane1]   basin: proxy=0.81081 wall=24s
+[lane1]   [B] CD1 polish budget=0s
+[lane0]   FINAL lane0: proxy=0.81081 ovl=0 wall=45s
+[lane2]   [C] after CD1: proxy=0.81081 ovl=0 wall=45s
+[lane2]   [C] Hungarian budget=300s K=50 n_slots=100 reject_patience=15
+[lane1]   [B] after CD1: proxy=0.81081 ovl=0 wall=45s
+[lane1]   [B] saddle budget=120s
+[lane1]     [saddle] [bounded-cascade] init proxy: 0.81081
+[lane1]     [saddle] [bounded-cascade] iter 0: budget would be exceeded (elapsed=0s, remaining=14s, threshold=60s)
+[lane1]     [saddle] [bounded-cascade] done: init=0.81081 best=0.81081 delta=+0.00000 wall=0s iters=0
+[lane1]   [B] saddle accept: 0.81081 -> 0.81081
+  [laneA] start lane0 bench=ariane133_ng45 device=cpu seed=42 pid=62092 nthr=1
+  [laneA] loaded bench dir=/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping
+  [laneA]   descent attempt 1: ovl_end=10.0 steps=5
+  [laneA]   descent attempt 1: ovl=0
+  [laneA]   basin: proxy=0.81081 wall=24s
+  [laneA]   [A] CD polish budget=0s
+  laneA OK: proxy=0.81081 wall=38s
+  [laneB] start lane1 bench=ariane133_ng45 device=cpu seed=142 pid=62093 nthr=1
+  [laneB] loaded bench dir=/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping
+  [laneB]   descent attempt 1: ovl_end=10.0 steps=5
+  [laneB]   descent attempt 1: ovl=0
+  [laneB]   basin: proxy=0.81081 wall=24s
+  [laneB]   [B] CD1 polish budget=0s
+  laneB OK: proxy=0.81081 wall=39s
+  [laneC] start lane2 bench=ariane133_ng45 device=cpu seed=242 pid=62094 nthr=1
+  [laneC] loaded bench dir=/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping
+  [laneC]   descent attempt 1: ovl_end=10.0 steps=5
+  [laneC]   descent attempt 1: ovl=0
+  [laneC]   basin: proxy=0.81081 wall=24s
+  [laneC]   [C] CD1 polish budget=0s
+  laneC OK: proxy=0.81081 wall=39s
+v2 PICK=A proxy=0.81081

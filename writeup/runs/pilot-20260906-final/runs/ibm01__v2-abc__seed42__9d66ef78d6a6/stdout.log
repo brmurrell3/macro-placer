@@ -1,0 +1,139 @@
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+[lane1] start lane1 bench=ibm01 device=cpu seed=142 pid=28957 nthr=1
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[lane0] start lane0 bench=ibm01 device=cpu seed=42 pid=28956 nthr=1
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[lane2] start lane2 bench=ibm01 device=cpu seed=242 pid=28958 nthr=1
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+[lane1] loaded bench dir=/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01
+[lane1]   descent attempt 1: ovl_end=10.0 steps=500
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[lane0] loaded bench dir=/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01
+[lane0]   descent attempt 1: ovl_end=10.0 steps=500
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[lane2] loaded bench dir=/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01
+[lane2]   descent attempt 1: ovl_end=10.0 steps=500
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+[INFO] Retrieving Meta information from .plc comments
+[INFO] Retrieving Meta information from .plc comments#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[PLACEMENT GRID] Col: 45, Row: 41
+
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+[INFO] Retrieving Meta information from .plc comments
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+[lane0]   descent attempt 1: ovl=0
+[lane2]   descent attempt 1: ovl=0
+[lane1]   descent attempt 1: ovl=0
+[lane0]   basin: proxy=0.91260 wall=19s
+[lane0]   [A] CD polish budget=30s
+[lane2]   basin: proxy=0.91260 wall=19s
+[lane1]   basin: proxy=0.91260 wall=19s
+[lane1]   [B] CD1 polish budget=30s
+[lane2]   [C] CD1 polish budget=30s
+[lane0]   FINAL lane0: proxy=0.83777 ovl=0 wall=53s
+[lane1]   [B] after CD1: proxy=0.83806 ovl=0 wall=53s
+[lane1]   [B] saddle budget=120s
+[lane2]   [C] after CD1: proxy=0.83797 ovl=0 wall=53s
+[lane2]   [C] Hungarian budget=300s K=50 n_slots=100 reject_patience=15
+[lane1]     [saddle] [bounded-cascade] init proxy: 0.83806
+[lane1]     [saddle] [bounded-cascade] iter 1/2 (elapsed=0s, remaining=120s)
+[lane1]     [saddle]   [bounded] n_macros=1140, n_free=2280, maxiter=50, tol=1e-02
+[lane1]     [saddle]   [bounded] Lanczos done in 2.2s; eigvals = [-0.18315489]
+[lane1]     [saddle]   lambda_min = -1.8315e-01 (eig_wall=2.2s)
+[lane2]   [C] H iter 1: seed=43 acc=False streak=1 elapsed=0s best=0.83925
+[lane2]   [C] H iter 2: seed=44 acc=False streak=2 elapsed=6s best=0.83925
+[lane2]   [C] H iter 3: seed=45 acc=False streak=3 elapsed=12s best=0.83925
+[lane2]   [C] H iter 10: seed=52 acc=False streak=10 elapsed=49s best=0.83925
+[lane1]     [saddle]   iter1 sign=+1 eps=0.3: NEW BEST 0.82787
+[lane2]   [C] Hungarian: iters=15 acc=0 stop=saturation wall=86s best=0.83925 canonical=0.83797
+[lane2]   [C] CD2 polish budget=37s
+[lane1]     [saddle] [bounded-cascade] iter 1: budget would be exceeded (elapsed=120s, remaining=-0s, threshold=144s)
+[lane1]     [saddle] [bounded-cascade] done: init=0.83806 best=0.82787 delta=-0.01019 wall=120s iters=1
+[lane1]   [B] saddle accept: 0.83806 -> 0.82787
+[lane1]   [B] CD2 polish budget=2s
+  [laneA] start lane0 bench=ibm01 device=cpu seed=42 pid=28956 nthr=1
+  [laneA] loaded bench dir=/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01
+  [laneA]   descent attempt 1: ovl_end=10.0 steps=500
+  [laneA]   descent attempt 1: ovl=0
+  [laneA]   basin: proxy=0.91260 wall=19s
+  [laneA]   [A] CD polish budget=30s
+  laneA OK: proxy=0.83777 wall=52s
+  [laneB] start lane1 bench=ibm01 device=cpu seed=142 pid=28957 nthr=1
+  [laneB] loaded bench dir=/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01
+  [laneB]   descent attempt 1: ovl_end=10.0 steps=500
+  [laneB]   descent attempt 1: ovl=0
+  [laneB]   basin: proxy=0.91260 wall=19s
+  [laneB]   [B] CD1 polish budget=30s
+  [laneB]   [B] after CD1: proxy=0.83806 ovl=0 wall=53s
+  [laneB]   [B] saddle budget=120s
+  [laneB]     [saddle] [bounded-cascade] init proxy: 0.83806
+  [laneB]     [saddle] [bounded-cascade] iter 1/2 (elapsed=0s, remaining=120s)
+  [laneB]     [saddle]   [bounded] n_macros=1140, n_free=2280, maxiter=50, tol=1e-02
+  [laneB]     [saddle]   [bounded] Lanczos done in 2.2s; eigvals = [-0.18315489]
+  [laneB]     [saddle]   lambda_min = -1.8315e-01 (eig_wall=2.2s)
+  [laneB]     [saddle]   iter1 sign=+1 eps=0.3: NEW BEST 0.82787
+  [laneB]     [saddle] [bounded-cascade] iter 1: budget would be exceeded (elapsed=120s, remaining=-0s, threshold=144s)
+  [laneB]     [saddle] [bounded-cascade] done: init=0.83806 best=0.82787 delta=-0.01019 wall=120s iters=1
+  [laneB]   [B] saddle accept: 0.83806 -> 0.82787
+  laneB OK: proxy=0.82787 wall=178s
+  [laneC] start lane2 bench=ibm01 device=cpu seed=242 pid=28958 nthr=1
+  [laneC] loaded bench dir=/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01
+  [laneC]   descent attempt 1: ovl_end=10.0 steps=500
+  [laneC]   descent attempt 1: ovl=0
+  [laneC]   basin: proxy=0.91260 wall=19s
+  [laneC]   [C] CD1 polish budget=30s
+  [laneC]   [C] after CD1: proxy=0.83797 ovl=0 wall=53s
+  [laneC]   [C] Hungarian budget=300s K=50 n_slots=100 reject_patience=15
+  [laneC]   [C] H iter 1: seed=43 acc=False streak=1 elapsed=0s best=0.83925
+  [laneC]   [C] H iter 2: seed=44 acc=False streak=2 elapsed=6s best=0.83925
+  [laneC]   [C] H iter 3: seed=45 acc=False streak=3 elapsed=12s best=0.83925
+  [laneC]   [C] H iter 10: seed=52 acc=False streak=10 elapsed=49s best=0.83925
+  [laneC]   [C] Hungarian: iters=15 acc=0 stop=saturation wall=86s best=0.83925 canonical=0.83797
+  laneC OK: proxy=0.83797 wall=143s
+v2 PICK=B proxy=0.82787

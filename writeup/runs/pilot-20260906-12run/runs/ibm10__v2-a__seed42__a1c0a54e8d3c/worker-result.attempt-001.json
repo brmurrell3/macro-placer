@@ -1,0 +1,15 @@
+{
+  "environment": {
+    "python_executable": "/Users/brendan/Developer/macro-place-challenge-2026/.venv/bin/python",
+    "python_version": "3.9.6",
+    "worker_runtime": "worker failed before complete environment capture"
+  },
+  "error": "ModuleNotFoundError: No module named 'thinkorplace'",
+  "finished_at": "2026-09-06T16:47:16.494331+00:00",
+  "identity_sha256": "a1c0a54e8d3c818b27f036b461bcb9d599a7d2df0253106d2883895723867d47",
+  "run_id": "ibm10__v2-a__seed42__a1c0a54e8d3c",
+  "schema_version": 1,
+  "status": "error",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 547, in main\n    request = json.loads(request_path.read_text(encoding=\"utf-8\"))\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 429, in run_request\n    _, plc = load_benchmark_from_dir(str(benchmark_info[\"source_dir\"]))\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/importlib/__init__.py\", line 127, in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n  File \"<frozen importlib._bootstrap>\", line 1030, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1007, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 972, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 228, in _call_with_frames_removed\n  File \"<frozen importlib._bootstrap>\", line 1030, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1007, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 972, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 228, in _call_with_frames_removed\n  File \"<frozen importlib._bootstrap>\", line 1030, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1007, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 984, in _find_and_load_unlocked\nModuleNotFoundError: No module named 'thinkorplace'\n",
+  "valid": false
+}

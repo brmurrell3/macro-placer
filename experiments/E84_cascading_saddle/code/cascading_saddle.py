@@ -30,6 +30,7 @@ if str(_ROOT) not in sys.path:
 from hessian_saddle import SmoothProxy, find_softest_eigenvectors
 
 from macro_place.bench_paths import find_benchmark_dir
+from submissions.common.runtime_safety import monotonic_seconds
 from macro_place.cd_core import project_overlaps, run_cd_adaptive
 from macro_place.incremental_evaluator import IncrementalProxyEvaluator
 from macro_place.loader import load_benchmark_from_dir
@@ -73,12 +74,12 @@ def cascading_saddle_escape(
     best_state = state.detach().clone()
 
     iter_log = []
-    t_start = time.time()
+    t_start = monotonic_seconds()
     smooth = SmoothProxy(benchmark, plc)
     avg_iter_wall = 0.0  # rolling estimate of per-iter cost
 
     for it in range(max_iters):
-        elapsed = time.time() - t_start
+        elapsed = monotonic_seconds() - t_start
         remaining = total_budget_s - elapsed
         # Stop if remaining is less than the predicted next-iter cost. For
         # the first iter, fall back to a 60s safety floor; subsequent iters
@@ -90,16 +91,16 @@ def cascading_saddle_escape(
                 f"threshold={threshold:.0f}s based on avg iter {avg_iter_wall:.0f}s)")
             break
 
-        iter_t_start = time.time()
+        iter_t_start = monotonic_seconds()
         log(f"[cascade] iter {it+1}/{max_iters} (elapsed={elapsed:.0f}s, "
             f"remaining={remaining:.0f}s, predicted_iter_wall={threshold:.0f}s)")
 
         # Find soft mode.
-        t_eig = time.time()
+        t_eig = monotonic_seconds()
         eigvals, eigvecs = find_softest_eigenvectors(
             smooth, state, movable_np, k=1, log=lambda s: None,
         )
-        eig_wall = time.time() - t_eig
+        eig_wall = monotonic_seconds() - t_eig
         if len(eigvals) == 0:
             log(f"  no eigvecs returned; stopping cascade")
             break
@@ -135,7 +136,7 @@ def cascading_saddle_escape(
 
         for sign in [+1.0, -1.0]:
             for eps in eps_values:
-                if (time.time() - t_start) > total_budget_s - 30:
+                if (monotonic_seconds() - t_start) > total_budget_s - 30:
                     break
                 pp = state_np + sign * eps * v_unit
                 pp[:, 0] = np.clip(pp[:, 0], hw_np, cw - hw_np)
@@ -147,9 +148,12 @@ def cascading_saddle_escape(
                 if ovl > 0:
                     continue
                 ev = IncrementalProxyEvaluator(benchmark, plc, cand.clone())
+                cd_remaining = min(polish_budget, max(0.0, total_budget_s - (monotonic_seconds() - t_start)))
+                if cd_remaining <= 0:
+                    break
                 run_cd_adaptive(
                     ev, benchmark, plc, movable_idx,
-                    min_time_s=30.0, hard_cap_s=polish_budget,
+                    min_time_s=min(30.0, cd_remaining), hard_cap_s=cd_remaining,
                     patience=3, plateau_threshold=0.001, log_fn=None,
                 )
                 polished = ev.placement.detach().clone().to(torch.float32)
@@ -163,7 +167,7 @@ def cascading_saddle_escape(
                         f"NEW BEST {pol_proxy:.5f} (Δ vs init={pol_proxy - init_proxy:+.5f})")
 
         # Update rolling avg iter wall (used to predict next-iter cost)
-        iter_wall = time.time() - iter_t_start
+        iter_wall = monotonic_seconds() - iter_t_start
         if avg_iter_wall == 0.0:
             avg_iter_wall = iter_wall
         else:
@@ -183,7 +187,7 @@ def cascading_saddle_escape(
             log(f"  no improvement (< {min_improvement:.0e}); cascade saturated")
             break
 
-    total_wall = time.time() - t_start
+    total_wall = monotonic_seconds() - t_start
     log(f"[cascade] done: init={init_proxy:.5f} best={best_proxy:.5f} "
         f"Δ={best_proxy - init_proxy:+.5f} wall={total_wall:.0f}s iters={len(iter_log)}")
 

@@ -1,0 +1,78 @@
+{
+  "completed_run_count": 3,
+  "degraded_run_count": 2,
+  "finished_run_count": 3,
+  "manifest_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/final-ng45-integration-20260906/manifest.json",
+  "pipeline_completed_run_count": 1,
+  "planned_run_count": 3,
+  "runs": [
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "incomplete_phases": [
+        "cascade",
+        "e41",
+        "periphery",
+        "portfolio"
+      ],
+      "phase_errors": {},
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/final-ng45-integration-20260906/runs/ariane133_ng45__v1__seed42__24678f1b018d/result.json",
+      "run_id": "ariane133_ng45__v1__seed42__24678f1b018d",
+      "solver_outcome": "partial_phase_completion",
+      "status": "completed",
+      "study_eligible": true,
+      "usable_operating_result": true,
+      "used_fallback": false,
+      "valid": true,
+      "worker_error": null
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "incomplete_phases": [],
+      "phase_errors": {},
+      "pipeline_completed": true,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/final-ng45-integration-20260906/runs/ariane133_ng45__v2-a__seed42__7cd2ba1d3e18/result.json",
+      "run_id": "ariane133_ng45__v2-a__seed42__7cd2ba1d3e18",
+      "solver_outcome": "pipeline_completed",
+      "status": "completed",
+      "study_eligible": true,
+      "usable_operating_result": true,
+      "used_fallback": false,
+      "valid": true,
+      "worker_error": null
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [
+        "B",
+        "C"
+      ],
+      "incomplete_phases": [
+        "B.cd2",
+        "B.final",
+        "B.saddle",
+        "C.cd2",
+        "C.final",
+        "C.hungarian"
+      ],
+      "phase_errors": {},
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/final-ng45-integration-20260906/runs/ariane133_ng45__v2-abc__seed42__1428d1916fba/result.json",
+      "run_id": "ariane133_ng45__v2-abc__seed42__1428d1916fba",
+      "solver_outcome": "partial_phase_completion",
+      "status": "completed",
+      "study_eligible": true,
+      "usable_operating_result": true,
+      "used_fallback": false,
+      "valid": true,
+      "worker_error": null
+    }
+  ],
+  "schema_version": 1,
+  "study_eligible_run_count": 3,
+  "updated_at": "2026-09-06T17:54:08.081849+00:00",
+  "usable_operating_result_count": 3,
+  "valid_run_count": 3
+}

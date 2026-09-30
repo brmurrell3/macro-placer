@@ -81,7 +81,8 @@ def _extract_net_data(benchmark: Benchmark, plc) -> NetData:
             ptype = pin.get_type()
 
             if ptype in ("MACRO_PIN", "SOFT_MACRO_PIN"):
-                parent_name = pin_name.split("/")[0]
+                # PLC ownership preserves hierarchical macro names.
+                parent_name = pin.get_macro_name()
                 parent_pidx = plc.mod_name_to_indices.get(parent_name)
                 if parent_pidx is None or parent_pidx not in plc_to_tensor:
                     continue

@@ -1,0 +1,28 @@
+{
+  "classification": "mathematical_analysis_revision_verification",
+  "report_version": "0.3",
+  "date": "2026-09-07",
+  "pdf": "output/pdf/thinkorplace-technical-report.pdf",
+  "pdf_sha256": "f454bf548fa8b993b847a446a6a6e3697b41adb13b9d0adf39d671b5806d327b",
+  "pages": 25,
+  "sources": {
+    "writeup/latex/main.tex": "4da8f2bb51913d9a0c58f59c948f0ecdcd8840a5aeac9219c1876d7579e06e4c",
+    "writeup/latex/sections/mathematical_analysis.tex": "cff84507a1adb0dbbcb339b3db8ea13eb77fd83955fd5a2802cbf27b79349cc1",
+    "writeup/latex/Makefile": "0bc4a772589908a1af53e59810a39fe2fff2a715ada5ff64c472a705de1db457",
+    "writeup/latex/EDITORIAL_STANDARDS.md": "4113bd0afed037836a31bf915ad7658b8b597c41859740c449fde0f3afdbd47c",
+    "writeup/latex/CHANGELOG.md": "716002e0d6a34d85f422eb9b2eb594d3008117325f318f12af0b9ff50df80466",
+    "writeup/website-summary.md": "484c442e03842a453e48fc99c7f9bd3c0d53b5b46d92df33eb16a17cdfa297c4"
+  },
+  "mechanical_check": "make -C writeup/latex check; zero hard failures, no LaTeX warnings, overfull boxes, or underfull boxes",
+  "mathematical_review": {
+    "proof_review": "Independent review of geometry, cache invariant, score-error bound, top-k lemma, curvature decrease, spectral residual, and assignment counterexample; all requested corrections applied.",
+    "implementation_review": "Separate source audit of scoring factors, selection arguments, acceptance thresholds, finite-penalty assignment, and distinct pins per net; no remaining correction.",
+    "scope": "Conditional elementary results and an analytic HPWL counterexample; no new convergence theorem or new empirical quality claim."
+  },
+  "visual_review": "All 25 final pages reviewed at rendered reading size. Pages 15\u201325 refreshed after the final mathematical wording changes; page 14 unaffected by those changes.",
+  "runtime_unchanged": true,
+  "runtime_files_verified": 66,
+  "runtime_source_identity": "5aa4c719cf18dc2508d9493e581fe08cc54729a88a7f4166383ea15b820ab3e3",
+  "previous_release": "output/pdf/releases/thinkorplace-technical-report-v0.2-2026-09-07.pdf",
+  "scope": "LaTeX mathematics, editorial standards, and website summary revision; no solver edits or new placement experiments."
+}

@@ -1,0 +1,16 @@
+{
+  "classification": "editorial_revision_verification",
+  "report_version": "0.2",
+  "date": "2026-09-07",
+  "pdf": "output/pdf/thinkorplace-technical-report.pdf",
+  "pdf_sha256": "e23662b5b1a7b7c59e42e970c5aff236aac29cb6b2297e57cb88e1ef370fab3b",
+  "pages": 22,
+  "source": "writeup/latex/main.tex",
+  "source_sha256": "190d9170bac4f3ea9c48f1e7ce8d1f90160e218cfd41593f7ecd5bc765633810",
+  "mechanical_check": "make -C writeup/latex check; passed with zero hard failures and no LaTeX warnings or overfull/underfull boxes",
+  "visual_review": "All 22 pages reviewed. Revised flow pages inspected; pages 3, 4, 7, 8 retained identical content streams to the prior visually inspected build.",
+  "negative_check": "An isolated copy with a missing required generated fragment was rejected.",
+  "runtime_unchanged": true,
+  "runtime_source_identity": "5aa4c719cf18dc2508d9493e581fe08cc54729a88a7f4166383ea15b820ab3e3",
+  "scope": "Editorial and typesetting revision; no new solver-quality result or runtime test run."
+}

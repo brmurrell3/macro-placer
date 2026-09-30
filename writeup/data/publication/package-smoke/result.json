@@ -1,0 +1,51 @@
+{
+  "valid": true,
+  "violations": [],
+  "canonical_cost": {
+    "proxy_cost": 1.1199359893798828,
+    "wirelength_cost": 0.07866178452968597,
+    "density_cost": 0.8415384888648987,
+    "congestion_cost": 1.2410098173827284,
+    "overlap_count": 0,
+    "total_overlap_area": 0.0,
+    "max_overlap_area": 0.0,
+    "num_macros_with_overlaps": 0,
+    "overlap_ratio": 0.0
+  },
+  "metadata": {
+    "lanes": "A",
+    "timed_out_lanes": [],
+    "exitcodes": {
+      "A": 0
+    },
+    "lane_results": [
+      {
+        "status": "ok",
+        "phase": "final",
+        "wall": 12.706882999977097,
+        "proxy": 1.1199359893798828,
+        "lane_idx": 0,
+        "device": "cpu",
+        "num_threads": 1,
+        "rng_seed": 42,
+        "effective_rng_seed": 42,
+        "initializer_attempt": 1,
+        "initializer_method": "sdf",
+        "worker_status": "ok",
+        "worker_wall": 14.133305000024848
+      }
+    ],
+    "wall": 16.509007999964524,
+    "phase_completion": {
+      "A": {
+        "checkpoint_phase": "final",
+        "pipeline_completed": true,
+        "worker_status": "ok"
+      }
+    },
+    "solver_outcome": "pipeline_completed",
+    "used_fallback": false,
+    "picked_lane": "A",
+    "proxy": 1.1199359893798828
+  }
+}

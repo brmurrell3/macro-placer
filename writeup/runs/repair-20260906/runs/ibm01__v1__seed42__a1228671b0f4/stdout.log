@@ -1,0 +1,65 @@
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+=== CDLNSSACascadeStackedPeripheryPlacer (ibm01) ===
+  budget split: stacked=144.0s, periphery polish=180.0s
+=== CDLNSSACascadeStackedPlacer (ibm01) ===
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+  budget 144s; E25=46s E41=50s cascade≈29s portfolio≈19s
+  Phase 1: E25 (CDLNSSAPlacer)
+=== CDLNSSAPlacer (ibm01): CD cap=29s, LNS=9s, SA=9s ===
+  num_macros=1140, n_hard=246, canvas=22.9x23.0
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+  SDF init wall = 3.1 s
+  overlap projection: 0 iters, residual count=0
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+  init proxy=1.19532 [wl=0.0731 d=0.9426 c=1.3019]
+  starting CD phase (cap=29s)
+  sweep   1  elapsed=   13.5s  sweep_t=  13.5s  proxy=0.99807  Δ=+0.19725  accepted=1587/2280  gs=0  [wl=0.0878 d=0.7268 c=1.0936]
+  sweep   2  elapsed=   24.9s  sweep_t=  11.4s  proxy=0.95337  Δ=+0.04469  accepted=874/2280  gs=0  [wl=0.0853 d=0.6805 c=1.0557]
+  sweep   3  elapsed=   28.8s  sweep_t=   3.9s  proxy=0.94594  Δ=+0.00744  accepted=212/846  gs=0  [wl=0.0853 d=0.6741 c=1.0472]
+  CD done: exit=cap, sweeps=3, accepts=2673, wall=28.8s, proxy=0.94594
+  starting LNS phase (budget=9s)
+  LNS budget=9s, destroy K=12 (=5.0% of 246 hard movables, capped at 30), strategy=cost_aware
+  LNS sample 1: K=12, Δ=-0.01005 (moves=9/12), proxy=0.93588, sample_wall=8.6s, total elapsed=8.6s
+  LNS done: samples=1, Δ=-0.01005, wall=8.6s, proxy=0.93588
+  starting SA-v2 phase (budget=9s)
+  SA v2 budget=9s, T0=5.00e-04, Tf=1.00e-06, |H|=246, seed=42 (best-so-far tracking ON)
+  SA v2 done: proposed=4278, better=1255, worse=914, rejected=2109, skipped=234, init=0.93588, best=0.93110 (found at t=8.6s), chain-final=0.93110, restored=False, evaluator-final=0.93110
+  SA-v2 done: lift_vs_init=+0.00478, best=0.93110, final proxy=0.93110
+  TOTAL lifts: CD=+0.24939, LNS=+0.01005, SA=+0.00478
+  total wall: 50.0 s (SDF + project + CD + LNS + SA + validate)
+  E25 done: proxy=0.93106 (wall=52s)
+  Phase 2: SKIPPED (92s left)
+  plateau = E25 (0.93106)
+  Phase 3a: cascade SKIPPED (budget 13s)
+  Phase 3b: portfolio SKIPPED (budget 62s)
+  WINNER: cascade proxy=0.93106 (cascade=0.93106, portfolio=0.93106, E25=0.93106)  total wall=52s
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+  Lévy cascade done: proxy=0.93106 ovl=0 (wall=54s)
+  Periphery push α=0.01 + CD polish (budget 106s)
+  periphery done: proxy=0.87163 (+0.05943) ovl=7 (total wall=152s)
+  REJECT periphery (ovl=7, Δ=+0.05943); keeping Lévy

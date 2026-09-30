@@ -1,0 +1,13 @@
+error     valid=False eligible=False outcome=worker_did_not_complete ibm01__v1__seed42__42febdeb6671 (executed)
+error     valid=False eligible=False outcome=worker_did_not_complete ibm01__v2-a__seed42__79ebe33629b7 (executed)
+error     valid=False eligible=False outcome=worker_did_not_complete ibm01__v2-abc__seed42__554aa93eac77 (executed)
+error     valid=False eligible=False outcome=worker_did_not_complete ibm10__v1__seed42__b2535c6a79d9 (executed)
+error     valid=False eligible=False outcome=worker_did_not_complete ibm10__v2-a__seed42__a1c0a54e8d3c (executed)
+error     valid=False eligible=False outcome=worker_did_not_complete ibm10__v2-abc__seed42__407a636cc45f (executed)
+error     valid=False eligible=False outcome=worker_did_not_complete ibm17__v1__seed42__56880dfe5207 (executed)
+error     valid=False eligible=False outcome=worker_did_not_complete ibm17__v2-a__seed42__1735e5c43141 (executed)
+error     valid=False eligible=False outcome=worker_did_not_complete ibm17__v2-abc__seed42__f2b7322c5b7b (executed)
+error     valid=False eligible=False outcome=worker_did_not_complete ariane133_ng45__v1__seed42__dba494885d3b (executed)
+error     valid=False eligible=False outcome=worker_did_not_complete ariane133_ng45__v2-a__seed42__c688e3206813 (executed)
+error     valid=False eligible=False outcome=worker_did_not_complete ariane133_ng45__v2-abc__seed42__05a7bd72d9a5 (executed)
+finished 12 runs: 12 non-completed, 12 invalid, 12 study-ineligible

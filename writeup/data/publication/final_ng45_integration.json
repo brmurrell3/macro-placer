@@ -1,0 +1,575 @@
+{
+  "classification": "final_sdf_graph_integration_only",
+  "scope": "Three entry configurations on ariane133 after SDF graph repair; not a quality comparison.",
+  "configuration_note": "V2 uses five analytical steps and zero-second CD phase budgets. These options do not disable v1's distinct budget-derived CD stages.",
+  "manifest": "writeup/runs/final-ng45-integration-20260906/manifest.json",
+  "manifest_sha256": "d6a49f9d94373d016f35f758aa06f48a76105657a906926291a345a908a3d31c",
+  "run_count": 3,
+  "valid_count": 3,
+  "eligible_count": 3,
+  "pipeline_completed_count": 1,
+  "runs": [
+    {
+      "result_record": "writeup/runs/final-ng45-integration-20260906/runs/ariane133_ng45__v1__seed42__24678f1b018d/result.json",
+      "result_record_sha256": "5b3dc4452651f11ea4f84bd20a68e59b462d14ef80d5a14adceba70a518a7580",
+      "run_id": "ariane133_ng45__v1__seed42__24678f1b018d",
+      "identity_sha256": "24678f1b018d09ce4eb626865cf15d12500e2beed3d9bf82f2a43099e3d9d747",
+      "variant": "v1",
+      "status": "completed",
+      "valid": true,
+      "study_eligible": true,
+      "pipeline_completed": false,
+      "solver_outcome": "partial_phase_completion",
+      "canonical_cost": {
+        "congestion_cost": 0.7306708859420167,
+        "density_cost": 0.5530330538749695,
+        "proxy_cost": 0.7005422115325928,
+        "wirelength_cost": 0.05869024246931076
+      },
+      "legality": {
+        "full_legal": true,
+        "full_violations": [],
+        "hard_macro_overlap": {
+          "max_overlap_area": 0.0,
+          "num_macros_with_overlaps": 0,
+          "overlap_count": 0,
+          "overlap_ratio": 0.0,
+          "total_overlap_area": 0.0
+        },
+        "structural_legal_without_overlap": true,
+        "structural_violations_without_overlap": []
+      },
+      "timing": {
+        "benchmark_and_placer_setup_seconds": 1.1041116249999998,
+        "canonical_validation_and_export_seconds": 7.003752374999998,
+        "external_timeout_seconds": 120.0,
+        "input_verification_seconds": 0.006878124999999999,
+        "runtime_import_seconds": 0.77332,
+        "solver_budget_seconds": 60.0,
+        "solver_place_seconds": 34.608329625,
+        "worker_through_environment_capture_seconds": 43.543894542
+      },
+      "supervisor": {
+        "memory_sample_count": 347,
+        "peak_memory_scope": "observed_process_group_member_rss_sum",
+        "peak_rss_bytes": 484229120,
+        "process_group_note": "RSS is summed over processes observed in the worker process group; it is not asserted to cover descendants that changed process group.",
+        "return_code": 0,
+        "status": "exited",
+        "terminate_grace_seconds": 2.0,
+        "timed_out": false,
+        "timeout_seconds": 120.0,
+        "wall_seconds": 44.017235708
+      },
+      "source": {
+        "evaluator_source_sha256": "5811dd0348480c2710d71c7395090163518e89f66af9853efcec695b3c1e075b",
+        "source_file_count": 33,
+        "source_files": [
+          "macro_place/__init__.py",
+          "macro_place/_plc.py",
+          "macro_place/bench_paths.py",
+          "macro_place/benchmark.py",
+          "macro_place/cd_core.py",
+          "macro_place/def_writer.py",
+          "macro_place/evaluate.py",
+          "macro_place/incremental_evaluator.py",
+          "macro_place/loader.py",
+          "macro_place/objective.py",
+          "macro_place/sdf_init.py",
+          "macro_place/utils.py",
+          "scripts/publication_worker.py",
+          "scripts/run_publication_study.py",
+          "thinkorplace/__init__.py",
+          "thinkorplace/common/__init__.py",
+          "thinkorplace/common/bench_paths.py",
+          "thinkorplace/common/cd_core.py",
+          "thinkorplace/common/hessian.py",
+          "thinkorplace/common/incremental_evaluator.py",
+          "thinkorplace/common/runtime_safety.py",
+          "thinkorplace/common/sdf_init.py",
+          "thinkorplace/common/smooth_primitives.py",
+          "thinkorplace/v1/__init__.py",
+          "thinkorplace/v1/cascade.py",
+          "thinkorplace/v1/cd_lns_sa.py",
+          "thinkorplace/v1/dpo_init.py",
+          "thinkorplace/v1/dpo_lane.py",
+          "thinkorplace/v1/joint_lns.py",
+          "thinkorplace/v1/levy.py",
+          "thinkorplace/v1/placer.py",
+          "thinkorplace/v1/portfolio.py",
+          "thinkorplace/v1/stacked.py"
+        ],
+        "variant_source_sha256": "cc5d088e2f4290019c30e4b4efbadec098fb98846a24b3f01ee24dd0b72480ce",
+        "worker_sha256": "2c9155af4078fd2f058205d2f1409775c32f57d9b5eb2d5ddaf74ea0e7e181ff"
+      },
+      "source_consistent": true,
+      "environment_matches_manifest": true,
+      "constructor_parameters": {
+        "budget_seconds": 60.0,
+        "checkpoint_dir": "<per-run-checkpoint-dir>",
+        "device": "cpu",
+        "num_threads": 3,
+        "rng_seed": 42
+      },
+      "phase_outcomes": {
+        "cascade": {
+          "accepted": null,
+          "attempted": false,
+          "completed": false,
+          "error": null,
+          "failed": false,
+          "reason": "budget_exhausted",
+          "skipped": true
+        },
+        "e25": {
+          "accepted": true,
+          "attempted": true,
+          "completed": true,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "e41": {
+          "accepted": null,
+          "attempted": false,
+          "completed": false,
+          "error": null,
+          "failed": false,
+          "reason": "budget_exhausted",
+          "skipped": true
+        },
+        "periphery": {
+          "accepted": null,
+          "attempted": false,
+          "completed": false,
+          "error": null,
+          "failed": false,
+          "reason": "budget_exhausted",
+          "skipped": true
+        },
+        "portfolio": {
+          "accepted": null,
+          "attempted": false,
+          "completed": false,
+          "error": null,
+          "failed": false,
+          "reason": "budget_exhausted",
+          "skipped": true
+        }
+      }
+    },
+    {
+      "result_record": "writeup/runs/final-ng45-integration-20260906/runs/ariane133_ng45__v2-a__seed42__7cd2ba1d3e18/result.json",
+      "result_record_sha256": "350bab9184d6bddac0d2ccc63a6e8a23f97e2681adc9c1e2a8ef8bc06b6c1b6e",
+      "run_id": "ariane133_ng45__v2-a__seed42__7cd2ba1d3e18",
+      "identity_sha256": "7cd2ba1d3e1869f1636c4d7e1585119480b6fe8bfe23927cf42269caab88d0c8",
+      "variant": "v2-a",
+      "status": "completed",
+      "valid": true,
+      "study_eligible": true,
+      "pipeline_completed": true,
+      "solver_outcome": "pipeline_completed",
+      "canonical_cost": {
+        "congestion_cost": 0.7260488471996926,
+        "density_cost": 0.7885571122169495,
+        "proxy_cost": 0.8108091950416565,
+        "wirelength_cost": 0.053506236523389816
+      },
+      "legality": {
+        "full_legal": true,
+        "full_violations": [],
+        "hard_macro_overlap": {
+          "max_overlap_area": 0.0,
+          "num_macros_with_overlaps": 0,
+          "overlap_count": 0,
+          "overlap_ratio": 0.0,
+          "total_overlap_area": 0.0
+        },
+        "structural_legal_without_overlap": true,
+        "structural_violations_without_overlap": []
+      },
+      "timing": {
+        "benchmark_and_placer_setup_seconds": 0.990648541,
+        "canonical_validation_and_export_seconds": 5.906791959000003,
+        "external_timeout_seconds": 120.0,
+        "input_verification_seconds": 0.007286082999999999,
+        "runtime_import_seconds": 0.772820917,
+        "solver_budget_seconds": 60.0,
+        "solver_place_seconds": 45.736947291999996,
+        "worker_through_environment_capture_seconds": 53.464842
+      },
+      "supervisor": {
+        "memory_sample_count": 423,
+        "peak_memory_scope": "observed_process_group_member_rss_sum",
+        "peak_rss_bytes": 760086528,
+        "process_group_note": "RSS is summed over processes observed in the worker process group; it is not asserted to cover descendants that changed process group.",
+        "return_code": 0,
+        "status": "exited",
+        "terminate_grace_seconds": 2.0,
+        "timed_out": false,
+        "timeout_seconds": 120.0,
+        "wall_seconds": 53.710600458
+      },
+      "source": {
+        "evaluator_source_sha256": "5811dd0348480c2710d71c7395090163518e89f66af9853efcec695b3c1e075b",
+        "source_file_count": 35,
+        "source_files": [
+          "macro_place/__init__.py",
+          "macro_place/_plc.py",
+          "macro_place/bench_paths.py",
+          "macro_place/benchmark.py",
+          "macro_place/cd_core.py",
+          "macro_place/def_writer.py",
+          "macro_place/evaluate.py",
+          "macro_place/incremental_evaluator.py",
+          "macro_place/loader.py",
+          "macro_place/objective.py",
+          "macro_place/sdf_init.py",
+          "macro_place/utils.py",
+          "scripts/publication_worker.py",
+          "scripts/run_publication_study.py",
+          "thinkorplace/__init__.py",
+          "thinkorplace/common/__init__.py",
+          "thinkorplace/common/bench_paths.py",
+          "thinkorplace/common/cd_core.py",
+          "thinkorplace/common/hessian.py",
+          "thinkorplace/common/incremental_evaluator.py",
+          "thinkorplace/common/runtime_safety.py",
+          "thinkorplace/common/sdf_init.py",
+          "thinkorplace/common/smooth_primitives.py",
+          "thinkorplace/v2/__init__.py",
+          "thinkorplace/v2/bounded_saddle.py",
+          "thinkorplace/v2/fast_proxy.py",
+          "thinkorplace/v2/gaussian_density.py",
+          "thinkorplace/v2/kjoint_hungarian.py",
+          "thinkorplace/v2/macro_legalizer.py",
+          "thinkorplace/v2/per_net_trace_proxy.py",
+          "thinkorplace/v2/placer.py",
+          "thinkorplace/v2/smooth_global_placer_v4.py",
+          "thinkorplace/v2/smooth_global_placer_v4_gaussian.py",
+          "thinkorplace/v2/v4_gaussian_proxy.py",
+          "thinkorplace/v2/worker.py"
+        ],
+        "variant_source_sha256": "5f0bdb7a0bea1095b090726d2994a9fe982e84249a7a139b571f06147b48a221",
+        "worker_sha256": "2c9155af4078fd2f058205d2f1409775c32f57d9b5eb2d5ddaf74ea0e7e181ff"
+      },
+      "source_consistent": true,
+      "environment_matches_manifest": true,
+      "constructor_parameters": {
+        "budget_seconds": 60.0,
+        "cd_polish_s": 0.0,
+        "checkpoint_dir": "<per-run-checkpoint-dir>",
+        "device": "cpu",
+        "lane_a_seed": 42,
+        "lane_b_seed": 142,
+        "lane_c_seed": 242,
+        "lanes": "A",
+        "num_steps": 5,
+        "num_threads": 3
+      },
+      "phase_outcomes": {
+        "A": {
+          "cd": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        }
+      }
+    },
+    {
+      "result_record": "writeup/runs/final-ng45-integration-20260906/runs/ariane133_ng45__v2-abc__seed42__1428d1916fba/result.json",
+      "result_record_sha256": "c7235df51ce1ddc868e526225603d9e21363462f704ba6134f105e78f00e4f65",
+      "run_id": "ariane133_ng45__v2-abc__seed42__1428d1916fba",
+      "identity_sha256": "1428d1916fba4f519927b443ddf5f8b9d726ba65fece6b2e7f5a7379f50c59bf",
+      "variant": "v2-abc",
+      "status": "completed",
+      "valid": true,
+      "study_eligible": true,
+      "pipeline_completed": false,
+      "solver_outcome": "partial_phase_completion",
+      "canonical_cost": {
+        "congestion_cost": 0.7260488471996926,
+        "density_cost": 0.7885571122169495,
+        "proxy_cost": 0.8108091950416565,
+        "wirelength_cost": 0.053506236523389816
+      },
+      "legality": {
+        "full_legal": true,
+        "full_violations": [],
+        "hard_macro_overlap": {
+          "max_overlap_area": 0.0,
+          "num_macros_with_overlaps": 0,
+          "overlap_count": 0,
+          "overlap_ratio": 0.0,
+          "total_overlap_area": 0.0
+        },
+        "structural_legal_without_overlap": true,
+        "structural_violations_without_overlap": []
+      },
+      "timing": {
+        "benchmark_and_placer_setup_seconds": 0.9963941669999999,
+        "canonical_validation_and_export_seconds": 5.636347624999999,
+        "external_timeout_seconds": 120.0,
+        "input_verification_seconds": 0.0070877920000000025,
+        "runtime_import_seconds": 0.7730135840000001,
+        "solver_budget_seconds": 60.0,
+        "solver_place_seconds": 60.017356834,
+        "worker_through_environment_capture_seconds": 67.480400792
+      },
+      "supervisor": {
+        "memory_sample_count": 535,
+        "peak_memory_scope": "observed_process_group_member_rss_sum",
+        "peak_rss_bytes": 1730936832,
+        "process_group_note": "RSS is summed over processes observed in the worker process group; it is not asserted to cover descendants that changed process group.",
+        "return_code": 0,
+        "status": "exited",
+        "terminate_grace_seconds": 2.0,
+        "timed_out": false,
+        "timeout_seconds": 120.0,
+        "wall_seconds": 67.770194208
+      },
+      "source": {
+        "evaluator_source_sha256": "5811dd0348480c2710d71c7395090163518e89f66af9853efcec695b3c1e075b",
+        "source_file_count": 35,
+        "source_files": [
+          "macro_place/__init__.py",
+          "macro_place/_plc.py",
+          "macro_place/bench_paths.py",
+          "macro_place/benchmark.py",
+          "macro_place/cd_core.py",
+          "macro_place/def_writer.py",
+          "macro_place/evaluate.py",
+          "macro_place/incremental_evaluator.py",
+          "macro_place/loader.py",
+          "macro_place/objective.py",
+          "macro_place/sdf_init.py",
+          "macro_place/utils.py",
+          "scripts/publication_worker.py",
+          "scripts/run_publication_study.py",
+          "thinkorplace/__init__.py",
+          "thinkorplace/common/__init__.py",
+          "thinkorplace/common/bench_paths.py",
+          "thinkorplace/common/cd_core.py",
+          "thinkorplace/common/hessian.py",
+          "thinkorplace/common/incremental_evaluator.py",
+          "thinkorplace/common/runtime_safety.py",
+          "thinkorplace/common/sdf_init.py",
+          "thinkorplace/common/smooth_primitives.py",
+          "thinkorplace/v2/__init__.py",
+          "thinkorplace/v2/bounded_saddle.py",
+          "thinkorplace/v2/fast_proxy.py",
+          "thinkorplace/v2/gaussian_density.py",
+          "thinkorplace/v2/kjoint_hungarian.py",
+          "thinkorplace/v2/macro_legalizer.py",
+          "thinkorplace/v2/per_net_trace_proxy.py",
+          "thinkorplace/v2/placer.py",
+          "thinkorplace/v2/smooth_global_placer_v4.py",
+          "thinkorplace/v2/smooth_global_placer_v4_gaussian.py",
+          "thinkorplace/v2/v4_gaussian_proxy.py",
+          "thinkorplace/v2/worker.py"
+        ],
+        "variant_source_sha256": "5f0bdb7a0bea1095b090726d2994a9fe982e84249a7a139b571f06147b48a221",
+        "worker_sha256": "2c9155af4078fd2f058205d2f1409775c32f57d9b5eb2d5ddaf74ea0e7e181ff"
+      },
+      "source_consistent": true,
+      "environment_matches_manifest": true,
+      "constructor_parameters": {
+        "budget_seconds": 60.0,
+        "cd_polish_s": 0.0,
+        "checkpoint_dir": "<per-run-checkpoint-dir>",
+        "device": "cpu",
+        "lane_a_seed": 42,
+        "lane_b_seed": 142,
+        "lane_c_seed": 242,
+        "lanes": "ABC",
+        "num_steps": 5,
+        "num_threads": 3
+      },
+      "phase_outcomes": {
+        "A": {
+          "cd": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        },
+        "B": {
+          "cd1": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "cd2": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "saddle": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        },
+        "C": {
+          "cd1": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "cd2": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "hungarian": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        }
+      }
+    }
+  ]
+}

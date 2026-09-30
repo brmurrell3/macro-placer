@@ -1,0 +1,143 @@
+{
+  "label": "post-competition runtime extraction",
+  "competition_snapshot": "2ab92a33d352f0dbc4ba97d7c2bfad41ccf0ecfd",
+  "source_hash_basis": "Source worktree bytes at extraction, including preceding post-competition corrections; not hashes of the competition snapshot or final destination bytes.",
+  "policy": "Canonical infrastructure is imported unchanged. Original research modules remain historical compatibility sources; submission entries delegate to this package.",
+  "files": [
+    {
+      "source": "macro_place/cd_core.py",
+      "destination": "thinkorplace/common/cd_core.py",
+      "source_sha256": "640ae08848988f2ea7c2f81ca3422bc78cc06d806cb635317522e522ff25aa88"
+    },
+    {
+      "source": "macro_place/incremental_evaluator.py",
+      "destination": "thinkorplace/common/incremental_evaluator.py",
+      "source_sha256": "8932e9b2298c813c208d239875604d629aa9600b7c4501074947502a6a8deac8"
+    },
+    {
+      "source": "macro_place/sdf_init.py",
+      "destination": "thinkorplace/common/sdf_init.py",
+      "source_sha256": "00da10fec088726be30a5ba36057ffd9eb28199afea77364c8d6f07d6d1579a4"
+    },
+    {
+      "source": "macro_place/bench_paths.py",
+      "destination": "thinkorplace/common/bench_paths.py",
+      "source_sha256": "fc95158491d2f366d3033fbc0f837bcddda7c0d679bffaabdd3e0a59666d06f2"
+    },
+    {
+      "source": "submissions/common/runtime_safety.py",
+      "destination": "thinkorplace/common/runtime_safety.py",
+      "source_sha256": "6334e315725c66fbcd90ae4a150bc37aa6963457c540d70e319d137dcdb9e332"
+    },
+    {
+      "source": "submissions/thinkorplace-v2/lib/ablation_v2_steps.py",
+      "destination": "thinkorplace/common/smooth_primitives.py",
+      "source_sha256": "b6adc358712c72b6b503fd90815679e41233dcaba3879adf6351dad912235c26"
+    },
+    {
+      "source": "submissions/thinkorplace-v2/lib/hessian_saddle.py",
+      "destination": "thinkorplace/common/hessian.py",
+      "source_sha256": "ac281bcc41b65a70e25e6d84f057832c002bed7da4f587ea9be4e682567cb906"
+    },
+    {
+      "source": "submissions/common/cd_lns_sa/placer.py",
+      "destination": "thinkorplace/v1/cd_lns_sa.py",
+      "source_sha256": "39419e06a400627993af90e13c064871775d2573d9710d181b09317e95411e4f"
+    },
+    {
+      "source": "experiments/E18_dpo_init/code/cd_lns_sa_dpo_init.py",
+      "destination": "thinkorplace/v1/dpo_init.py",
+      "source_sha256": "1910df7622c7fa7a15ef9ebee822e425adc51af4ff590573be9a3699dd4f2098"
+    },
+    {
+      "source": "experiments/E39_kmacro_joint_lns/code/cd_lns_sa_kjoint.py",
+      "destination": "thinkorplace/v1/joint_lns.py",
+      "source_sha256": "9f19cc4f19360dd3d4c08609d47713e95388df6a46f3cbf4157cb4b46b460f1b"
+    },
+    {
+      "source": "experiments/E41_dpo_kjoint/code/cd_lns_sa_dpo_kjoint.py",
+      "destination": "thinkorplace/v1/dpo_lane.py",
+      "source_sha256": "56846b4d6dc7124347c4ff072898709eab9c2c7f64462d11215567014f092f4a"
+    },
+    {
+      "source": "experiments/E84_cascading_saddle/code/cascading_saddle.py",
+      "destination": "thinkorplace/v1/cascade.py",
+      "source_sha256": "fb2364f6ff88a052caa7afa492f1cba0fa67d0e28de23d708eda9c5b22b55429"
+    },
+    {
+      "source": "experiments/E100_weight_portfolio_saddle/code/portfolio_saddle.py",
+      "destination": "thinkorplace/v1/portfolio.py",
+      "source_sha256": "8552c17f6b5a3dd39c2ff4cbf719db2c54d41a7bb77431f1a20c9a2ca2e57fad"
+    },
+    {
+      "source": "experiments/E97_levy_saddle/code/levy_saddle.py",
+      "destination": "thinkorplace/v1/levy.py",
+      "source_sha256": "31da15fecb104669eef5dda981b1d56426a9e296009e7f523a15838e8cd8ce31"
+    },
+    {
+      "source": "submissions/common/cd_lns_sa_cascade_stacked/placer.py",
+      "destination": "thinkorplace/v1/stacked.py",
+      "source_sha256": "2e84364f332f95b754d97ae38b357dda2c4170263d256b1039fd7ac0f85ec169"
+    },
+    {
+      "source": "submissions/thinkorplace/placer.py",
+      "destination": "thinkorplace/v1/placer.py",
+      "source_sha256": "d22f60694a5b41d1566645ff732cfd23358eb69521f818de6131e0d8ac29fbf3"
+    },
+    {
+      "source": "submissions/thinkorplace-v2/lib/bounded_saddle.py",
+      "destination": "thinkorplace/v2/bounded_saddle.py",
+      "source_sha256": "ff3b595214155f5a0ae7390679fa050a26198ebff1a5c5ef0fa90fc3dcfda678"
+    },
+    {
+      "source": "submissions/thinkorplace-v2/lib/fast_proxy.py",
+      "destination": "thinkorplace/v2/fast_proxy.py",
+      "source_sha256": "fa508feac9066134a041e17e5d3b66d969337dd24590b209a96d35dc16bda3ba"
+    },
+    {
+      "source": "submissions/thinkorplace-v2/lib/gaussian_density.py",
+      "destination": "thinkorplace/v2/gaussian_density.py",
+      "source_sha256": "e0bddce16af5014ccc8e51098b71a2ca3d03247bb97c47761f8a2eb4a8f5618b"
+    },
+    {
+      "source": "submissions/thinkorplace-v2/lib/kjoint_hungarian.py",
+      "destination": "thinkorplace/v2/kjoint_hungarian.py",
+      "source_sha256": "1eb2bcaf037699d65a37337910e18f4f28ddd0d2dcad146f4355a9e7a093b269"
+    },
+    {
+      "source": "submissions/thinkorplace-v2/lib/macro_legalizer.py",
+      "destination": "thinkorplace/v2/macro_legalizer.py",
+      "source_sha256": "bcbcbb51ed43c48bb9fea53885be2e94617795d3b9e47c65f07373eece4d0e9e"
+    },
+    {
+      "source": "submissions/thinkorplace-v2/lib/per_net_trace_proxy.py",
+      "destination": "thinkorplace/v2/per_net_trace_proxy.py",
+      "source_sha256": "bc899429f671e16b3ddc1d5b76f8a34816d805ecdf7ed45d4d59ca31cc948cb0"
+    },
+    {
+      "source": "submissions/thinkorplace-v2/lib/smooth_global_placer_v4.py",
+      "destination": "thinkorplace/v2/smooth_global_placer_v4.py",
+      "source_sha256": "95d97e1ff5376d6a1373fa51548e9131fc6f571cf86efba034b5eac19a50f5fe"
+    },
+    {
+      "source": "submissions/thinkorplace-v2/lib/smooth_global_placer_v4_gaussian.py",
+      "destination": "thinkorplace/v2/smooth_global_placer_v4_gaussian.py",
+      "source_sha256": "dac6c5baf37daae276c2afa7f1ab8c9610da1b72dff18294cf0b5ac00137ca39"
+    },
+    {
+      "source": "submissions/thinkorplace-v2/lib/v4_gaussian_proxy.py",
+      "destination": "thinkorplace/v2/v4_gaussian_proxy.py",
+      "source_sha256": "496a34234ec34034a1f37db62bdb5e1957f2f7e46ea940dd19359e8fbba2e4b9"
+    },
+    {
+      "source": "submissions/thinkorplace-v2/lane_worker.py",
+      "destination": "thinkorplace/v2/worker.py",
+      "source_sha256": "2dd6336bb65a0665aee322d4a8859a3f383418a72074f34d509c1dd25f24e801"
+    },
+    {
+      "source": "submissions/thinkorplace-v2/placer.py",
+      "destination": "thinkorplace/v2/placer.py",
+      "source_sha256": "e0937211e5e207d5dd32072223ead8350589d79db8bb93c21061122db9e4f37d"
+    }
+  ]
+}

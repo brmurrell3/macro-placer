@@ -1,0 +1,24 @@
+{
+  "bench_name": "ibm04",
+  "init_proxy": 0.9922513961791992,
+  "best_proxy": 0.9906584620475769,
+  "improvement": 0.0015929341316223145,
+  "improvement_frac": 0.0016053735351304387,
+  "iters_run": 2,
+  "iter_log": [
+    {
+      "iter": 0,
+      "lam_min": -0.11881051556835637,
+      "proxy_after": 0.9906584620475769,
+      "improvement_this_iter": 0.0015929341316223145
+    },
+    {
+      "iter": 1,
+      "lam_min": -0.05079810385960735,
+      "proxy_after": 0.9906584620475769,
+      "improvement_this_iter": 0.0
+    }
+  ],
+  "final_overlap": 0,
+  "wall_seconds": 375.00767993927
+}

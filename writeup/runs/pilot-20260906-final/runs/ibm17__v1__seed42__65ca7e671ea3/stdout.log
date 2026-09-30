@@ -1,0 +1,59 @@
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm17/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 51, Row: 44
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+=== CDLNSSACascadeStackedPeripheryPlacer (ibm17) ===
+  budget split: stacked=144.0s, periphery polish=180.0s
+=== CDLNSSACascadeStackedPlacer (ibm17) ===
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm17/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 51, Row: 44
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+  budget 144s; E25=46s E41=50s cascade≈29s portfolio≈19s
+  Phase 1: E25 (CDLNSSAPlacer)
+=== CDLNSSAPlacer (ibm17): CD cap=29s, LNS=9s, SA=9s ===
+  num_macros=2604, n_hard=760, canvas=72.6x72.6
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm17/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 51, Row: 44
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+  SDF init wall = 12.6 s
+  overlap projection: 0 iters, residual count=0
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm17/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 51, Row: 44
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+  init proxy=1.74308 [wl=0.0541 d=0.9518 c=2.4262]
+  starting CD phase (cap=29s)
+  sweep   1  elapsed=   28.8s  sweep_t=  28.8s  proxy=1.55197  Δ=+0.19111  accepted=1488/1844  gs=0  [wl=0.0750 d=0.8236 c=2.1304]
+  CD done: exit=cap, sweeps=1, accepts=1488, wall=28.8s, proxy=1.55197
+  starting LNS phase (budget=9s)
+  LNS budget=9s, destroy K=30 (=5.0% of 760 hard movables, capped at 30), strategy=cost_aware
+  LNS sample 1: K=30, Δ=-0.00328 (moves=4/30), proxy=1.54870, sample_wall=8.6s, total elapsed=8.6s
+  LNS done: samples=1, Δ=-0.00328, wall=8.6s, proxy=1.54870
+  starting SA-v2 phase (budget=9s)
+  SA v2 budget=9s, T0=5.00e-04, Tf=1.00e-06, |H|=760, seed=42 (best-so-far tracking ON)
+  SA v2 done: proposed=6680, better=3107, worse=2930, rejected=643, skipped=377, init=1.54870, best=1.54131 (found at t=8.5s), chain-final=1.54131, restored=True, evaluator-final=1.54131
+  SA-v2 done: lift_vs_init=+0.00738, best=1.54131, final proxy=1.54131
+  TOTAL lifts: CD=+0.19111, LNS=+0.00328, SA=+0.00738
+  total wall: 64.1 s (SDF + project + CD + LNS + SA + validate)
+  E25 FAILED (Invalid e25 placement: ['Macros outside vertical canvas bounds']); continuing with E41 only
+  Phase 2: SKIPPED (77s left)
+Traceback (most recent call last):
+  File "/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py", line 603, in main
+    result = run_request(request)
+  File "/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py", line 492, in run_request
+    placement = placer.place(benchmark)
+  File "/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v1/placer.py", line 182, in place
+    base_placement = stacked.place(benchmark)
+  File "/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v1/stacked.py", line 168, in place
+    raise RuntimeError("Both E25 and E41 placers failed; cannot proceed")
+RuntimeError: Both E25 and E41 placers failed; cannot proceed

@@ -1,0 +1,260 @@
+{
+  "completed_run_count": 5,
+  "degraded_run_count": 11,
+  "finished_run_count": 12,
+  "manifest_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/manifest.json",
+  "pipeline_completed_run_count": 1,
+  "planned_run_count": 12,
+  "runs": [
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "incomplete_phases": [],
+      "phase_errors": {},
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ariane133_ng45__v1__seed42__07ce7f88a8b3/result.json",
+      "run_id": "ariane133_ng45__v1__seed42__07ce7f88a8b3",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "FileNotFoundError: Benchmark 'ariane133_ng45': no source dir found.\n  Tried: ['/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45/netlist/output_CT_Grouping', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ariane133_ng45/netlist/output_CT_Grouping', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/NG45/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/NG45/ariane133_ng45/netlist/output_CT_Grouping', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45/netlist/output_CT_Grouping']\n  Set $BENCH_ROOT to override the search root.",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 603, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 492, in run_request\n    placement = placer.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v1/placer.py\", line 182, in place\n    base_placement = stacked.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v1/stacked.py\", line 103, in place\n    bench_dir = find_benchmark_dir(benchmark.name)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/common/bench_paths.py\", line 69, in find_benchmark_dir\n    raise FileNotFoundError(\nFileNotFoundError: Benchmark 'ariane133_ng45': no source dir found.\n  Tried: ['/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45/netlist/output_CT_Grouping', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ariane133_ng45/netlist/output_CT_Grouping', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/NG45/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/NG45/ariane133_ng45/netlist/output_CT_Grouping', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45/netlist/output_CT_Grouping']\n  Set $BENCH_ROOT to override the search root.\n"
+      }
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "incomplete_phases": [],
+      "phase_errors": {},
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ariane133_ng45__v2-a__seed42__940f55b712ef/result.json",
+      "run_id": "ariane133_ng45__v2-a__seed42__940f55b712ef",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "RuntimeError: All lanes failed without a valid checkpoint",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 603, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 492, in run_request\n    placement = placer.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v2/placer.py\", line 256, in place\n    raise RuntimeError(\"All lanes failed without a valid checkpoint\")\nRuntimeError: All lanes failed without a valid checkpoint\n"
+      }
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "incomplete_phases": [],
+      "phase_errors": {},
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ariane133_ng45__v2-abc__seed42__a2e74642dcad/result.json",
+      "run_id": "ariane133_ng45__v2-abc__seed42__a2e74642dcad",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "RuntimeError: All lanes failed without a valid checkpoint",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 603, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 492, in run_request\n    placement = placer.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v2/placer.py\", line 256, in place\n    raise RuntimeError(\"All lanes failed without a valid checkpoint\")\nRuntimeError: All lanes failed without a valid checkpoint\n"
+      }
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "incomplete_phases": [
+        "cascade",
+        "e41",
+        "portfolio"
+      ],
+      "phase_errors": {},
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v1__seed42__35e91d781fe5/result.json",
+      "run_id": "ibm01__v1__seed42__35e91d781fe5",
+      "solver_outcome": "partial_phase_completion",
+      "status": "completed",
+      "study_eligible": true,
+      "usable_operating_result": true,
+      "used_fallback": false,
+      "valid": true,
+      "worker_error": null
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "incomplete_phases": [],
+      "phase_errors": {},
+      "pipeline_completed": true,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-a__seed42__e0d3cab82af9/result.json",
+      "run_id": "ibm01__v2-a__seed42__e0d3cab82af9",
+      "solver_outcome": "pipeline_completed",
+      "status": "completed",
+      "study_eligible": true,
+      "usable_operating_result": true,
+      "used_fallback": false,
+      "valid": true,
+      "worker_error": null
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [
+        "B",
+        "C"
+      ],
+      "incomplete_phases": [
+        "B.cd2",
+        "B.final",
+        "C.cd2",
+        "C.final"
+      ],
+      "phase_errors": {},
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-abc__seed42__9d66ef78d6a6/result.json",
+      "run_id": "ibm01__v2-abc__seed42__9d66ef78d6a6",
+      "solver_outcome": "checkpoint_recovery",
+      "status": "completed",
+      "study_eligible": true,
+      "usable_operating_result": true,
+      "used_fallback": true,
+      "valid": true,
+      "worker_error": null
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "incomplete_phases": [],
+      "phase_errors": {},
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v1__seed42__8c5b4ff5c291/result.json",
+      "run_id": "ibm10__v1__seed42__8c5b4ff5c291",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "RuntimeError: Both E25 and E41 placers failed; cannot proceed",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 603, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 492, in run_request\n    placement = placer.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v1/placer.py\", line 182, in place\n    base_placement = stacked.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v1/stacked.py\", line 168, in place\n    raise RuntimeError(\"Both E25 and E41 placers failed; cannot proceed\")\nRuntimeError: Both E25 and E41 placers failed; cannot proceed\n"
+      }
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [
+        "A"
+      ],
+      "incomplete_phases": [
+        "A.cd",
+        "A.final"
+      ],
+      "phase_errors": {},
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-a__seed42__092ef5a92391/result.json",
+      "run_id": "ibm10__v2-a__seed42__092ef5a92391",
+      "solver_outcome": "checkpoint_recovery",
+      "status": "completed",
+      "study_eligible": true,
+      "usable_operating_result": true,
+      "used_fallback": true,
+      "valid": true,
+      "worker_error": null
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [
+        "A",
+        "B",
+        "C"
+      ],
+      "incomplete_phases": [
+        "A.cd",
+        "A.final",
+        "B.cd1",
+        "B.cd2",
+        "B.final",
+        "B.saddle",
+        "C.cd1",
+        "C.cd2",
+        "C.final",
+        "C.hungarian"
+      ],
+      "phase_errors": {},
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-abc__seed42__7198ce733fe2/result.json",
+      "run_id": "ibm10__v2-abc__seed42__7198ce733fe2",
+      "solver_outcome": "checkpoint_recovery",
+      "status": "completed",
+      "study_eligible": true,
+      "usable_operating_result": true,
+      "used_fallback": true,
+      "valid": true,
+      "worker_error": null
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "incomplete_phases": [],
+      "phase_errors": {},
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm17__v1__seed42__65ca7e671ea3/result.json",
+      "run_id": "ibm17__v1__seed42__65ca7e671ea3",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "RuntimeError: Both E25 and E41 placers failed; cannot proceed",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 603, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 492, in run_request\n    placement = placer.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v1/placer.py\", line 182, in place\n    base_placement = stacked.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v1/stacked.py\", line 168, in place\n    raise RuntimeError(\"Both E25 and E41 placers failed; cannot proceed\")\nRuntimeError: Both E25 and E41 placers failed; cannot proceed\n"
+      }
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "incomplete_phases": [],
+      "phase_errors": {},
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm17__v2-a__seed42__60f27cf83f13/result.json",
+      "run_id": "ibm17__v2-a__seed42__60f27cf83f13",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "TimeoutError: Placement deadline exhausted without a valid lane checkpoint",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 603, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 492, in run_request\n    placement = placer.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v2/placer.py\", line 255, in place\n    raise TimeoutError(\"Placement deadline exhausted without a valid lane checkpoint\")\nTimeoutError: Placement deadline exhausted without a valid lane checkpoint\n"
+      }
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "incomplete_phases": [],
+      "phase_errors": {},
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm17__v2-abc__seed42__05a0010d5105/result.json",
+      "run_id": "ibm17__v2-abc__seed42__05a0010d5105",
+      "solver_outcome": "worker_did_not_complete",
+      "status": "error",
+      "study_eligible": false,
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "worker_error": {
+        "error": "TimeoutError: Placement deadline exhausted without a valid lane checkpoint",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 603, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 492, in run_request\n    placement = placer.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v2/placer.py\", line 255, in place\n    raise TimeoutError(\"Placement deadline exhausted without a valid lane checkpoint\")\nTimeoutError: Placement deadline exhausted without a valid lane checkpoint\n"
+      }
+    }
+  ],
+  "schema_version": 1,
+  "study_eligible_run_count": 5,
+  "updated_at": "2026-09-06T17:21:29.927391+00:00",
+  "usable_operating_result_count": 5,
+  "valid_run_count": 5
+}

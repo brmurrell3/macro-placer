@@ -1,0 +1,59 @@
+{
+  "classification": "referee_response_and_new_diagnostic_verification",
+  "date": "2026-09-07",
+  "artifacts_sha256": {
+    "docs/reviews/2026-09-07-external-referee.md": "09e003f67ab31b89135a064d47548cf5a1f015aad7db5737253bb688e64abcec",
+    "docs/reviews/2026-09-07-referee-response.md": "499a919925fea59bb20e29a80a7933db9b2938a3cfc6ef11b172d892f349027b",
+    "docs/reviews/2026-09-07-referee-history.md": "e4c2c1576bb0689d433ee0101fc53a84940723b25dc1f415c2c95326c4ddf948",
+    "docs/reviews/2026-09-07-curvature-followup.md": "db4e7dac4396c1d1ee2b4945353be74105924e7361fe99ddda9a822f26daef70",
+    "docs/reviews/2026-09-07-m6-e74-e84-rescore.md": "1075f7778f5a3772262e371c0a1270b97157c5ee5a41aef2b4bad4b6f7a2ed6d",
+    "scripts/analyze_publication_referee_context.py": "fd329aeaa2a8337852e58279d31ccd66b398d68a2a5235617731a1e1523854fa",
+    "scripts/measure_publication_tail_bounds.py": "3e13fc96d48b6aa3d267e852d526d5ee2b604897bc7b431971158ae791f3a851",
+    "scripts/diagnose_publication_curvature_followup.py": "b5ea5e543ced5885f8be2e096a2db0fbe03e68ee164edb51f1d70e04a5aa3299",
+    "scripts/rescore_publication_e74_e84.py": "5afa421979c83674290725d6721c1e67f34baf7905b1f5978aea34bd0390078f",
+    "scripts/audit_publication_e74_e84_geometry.py": "c2d4b6ada95c9a7e0eddc274737aa98d306371c89e4714cd316a512dbe95cbd8",
+    "writeup/data/publication/referee_context_20260907.json": "a89b6b5c52dc9f11c012d183bdfc99a2faa4bc419f917224e6a7eb84d9e13d84",
+    "writeup/data/publication/tail_bound_diagnostic_20260907.json": "f58d2d593b5a1e85456524f8aebe081e658ad46ccc338387b320c5f893305aaf",
+    "writeup/data/publication/curvature_followup_ibm01.json": "88c7311606159322498decbada619ba4a3c39d0d5a0ad2f64f94c9ab1ccd518f",
+    "writeup/data/publication/e74_e84_canonical_rescore_20260907.json": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7",
+    "writeup/data/publication/e74_e84_geometry_crosscheck_20260907.json": "34707a7ce353779de92e83c7f2e77f27f2340b6819e0774849d3d328c65c36b7",
+    "writeup/study/referee_first_repetition.json": "63bafd5710930ac45f6e081e8dd6fb8083ee9c2de8c45de02304bede25569152",
+    "writeup/runs/referee-first-repetition-plan-20260907/manifest.json": "4c685c6dea4f9cca9029df83d2d637db156cfd7e84e5ca43f7a0cdc9f0309c0b"
+  },
+  "unchanged_frozen_runtime_files": 66,
+  "unchanged_historical_source_records": 71,
+  "unchanged_pdf_version": "0.3",
+  "unchanged_pdf_sha256": "f454bf548fa8b993b847a446a6a6e3697b41adb13b9d0adf39d671b5806d327b",
+  "rescore_coverage": {
+    "completed_benchmarks": 17,
+    "target_benchmarks": 17,
+    "completed_placements": 34,
+    "target_placements": 34
+  },
+  "geometry_crosscheck_summary": {
+    "placements_checked": 34,
+    "canonical_agreement_count": 34,
+    "fully_legal_count": 22,
+    "strict_bounds_failure_count": 12,
+    "failure_ids": [
+      "ibm03_E84",
+      "ibm07_E74",
+      "ibm07_E84",
+      "ibm09_E74",
+      "ibm09_E84",
+      "ibm13_E74",
+      "ibm13_E84",
+      "ibm15_E74",
+      "ibm15_E84",
+      "ibm16_E74",
+      "ibm16_E84",
+      "ibm17_E84"
+    ],
+    "all_failures_have_zero_recorded_overlap": true,
+    "maximum_boundary_excess": 7.62939453125e-06,
+    "offending_hard_macro_instances": 9,
+    "offending_soft_macro_instances": 11
+  },
+  "review": "Independent mathematical review of the response interpretation; two wording clarifications applied. History and new experiments checked against pinned code and immutable data.",
+  "outstanding": "Controlled51-run study and revised typeset paper are not completed by these diagnostics. Dry-run manifest contains plans only."
+}

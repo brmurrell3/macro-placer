@@ -1,0 +1,23 @@
+{
+  "benchmarks": [
+    "ariane133_ng45"
+  ],
+  "budget_seconds": 60,
+  "cd_seconds": 0,
+  "device": "cpu",
+  "fail_on_degraded": false,
+  "jobs": 3,
+  "num_steps": 5,
+  "seeds": [
+    42
+  ],
+  "study_kind": "final-sdf-topology-integration",
+  "study_notes": "Three-entry integration check after SDF graph repair; five analytical steps and CD disabled; engineering evidence only, not a quality comparison.",
+  "threads": 3,
+  "timeout_seconds": 120,
+  "variants": [
+    "v1",
+    "v2-a",
+    "v2-abc"
+  ]
+}

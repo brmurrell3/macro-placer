@@ -1,0 +1,13 @@
+start lane1 bench=ibm01 device=cpu seed=142 pid=16510 nthr=1
+loaded bench dir=/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01
+  descent attempt 1: ovl_end=10.0 steps=5
+  descent attempt 1: ovl=0
+FATAL TRACEBACK:
+Traceback (most recent call last):
+  File "/Users/brendan/Developer/macro-place-challenge-2026/submissions/thinkorplace-v2/lane_worker.py", line 189, in lane_entry
+    _checkpoint(pos, "descent_legalized")
+  File "/Users/brendan/Developer/macro-place-challenge-2026/submissions/thinkorplace-v2/lane_worker.py", line 83, in _checkpoint
+    record = checkpoint(None, pos, benchmark, plc, phase, t0, lane_idx=lane_idx,
+  File "/Users/brendan/Developer/macro-place-challenge-2026/submissions/common/runtime_safety.py", line 66, in checkpoint
+    raise ValueError(f"Invalid {phase} placement: {violations}")
+ValueError: Invalid descent_legalized placement: ['Macros outside horizontal canvas bounds']

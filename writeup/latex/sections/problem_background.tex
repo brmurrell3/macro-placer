@@ -1,0 +1,97 @@
+\subsection{Why placement is difficult}\label{sec:background}
+
+A netlist specifies circuit components and the pins that must be connected.
+Physical design assigns locations to those components and routes wires between
+their pins on silicon. Hard macros, such
+as SRAM blocks, have fixed dimensions and pin locations relative to the block;
+the surrounding logic is implemented with much smaller standard cells. Macro
+placement chooses where the large blocks sit, leaving room for the cells and
+their connections. Later routing stages choose metal tracks and vias. Placement
+therefore shapes a routing problem whose final paths are still unknown
+\citep{openroadflow}.
+
+The decisions are coupled through both nets and geometry. Moving a macro toward
+one neighbor can lengthen connections to others and displace demand into a
+different part of the canvas. IBM01 alone has 246 hard macros,
+894 soft standard-cell clusters, and 5,993 loader nets with at least one resolved
+benchmark node. A useful
+location depends on the rest of that arrangement, not just the macro's own size
+or strongest connection.
+
+Wirelength and available routing space also compete. Bringing connected pins
+together shortens their distance, but crowding blocks can leave narrow channels
+for other nets. Spreading blocks can open those channels while lengthening
+connections between the blocks, as Figure~\ref{fig:placement-tradeoff}
+illustrates. Local density measures how much area is occupied; congestion
+measures wiring demand relative to routing resources. A region can have spare
+placement area yet attract too many connections. Routability-driven placers
+therefore account for more than wirelength \citep{cheng2019replace,openroadmacro}.
+
+Legal motion creates a second difficulty. Two hard rectangles must be separated
+horizontally or vertically. A nearby improvement in their current ordering may
+be easy to find, while exchanging their roles can require several blocks to move
+together or an intermediate increase in cost. A one-coordinate search tests
+only a slice of this space. The continuous coordinates and discrete relative
+arrangements must be handled together; Section~\ref{sec:geometry-analysis}
+describes the resulting feasible set.
+
+Finally, each candidate has to be evaluated. Pin extrema, grid intersections,
+and selection of the most loaded grid bins make the proxy piecewise rather than
+everywhere smooth. Full routing is a later validation step; the challenge uses
+the proxy to guide search within a one-hour limit per design \citep{challenge2026}.
+Even full proxy recomputation took seconds on the measured IBM01 and IBM10
+move sequences, making the cost of repeated trials consequential.
+Thinkorplace uses smooth models for coordinated proposals, legalization to
+restore hard geometry, and incremental scoring to make many local trials
+affordable. These choices address different parts of the problem: finding a
+promising arrangement, reaching a feasible one, and checking whether a move
+improves the stated objective.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=0.73cm,y=0.53cm,font=\small,
+  block/.style={draw=blue!65,fill=blue!8,line width=0.6pt},
+  route/.style={draw=orange,line width=0.7pt},
+  connection/.style={draw=blue,line width=1.3pt}]
+  \begin{scope}
+    \node[font=\small\bfseries] at (3,6.55) {Compact arrangement};
+    \draw[rulegray] (0,0) rectangle (6,6);
+    \path[fill=orange!10] (0,2.65) rectangle (6,3.35);
+    \draw[block] (0.9,3.35) rectangle (5.1,4.85);
+    \draw[block] (0.9,1.15) rectangle (5.1,2.65);
+    \node at (3,4.1) {Macro A};
+    \node at (3,1.9) {Macro B};
+    \foreach \y in {2.8,3.0,3.2} {\draw[route] (0.15,\y) -- (5.85,\y);}
+    \draw[connection] (3,2.65) -- (3,3.35);
+    \fill[blue] (3,2.65) circle (1.5pt);
+    \fill[blue] (3,3.35) circle (1.5pt);
+    \node[align=center,font=\footnotesize] at (3,-0.72)
+      {Shorter A--B connection;\\narrower channel};
+  \end{scope}
+  \begin{scope}[xshift=5.6cm]
+    \node[font=\small\bfseries] at (3,6.55) {More space between blocks};
+    \draw[rulegray] (0,0) rectangle (6,6);
+    \path[fill=orange!10] (0,2.0) rectangle (6,4.0);
+    \draw[block] (0.9,4.0) rectangle (5.1,5.5);
+    \draw[block] (0.9,0.5) rectangle (5.1,2.0);
+    \node at (3,4.75) {Macro A};
+    \node at (3,1.25) {Macro B};
+    \foreach \y in {2.4,3.0,3.6} {\draw[route] (0.15,\y) -- (5.85,\y);}
+    \draw[connection] (3,2.0) -- (3,4.0);
+    \fill[blue] (3,2.0) circle (1.5pt);
+    \fill[blue] (3,4.0) circle (1.5pt);
+    \node[align=center,font=\footnotesize] at (3,-0.72)
+      {Longer A--B connection;\\wider channel};
+  \end{scope}
+  \draw[connection] (0,-1.85) -- (0.7,-1.85);
+  \node[anchor=west,font=\footnotesize] at (0.85,-1.85) {A--B connection};
+  \draw[route] (5,-1.85) -- (5.7,-1.85);
+  \node[anchor=west,font=\footnotesize] at (5.85,-1.85) {Other nets crossing the channel};
+\end{tikzpicture}
+\caption{The same two blocks in two legal placements. Increasing their
+separation leaves more room for horizontal routing but lengthens the vertical
+A--B connection. The illustration assumes a routing layer obstructed by the
+macro interiors. Colored crossings represent separate routing layers without
+electrical junctions. This is a schematic tradeoff, not a measured benchmark.}
+\label{fig:placement-tradeoff}
+\end{figure}

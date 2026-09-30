@@ -1,0 +1,488 @@
+{
+  "classification": "referee_response_arithmetic_from_frozen_records",
+  "created_utc": "2026-09-08T03:17:28.638000+00:00",
+  "script_sha256": "fd329aeaa2a8337852e58279d31ccd66b398d68a2a5235617731a1e1523854fa",
+  "official_source": {
+    "revision": "996193c83eaad151e5ae3fb166cedbd83372d060",
+    "readme_sha256": "d7a991492c949840d40036d29d52e2357ae5b2bdf713826c8e290ea6d0c8da96",
+    "url": "https://github.com/partcleda/macro-place-challenge-2026/blob/996193c83eaad151e5ae3fb166cedbd83372d060/README.md",
+    "leaderboard": [
+      {
+        "rank": 1,
+        "team": "Archgen",
+        "mean_proxy": 0.9507,
+        "notes": "",
+        "verification_field": ":white_check_mark:"
+      },
+      {
+        "rank": 2,
+        "team": "Carrotato",
+        "mean_proxy": 0.9522,
+        "notes": "",
+        "verification_field": ":white_check_mark:"
+      },
+      {
+        "rank": 9,
+        "team": "thinkorplace",
+        "mean_proxy": 0.9974,
+        "notes": "Resubmitted 5/20 (thinkorplace-v2). Was 1.0771.",
+        "verification_field": ":white_check_mark:"
+      }
+    ],
+    "reported_verified_eligible_submissions": 132,
+    "baselines_per_design": {
+      "ibm01": {
+        "sa": 1.3166,
+        "replace": 0.9976
+      },
+      "ibm02": {
+        "sa": 1.9072,
+        "replace": 1.837
+      },
+      "ibm03": {
+        "sa": 1.7401,
+        "replace": 1.3222
+      },
+      "ibm04": {
+        "sa": 1.5037,
+        "replace": 1.3024
+      },
+      "ibm06": {
+        "sa": 2.5057,
+        "replace": 1.6187
+      },
+      "ibm07": {
+        "sa": 2.0229,
+        "replace": 1.4633
+      },
+      "ibm08": {
+        "sa": 1.9239,
+        "replace": 1.4285
+      },
+      "ibm09": {
+        "sa": 1.3875,
+        "replace": 1.1194
+      },
+      "ibm10": {
+        "sa": 2.1108,
+        "replace": 1.5009
+      },
+      "ibm11": {
+        "sa": 1.7111,
+        "replace": 1.1774
+      },
+      "ibm12": {
+        "sa": 2.8261,
+        "replace": 1.7261
+      },
+      "ibm13": {
+        "sa": 1.9141,
+        "replace": 1.3355
+      },
+      "ibm14": {
+        "sa": 2.275,
+        "replace": 1.5436
+      },
+      "ibm15": {
+        "sa": 2.3,
+        "replace": 1.5159
+      },
+      "ibm16": {
+        "sa": 2.2337,
+        "replace": 1.478
+      },
+      "ibm17": {
+        "sa": 3.6726,
+        "replace": 1.6446
+      },
+      "ibm18": {
+        "sa": 2.7755,
+        "replace": 1.7722
+      }
+    },
+    "baseline_arithmetic_means": {
+      "sa": 2.1250882352941174,
+      "replace": 1.4578411764705883
+    }
+  },
+  "historical_baseline_comparisons": [
+    {
+      "name": "v1",
+      "source": "writeup/data/publication/raw/CDLNSSACascadeStackedPeripheryPlacer_20260517_062436.json",
+      "source_sha256": "d9010f72f68683317ff34ff27343b69f633f77366e196ba03c8100c33c226ab9",
+      "mean_proxy": 1.0574954578668059,
+      "lower_than_sa_count": 17,
+      "lower_than_replace_count": 17,
+      "per_design": [
+        {
+          "name": "ibm01",
+          "recomputed_proxy": 0.8596343123806258,
+          "sa_baseline": 1.3166,
+          "replace_baseline": 0.9976
+        },
+        {
+          "name": "ibm02",
+          "recomputed_proxy": 1.0065878357044722,
+          "sa_baseline": 1.9072,
+          "replace_baseline": 1.837
+        },
+        {
+          "name": "ibm03",
+          "recomputed_proxy": 0.9274168428480624,
+          "sa_baseline": 1.7401,
+          "replace_baseline": 1.3222
+        },
+        {
+          "name": "ibm04",
+          "recomputed_proxy": 0.9728521555201216,
+          "sa_baseline": 1.5037,
+          "replace_baseline": 1.3024
+        },
+        {
+          "name": "ibm06",
+          "recomputed_proxy": 1.1336059467380126,
+          "sa_baseline": 2.5057,
+          "replace_baseline": 1.6187
+        },
+        {
+          "name": "ibm07",
+          "recomputed_proxy": 1.0529398107715977,
+          "sa_baseline": 2.0229,
+          "replace_baseline": 1.4633
+        },
+        {
+          "name": "ibm08",
+          "recomputed_proxy": 1.0816314870260095,
+          "sa_baseline": 1.9239,
+          "replace_baseline": 1.4285
+        },
+        {
+          "name": "ibm09",
+          "recomputed_proxy": 0.8249394603584417,
+          "sa_baseline": 1.3875,
+          "replace_baseline": 1.1194
+        },
+        {
+          "name": "ibm10",
+          "recomputed_proxy": 0.9957514448839516,
+          "sa_baseline": 2.1108,
+          "replace_baseline": 1.5009
+        },
+        {
+          "name": "ibm11",
+          "recomputed_proxy": 0.8604075628831334,
+          "sa_baseline": 1.7111,
+          "replace_baseline": 1.1774
+        },
+        {
+          "name": "ibm12",
+          "recomputed_proxy": 1.1919601867472354,
+          "sa_baseline": 2.8261,
+          "replace_baseline": 1.7261
+        },
+        {
+          "name": "ibm13",
+          "recomputed_proxy": 0.9363285312042716,
+          "sa_baseline": 1.9141,
+          "replace_baseline": 1.3355
+        },
+        {
+          "name": "ibm14",
+          "recomputed_proxy": 1.1908138691260017,
+          "sa_baseline": 2.275,
+          "replace_baseline": 1.5436
+        },
+        {
+          "name": "ibm15",
+          "recomputed_proxy": 1.1581988382917814,
+          "sa_baseline": 2.3,
+          "replace_baseline": 1.5159
+        },
+        {
+          "name": "ibm16",
+          "recomputed_proxy": 1.1223999395303847,
+          "sa_baseline": 2.2337,
+          "replace_baseline": 1.478
+        },
+        {
+          "name": "ibm17",
+          "recomputed_proxy": 1.3226394852356569,
+          "sa_baseline": 3.6726,
+          "replace_baseline": 1.6446
+        },
+        {
+          "name": "ibm18",
+          "recomputed_proxy": 1.33931507448594,
+          "sa_baseline": 2.7755,
+          "replace_baseline": 1.7722
+        }
+      ]
+    },
+    {
+      "name": "earlier_v2",
+      "source": "writeup/data/publication/raw/EPYC_thinkorplace_v2_validation_20260520.json",
+      "source_sha256": "0bef0502d32aeb9de1bf94c1d9ab11a13f78f69f660983338864dc44d7ac6c9c",
+      "mean_proxy": 1.008346837635529,
+      "lower_than_sa_count": 17,
+      "lower_than_replace_count": 17,
+      "per_design": [
+        {
+          "name": "ibm01",
+          "recomputed_proxy": 0.8465828062324613,
+          "sa_baseline": 1.3166,
+          "replace_baseline": 0.9976
+        },
+        {
+          "name": "ibm02",
+          "recomputed_proxy": 0.9948395373165989,
+          "sa_baseline": 1.9072,
+          "replace_baseline": 1.837
+        },
+        {
+          "name": "ibm03",
+          "recomputed_proxy": 0.9081484303448188,
+          "sa_baseline": 1.7401,
+          "replace_baseline": 1.3222
+        },
+        {
+          "name": "ibm04",
+          "recomputed_proxy": 0.9449060443476981,
+          "sa_baseline": 1.5037,
+          "replace_baseline": 1.3024
+        },
+        {
+          "name": "ibm06",
+          "recomputed_proxy": 1.0757389665457784,
+          "sa_baseline": 2.5057,
+          "replace_baseline": 1.6187
+        },
+        {
+          "name": "ibm07",
+          "recomputed_proxy": 1.0333258967213723,
+          "sa_baseline": 2.0229,
+          "replace_baseline": 1.4633
+        },
+        {
+          "name": "ibm08",
+          "recomputed_proxy": 1.042951902981653,
+          "sa_baseline": 1.9239,
+          "replace_baseline": 1.4285
+        },
+        {
+          "name": "ibm09",
+          "recomputed_proxy": 0.7816137006467976,
+          "sa_baseline": 1.3875,
+          "replace_baseline": 1.1194
+        },
+        {
+          "name": "ibm10",
+          "recomputed_proxy": 0.9896926132181257,
+          "sa_baseline": 2.1108,
+          "replace_baseline": 1.5009
+        },
+        {
+          "name": "ibm11",
+          "recomputed_proxy": 0.8056743645064504,
+          "sa_baseline": 1.7111,
+          "replace_baseline": 1.1774
+        },
+        {
+          "name": "ibm12",
+          "recomputed_proxy": 1.1497399115620222,
+          "sa_baseline": 2.8261,
+          "replace_baseline": 1.7261
+        },
+        {
+          "name": "ibm13",
+          "recomputed_proxy": 0.8544718836094732,
+          "sa_baseline": 1.9141,
+          "replace_baseline": 1.3355
+        },
+        {
+          "name": "ibm14",
+          "recomputed_proxy": 1.1098857730278213,
+          "sa_baseline": 2.275,
+          "replace_baseline": 1.5436
+        },
+        {
+          "name": "ibm15",
+          "recomputed_proxy": 1.0897408236321566,
+          "sa_baseline": 2.3,
+          "replace_baseline": 1.5159
+        },
+        {
+          "name": "ibm16",
+          "recomputed_proxy": 1.032770761766121,
+          "sa_baseline": 2.2337,
+          "replace_baseline": 1.478
+        },
+        {
+          "name": "ibm17",
+          "recomputed_proxy": 1.2424744260617038,
+          "sa_baseline": 3.6726,
+          "replace_baseline": 1.6446
+        },
+        {
+          "name": "ibm18",
+          "recomputed_proxy": 1.2393383972829375,
+          "sa_baseline": 2.7755,
+          "replace_baseline": 1.7722
+        }
+      ]
+    },
+    {
+      "name": "gaussian_ancestor",
+      "source": "writeup/data/publication/raw/E111MinimalGaussianPlacer_20260520_135149.json",
+      "source_sha256": "8ca72354a75bab11e8c831b525fc063da59907e929dc7f6ec8e3d015d0e48f16",
+      "mean_proxy": 0.9819857732700091,
+      "lower_than_sa_count": 17,
+      "lower_than_replace_count": 17,
+      "per_design": [
+        {
+          "name": "ibm01",
+          "recomputed_proxy": 0.8215156394121362,
+          "sa_baseline": 1.3166,
+          "replace_baseline": 0.9976
+        },
+        {
+          "name": "ibm02",
+          "recomputed_proxy": 1.0126454708376063,
+          "sa_baseline": 1.9072,
+          "replace_baseline": 1.837
+        },
+        {
+          "name": "ibm03",
+          "recomputed_proxy": 0.8883581204865982,
+          "sa_baseline": 1.7401,
+          "replace_baseline": 1.3222
+        },
+        {
+          "name": "ibm04",
+          "recomputed_proxy": 0.9213067195735352,
+          "sa_baseline": 1.5037,
+          "replace_baseline": 1.3024
+        },
+        {
+          "name": "ibm06",
+          "recomputed_proxy": 1.0529612154755101,
+          "sa_baseline": 2.5057,
+          "replace_baseline": 1.6187
+        },
+        {
+          "name": "ibm07",
+          "recomputed_proxy": 1.014856941659339,
+          "sa_baseline": 2.0229,
+          "replace_baseline": 1.4633
+        },
+        {
+          "name": "ibm08",
+          "recomputed_proxy": 1.024895585127689,
+          "sa_baseline": 1.9239,
+          "replace_baseline": 1.4285
+        },
+        {
+          "name": "ibm09",
+          "recomputed_proxy": 0.770325333037579,
+          "sa_baseline": 1.3875,
+          "replace_baseline": 1.1194
+        },
+        {
+          "name": "ibm10",
+          "recomputed_proxy": 0.979339883235635,
+          "sa_baseline": 2.1108,
+          "replace_baseline": 1.5009
+        },
+        {
+          "name": "ibm11",
+          "recomputed_proxy": 0.7883074899083511,
+          "sa_baseline": 1.7111,
+          "replace_baseline": 1.1774
+        },
+        {
+          "name": "ibm12",
+          "recomputed_proxy": 1.0898866044904982,
+          "sa_baseline": 2.8261,
+          "replace_baseline": 1.7261
+        },
+        {
+          "name": "ibm13",
+          "recomputed_proxy": 0.8427918024944641,
+          "sa_baseline": 1.9141,
+          "replace_baseline": 1.3355
+        },
+        {
+          "name": "ibm14",
+          "recomputed_proxy": 1.0733006747240046,
+          "sa_baseline": 2.275,
+          "replace_baseline": 1.5436
+        },
+        {
+          "name": "ibm15",
+          "recomputed_proxy": 1.0555727236988561,
+          "sa_baseline": 2.3,
+          "replace_baseline": 1.5159
+        },
+        {
+          "name": "ibm16",
+          "recomputed_proxy": 0.9960684551454632,
+          "sa_baseline": 2.2337,
+          "replace_baseline": 1.478
+        },
+        {
+          "name": "ibm17",
+          "recomputed_proxy": 1.1716413859881625,
+          "sa_baseline": 3.6726,
+          "replace_baseline": 1.6446
+        },
+        {
+          "name": "ibm18",
+          "recomputed_proxy": 1.189984100294728,
+          "sa_baseline": 2.7755,
+          "replace_baseline": 1.7722
+        }
+      ]
+    }
+  ],
+  "sampled_error_margins": [
+    {
+      "source": "writeup/data/publication/evaluator_ibm01_mac.json",
+      "source_sha256": "2c39ce3dba8c6d71c8934a0a1b499ed5c8f813b9d0e3282993554d0039b1efed",
+      "benchmark": "ibm01",
+      "sampled_endpoints_with_repeats": 24,
+      "distinct_prescribed_moves": 8,
+      "maximum_absolute_proxy_error": 4.440892098500626e-16,
+      "maximum_adjacent_delta_error": 4.440892098500626e-16,
+      "twice_observed_endpoint_error": 8.881784197001252e-16,
+      "cd_threshold_divided_by_twice_observed_error": 1125899.906842624,
+      "assignment_threshold_divided_by_twice_observed_error": 112589990.6842624,
+      "caveat": "Initial baseline error was not stored. Adjacent saved endpoints are prescribed kernel moves, not an optimizer acceptance trace. The maximum is empirical, not uniform."
+    },
+    {
+      "source": "writeup/data/publication/evaluator_ibm10_mac.json",
+      "source_sha256": "4bc56dbc085de6cc93b6c10b2c5f8f70986777b1b6a6826175654401e7ac8dcd",
+      "benchmark": "ibm10",
+      "sampled_endpoints_with_repeats": 6,
+      "distinct_prescribed_moves": 3,
+      "maximum_absolute_proxy_error": 4.440892098500626e-16,
+      "maximum_adjacent_delta_error": 2.220446049250313e-16,
+      "twice_observed_endpoint_error": 8.881784197001252e-16,
+      "cd_threshold_divided_by_twice_observed_error": 1125899.906842624,
+      "assignment_threshold_divided_by_twice_observed_error": 112589990.6842624,
+      "caveat": "Initial baseline error was not stored. Adjacent saved endpoints are prescribed kernel moves, not an optimizer acceptance trace. The maximum is empirical, not uniform."
+    },
+    {
+      "source": "writeup/data/publication/evaluator_ibm10_hard_mac.json",
+      "source_sha256": "cf34c85a7b35e9bbcbb5a083ec79960bc0be581313d8884005a405142f637126",
+      "benchmark": "ibm10",
+      "sampled_endpoints_with_repeats": 6,
+      "distinct_prescribed_moves": 3,
+      "maximum_absolute_proxy_error": 4.440892098500626e-16,
+      "maximum_adjacent_delta_error": 4.440892098500626e-16,
+      "twice_observed_endpoint_error": 8.881784197001252e-16,
+      "cd_threshold_divided_by_twice_observed_error": 1125899.906842624,
+      "assignment_threshold_divided_by_twice_observed_error": 112589990.6842624,
+      "caveat": "Initial baseline error was not stored. Adjacent saved endpoints are prescribed kernel moves, not an optimizer acceptance trace. The maximum is empirical, not uniform."
+    }
+  ],
+  "scope": "Published reference scores and historical comparisons are not matched reruns. Sampled endpoint errors do not bound arbitrary search states."
+}

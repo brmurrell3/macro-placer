@@ -1,0 +1,15 @@
+{
+  "environment": {
+    "python_executable": "/Users/brendan/Developer/macro-place-challenge-2026/.venv/bin/python",
+    "python_version": "3.9.6",
+    "worker_runtime": "worker failed before complete environment capture"
+  },
+  "error": "RuntimeError: source tree changed after the run identity was created",
+  "finished_at": "2026-09-06T16:47:17.629000+00:00",
+  "identity_sha256": "05a7bd72d9a5cddba35f5602d437541f7323a5309c8f5cbce581c8472fafa352",
+  "run_id": "ariane133_ng45__v2-abc__seed42__05a7bd72d9a5",
+  "schema_version": 1,
+  "status": "error",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 550, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 398, in run_request\n    verify_frozen_inputs(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 67, in verify_frozen_inputs\n    raise RuntimeError(\"source tree changed after the run identity was created\")\nRuntimeError: source tree changed after the run identity was created\n",
+  "valid": false
+}

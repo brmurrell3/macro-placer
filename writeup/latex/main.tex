@@ -1,0 +1,1032 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper,margin=0.9in,headheight=15pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{siunitx}
+\sisetup{detect-all,group-minimum-digits=4}
+\usepackage{amsmath,amssymb,mathtools,amsthm}
+\usepackage{booktabs,tabularx,array,multirow}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,shapes.geometric}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{needspace}
+\usepackage{etoolbox}
+\usepackage{placeins}
+\usepackage{subcaption}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{xurl}
+\usepackage[hidelinks]{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+\usepackage{lastpage}
+
+\definecolor{ink}{HTML}{17212B}
+\definecolor{muted}{HTML}{52606D}
+\definecolor{blue}{HTML}{1769AA}
+\definecolor{cyan}{HTML}{0E8796}
+\definecolor{orange}{HTML}{C26816}
+\definecolor{panel}{HTML}{F2F5F7}
+\definecolor{rulegray}{HTML}{CAD2D9}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue,pdfauthor={Brendan Murrell},pdftitle={Thinkorplace: A Hybrid Macro-Placement Solver}}
+\color{ink}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small\color{muted}Thinkorplace technical report}
+\rhead{\small\color{muted}Technical report 0.4 --- 8 September 2026}
+\cfoot{\small\color{muted}\thepage\ / \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.35pt}
+\titleformat{\section}{\Large\bfseries\color{ink}}{\thesection}{0.65em}{}
+\titleformat{\subsection}{\large\bfseries\color{ink}}{\thesubsection}{0.55em}{}
+\titlespacing*{\section}{0pt}{2.0ex plus .5ex}{0.8ex}
+\titlespacing*{\subsection}{0pt}{1.5ex plus .4ex}{0.5ex}
+\pretocmd{\section}{\Needspace{7\baselineskip}}{}{}
+\pretocmd{\subsection}{\Needspace{4\baselineskip}}{}{}
+\setlist{nosep,leftmargin=1.35em}
+\setlength{\parindent}{1.1em}
+\setlength{\parskip}{0pt}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\captionsetup{font=small,labelfont=bf}
+\captionsetup[table]{position=top,skip=6pt}
+\renewcommand{\arraystretch}{1.13}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{lemma}[proposition]{Lemma}
+
+\newcommand{\project}{\textsc{Thinkorplace}}
+\newcommand{\proxy}{J_{\mathrm{can}}}
+\newcommand{\surrogate}{\widetilde{J}}
+\newcommand{\historical}{\textsc{Historical}}
+\newcommand{\pilot}{\textsc{Pilot}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\evidencebox}[1]{%
+  \begin{center}\fcolorbox{rulegray}{panel}{\parbox{0.93\linewidth}{\small #1}}\end{center}}
+\newcommand{\reportfigure}[4]{%
+  %
+    \begin{figure}[htbp]\centering\includegraphics[width=#2\linewidth]{#1}
+    \caption{#3}\label{#4}\end{figure}}
+
+\begin{document}
+\begin{center}
+{\LARGE\bfseries Thinkorplace: A Hybrid Macro-Placement Solver\par}
+\vspace{0.8em}
+{\large Brendan Murrell\par}
+\vspace{0.4em}
+{\small Technical report 0.4\quad |\quad 8 September 2026\par}
+\end{center}
+\vspace{0.5em}
+
+\begin{abstract}
+Thinkorplace combines differentiable placement with local search on the Macro
+Placement Challenge 2026 evaluator. A smooth wirelength, density, and congestion
+model proposes macro coordinates; legalization removes hard-macro overlaps; and
+an incremental evaluator supports coordinate descent (CD). The final competition
+implementation runs three processes with additional curvature-guided or
+assignment-based search in two of them.
+
+This report describes the implementation and reconstructs three historical
+17-design IBM records with mean proxy costs of 1.05750, 1.00835, and 0.98199.
+Their configurations differ, and none establishes the score of the final
+three-process solver. New CPU measurements on IBM01 and IBM10 give mean
+incremental component-update times of 1.29--3.67\,ms, compared with
+1.40--26.87\,s for full recomputation. The maximum observed relative component
+discrepancy is $2.6\times10^{-15}$; the samples exclude setup and overlap checking.
+
+The implementation audit found defects in deadlines, geometry validation, and
+hierarchical pin ownership. Two successive source revisions were each tested in
+a twelve-run engineering batch. The second returned nine valid placements; its
+three IBM17 runs timed out. The final source revision, with a second connectivity
+repair, passed a separate three-run ariane133 integration check.
+A frozen IBM01 curvature diagnostic found a negative automatic-differentiation
+mode, but finite-difference checks disagreed. A controlled full-suite
+comparison and tests of the curvature and assignment contributions remain open.
+\end{abstract}
+\vspace{0.5em}
+
+\section{Introduction}
+
+Macro placement assigns large rectangular circuit blocks to a chip canvas.
+Moving a block changes its connection lengths, local density, and routing demand.
+Hard macros must fit inside the canvas without overlap. Coordinates are
+continuous, but moving blocks past one another changes their geometric ordering;
+local improvement within one arrangement can therefore miss a better arrangement.
+
+Thinkorplace was developed for the Macro Placement Challenge 2026 on the public
+17-design ICCAD04 IBM suite \citep{challenge2026,adya2004unification}. The challenge
+ranks placements by a weighted wirelength, density, and congestion proxy computed
+by the TILOS evaluator \citep{macroplacement}. Thinkorplace uses a differentiable
+approximation for coordinated moves, then refines legal coordinates against that
+canonical proxy. Its incremental evaluator updates the affected nets and grid
+contributions after each move. Two additional search procedures propose
+curvature-guided perturbations and macro-to-slot assignments.
+
+The report covers the v1 and v2 implementations, the historical records that
+survived development, and the September 2026 implementation audit. Historical
+results are kept separate from new measurements because their code, hardware,
+and time budgets differ. The new work measures component-evaluation cost,
+checks the surrogate's derivatives at one saved endpoint, and tests repairs to
+execution and connectivity. The mathematical analysis derives the legal
+coordinate slices, a score-error condition for reliable acceptance, and a
+conditional curvature decrease bound. An HPWL counterexample shows why an
+optimal assignment proposal need not improve the joint placement.
+The report does not supply a controlled comparison of the
+finished solvers or downstream place-and-route results.
+
+The main unresolved questions are whether the three-process solver outperforms
+additional single-process search under equal resources, and whether curvature
+and assignment proposals outperform simpler proposals from the same state.
+Section~\ref{sec:protocol} states the comparison requirements; the reported
+results establish the narrower implementation and measurement findings.
+
+\section{Problem and evaluation}\label{sec:problem}
+
+\input{sections/problem_background.tex}
+
+\subsection{Placement geometry}
+
+Let the rectangular canvas have width $W$ and height $H$. Macro $i$ has
+center $p_i=(x_i,y_i)$, width $w_i$, and height $h_i$. Canvas containment requires
+\begin{equation}
+\frac{w_i}{2}\le x_i\le W-\frac{w_i}{2},\qquad
+\frac{h_i}{2}\le y_i\le H-\frac{h_i}{2}.
+\end{equation}
+For hard macros $i\ne j$, non-overlap requires at least one of four inequalities:
+\begin{equation}
+\begin{aligned}
+&\left(x_i+\frac{w_i}{2}\le x_j-\frac{w_j}{2}\right)
+\lor\left(x_j+\frac{w_j}{2}\le x_i-\frac{w_i}{2}\right)\\
+&\qquad\lor\left(y_i+\frac{h_i}{2}\le y_j-\frac{h_j}{2}\right)
+\lor\left(y_j+\frac{h_j}{2}\le y_i-\frac{h_i}{2}\right).
+\end{aligned}
+\label{eq:disjunction}
+\end{equation}
+
+Fixing one branch for every pair yields a convex polyhedron, possibly empty.
+The feasible region is the union of these polyhedra. A legal one-coordinate
+slice can contain several intervals; the implemented CD search selects a
+conservative interval from the current blocker relations. A soft-penalty method
+can temporarily enter infeasible space before legalization restores a legal
+arrangement. Section~\ref{sec:geometry-analysis} makes this distinction precise.
+
+The evaluator distinguishes hard macros, whose pairwise overlap is forbidden,
+from soft standard-cell clusters. Fixed objects must retain their coordinates.
+The solution tensor stores the centers of hard macros followed by soft clusters.
+Pin offsets matter: wirelength and congestion are functions of pins, not merely
+macro centers. Hierarchical pin ownership must therefore be resolved from the
+netlist object model rather than inferred by splitting a path string.
+
+\subsection{Canonical proxy}
+
+For placement $p$, the competition score is
+\begin{equation}
+  \proxy(p)=C_{\mathrm{wl}}(p)+\tfrac12 C_{\mathrm{den}}(p)
+                +\tfrac12 C_{\mathrm{cong}}(p),
+  \label{eq:canonical}
+\end{equation}
+where the component implementations and their normalization are defined by the
+pinned TILOS evaluator. Wirelength is normalized pin-level half-perimeter
+wirelength (HPWL). Density and congestion aggregate grid pressure using evaluator-defined
+normalizations and tail statistics. The three components are normalized before weighting.
+
+The three full-suite historical tables recompute proxy totals arithmetically
+from stored component fields; no linked final coordinates were recovered for
+those records. The separate E74/E84 cascade coordinates have been rescored and
+validated, as described in Section~\ref{sec:cascade-rescore}.
+New engineering scores are emitted by the pinned canonical interface.
+Surrogate values are identified separately. The local wrapper updates hard
+macro pin positions, asks the evaluator for all three components, and checks
+hard-macro overlap independently. Full rescoring calls the original component implementations. The separate
+incremental evaluator replicates those components in local caches. Its numerical
+agreement is tested on recorded move sequences, rather than assumed for every
+possible search state. The final upstream challenge revision is
+\code{996193c83eaa}; the pinned TILOS submodule is
+\code{45a721d01dfe}. Full revisions are retained in the source manifests.
+
+\subsection{What the score can and cannot show}
+
+The IBM suite is public and was repeatedly inspected during development. It is a
+valid workload for comparing implementations on these instances, but it is not an
+independent sample of industrial blocks. The NanGate45 (NG45) designs were also inspected during development. Their
+hierarchical names expose a pin-mapping defect in the competition-era surrogate. A proxy improvement on either
+suite does not by itself imply improved worst negative slack, total negative
+slack, routed wirelength, area, power, or design-rule closure. Prior open studies
+of macro placement similarly distinguish proxy evaluation from downstream place
+and route \citep{cheng2023assessment,macroplacement}.
+
+\section{System design}\label{sec:system}
+
+This section describes the May 2026 competition implementation. The September
+runtime adds deadline enforcement, checkpoints, explicit resource settings, and
+stronger geometry checks in successive revisions. Section~\ref{sec:pilot} reports
+each revision's engineering runs separately.
+
+\subsection{V1: serial stacked search}
+
+V1 builds and compares two placements sequentially. The first branch, archived
+as E25, uses SDF initialization, overlap projection, incremental CD, grid-bin
+large-neighborhood search (LNS), and simulated-annealing polish. The second,
+E41, uses a differentiable proxy optimization (DPO) initializer and adds
+three-macro joint reinsertion after CD, LNS, and annealing. The branch with the
+lower full proxy score supplies the starting point for a curvature cascade.
+A further curvature search uses three component weightings,
+$(1,0,1)$, $(1,1,0)$, and $(0,1,1)$, ordered as wirelength, density, and congestion.
+These weights generate proposals; final scores use Equation~\eqref{eq:canonical}.
+
+The last stage moves each movable macro one percent of its remaining distance
+toward the nearest canvas edge, projects overlaps, and applies CD. It keeps the
+result only if its full proxy is lower and its recorded hard-overlap count is
+zero. Later stages can be skipped when the advisory budget is exhausted. The
+historical v1 record belongs to this serial pipeline; v2 instead runs the
+three worker pipelines in Figure~\ref{fig:architecture}.
+
+\begin{figure}[htbp]
+\centering
+\resizebox{\linewidth}{!}{\begin{tikzpicture}[
+  node distance=7mm and 8mm,
+  block/.style={draw=rulegray,rounded corners=2pt,fill=panel,minimum height=8mm,
+                text width=25mm,align=center,font=\small},
+  lane/.style={draw=blue!65,rounded corners=2pt,fill=blue!5,minimum height=9mm,
+               text width=31mm,align=center,font=\small},
+  verify/.style={draw=cyan!70,rounded corners=2pt,fill=cyan!6,minimum height=9mm,
+                 text width=30mm,align=center,font=\small},
+  arr/.style={-{Latex[length=2mm]},thick,color=muted}
+]
+\node[block] (input) {netlist, canvas, fixed objects};
+\node[block,right=of input] (sdf) {SDF initialization};
+\node[block,right=of sdf] (smooth) {Gaussian smooth descent};
+\node[block,right=of smooth] (legal) {projection and legalization};
+\draw[arr] (input)--(sdf); \draw[arr] (sdf)--(smooth); \draw[arr] (smooth)--(legal);
+\node[lane,below left=12mm and 23mm of legal] (a) {Lane A\\incremental CD};
+\node[lane,below=12mm of legal] (b) {Lane B\\CD, curvature proposal, CD};
+\node[lane,below right=12mm and 23mm of legal] (c) {Lane C\\CD, assignment proposal, CD};
+\draw[arr] (legal)--(a); \draw[arr] (legal)--(b); \draw[arr] (legal)--(c);
+\node[verify,below=14mm of b,text width=45mm] (pick) {full score + hard-overlap check\\select best completed lane};
+\draw[arr] (a)--(pick); \draw[arr] (b)--(pick); \draw[arr] (c)--(pick);
+\node[block,right=10mm of pick] (out) {placement tensor};
+\draw[arr] (pick)--(out);
+\end{tikzpicture}}
+\caption{Competition-era v2 architecture. Each lane runs in a separate process and
+repeats the common initialization. Post-competition safety repairs preserve these
+logical stages while changing deadlines, checkpoints, and final validation.}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{V2 initialization}
+
+The initializer is a soft rasterizer based on distances to rectangle edges,
+called SDF in the implementation. At grid point $(u,v)$, hard macro $i$
+contributes the occupancy
+\begin{equation}
+  r_i(u,v)=
+  \sigma\!\left(\frac{w_i/2-|u-x_i|}{\tau}\right)
+  \sigma\!\left(\frac{h_i/2-|v-y_i|}{\tau}\right),
+\end{equation}
+where $\sigma$ is the logistic function and $\tau$ decreases during optimization.
+Here SDF is the implementation name for this separable soft rectangle.
+The initializer combines the largest-decile occupancy, a weighted hard-macro
+edge-wirelength term, and pairwise overlap penalties, with Adam and a cosine
+learning-rate schedule. Its saved-state criterion uses normalized edge wirelength
+and overlap rather than the entire training loss. A greedy pass then places
+larger hard macros first.
+
+This prefix has a different role from the Gaussian analytical phase below:
+it initializes hard-macro geometry, while the later surrogate also models the
+soft clusters and more of the net topology. In the competition snapshot, soft
+coordinates were copied from the input. The post-pilot repair projects every
+movable center inside the canvas and preserves fixed reference geometry before
+accepting an initializer. Neither initializer's internal value is a reported
+canonical score.
+
+\subsection{Smooth proposal model}
+
+The analytical phase minimizes a surrogate
+\begin{equation}
+\surrogate(p;t)=\widetilde C_{\mathrm{wl}}(p;\gamma_t)
+ +\tfrac12\widetilde C_{\mathrm{den}}(p)
+ +\tfrac12\widetilde C_{\mathrm{cong}}(p)
+ +\lambda_t P_{\mathrm{ov}}(p)+\mu P_{\mathrm{out}}(p),
+\label{eq:surrogate}
+\end{equation}
+with Adam. Log-sum-exp pin extrema approximate HPWL, with smoothing parameter
+$\gamma_t$ annealed from $5\times10^{-3}$ to $5\times10^{-5}$ of a canvas scale.
+Congestion uses a differentiable per-net trace related to rectangular uniform
+wire density (RUDY) \citep{spindler2007rudy}. Pairwise rectangle penetration supplies
+the overlap penalty; $\lambda_t$ rises linearly over the first 70 percent of the
+steps and then remains at its terminal value. A quadratic distance penalty
+$P_{\mathrm{out}}$ acts on coordinates outside the canvas before the proxy's
+internal clamp; the competition snapshot uses $\mu=1$ after canvas-area
+normalization.
+
+For density, macro $i$, of area $A_i=w_i h_i$, is represented by a separable Gaussian centered at
+$p_i$, with axis scales
+$\sigma_{xi}=\max(w_i/2,\Delta_x/2)$ and
+$\sigma_{yi}=\max(h_i/2,\Delta_y/2)$ at the default scale factor of one.
+Here $\Delta_x$ and $\Delta_y$ are the grid-cell width and height. Its mass in cell $b=[a_x,b_x]\times[a_y,b_y]$ is evaluated from
+standard normal cumulative distribution function (CDF) differences, with CDF $\Phi$,
+\begin{equation}
+m_{ib}=A_i
+\left[\Phi\!\left(\frac{b_x-x_i}{\sigma_{xi}}\right)-
+      \Phi\!\left(\frac{a_x-x_i}{\sigma_{xi}}\right)\right]
+\left[\Phi\!\left(\frac{b_y-y_i}{\sigma_{yi}}\right)-
+      \Phi\!\left(\frac{a_y-y_i}{\sigma_{yi}}\right)\right].
+\end{equation}
+For cell area $A_b$, density is $\sum_i m_{ib}/A_b$. The implementation aggregates the
+largest 10 percent of cells. If their mean is $D_G$, the implemented component is
+$\widetilde C_{\mathrm{den}}=D_G/2$. Thus the raw Gaussian top-decile mean enters
+Equation~\eqref{eq:surrogate} with coefficient $1/4$.
+Gaussian integration smooths bin-boundary changes,
+but the complete loss is not $C^\infty$: canvas clamps, top-$k$ selection,
+and other piecewise operations remain nonsmooth. The implementation also
+integrates only over on-canvas cells without renormalizing the Gaussian tails,
+so a macro near the canvas boundary contributes less total modeled mass. The
+surrogate does not equal \cref{eq:canonical}; it is a proposal model whose value
+is never used as the final reported score.
+
+The competition-era defaults run 500 gradient steps with learning rate 0.005 of
+the canvas scale. A fallback ladder retries the analytical phase with terminal
+overlap penalties 10, 50, and 100, the last retry using 300 steps. If projection
+cannot remove residual overlaps, the lane falls back to an SDF placement plus
+iterative push-apart. The SDF helper always uses seed 42. Consequently, the
+nominal lane seeds do not diversify that prefix; a repeated run may be a
+repeatability trial rather than an independent-start trial.
+
+The Gaussian density and trace congestion terms approximate this evaluator.
+Their relation to analytical placement methods is discussed in
+Section~\ref{sec:related}.
+
+\subsection{Canonical coordinate descent}
+
+After legalization, coordinate descent operates on the canonical proxy through
+an incremental evaluator. For macro $i$ and axis $a$, the search first computes
+a conservative legal interval conditional on the perpendicular coordinate. Candidate points
+include interval endpoints and midpoint, the current coordinate, nearby grid
+crossings, and quantiles of connected-pin bounding-box targets. A short
+golden-section fallback exists in the source, but the competition snapshot
+truncates the candidate list to the same threshold used to trigger that fallback,
+so the branch is unreachable. The executed search therefore evaluates only the
+finite candidate set. A move is retained only when its score from the incremental replica improves
+and its geometry check passes.
+
+Incremental evaluation caches pin positions, per-net bounding boxes, density-bin
+loads, congestion contributions, and macro-to-net incidence. A move updates the
+affected structures and supports revert. Section~\ref{sec:evaluator} measures
+incremental updates and full component recomputation on the same move sequences,
+with setup and overlap checks timed separately.
+
+The adaptive loop runs at least half of its nominal budget, then stops after five
+low-improvement sweeps according to a 0.001 plateau threshold, subject to its hard
+cap. In the competition-era three-lane defaults, the first CD phase receives up to
+900 seconds. Later stages can start additional CD despite limited global time;
+\cref{sec:failure} explains why these inner limits are not a verified end-to-end
+deadline.
+
+\subsection{Complementary proposal lanes}
+
+\textbf{Lane A} returns the common analytical placement after one incremental CD
+polish. It is the simplest complete v2 pipeline and the planned reference for testing
+the additional search procedures.
+
+\textbf{Lane B} runs CD, constructs Hessian-vector products of a separate legacy
+surrogate, uses an iterative eigensolver to seek the smallest algebraic curvature
+direction, proposes bounded steps with both signs and multiple magnitudes,
+legalizes each candidate, and gives each legal candidate its own incremental CD
+polish before full canonical scoring. The curvature stage may repeat this process
+for a second cascade iteration; the worker then runs a separate outer CD2 pass.
+This curvature proxy uses log-sum-exp wirelength, rectangle-grid density, and a
+differentiable RUDY approximation; it does not use the Gaussian density in
+\cref{eq:surrogate} and omits overlap penalties. The implementation is a
+curvature-guided perturb-and-polish heuristic. A negative eigenvalue of this
+surrogate supplies a candidate direction; it does not establish stationarity
+of the canonical objective. Section~\ref{sec:curvature} examines that distinction.
+
+\textbf{Lane C} runs CD, selects a cluster of up to 50 movable hard macros,
+builds candidate slots, and evaluates a rectangular macro-to-slot cost matrix with
+the incremental replica. Infeasible assignments receive infinite
+cost. The Hungarian algorithm \citep{kuhn1955hungarian} proposes a joint
+permutation. The implementation orders assigned moves by predicted benefit, then
+applies them sequentially, checking legality against the evolving placement and
+skipping an illegal target. It provisionally keeps a partial batch only if at least one macro moved, the
+hard-overlap count is zero, and the incremental proxy decreased by more than
+$10^{-7}$. Otherwise it reverts the batch. This search repeats until its budget
+or rejection patience is exhausted.
+
+The phase endpoint is then fully rescored.
+A state no more than 0.5 percent worse than the CD1 full score may initialize
+CD2; otherwise CD2 starts from CD1. The lane finally selects the lowest fully
+rescored, overlap-free candidate among CD1, the assignment endpoint, and CD2. An occupied-slot swap can be skipped before its occupant
+moves, so the sequential commit does not necessarily realize the complete
+Hungarian assignment. Because matrix entries score single-macro moves against a
+fixed background, their sum is only a proposal model for the interacting batch.
+The incremental batch check accounts for interactions within its replica;
+full rescoring supplies the phase and final lane scores.
+
+\subsection{Supervisor and acceptance boundary}
+
+The v2 supervisor spawns A, B, and C, reads each completed result file, and sorts
+successful candidates by canonical proxy. It rechecks hard-macro overlaps and
+returns the best overlap-free result. If every lane fails, it constructs a fresh
+SDF fallback and projects overlaps. When at least one lane completes and passes these checks, selection satisfies
+\begin{equation}
+  \proxy(p_{\mathrm{out}})=\min_{\ell\in\mathcal{L}_{\mathrm{ok}}}
+  \proxy(p_\ell),
+\end{equation}
+where $\mathcal{L}_{\mathrm{ok}}$ is the set of completed lanes that passed the
+recorded checks in that execution. A separately executed Lane A can produce a different result because contention
+and stopping times change the search. The competition supervisor's checks do
+not cover tensor shape, finite values, bounds, or fixed-macro preservation. The placement
+tensor contains coordinates only; this solver neither changes nor validates a
+separate macro-orientation sidecar.
+
+\section{Evidence model and experimental protocol}\label{sec:protocol}
+
+\subsection{Three evidence classes}
+
+Table~\ref{tab:evidence-classes} distinguishes historical records, new
+engineering runs, and the controlled comparison still to be performed.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Evidence labels used throughout this report.}
+\label{tab:evidence-classes}
+\begin{tabularx}{\linewidth}{@{}P{0.16\linewidth}Y Y@{}}
+\toprule
+Label & Meaning & Permitted inference \\
+\midrule
+\historical{} & Saved competition-era record; aggregates can be recomputed from
+recorded per-design fields, but full coordinates, configuration, or environment
+may be missing. & Documents a result attributed to the recorded program lineage; does not isolate a
+mechanism or hardware effect. \\
+\pilot{} & New, manifest-backed preflight on a declared subset. & Validates
+execution, recording, legality, and rough resource behavior on those instances;
+does not establish a suite mean. \\
+Controlled & Same revision, evaluator, hardware, device, resource limit,
+initialization policy, and reporting; failures retained. & Supports paired
+algorithm comparisons within the declared population and budget. \\
+\bottomrule
+\end{tabularx}
+
+\end{table}
+
+The standalone 0.98387 mean is a \historical{} extended-CD result. The 0.97745
+number is a retrospective per-design minimum across separate component runs, an
+offline oracle. It is not an executed three-lane ensemble and is not reported as
+one. No recovered full-suite artifact establishes the mean of the current A+B+C
+program. The final challenge leaderboard does contain a verified Thinkorplace
+entry ranked ninth at 0.9974, identified as the 20 May v2 resubmission
+\citep{challenge2026}; that score is not evidence for the later 22 May
+three-process refactor.
+
+\subsection{Controlled comparison requirements}
+
+A full comparison requires corrected v1, Lane A, and A+B+C on the same 17 designs,
+with a frozen source revision, evaluator, device, and resource budget. One run per
+configuration and design gives 51 runs; three repetitions give 153. A suite mean
+is withheld if any required design lacks an eligible result. Failure counts and
+coverage are reported separately. Repetitions with the fixed SDF seed measure
+repeatability rather than independent starts.
+
+The runner records source and input hashes, constructor settings, dependencies,
+hardware, thread allocation, effective seeds, timings, phase outcomes, and saved
+placements. Validity requires the expected tensor shape, finite coordinates,
+canvas containment, fixed-macro preservation, and zero hard overlaps. Study
+eligibility additionally requires return within the external deadline and matching
+source and environment records. A valid partial or recovered placement can be
+eligible even when its pipeline did not complete.
+
+The controlled comparison has not been run. It must account for the ensemble's
+aggregate compute, rather than compare three processes with one solely by elapsed
+time. Appendix~\ref{app:controls} specifies the mechanism controls and downstream
+measurements.
+
+\section{Results}\label{sec:results}
+
+\subsection{Reconstructed historical record}
+
+Table~\ref{tab:historical-summary} reports means recomputed from three complete
+historical JSON records. The runs used different programs, hardware, budgets,
+and concurrency. The table describes those records; it does not isolate the
+contribution of a solver change.
+
+
+\begin{table}[htbp]\centering\small
+\caption{Historical 17-design records. Overlaps are the sum of recorded hard-overlap
+counts. Times use the original runtime fields, whose timing boundaries differ
+between lineages.}
+\label{tab:historical-summary}
+\input{generated/historical_table.tex}
+
+\end{table}
+
+The v1 record covers all 17 IBM designs and is consistent with the competition
+snapshot: that revision's v1 entry was byte-identical to its archived
+stacked-periphery entry. The post-competition v1 adapter now contains runtime and
+validation repairs, so this byte-identity statement does not describe the working
+tree used for the new study.
+An earlier V3-based v2 record and the E117 Gaussian ancestor also cover all 17
+designs with zero recorded hard overlaps. Two later files exercise only IBM04 and
+therefore say nothing about suite coverage. Two pre-ensemble sets cover all 17
+designs separately and produce means 0.98384 and 0.98370; these are
+hypothesis-specific standalone sets, not lanes recovered from one supervisor run.
+
+As a descriptive comparison, the Gaussian ancestor is lower than the v1 record on
+16 of 17 designs and its arithmetic mean is 7.14 percent lower. The largest
+absolute per-design difference is 0.15100 on IBM17. IBM02 regresses. These differences describe the saved records under unmatched
+conditions.
+
+\reportfigure{figures/historical_scores.pdf}{0.92}{Per-design canonical proxy in
+three saved historical records. The curves do not normalize compute or
+environment.}{fig:historical-scores}
+
+
+\begin{table}[htbp]\centering\small
+\caption{Per-design canonical proxy in three unmatched historical records.}
+\label{tab:historical-per-benchmark}
+\input{generated/historical_per_benchmark.tex}
+
+\end{table}
+
+Across the 17 E74-to-E84 stage records, every saved end score is lower than its
+corresponding start score and all final records report zero hard overlaps. The
+arithmetic mean moves from 1.06760 to 1.06119. On IBM01 the saved pair moves
+from 0.85527 to 0.84528. E74 and E84 identify the saved pre-cascade and post-cascade experiment records.
+Their paired states show accepted decreases in the full proxy. They do not compare
+against random directions, establish stationarity, or isolate curvature from the
+legalization and canonical polish that follow each proposal.
+
+\Needspace{10\baselineskip}
+\paragraph{Canonical rescoring and legality.}\label{sec:cascade-rescore}
+Fresh evaluation of all 34 saved endpoints reproduces the stage means to the
+displayed precision; the largest absolute difference from a recorded total is
+$9.87\times10^{-8}$. Every paired decrease persists. All endpoints have zero
+hard overlaps, but strict geometry validation accepts only 12 of 17 E74
+placements and 10 of 17 E84 placements. The other 12 extend beyond a canvas
+boundary by at most $7.63\times10^{-6}$\,\si{\micro\metre}. The coordinates were
+not repaired, and a separate call to the canonical validator agrees on all 34
+outcomes. The score means above therefore include invalid placements; they
+do not establish eligible full-suite results.
+
+\reportfigure{figures/cascade_gains.pdf}{0.88}{Historical accepted changes
+within the reconstructed curvature-cascade records. These are proposal outcomes,
+not a randomized ablation.}{fig:cascade-gains}
+\reportfigure{figures/cascade_placement_ibm01.pdf}{0.95}{IBM01 placements
+saved by E74 and E84. The pair illustrates different accepted states; it is not a
+continuous optimization trajectory.}{fig:cascade-placement}
+
+Moving a macro can change wirelength, density, and congestion simultaneously.
+In the descriptive v1-to-Gaussian comparison, the mean decrease of 0.07551
+decomposes into 0.00294 from wirelength, 0.00878 from weighted density, and 0.06379
+from weighted congestion. Thus congestion accounts arithmetically for 84.5 percent
+of the net score difference. The decomposition attributes the score difference to components, rather than
+to algorithmic mechanisms.
+
+IBM02 illustrates the tradeoff hidden by the mean. Its density decreases from
+0.61156 to 0.57491, but wirelength increases from 0.08418 to 0.08897 and congestion
+from 1.23324 to 1.27245. The combined score worsens from 1.00659 to 1.01265.
+IBM17 has the largest absolute improvement: congestion drops from 1.88679 to
+1.66501 and density from 0.60911 to 0.53604. IBM17 remains one of the higher-cost designs.
+
+\begin{table}[htbp]\centering\small
+\caption{Mean weighted canonical components in unmatched historical records.}
+\label{tab:historical-components}
+\input{generated/component_table.tex}
+
+\end{table}
+\reportfigure{figures/historical_components.pdf}{0.92}{Canonical component
+composition in the surviving historical records. Components use evaluator-defined
+normalizations and should be read within a row.}{fig:historical-components}
+
+\FloatBarrier
+\input{generated/evaluator_results.tex}
+\input{generated/curvature_diagnostics.tex}
+
+\subsection{Post-competition pilot validation}\label{sec:pilot}
+
+
+The predeclared pilot designs are IBM01, IBM10, IBM17, and ariane133: a small IBM
+case, a larger case, a historically difficult case, and a hierarchical NG45 case.
+The host was an Apple M3 Max with 14 logical CPUs and 36 GiB of memory, running
+CPython 3.9.6 and PyTorch 2.8.0 on macOS 26.6.2. Each variant used nominal seed 42, a total allocation of three CPU threads, a
+180-second solver budget, and a 240-second external limit. Benchmark jobs ran
+sequentially. V2 used 500 analytical steps and a 30-second CD phase cap; these
+settings are an engineering stress test, not the competition's full budget.
+The source was frozen before execution as runtime archive \code{5730d13762ce}.
+Of 12 scheduled runs, five returned valid, study-eligible placements and seven
+ended in errors. One completed every configured pipeline phase, one returned a
+valid partial-phase result, and three recovered validated checkpoints.
+No worker exceeded the external 240-second limit. No variant has four eligible
+results, so no four-design mean is reported.
+
+\input{generated/pilot_results.tex}
+
+The errors expose two concrete implementation problems. V1's IBM10 and IBM17
+results failed canvas containment after local refinement; their inputs contain
+out-of-bounds movable soft clusters that the original hard-macro initializer
+does not repair. The second v1 branch was then budget-skipped. On IBM17, both
+v2 configurations exhausted their inner budget without a valid checkpoint after
+incomplete legalization; the same initial soft-coordinate problem prevents
+an early valid fallback. All three ariane133 runs failed source-directory
+resolution because the loaded benchmark name includes the \code{\_ng45} suffix,
+whereas its flow directory is named \code{ariane133}. This failure occurs before
+optimization and is distinct from the hierarchical pin-ownership defect.
+
+The recovered outputs show where execution stopped.
+On IBM01, ABC returned Lane B's saved post-saddle score of 0.827866 after
+interrupting unfinished final polish. On IBM10, A and ABC both returned the
+same legalized-descent score, 1.166864, without a later completed checkpoint.
+Final canonical validation and artifact export took 26.5--28.2 seconds on IBM10,
+compared with about 1.5 seconds on IBM01. A solver-only timer would omit these costs. Their variation between two designs
+motivates broader measurement, but does not establish a scaling law. Checkpoint metadata describes the state at its save
+time; stdout can record the start of a later phase that never produced another
+checkpoint.
+
+Earlier import and geometry failures are preserved in separate debugging run
+directories. The primary pilot retains all twelve scheduled outcomes; later
+repairs do not replace failed rows.
+
+
+\subsection{Post-pilot repair validation}
+
+This second batch used runtime archive \code{ca4343aaefda}, which adds
+all-movable initial bounds repair, fixed-reference preservation, explicit NG45
+directory aliases, and retained fatal phase diagnostics. The same 12 design/variant
+cells were run with three concurrent benchmark jobs, for nine allocated CPU
+threads in total. Inner and external limits remained 180 and 240 seconds.
+Because concurrency and source changed, these runs are a separate engineering
+validation, not paired causal quality measurements against the primary pilot.
+
+Nine runs returned valid, eligible placements: two completed their pipelines,
+four returned partial-phase outputs, and three recovered checkpoints. The three
+IBM17 runs exceeded the external limit and remain invalid operating results,
+even when intermediate files survived. No variant has complete four-design
+coverage, so all means remain unreported. IBM10 v1 and all ariane133 variants
+now return valid outputs. On IBM17, the 60-second gap between the solver and
+external budgets was insufficient for an on-time returned result in these runs. The unexecuted one-hour
+study template now reserves five minutes for final validation and export; this
+is a provisional allowance, not a demonstrated full-suite guarantee.
+
+\input{generated/repair_results.tex}
+
+After the timeouts, saved intermediate placements were checked separately. IBM17's saved v1 E25
+placement and shared v2 initializer both pass full canonical geometry validation.
+V1's E25 checkpoint records 192.7 seconds, compared with 66.4 seconds in the
+inner E25 work log; the gap includes checkpoint processing and differing timer
+origins and cannot be labelled as CD time. Both v2 configurations logged lane
+selection before their outer timeout, placing the remaining delay after
+selection. The code and elapsed times suggest repeated canonical scoring, but
+the logs do not isolate its exact duration from cleanup, verification, and export.
+An intermediate valid placement does not count as an on-time returned result.
+
+The ariane133 results in this batch still use the old SDF hard-edge extractor.
+The later SDF graph repair and its separate integration check are not folded into
+these numbers.
+
+
+\input{generated/final_ng45_integration.tex}
+
+\input{sections/mathematical_analysis.tex}
+
+\section{Failure analysis and limitations}\label{sec:failure}
+
+\subsection{Execution boundary}
+
+The competition-era three-lane supervisor computed the remaining global time
+before each sequential join. A nonpositive remainder became
+\code{timeout=None}, which means wait without a deadline. Workers receive phase
+budgets but not the global deadline, and a bounded-saddle call may begin a full
+second CD pass after only a coarse time check. V1 contains a related minimum
+cascade allocation after its nominal deadline. These paths can exceed the constructor's nominal time budget.
+
+Competition workers wrote a successful result only at normal completion, so
+terminating a late worker could discard a usable earlier incumbent; temporary lane
+directories were also left behind. The September repair now propagates one
+monotonic deadline, writes atomic validated phase checkpoints, clamps phase budgets
+to remaining time, validates full candidate geometry, and cleans temporary process
+state. It fails if time expires without a valid checkpoint rather than
+starting unbudgeted fallback work. The active dependencies have also been
+extracted into a standalone solver package. The engineering results test these changes under the reported short budgets.
+
+\subsection{Topology and legality}
+
+The competition-era v2 smooth extractor derives macro ownership with
+\code{pin\_name.split("/")[0]}. This resolves the simple IBM names. On the
+hierarchical ariane133 input, the audit found 133 hard macros and 7,847 hard-pin
+objects in the parser, of which 5,498 occur in the net traversal. The original
+extractor retained zero hard-pin occurrences in the smooth topology. The canonical evaluator retains the actual connectivity, but the smooth
+proposal has no hard-macro connectivity on that case. A controlled extraction-only comparison, changing just the ownership
+expression, restores all 5,498 used hard-pin occurrences and increases retained
+nets from 10,799 to all 12,422. The same comparison leaves IBM01 unchanged at
+2,978 hard-pin occurrences and 5,993 nets. This is an extraction-only comparison; it does not measure placement quality. The counts, function sources, and input hashes are preserved in
+\path{writeup/data/publication/topology_diagnostic.json}.
+
+A separate audit found the same owner-parsing assumption in the SDF initializer's
+hard-macro edge extractor. On ariane133, it produced zero edges, so its
+edge-wirelength term was identically zero while density and overlap optimization
+still ran. Replacing that lookup with a map from the parser's hard-macro pins
+restores 859 distinct edges. IBM01 retains exactly the same 644 edges and stored
+weights, including matching tensor hashes. This second repair is present in the
+final cleanup but was applied \emph{after} the two 12-run batches. Its extraction
+record, including both function bodies and input hashes, is
+\path{writeup/data/publication/sdf_topology_diagnostic.json}.
+The two defects affect different representations: the smooth net tensor
+and the SDF hard-macro graph. Repairing one does not repair the other.
+
+The local JSON writer also copied overlap status into \code{qualified} without
+retaining every validity condition. This omits the shape, finite-value, containment, fixed-macro, and timing
+requirements used by the corrected runner. If a solver emits an orientation sidecar, that artifact requires
+its own allowed-orientation check; the coordinate-only Thinkorplace API does not
+emit one. Historical \code{qualified=true} is therefore
+treated only as the field that was recorded, not proof of all competition rules.
+
+\subsection{Surrogate and optimization limits}
+
+The Gaussian density smooths grid-cell boundary changes but preserves selection
+and clamp nonsmoothness. Because its off-canvas tails are not renormalized, it can
+also undercount modeled density near canvas edges. The trace congestion
+approximation can rank moves differently from the evaluator. Legalization can erase a smooth-loss improvement. Coordinate
+descent searches one axis at a time and its candidate set is deliberately sparse.
+The Hungarian matrix neglects joint interactions. The eigensolver can terminate
+with a weak residual or consume unpredictable wall time. Final selection uses full canonical scores, but unsuccessful proposals still
+consume search time.
+
+Three parallel lanes also consume more aggregate resources than one Lane A.
+Reporting wall time alone would hide CPU, GPU, and memory use, while comparing the
+minimum of three candidates with one candidate changes the statistical selection
+advantage. The controlled comparison must charge all lanes' computation to the ensemble.
+
+\subsection{Statistical and external-validity limits}
+
+The primary IBM population has 17 public designs and development repeatedly used
+them. The planned three repetitions would show repeatability on these designs;
+they would not support precise estimates of an outcome distribution. Default SDF seeding may make nominally distinct
+runs identical. Results should show every point or range, paired design deltas,
+coverage, and failures instead of relying on a single mean. Broader claims require
+additional technologies, block types, macro counts, utilization regimes, and
+completed place-and-route metrics.
+
+\section{Related work}\label{sec:related}
+
+The ICCAD04 mixed-size benchmarks arose from work unifying partitioning,
+floorplanning, and placement \citep{adya2004unification}. Modern analytical
+placers optimize smoothed wirelength under density forces. ePlace's electrostatic
+model connects density to a Poisson system \citep{lu2015eplace}; RePlAce improves
+quality and routability handling \citep{cheng2019replace}; DREAMPlace maps the
+computation to tensor primitives and GPUs \citep{lin2019dreamplace}. \project{} uses
+the same broad analytical tradition for initialization, then relies more heavily
+on canonical black-box refinement.
+
+RUDY distributes a net's routing demand over its bounding rectangle
+\citep{spindler2007rudy}. The trace model here is related in intent, but matching
+the canonical congestion ranking is an empirical question. The Hungarian method
+provides the exact linear assignment subproblem in Lane C \citep{kuhn1955hungarian};
+the nonlinear, interaction-heavy placement move remains heuristic.
+
+Minimum-mode techniques motivate Lane B's search for low-curvature directions.
+The dimer method, gentlest-ascent dynamics, and negative-curvature descent each
+come with distinct update rules and assumptions \citep{henkelman1999dimer,
+e2011gad,liu2017negative}. The present code borrows the intuition that low-curvature
+directions can reveal escapes. It does not implement those algorithms or inherit
+their guarantees.
+
+The TILOS assessment work emphasizes transparent baselines, open implementations,
+and downstream validation \citep{cheng2023assessment,macroplacement}. That standard
+motivates this report's evidence labels and the separation of historical artifacts
+from corrected experiments.
+
+\section{Reproducibility}
+
+The source manifests record three revisions: competition code
+\code{2ab92a33d352}, challenge infrastructure \code{996193c83eaa}, and
+TILOS \code{45a721d01dfe}. Six canonical evaluator, loader, and validation files
+are byte-identical between the local base and final challenge revision. Historical
+source is preserved in \path{writeup/data/publication/competition-source.tar}.
+The sibling \path{source_snapshot.json} records its competition revision,
+archive digest, and file list; the corrected-runtime manifest records the final
+upstream and TILOS revisions.
+
+The competition-era v1 entry imported shared submissions and experiment code;
+v2 required four local additions under \code{macro\_place}. Copying either
+submission directory alone onto pristine upstream was insufficient. The September
+cleanup extracts the active dependency closure into \path{thinkorplace.common},
+\path{thinkorplace.v1}, and \path{thinkorplace.v2}, using relative imports and
+keeping both submission paths as compatibility adapters. Runtime imports no
+longer depend on the experiment or writeup trees. The package retains the
+optimization formulas while separating safety repairs from historical source.
+The migration manifest identifies the origin of each module.
+
+The repaired source and focused tests are frozen in a separate runtime archive,
+identified by \path{writeup/data/publication/corrected_runtime_snapshot.json}.
+Benchmark tensors, netlists, initial placements, and the external evaluator remain
+separate inputs; every run records their hashes. After the pilot repairs,
+the package and runner checks passed 64 focused tests, including import isolation against pristine canonical
+infrastructure, process cleanup, cross-process clocks, checkpoint recovery, and
+exact endpoint-overlap parity. The command, environment, and observed output
+are preserved with a runtime-archive reference under
+\path{writeup/data/publication/verification}. These are engineering checks, not
+substitutes for benchmark outcomes.
+
+The generator \path{scripts/freeze_publication_evidence.py} produces the historical
+aggregates, tables, and figures from frozen raw JSON. The saved placement tensors
+used by the figures and explorer are also
+frozen under \path{writeup/data/publication/raw/placements}. The corrected runner implements
+the following workflow:
+
+\begin{enumerate}
+  \item create an immutable run manifest before solver construction;
+  \item record input and initialization hashes and explicit device choice;
+  \item save canonical incumbents atomically at every meaningful phase;
+  \item propagate one monotonic solver deadline and enforce an external process-group timeout;
+  \item validate the final candidate independently and retain all failures;
+  \item preserve final coordinates and phase metadata for deterministic postprocessing.
+\end{enumerate}
+
+Resume identities cover executable source, dependencies, inputs, and constructor
+settings. A change to the paper alone does not invalidate a run, whereas a runtime
+change creates a different identity. Source is checked again after execution, and
+failed or externally timed-out workers remain explicit records. A valid saved
+incumbent can be an eligible anytime output even if later phases were skipped or
+interrupted; \emph{pipeline completion} is a separate field. Both fields are retained in the result tables.
+
+The evaluator microbenchmarks retain the exact move sequences, raw per-move
+timings, component values, and source hashes. The curvature probe loads frozen
+competition source and a saved historical endpoint. The interactive companion
+contains all 17 saved E74/E84 hard-macro comparisons; soft clusters are omitted
+for readability, and straight displacement segments do not assert feasible
+trajectories. Its rounded display coordinates are not inputs to validation.
+
+The report itself is built with \code{latexmk -pdf} from
+\code{writeup/latex/main.tex}. The release build requires every referenced result fragment and figure. Missing
+evidence, unresolved references, and layout warnings fail the publication check.
+Display values are rounded; the frozen records retain their original precision.
+
+\section{Conclusion}
+
+Thinkorplace combines smooth placement, legalization, and canonical local search.
+Incremental component evaluation was substantially cheaper than full
+recomputation in the measured IBM01 and IBM10 move sequences, with agreement
+within $2.6\times10^{-15}$ relative error. Historical records show accepted
+improvements during cascade search, but their unmatched configurations do not
+establish the benefit of the final ensemble or any individual proposal method.
+
+The mathematical analysis identifies the conditions needed for stronger claims:
+bounded scoring error for reliable acceptance, smoothness and a feasible step
+for curvature descent, and control of joint interactions for assignment gains.
+The implementation's endpoint checks remain necessary because those conditions
+have not been established over its search trajectories.
+
+The implementation audit repaired deadline handling, candidate validation, and
+two hierarchical connectivity extractors. The final ariane133 integration checks
+returned valid placements from all three entry configurations. IBM17 still timed
+out in the short repair batch. Profiling its finalization path is the immediate
+engineering task; the remaining experimental work is a full-suite comparison
+under matched resources, followed by curvature and assignment controls.
+
+\appendix
+
+\section{Algorithm specification}
+
+\subsection{Competition-era lane execution}
+
+\begin{enumerate}
+  \item Load the benchmark, canonical evaluator, geometry, pins, and fixed mask.
+  \item Run Gaussian analytical descent. Retry with stronger overlap penalties if
+        the result cannot be projected to zero hard overlap. Fall back to SDF plus
+        projection if all attempts fail.
+  \item Construct the incremental replica from the legal placement.
+  \item Lane A: run adaptive CD. Lane B: run CD, curvature proposals checked by
+        full scoring, then CD. Lane C: run CD, assignment batches checked by the
+        incremental replica, full phase rescoring, then CD and full-score selection.
+  \item Compute the full canonical components and overlap count. Write a result
+        record only after the lane completes normally.
+  \item The supervisor gathers available records and returns the lowest-score
+        overlap-free placement; otherwise it returns a projected SDF fallback.
+\end{enumerate}
+
+The corrected post-competition runtime additionally writes validated atomic
+phase checkpoints. The outer runner can return a valid partial or recovered
+incumbent before its external deadline; completion, validity, and eligibility
+are recorded separately, as described in the engineering results above.
+
+\subsection{Coordinate search invariant}
+
+For a proposed scalar coordinate $q$, the search snapshots the incremental state,
+applies $q$, materializes the incremental component delta, and either commits the
+best strictly improving legal candidate or reverts every touched cache. A fresh
+canonical evaluation supplies the phase-boundary score, but the competition
+worker does not explicitly compare that value against the incremental cache to
+assert absence of drift. Focused parity and revert tests provide the separate
+evidence for cache correctness. The selected coordinate candidates do not change that consistency requirement.
+
+\Needspace{23\baselineskip}
+\section{Configuration snapshot}
+
+\begin{table}[H]
+\centering\small
+\caption{Defaults reconstructed from the final competition-era v2 constructor.}
+\label{tab:defaults}
+\begin{tabularx}{\linewidth}{@{}l l Y@{}}
+\toprule
+Parameter & Competition-era default & Interpretation \\
+\midrule
+Global nominal budget & 2700 s & Supervisor budget; not reliably enforced after expiry \\
+Smooth steps & 500 & Final fallback attempt uses 300 \\
+Learning-rate fraction & 0.005 & Relative to canvas scale \\
+$\gamma$ fraction & $5\times10^{-3}\to5\times10^{-5}$ & LSE smoothing schedule \\
+Terminal overlap weight & 10 & Retry ladder uses 10, 50, 100 \\
+Overlap ramp & first 70\% & Then fixed at terminal weight \\
+CD budget & 900 s & Per CD1 phase; later lanes add CD2 \\
+CD plateau threshold & 0.001 & Five low-improvement sweeps after minimum time \\
+Curvature budget & 120 s & Up to two cascade iterations \\
+Eigensolver & 50 iterations, tol. $10^{-2}$ & Iteration cap is not a wall-clock cap \\
+Assignment budget & 300 s & $K=50$, 100 slots, patience 15 \\
+Lane seeds & 42, 142, 242 & SDF prefix remains fixed at seed 42 \\
+\bottomrule
+\end{tabularx}
+
+\end{table}
+
+\Needspace{23\baselineskip}
+\section{Evidence ledger}
+
+\begin{table}[H]
+\centering\footnotesize
+\caption{Claim-to-evidence map.}
+\label{tab:evidence-ledger}
+\begin{tabularx}{\linewidth}{@{}P{0.23\linewidth}P{0.15\linewidth}P{0.20\linewidth}Y@{}}
+\toprule
+Claim or number & Evidence class & Status & Interpretation \\
+\midrule
+1.05750 v1 mean & Historical, 17 IBM & Surviving JSON & Complete recorded
+coverage, uncontrolled configuration \\
+1.00835 early v2 mean & Historical, 17 IBM & Surviving JSON & Different lineage and
+environment from v1 \\
+0.98199 E117 mean & Historical, 17 IBM & Surviving JSON & Gaussian ancestor,
+not final A+B+C \\
+0.98387 standalone mean & Historical statement & Attributed by commit & Extended-CD
+standalone result, not shipped ensemble \\
+0.97745 oracle & Retrospective & Explicitly offline & Per-design minimum across separate
+component runs \\
+0.9974 verified entry & External leaderboard & Final pinned README & 20 May v2
+resubmission, not 22 May refactor \\
+E74 $\to$ E84 IBM01 gain & Historical paired artifacts & Accepted lower score & No
+matched random control \\
+Saved E74/E84 negative modes & Historical diagnostic & Observed in experiment lineage & No
+gradient/stationarity proof \\
+IBM01 $-0.442458$ mode & Post-competition frozen-endpoint diagnostic & Residual-checked
+within the automatic-differentiation HVP operator & One surrogate and endpoint; no
+classical-Hessian or stationarity proof \\
+Final A+B+C full-suite mean & None recovered & Unestablished & Requires fresh,
+manifest-backed run \\
+\bottomrule
+\end{tabularx}
+
+\end{table}
+
+
+\begin{table}[H]\centering\footnotesize
+\caption{Full historical E74-to-E84 cascade record. Stage time is copied from the
+saved E84 record and is not a matched runtime comparison.}
+\label{tab:cascade-full}
+\input{generated/cascade_table.tex}
+
+\end{table}
+
+\section{Controlled analyses still required}\label{app:controls}
+
+For the main suite, publish per-design canonical components, paired deltas, elapsed
+time, peak memory, lane completion, and every failure. Plot actual points for three
+repetitions. For mechanism studies, predeclare the design subset and freeze starting
+placements so every proposal method sees identical states. Report eigensolver
+residuals and Hessian-vector-product counts for curvature trials; report feasible
+matrix entries, predicted versus realized delta, and rejection reasons for
+assignment trials. For surrogate fidelity, scatter predicted against canonical
+move deltas by component and report sign agreement as well as rank correlation.
+
+For NG45, first assert that every hard macro pin maps to the correct tensor owner.
+Only then run the same saved configuration used on IBM. Any downstream OpenROAD
+result should include flow revision, technology files, tool versions, completion
+status, WNS, TNS, area, and routed wirelength. Proxy and routed outcomes should
+appear side by side without implying that one guarantees the other.
+
+\bibliographystyle{plainnat}
+\begingroup
+\interlinepenalty=10000
+\raggedright
+\urlstyle{same}
+\def\UrlBreakPenalty{100}
+\def\UrlBigBreakPenalty{100}
+\bibliography{references}
+\endgroup
+
+\end{document}

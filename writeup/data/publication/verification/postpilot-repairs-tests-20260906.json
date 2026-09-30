@@ -1,0 +1,11 @@
+{
+  "classification": "focused_engineering_tests",
+  "log": "writeup/data/publication/verification/postpilot-repairs-tests-20260906.log",
+  "log_sha256": "e72cf273a31be2ef2be7608993b50b9db3f56cd047e6d9ac0e663c51b200d1b9",
+  "passed": 60,
+  "exit_code": 0,
+  "runtime_archive": "corrected-runtime-ca4343aaefda.tar.gz",
+  "runtime_archive_sha256": "5351fb9a21ef18badb4c50a61793794d132217b24208af68359280fa9fc353c0",
+  "source_identity_sha256": "ca4343aaefdaf50a61365572cb2a9d2aae5a2560f938396cda38908c9624622d",
+  "scope": "Four named test modules; no full-suite solver-quality claim. Log records command, timestamp, environment and observed output."
+}

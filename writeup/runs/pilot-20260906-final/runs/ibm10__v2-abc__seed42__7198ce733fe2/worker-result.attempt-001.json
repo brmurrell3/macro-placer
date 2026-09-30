@@ -1,0 +1,1175 @@
+{
+  "benchmark": {
+    "bench_root": "/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04",
+    "benchmark_path": "/Users/brendan/Developer/macro-place-challenge-2026/benchmarks/processed/public/ibm10.pt",
+    "benchmark_sha256": "07aa359027ac36f8bbcb50b10417776597443977b01c5ce155f63aabfbd04084",
+    "design_name": "ibm10",
+    "initial_plc_path": "/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm10/initial.plc",
+    "initial_plc_sha256": "a5dfc34b7b0dd2a4c7cb0c9a46f115f65fd9e0986895b1c4eef87b8274c6f149",
+    "netlist_path": "/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm10/netlist.pb.txt",
+    "netlist_sha256": "ffb653f7a13fd9645385e4bd74c2c42c76a261a05e58d4a2490f4b73cd4c6ede",
+    "requested_name": "ibm10",
+    "source_dir": "/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm10"
+  },
+  "canonical_cost": {
+    "congestion_cost": 1.5059858594714963,
+    "density_cost": 0.6562938690185547,
+    "proxy_cost": 1.166864037513733,
+    "wirelength_cost": 0.08572417497634888
+  },
+  "checkpoint_dir": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-abc__seed42__7198ce733fe2/checkpoints/attempt-001",
+  "checkpoint_inventory": [
+    {
+      "artifact_sha256": "13ed9094f3e320d548431b2faae6fa274c7103841ef67a01b10383e77a0f7abb",
+      "coordinates_sha256": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1",
+      "effective_rng_seed": 42,
+      "initializer_attempt": 1,
+      "initializer_method": "sdf",
+      "lane_index": 0,
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-abc__seed42__7198ce733fe2/checkpoints/attempt-001/lane0.pkl",
+      "phase": "descent_legalized",
+      "rng_seed": 42,
+      "size_bytes": 22979
+    },
+    {
+      "artifact_sha256": "13ed9094f3e320d548431b2faae6fa274c7103841ef67a01b10383e77a0f7abb",
+      "coordinates_sha256": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1",
+      "effective_rng_seed": 42,
+      "initializer_attempt": 1,
+      "initializer_method": "sdf",
+      "lane_index": 0,
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-abc__seed42__7198ce733fe2/checkpoints/attempt-001/lane0_descent_legalized.pkl",
+      "phase": "descent_legalized",
+      "rng_seed": 42,
+      "size_bytes": 22979
+    },
+    {
+      "artifact_sha256": "3d0623d250d8b9fdfc4476ddc1f7ef41efe8021faf8e50cc0dc76254ced1b8f9",
+      "coordinates_sha256": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1",
+      "effective_rng_seed": 42,
+      "initializer_attempt": 1,
+      "initializer_method": "sdf",
+      "lane_index": 1,
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-abc__seed42__7198ce733fe2/checkpoints/attempt-001/lane1.pkl",
+      "phase": "descent_legalized",
+      "rng_seed": 142,
+      "size_bytes": 23046
+    },
+    {
+      "artifact_sha256": "3d0623d250d8b9fdfc4476ddc1f7ef41efe8021faf8e50cc0dc76254ced1b8f9",
+      "coordinates_sha256": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1",
+      "effective_rng_seed": 42,
+      "initializer_attempt": 1,
+      "initializer_method": "sdf",
+      "lane_index": 1,
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-abc__seed42__7198ce733fe2/checkpoints/attempt-001/lane1_descent_legalized.pkl",
+      "phase": "descent_legalized",
+      "rng_seed": 142,
+      "size_bytes": 23046
+    },
+    {
+      "artifact_sha256": "4fab37fb0bf91e425279ac1535fd3d843879adef0c1e215c8fbd2ac49e9c056d",
+      "coordinates_sha256": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1",
+      "effective_rng_seed": 42,
+      "initializer_attempt": 1,
+      "initializer_method": "sdf",
+      "lane_index": 2,
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-abc__seed42__7198ce733fe2/checkpoints/attempt-001/lane2.pkl",
+      "phase": "descent_legalized",
+      "rng_seed": 242,
+      "size_bytes": 23049
+    },
+    {
+      "artifact_sha256": "4fab37fb0bf91e425279ac1535fd3d843879adef0c1e215c8fbd2ac49e9c056d",
+      "coordinates_sha256": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1",
+      "effective_rng_seed": 42,
+      "initializer_attempt": 1,
+      "initializer_method": "sdf",
+      "lane_index": 2,
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-abc__seed42__7198ce733fe2/checkpoints/attempt-001/lane2_descent_legalized.pkl",
+      "phase": "descent_legalized",
+      "rng_seed": 242,
+      "size_bytes": 23049
+    }
+  ],
+  "constructor_parameters": {
+    "budget_seconds": 180.0,
+    "cd_polish_s": 30.0,
+    "checkpoint_dir": "<per-run-checkpoint-dir>",
+    "device": "cpu",
+    "lane_a_seed": 42,
+    "lane_b_seed": 142,
+    "lane_c_seed": 242,
+    "lanes": "ABC",
+    "num_steps": 500,
+    "num_threads": 3
+  },
+  "degraded_lanes": [
+    "A",
+    "B",
+    "C"
+  ],
+  "environment": {
+    "cuda_available": false,
+    "cuda_version": null,
+    "device_detail": "arm",
+    "installed_distributions_sha256": "fd0de2876413a39e65d6f1760ee6ec37b835c306635d60efe1270004ce0f457b",
+    "installed_packages": {
+      "Jinja2": "3.1.6",
+      "MarkupSafe": "3.0.3",
+      "PyMetis": "2023.1.1",
+      "Pygments": "2.20.0",
+      "absl-py": "2.3.1",
+      "contourpy": "1.3.0",
+      "cycler": "0.12.1",
+      "exceptiongroup": "1.3.1",
+      "filelock": "3.19.1",
+      "fonttools": "4.60.2",
+      "fsspec": "2025.10.0",
+      "geomloss": "0.2.6",
+      "highspy": "1.13.1",
+      "importlib_resources": "6.5.2",
+      "iniconfig": "2.1.0",
+      "joblib": "1.5.3",
+      "kahypar": "1.3.6",
+      "kiwisolver": "1.4.7",
+      "macro-place": "0.1.0",
+      "matplotlib": "3.9.4",
+      "mpmath": "1.3.0",
+      "networkx": "3.2.1",
+      "numpy": "2.0.2",
+      "packaging": "26.0",
+      "pillow": "11.3.0",
+      "pluggy": "1.6.0",
+      "py-spy": "0.4.2",
+      "pyparsing": "3.3.2",
+      "pytest": "8.4.2",
+      "python-dateutil": "2.9.0.post0",
+      "pytorch-ranger": "0.1.1",
+      "scikit-learn": "1.6.1",
+      "scipy": "1.13.1",
+      "six": "1.17.0",
+      "sympy": "1.14.0",
+      "threadpoolctl": "3.6.0",
+      "tomli": "2.4.1",
+      "torch": "2.8.0",
+      "torch-optimizer": "0.3.0",
+      "tqdm": "4.67.3",
+      "typing_extensions": "4.15.0",
+      "zipp": "3.23.0"
+    },
+    "mps_available": true,
+    "python_executable": "/Users/brendan/Developer/macro-place-challenge-2026/.venv/bin/python",
+    "python_version": "3.9.6",
+    "requested_device": "cpu",
+    "requested_thread_limit": 3,
+    "thread_environment": {
+      "MKL_NUM_THREADS": "3",
+      "NUMEXPR_NUM_THREADS": "3",
+      "OMP_NUM_THREADS": "3",
+      "OPENBLAS_NUM_THREADS": "3",
+      "VECLIB_MAXIMUM_THREADS": "3"
+    },
+    "torch_num_threads": 3,
+    "torch_version": "2.8.0"
+  },
+  "environment_matches_manifest": true,
+  "final_placement_file_sha256": "289e80f71f9ab5ece8688bb5b243b0fce9061f41c185c0394a24c32f046150c3",
+  "final_placement_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-abc__seed42__7198ce733fe2/final.pt",
+  "final_placement_tensor_sha256": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1",
+  "finished_at": "2026-09-06T17:14:03.089732+00:00",
+  "identity_sha256": "7198ce733fe24e86243b9e37cdffb3b10ae706512e3a8443e9de29f16fc6d8e2",
+  "incomplete_phases": [
+    "A.cd",
+    "A.final",
+    "B.cd1",
+    "B.cd2",
+    "B.final",
+    "B.saddle",
+    "C.cd1",
+    "C.cd2",
+    "C.final",
+    "C.hungarian"
+  ],
+  "initial_placement_sha256": "6456ebc0f0409699699fc828a36472b9081682fca07bfef2000c7d77a6184012",
+  "lane_worker_errors": {
+    "A": {
+      "worker_status": "interrupted"
+    },
+    "B": {
+      "worker_status": "interrupted"
+    },
+    "C": {
+      "worker_status": "interrupted"
+    }
+  },
+  "legality": {
+    "full_legal": true,
+    "full_violations": [],
+    "hard_macro_overlap": {
+      "max_overlap_area": 0.0,
+      "num_macros_with_overlaps": 0,
+      "overlap_count": 0,
+      "overlap_ratio": 0.0,
+      "total_overlap_area": 0.0
+    },
+    "structural_legal_without_overlap": true,
+    "structural_violations_without_overlap": []
+  },
+  "nominal_seed": 42,
+  "phase_completion": {
+    "A": {
+      "checkpoint_phase": "descent_legalized",
+      "phase_details": {
+        "cd": {
+          "accepted": null,
+          "attempted": false,
+          "completed": false,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "descent": {
+          "accepted": true,
+          "attempted": true,
+          "completed": true,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "final": {
+          "accepted": null,
+          "attempted": false,
+          "completed": false,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "initializer": {
+          "accepted": true,
+          "attempted": true,
+          "completed": true,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        }
+      },
+      "pipeline_completed": false,
+      "worker_status": "interrupted"
+    },
+    "B": {
+      "checkpoint_phase": "descent_legalized",
+      "phase_details": {
+        "cd1": {
+          "accepted": null,
+          "attempted": false,
+          "completed": false,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "cd2": {
+          "accepted": null,
+          "attempted": false,
+          "completed": false,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "descent": {
+          "accepted": true,
+          "attempted": true,
+          "completed": true,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "final": {
+          "accepted": null,
+          "attempted": false,
+          "completed": false,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "initializer": {
+          "accepted": true,
+          "attempted": true,
+          "completed": true,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "saddle": {
+          "accepted": null,
+          "attempted": false,
+          "completed": false,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        }
+      },
+      "pipeline_completed": false,
+      "worker_status": "interrupted"
+    },
+    "C": {
+      "checkpoint_phase": "descent_legalized",
+      "phase_details": {
+        "cd1": {
+          "accepted": null,
+          "attempted": false,
+          "completed": false,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "cd2": {
+          "accepted": null,
+          "attempted": false,
+          "completed": false,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "descent": {
+          "accepted": true,
+          "attempted": true,
+          "completed": true,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "final": {
+          "accepted": null,
+          "attempted": false,
+          "completed": false,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "hungarian": {
+          "accepted": null,
+          "attempted": false,
+          "completed": false,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "initializer": {
+          "accepted": true,
+          "attempted": true,
+          "completed": true,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        }
+      },
+      "pipeline_completed": false,
+      "worker_status": "interrupted"
+    }
+  },
+  "phase_errors": {},
+  "phase_outcomes": {
+    "A": {
+      "cd": {
+        "accepted": null,
+        "attempted": false,
+        "completed": false,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "descent": {
+        "accepted": true,
+        "attempted": true,
+        "completed": true,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "final": {
+        "accepted": null,
+        "attempted": false,
+        "completed": false,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "initializer": {
+        "accepted": true,
+        "attempted": true,
+        "completed": true,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      }
+    },
+    "B": {
+      "cd1": {
+        "accepted": null,
+        "attempted": false,
+        "completed": false,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "cd2": {
+        "accepted": null,
+        "attempted": false,
+        "completed": false,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "descent": {
+        "accepted": true,
+        "attempted": true,
+        "completed": true,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "final": {
+        "accepted": null,
+        "attempted": false,
+        "completed": false,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "initializer": {
+        "accepted": true,
+        "attempted": true,
+        "completed": true,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "saddle": {
+        "accepted": null,
+        "attempted": false,
+        "completed": false,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      }
+    },
+    "C": {
+      "cd1": {
+        "accepted": null,
+        "attempted": false,
+        "completed": false,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "cd2": {
+        "accepted": null,
+        "attempted": false,
+        "completed": false,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "descent": {
+        "accepted": true,
+        "attempted": true,
+        "completed": true,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "final": {
+        "accepted": null,
+        "attempted": false,
+        "completed": false,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "hungarian": {
+        "accepted": null,
+        "attempted": false,
+        "completed": false,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "initializer": {
+        "accepted": true,
+        "attempted": true,
+        "completed": true,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      }
+    }
+  },
+  "pipeline_completed": false,
+  "repository": {
+    "branch": "codex/publication-study",
+    "dirty": true,
+    "dirty_entries": [
+      "M README.md",
+      " M experiments/E18_dpo_init/code/cd_lns_sa_dpo_init.py",
+      " M experiments/E84_cascading_saddle/code/cascading_saddle.py",
+      " M pyproject.toml",
+      " M submissions/common/cd_lns_sa_cascade_stacked/placer.py",
+      " M submissions/thinkorplace-v2/lane_worker.py",
+      " M submissions/thinkorplace-v2/lib/ablation_v2_steps.py",
+      " M submissions/thinkorplace-v2/lib/bounded_saddle.py",
+      " M submissions/thinkorplace-v2/lib/macro_legalizer.py",
+      " M submissions/thinkorplace-v2/lib/smooth_global_placer_v4_gaussian.py",
+      " M submissions/thinkorplace-v2/placer.py",
+      " M submissions/thinkorplace/placer.py",
+      " M writeup/README.md",
+      " M writeup/STORY.md",
+      " M writeup/archive/submissions/dpo/ablation_v2_steps.py",
+      " M writeup/paper.md",
+      "?? docs/reviews/2026-09-06-thinkorplace.md",
+      "?? scripts/build_publication_explorer.py",
+      "?? scripts/check_publication_explorer.cjs",
+      "?? scripts/diagnose_publication_curvature.py",
+      "?? scripts/freeze_publication_evidence.py",
+      "?? scripts/measure_publication_evaluator.py",
+      "?? scripts/measure_publication_topology.py",
+      "?? scripts/publication_worker.py",
+      "?? scripts/render_publication_measurements.py",
+      "?? scripts/run_publication_study.py",
+      "?? submissions/common/runtime_safety.py",
+      "?? submissions/thinkorplace-v2/README.md",
+      "?? submissions/thinkorplace/README.md",
+      "?? test/test_publication_runner.py",
+      "?? test/test_submission_safety.py",
+      "?? test/test_thinkorplace_package.py",
+      "?? thinkorplace/MIGRATION.json",
+      "?? thinkorplace/README.md",
+      "?? thinkorplace/__init__.py",
+      "?? thinkorplace/common/__init__.py",
+      "?? thinkorplace/common/bench_paths.py",
+      "?? thinkorplace/common/cd_core.py",
+      "?? thinkorplace/common/hessian.py",
+      "?? thinkorplace/common/incremental_evaluator.py",
+      "?? thinkorplace/common/runtime_safety.py",
+      "?? thinkorplace/common/sdf_init.py",
+      "?? thinkorplace/common/smooth_primitives.py",
+      "?? thinkorplace/v1/__init__.py",
+      "?? thinkorplace/v1/cascade.py",
+      "?? thinkorplace/v1/cd_lns_sa.py",
+      "?? thinkorplace/v1/dpo_init.py",
+      "?? thinkorplace/v1/dpo_lane.py",
+      "?? thinkorplace/v1/joint_lns.py",
+      "?? thinkorplace/v1/levy.py",
+      "?? thinkorplace/v1/placer.py",
+      "?? thinkorplace/v1/portfolio.py",
+      "?? thinkorplace/v1/stacked.py",
+      "?? thinkorplace/v2/__init__.py",
+      "?? thinkorplace/v2/bounded_saddle.py",
+      "?? thinkorplace/v2/fast_proxy.py",
+      "?? thinkorplace/v2/gaussian_density.py",
+      "?? thinkorplace/v2/kjoint_hungarian.py",
+      "?? thinkorplace/v2/macro_legalizer.py",
+      "?? thinkorplace/v2/per_net_trace_proxy.py",
+      "?? thinkorplace/v2/placer.py",
+      "?? thinkorplace/v2/smooth_global_placer_v4.py",
+      "?? thinkorplace/v2/smooth_global_placer_v4_gaussian.py",
+      "?? thinkorplace/v2/v4_gaussian_proxy.py",
+      "?? thinkorplace/v2/worker.py",
+      "?? writeup/PUBLICATION_PLAN.md",
+      "?? writeup/data/publication/competition-source.tar",
+      "?? writeup/data/publication/curvature_diagnostics_ibm01.json",
+      "?? writeup/data/publication/evaluator_ibm01_mac.json",
+      "?? writeup/data/publication/evaluator_ibm10_hard_mac.json",
+      "?? writeup/data/publication/evaluator_ibm10_mac.json",
+      "?? writeup/data/publication/evaluator_microbenchmark_mac.json",
+      "?? writeup/data/publication/historical_summary.json",
+      "?? writeup/data/publication/package-smoke/provenance.json",
+      "?? writeup/data/publication/package-smoke/result.json",
+      "?? writeup/data/publication/per_benchmark.csv",
+      "?? writeup/data/publication/placement_figure_sources.json",
+      "?? writeup/data/publication/raw/CDLNSSACascadeStackedPeripheryPlacer_20260517_062436.json",
+      "?? writeup/data/publication/raw/E111MinimalGaussianPlacer_20260520_135149.json",
+      "?? writeup/data/publication/raw/EPYC_thinkorplace_v2_validation_20260520.json",
+      "?? writeup/data/publication/raw/cascade/cascade_ibm01.json",
+      "?? writeup/data/publication/raw/cascade/cascade_ibm02.json",
+      "?? writeup/data/publication/raw/cascade/cascade_ibm03.json",
+      "?? writeup/data/publication/raw/cascade/cascade_ibm04.json",
+      "?? writeup/data/publication/raw/cascade/cascade_ibm06.json",
+      "?? writeup/data/publication/raw/cascade/cascade_ibm07.json",
+      "?? writeup/data/publication/raw/cascade/cascade_ibm08.json",
+      "?? writeup/data/publication/raw/cascade/cascade_ibm09.json",
+      "?? writeup/data/publication/raw/cascade/cascade_ibm10.json",
+      "?? writeup/data/publication/raw/cascade/cascade_ibm11.json",
+      "?? writeup/data/publication/raw/cascade/cascade_ibm12.json",
+      "?? writeup/data/publication/raw/cascade/cascade_ibm13.json",
+      "?? writeup/data/publication/raw/cascade/cascade_ibm14.json",
+      "?? writeup/data/publication/raw/cascade/cascade_ibm15.json",
+      "?? writeup/data/publication/raw/cascade/cascade_ibm16.json",
+      "?? writeup/data/publication/raw/cascade/cascade_ibm17.json",
+      "?? writeup/data/publication/raw/cascade/cascade_ibm18.json",
+      "?? writeup/data/publication/raw/cascade/hessian_ibm01.json",
+      "?? writeup/data/publication/raw/cascade/hessian_ibm02.json",
+      "?? writeup/data/publication/raw/cascade/hessian_ibm03.json",
+      "?? writeup/data/publication/raw/cascade/hessian_ibm04.json",
+      "?? writeup/data/publication/raw/cascade/hessian_ibm06.json",
+      "?? writeup/data/publication/raw/cascade/hessian_ibm07.json",
+      "?? writeup/data/publication/raw/cascade/hessian_ibm08.json",
+      "?? writeup/data/publication/raw/cascade/hessian_ibm09.json",
+      "?? writeup/data/publication/raw/cascade/hessian_ibm10.json",
+      "?? writeup/data/publication/raw/cascade/hessian_ibm11.json",
+      "?? writeup/data/publication/raw/cascade/hessian_ibm12.json",
+      "?? writeup/data/publication/raw/cascade/hessian_ibm13.json",
+      "?? writeup/data/publication/raw/cascade/hessian_ibm14.json",
+      "?? writeup/data/publication/raw/cascade/hessian_ibm15.json",
+      "?? writeup/data/publication/raw/cascade/hessian_ibm16.json",
+      "?? writeup/data/publication/raw/cascade/hessian_ibm17.json",
+      "?? writeup/data/publication/raw/cascade/hessian_ibm18.json",
+      "?? writeup/data/publication/raw/measure_publication_evaluator.py",
+      "?? writeup/data/publication/raw/measure_publication_evaluator_all.py",
+      "?? writeup/data/publication/source_snapshot.json",
+      "?? writeup/data/publication/topology_diagnostic.json",
+      "?? writeup/interactive/README.md",
+      "?? writeup/interactive/placement-comparison.fragment.html",
+      "?? writeup/interactive/placement-comparison.html",
+      "?? writeup/interactive/placement-comparison.template.html",
+      "?? writeup/interactive/placement-data.json",
+      "?? writeup/interactive/qa/360-dark.png",
+      "?? writeup/interactive/qa/360-light.png",
+      "?? writeup/interactive/qa/736-dark.png",
+      "?? writeup/interactive/qa/736-light.png",
+      "?? writeup/interactive/qa/checks.json",
+      "?? writeup/latex/Makefile",
+      "?? writeup/latex/README.md",
+      "?? writeup/latex/figures/cascade_gains.pdf",
+      "?? writeup/latex/figures/cascade_placement_ibm01.pdf",
+      "?? writeup/latex/figures/historical_components.pdf",
+      "?? writeup/latex/figures/historical_scores.pdf",
+      "?? writeup/latex/generated/cascade_table.tex",
+      "?? writeup/latex/generated/component_table.tex",
+      "?? writeup/latex/generated/curvature_diagnostics.tex",
+      "?? writeup/latex/generated/historical_per_benchmark.tex",
+      "?? writeup/latex/generated/historical_table.tex",
+      "?? writeup/latex/main.tex",
+      "?? writeup/latex/references.bib",
+      "?? writeup/study/README.md",
+      "?? writeup/study/main_ibm17.json",
+      "?? writeup/study/pilot.json",
+      "?? writeup/website-summary.md"
+    ],
+    "excluded_generated_run_artifact_entries": 62,
+    "head_commit": "2ab92a33d352f0dbc4ba97d7c2bfad41ccf0ecfd",
+    "tilos_submodule_commit": "45a721d01dfe56fc4800b95da52e9b4193b76d04",
+    "tracked_diff_sha256": "cbdd349515c271163ca1b9cf3e6b85893675ffd167c3156b574af4bdd0156adb"
+  },
+  "resource_allocation": {
+    "concurrent_benchmark_jobs": 1,
+    "device": "cpu",
+    "external_timeout_seconds": 240.0,
+    "threads_per_benchmark_run": 3
+  },
+  "run_id": "ibm10__v2-abc__seed42__7198ce733fe2",
+  "runtime_artifact_parameters": {
+    "checkpoint_dir": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-abc__seed42__7198ce733fe2/checkpoints/attempt-001"
+  },
+  "schema_version": 1,
+  "seeds": {
+    "constructor_seeds": {
+      "hung_seed_base": 42,
+      "lane_a_seed": 42,
+      "lane_b_seed": 142,
+      "lane_c_seed": 242
+    },
+    "effective_initializer_seeds": {
+      "A": 42,
+      "B": 42,
+      "C": 42
+    },
+    "initializer_seed": 42,
+    "initializer_seed_note": "The current SDF initializer uses seed 42 independently of lane/rng seeds.",
+    "nominal_search_seeds": {
+      "hung_seed_base": 42,
+      "lane_a_seed": 42,
+      "lane_b_seed": 142,
+      "lane_c_seed": 242
+    },
+    "nominal_seed": 42,
+    "runtime_seed_metadata": null
+  },
+  "solver_metadata": {
+    "degraded_lanes": [
+      "A",
+      "B",
+      "C"
+    ],
+    "exitcodes": {
+      "A": -15,
+      "B": -15,
+      "C": -15
+    },
+    "lane_results": [
+      {
+        "device": "cpu",
+        "effective_rng_seed": 42,
+        "initializer_attempt": 1,
+        "initializer_method": "sdf",
+        "lane_idx": 0,
+        "num_threads": 1,
+        "phase": "descent_legalized",
+        "phase_details": {
+          "cd": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        },
+        "proxy": 1.166864037513733,
+        "rng_seed": 42,
+        "status": "ok",
+        "wall": 129.93790499999886
+      },
+      {
+        "device": "cpu",
+        "effective_rng_seed": 42,
+        "initializer_attempt": 1,
+        "initializer_method": "sdf",
+        "lane_idx": 1,
+        "num_threads": 1,
+        "phase": "descent_legalized",
+        "phase_details": {
+          "cd1": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "cd2": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "saddle": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        },
+        "proxy": 1.166864037513733,
+        "rng_seed": 142,
+        "status": "ok",
+        "wall": 129.51608100003796
+      },
+      {
+        "device": "cpu",
+        "effective_rng_seed": 42,
+        "initializer_attempt": 1,
+        "initializer_method": "sdf",
+        "lane_idx": 2,
+        "num_threads": 1,
+        "phase": "descent_legalized",
+        "phase_details": {
+          "cd1": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "cd2": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "hungarian": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        },
+        "proxy": 1.166864037513733,
+        "rng_seed": 242,
+        "status": "ok",
+        "wall": 133.52272999996785
+      }
+    ],
+    "lanes": "ABC",
+    "phase_completion": {
+      "A": {
+        "checkpoint_phase": "descent_legalized",
+        "phase_details": {
+          "cd": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        },
+        "pipeline_completed": false,
+        "worker_status": "interrupted"
+      },
+      "B": {
+        "checkpoint_phase": "descent_legalized",
+        "phase_details": {
+          "cd1": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "cd2": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "saddle": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        },
+        "pipeline_completed": false,
+        "worker_status": "interrupted"
+      },
+      "C": {
+        "checkpoint_phase": "descent_legalized",
+        "phase_details": {
+          "cd1": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "cd2": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "hungarian": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        },
+        "pipeline_completed": false,
+        "worker_status": "interrupted"
+      }
+    },
+    "picked_lane": "A",
+    "pipeline_completed": false,
+    "proxy": 1.166864037513733,
+    "solver_outcome": "checkpoint_recovery",
+    "timed_out_lanes": [
+      "A",
+      "B",
+      "C"
+    ],
+    "used_fallback": true,
+    "wall": 180.02775299997302
+  },
+  "solver_outcome": "checkpoint_recovery",
+  "source": {
+    "evaluator_source_sha256": "5811dd0348480c2710d71c7395090163518e89f66af9853efcec695b3c1e075b",
+    "source_file_count": 35,
+    "source_files": [
+      "macro_place/__init__.py",
+      "macro_place/_plc.py",
+      "macro_place/bench_paths.py",
+      "macro_place/benchmark.py",
+      "macro_place/cd_core.py",
+      "macro_place/def_writer.py",
+      "macro_place/evaluate.py",
+      "macro_place/incremental_evaluator.py",
+      "macro_place/loader.py",
+      "macro_place/objective.py",
+      "macro_place/sdf_init.py",
+      "macro_place/utils.py",
+      "scripts/publication_worker.py",
+      "scripts/run_publication_study.py",
+      "thinkorplace/__init__.py",
+      "thinkorplace/common/__init__.py",
+      "thinkorplace/common/bench_paths.py",
+      "thinkorplace/common/cd_core.py",
+      "thinkorplace/common/hessian.py",
+      "thinkorplace/common/incremental_evaluator.py",
+      "thinkorplace/common/runtime_safety.py",
+      "thinkorplace/common/sdf_init.py",
+      "thinkorplace/common/smooth_primitives.py",
+      "thinkorplace/v2/__init__.py",
+      "thinkorplace/v2/bounded_saddle.py",
+      "thinkorplace/v2/fast_proxy.py",
+      "thinkorplace/v2/gaussian_density.py",
+      "thinkorplace/v2/kjoint_hungarian.py",
+      "thinkorplace/v2/macro_legalizer.py",
+      "thinkorplace/v2/per_net_trace_proxy.py",
+      "thinkorplace/v2/placer.py",
+      "thinkorplace/v2/smooth_global_placer_v4.py",
+      "thinkorplace/v2/smooth_global_placer_v4_gaussian.py",
+      "thinkorplace/v2/v4_gaussian_proxy.py",
+      "thinkorplace/v2/worker.py"
+    ],
+    "variant_source_sha256": "122762450117bdf7be2e3eaae6c84c304fc4ea8584c3a9e97a3c92f54cd00371",
+    "worker_sha256": "c1f1a3395c0e3c131b07eb681bda7006aa9d0ce8287231d6ce3d5142e6f21cf0"
+  },
+  "source_consistent": true,
+  "started_at": "2026-09-06T17:10:32.390308+00:00",
+  "status": "completed",
+  "study_eligible": true,
+  "timing": {
+    "benchmark_and_placer_setup_seconds": 1.730363542,
+    "canonical_validation_and_export_seconds": 28.16571937500001,
+    "external_timeout_seconds": 240.0,
+    "input_verification_seconds": 0.010241333999999998,
+    "runtime_import_seconds": 0.685446875,
+    "solver_budget_seconds": 180.0,
+    "solver_place_seconds": 180.023856125,
+    "worker_through_environment_capture_seconds": 210.687888417
+  },
+  "usable_operating_result": true,
+  "used_fallback": true,
+  "valid": true,
+  "variant": "v2-abc",
+  "worker_error": null
+}

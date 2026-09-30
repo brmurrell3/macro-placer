@@ -1,0 +1,63 @@
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 24, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+=== CDLNSSACascadeStackedPeripheryPlacer (ariane133_ng45) ===
+  budget split: stacked=48.0s, periphery polish=180.0s
+=== CDLNSSACascadeStackedPlacer (ariane133_ng45) ===
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 24, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+  budget 48s; E25=15s E41=17s cascade≈10s portfolio≈6s
+  Phase 1: E25 (CDLNSSAPlacer)
+=== CDLNSSAPlacer (ariane133_ng45): CD cap=10s, LNS=3s, SA=3s ===
+  num_macros=915, n_hard=133, canvas=1433.4x1433.4
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 24, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+  SDF init wall = 1.9 s
+  overlap projection: 0 iters, residual count=0
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 24, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+  init proxy=0.81816 [wl=0.0496 d=0.6659 c=0.8712]
+  starting CD phase (cap=10s)
+  sweep   1  elapsed=    9.6s  sweep_t=   9.6s  proxy=0.74486  Δ=+0.07330  accepted=564/744  gs=0  [wl=0.0571 d=0.5626 c=0.8129]
+  CD done: exit=cap, sweeps=1, accepts=564, wall=9.6s, proxy=0.74486
+  starting LNS phase (budget=3s)
+  LNS budget=3s, destroy K=6 (=5.0% of 133 hard movables, capped at 30), strategy=cost_aware
+  LNS sample 1: K=6, Δ=-0.03999 (moves=3/6), proxy=0.70487, sample_wall=2.6s, total elapsed=2.6s
+  LNS sample 2: K=6, Δ=+0.00000 (moves=0/6), proxy=0.70487, sample_wall=0.4s, total elapsed=3.0s
+  LNS converged at sample 2 (no improvement)
+  LNS done: samples=2, Δ=-0.03999, wall=3.0s, proxy=0.70487
+  starting SA-v2 phase (budget=3s)
+  SA v2 budget=3s, T0=5.00e-04, Tf=1.00e-06, |H|=133, seed=42 (best-so-far tracking ON)
+  SA v2 done: proposed=649, better=222, worse=195, rejected=232, skipped=59, init=0.70487, best=0.70054 (found at t=2.9s), chain-final=0.70054, restored=False, evaluator-final=0.70054
+  SA-v2 done: lift_vs_init=+0.00433, best=0.70054, final proxy=0.70054
+  TOTAL lifts: CD=+0.07330, LNS=+0.03999, SA=+0.00433
+  total wall: 18.9 s (SDF + project + CD + LNS + SA + validate)
+  E25 done: proxy=0.70054 (wall=27s)
+  Phase 2: SKIPPED (21s left)
+  plateau = E25 (0.70054)
+  Phase 3a: cascade SKIPPED (budget 0s)
+  Phase 3b: portfolio SKIPPED (budget -9s)
+  WINNER: cascade proxy=0.70054 (cascade=0.70054, portfolio=0.70054, E25=0.70054)  total wall=27s
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133/netlist/output_CT_Grouping/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 24, Row: 21
+#[ROUTES PER MICRON] Hor: 57.03, Ver: 56.82
+#[CONGESTION SMOOTH RANGE] Smooth Range: 0
+#[OVERLAP THRESHOLD] Threshold: 0.0000
+  Lévy cascade done: proxy=0.70054 ovl=0 (wall=35s)
+  SKIPPING periphery polish (only 25s left)

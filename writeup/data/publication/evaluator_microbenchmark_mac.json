@@ -1,0 +1,537 @@
+{
+  "schema_version": 1,
+  "kind": "matched_component_microbenchmark",
+  "created_utc": "2026-09-06T16:26:52.854239+00:00",
+  "config": {
+    "benchmarks": [
+      "ibm01",
+      "ibm10"
+    ],
+    "moves": 8,
+    "repetitions": 3,
+    "threads": 1,
+    "seed": 42,
+    "output": "writeup/data/publication/evaluator_microbenchmark_mac.json"
+  },
+  "environment": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "python": "3.9.6 (default, May 22 2026, 11:13:45) \n[Clang 21.0.0 (clang-2100.1.1.101)]",
+    "torch": "2.8.0",
+    "cpu_count": 14,
+    "device": "cpu",
+    "torch_threads": 1
+  },
+  "head_commit": "2ab92a33d352f0dbc4ba97d7c2bfad41ccf0ecfd",
+  "source_sha256": {
+    "scripts/measure_publication_evaluator.py": "f3eb2f45d75173d0940a989324cb01e088ce72bc13beabd1326fa4b2b459a383",
+    "macro_place/objective.py": "ea83e02277f39525226f4f2a167907f89f45383a80af7a07e078c81ddcc2ebab",
+    "macro_place/incremental_evaluator.py": "8932e9b2298c813c208d239875604d629aa9600b7c4501074947502a6a8deac8",
+    "macro_place/loader.py": "7ac77a987d8cae97126e17589568afa17a21b6ddb2ce914b3785f94bc82c5380",
+    "macro_place/_plc.py": "dd7a1dddd48ef6dde0075e1670962533d659dafdb8da711ef2314b318986847a"
+  },
+  "protocol": {
+    "timed_work": "Apply accepted macro move and compute W,D,C,proxy; no overlap validation in either engine",
+    "order": "Incremental then canonical in even repetitions; reversed in odd repetitions",
+    "warmup": "One unmeasured component evaluation per engine before each timed sequence",
+    "sampling": "Same seeded sequence across repetitions; uniformly chosen movable tensor row, uniform in-bounds center",
+    "geometry": "Moves need not preserve hard-macro nonoverlap; no optimizer or downstream PnR is timed",
+    "overlap_timing": "One canonical overlap-metrics call at final placement per repetition, outside ratio",
+    "precision": "float64 positions; component parity rtol=1e-5, atol=1e-9"
+  },
+  "benchmarks": [
+    {
+      "name": "ibm01",
+      "num_macros": 1140,
+      "num_hard_macros": 246,
+      "load_seconds": 0.64986275,
+      "moves": [
+        [
+          228,
+          0.9739377640056318,
+          6.553097286126067
+        ],
+        [
+          457,
+          3.3869520368095443,
+          2.444590747271824
+        ],
+        [
+          1116,
+          2.206733522599581,
+          9.72564400264986
+        ],
+        [
+          61,
+          2.492414352204319,
+          5.617687198544274
+        ],
+        [
+          54,
+          12.829005853053069,
+          16.289281018736098
+        ],
+        [
+          1116,
+          9.669185741970178,
+          10.35274620330121
+        ],
+        [
+          569,
+          18.41800058988803,
+          0.3705683825580536
+        ],
+        [
+          326,
+          15.920851746635435,
+          7.872768938631318
+        ]
+      ],
+      "initial_tensor_sha256": "4256c98c36140503a1536d5eb894d31b5991c563852740b91ecbb420af190b47",
+      "benchmark_files": {
+        "ibm01.pb.txt": "ce6ec9930d07fbcc027b713946da03a15bcf1658223a9c4d3d3f91a649ecbc09",
+        "initial.plc": "f5202ce7295ba2ae38781a6a658b5affaa0ee933110ec071f41dd14961b133ad",
+        "netlist.pb.txt": "ca97cee4652966bc0afc16562ccc9aec224de31de1cfb317b61972a4ba1a4c96"
+      },
+      "repetitions": [
+        {
+          "index": 0,
+          "order": [
+            "incremental",
+            "canonical"
+          ],
+          "incremental_setup_seconds": 0.3853689169999992,
+          "per_move_seconds": {
+            "incremental": [
+              0.0040454590000003066,
+              0.0012802920000005713,
+              0.0006677079999999336,
+              0.0017761670000000507,
+              0.0018834590000000873,
+              0.0007413750000004882,
+              0.0010310829999999882,
+              0.0015133340000001994
+            ],
+            "canonical": [
+              1.7370660000000004,
+              1.670638834,
+              1.685668916000001,
+              1.3939142919999998,
+              1.3535385830000006,
+              1.300570875,
+              1.3482522909999997,
+              1.359112917000001
+            ]
+          },
+          "costs": {
+            "incremental": [
+              {
+                "wl": 0.06491103903133365,
+                "density": 0.8144978753831087,
+                "congestion": 1.1509212454156081,
+                "proxy": 1.047620599430692
+              },
+              {
+                "wl": 0.06514257734342688,
+                "density": 0.8144978753831087,
+                "congestion": 1.15086851807933,
+                "proxy": 1.0478257740746462
+              },
+              {
+                "wl": 0.065192259873182,
+                "density": 0.8144978753831087,
+                "congestion": 1.1512176238052296,
+                "proxy": 1.0480500094673513
+              },
+              {
+                "wl": 0.06536018816380168,
+                "density": 0.8149169099304338,
+                "congestion": 1.1516595221928518,
+                "proxy": 1.0486484042254445
+              },
+              {
+                "wl": 0.06532002502213127,
+                "density": 0.8183635187455979,
+                "congestion": 1.162213154241882,
+                "proxy": 1.0556083615158713
+              },
+              {
+                "wl": 0.06528647245574312,
+                "density": 0.8183635187455979,
+                "congestion": 1.1616177397603975,
+                "proxy": 1.0552771017087408
+              },
+              {
+                "wl": 0.06543506358494272,
+                "density": 0.8171671277815256,
+                "congestion": 1.1616177397603973,
+                "proxy": 1.0548274973559042
+              },
+              {
+                "wl": 0.06572795699809322,
+                "density": 0.8171671277815256,
+                "congestion": 1.1626093819076397,
+                "proxy": 1.055616211842676
+              }
+            ],
+            "canonical": [
+              {
+                "wl": 0.06491103903133363,
+                "density": 0.814497875383109,
+                "congestion": 1.150921245415607,
+                "proxy": 1.0476205994306915
+              },
+              {
+                "wl": 0.06514257734342689,
+                "density": 0.814497875383109,
+                "congestion": 1.1508685180793294,
+                "proxy": 1.0478257740746462
+              },
+              {
+                "wl": 0.06519225987318202,
+                "density": 0.814497875383109,
+                "congestion": 1.1512176238052292,
+                "proxy": 1.048050009467351
+              },
+              {
+                "wl": 0.06536018816380168,
+                "density": 0.8149169099304341,
+                "congestion": 1.1516595221928514,
+                "proxy": 1.0486484042254445
+              },
+              {
+                "wl": 0.06532002502213129,
+                "density": 0.8183635187455982,
+                "congestion": 1.1622131542418819,
+                "proxy": 1.0556083615158713
+              },
+              {
+                "wl": 0.06528647245574314,
+                "density": 0.8183635187455982,
+                "congestion": 1.1616177397603975,
+                "proxy": 1.055277101708741
+              },
+              {
+                "wl": 0.0654350635849427,
+                "density": 0.8171671277815257,
+                "congestion": 1.1616177397603975,
+                "proxy": 1.0548274973559044
+              },
+              {
+                "wl": 0.06572795699809321,
+                "density": 0.8171671277815257,
+                "congestion": 1.16260938190764,
+                "proxy": 1.055616211842676
+              }
+            ]
+          },
+          "worst_absolute_component_error": 1.1102230246251565e-15,
+          "worst_relative_component_error": 9.646385702300986e-16,
+          "final_overlap_metrics": {
+            "overlap_count": 76,
+            "total_overlap_area": 1.82922551940672,
+            "max_overlap_area": 0.6147685685058586,
+            "num_macros_with_overlaps": 123,
+            "overlap_ratio": 0.10789473684210527
+          },
+          "final_overlap_check_seconds": 0.03186166700000115,
+          "component_speedup": 915.7489253509801
+        },
+        {
+          "index": 1,
+          "order": [
+            "canonical",
+            "incremental"
+          ],
+          "incremental_setup_seconds": 0.33592866699999746,
+          "per_move_seconds": {
+            "canonical": [
+              2.032873249999998,
+              1.3767826250000006,
+              1.404858917000002,
+              1.2458638749999977,
+              1.3533740000000023,
+              1.3167357499999994,
+              1.255629667000001,
+              1.267999666999998
+            ],
+            "incremental": [
+              0.002517457999999806,
+              0.0011312500000002501,
+              0.0007632919999949195,
+              0.0011782079999989037,
+              0.001507834000001651,
+              0.0006296659999946996,
+              0.0009599170000029744,
+              0.001169750000002523
+            ]
+          },
+          "costs": {
+            "canonical": [
+              {
+                "wl": 0.06491103903133363,
+                "density": 0.814497875383109,
+                "congestion": 1.150921245415607,
+                "proxy": 1.0476205994306915
+              },
+              {
+                "wl": 0.06514257734342689,
+                "density": 0.814497875383109,
+                "congestion": 1.1508685180793294,
+                "proxy": 1.0478257740746462
+              },
+              {
+                "wl": 0.06519225987318202,
+                "density": 0.814497875383109,
+                "congestion": 1.1512176238052292,
+                "proxy": 1.048050009467351
+              },
+              {
+                "wl": 0.06536018816380168,
+                "density": 0.8149169099304341,
+                "congestion": 1.1516595221928514,
+                "proxy": 1.0486484042254445
+              },
+              {
+                "wl": 0.06532002502213129,
+                "density": 0.8183635187455982,
+                "congestion": 1.1622131542418819,
+                "proxy": 1.0556083615158713
+              },
+              {
+                "wl": 0.06528647245574314,
+                "density": 0.8183635187455982,
+                "congestion": 1.1616177397603975,
+                "proxy": 1.055277101708741
+              },
+              {
+                "wl": 0.0654350635849427,
+                "density": 0.8171671277815257,
+                "congestion": 1.1616177397603975,
+                "proxy": 1.0548274973559044
+              },
+              {
+                "wl": 0.06572795699809321,
+                "density": 0.8171671277815257,
+                "congestion": 1.16260938190764,
+                "proxy": 1.055616211842676
+              }
+            ],
+            "incremental": [
+              {
+                "wl": 0.06491103903133365,
+                "density": 0.8144978753831087,
+                "congestion": 1.1509212454156081,
+                "proxy": 1.047620599430692
+              },
+              {
+                "wl": 0.06514257734342688,
+                "density": 0.8144978753831087,
+                "congestion": 1.15086851807933,
+                "proxy": 1.0478257740746462
+              },
+              {
+                "wl": 0.065192259873182,
+                "density": 0.8144978753831087,
+                "congestion": 1.1512176238052296,
+                "proxy": 1.0480500094673513
+              },
+              {
+                "wl": 0.06536018816380168,
+                "density": 0.8149169099304338,
+                "congestion": 1.1516595221928518,
+                "proxy": 1.0486484042254445
+              },
+              {
+                "wl": 0.06532002502213127,
+                "density": 0.8183635187455979,
+                "congestion": 1.162213154241882,
+                "proxy": 1.0556083615158713
+              },
+              {
+                "wl": 0.06528647245574312,
+                "density": 0.8183635187455979,
+                "congestion": 1.1616177397603975,
+                "proxy": 1.0552771017087408
+              },
+              {
+                "wl": 0.06543506358494272,
+                "density": 0.8171671277815256,
+                "congestion": 1.1616177397603973,
+                "proxy": 1.0548274973559042
+              },
+              {
+                "wl": 0.06572795699809322,
+                "density": 0.8171671277815256,
+                "congestion": 1.1626093819076397,
+                "proxy": 1.055616211842676
+              }
+            ]
+          },
+          "worst_absolute_component_error": 1.1102230246251565e-15,
+          "worst_relative_component_error": 9.646385702300986e-16,
+          "final_overlap_metrics": {
+            "overlap_count": 76,
+            "total_overlap_area": 1.82922551940672,
+            "max_overlap_area": 0.6147685685058586,
+            "num_macros_with_overlaps": 123,
+            "overlap_ratio": 0.10789473684210527
+          },
+          "final_overlap_check_seconds": 0.031048834000003467,
+          "component_speedup": 1141.6952029323097
+        },
+        {
+          "index": 2,
+          "order": [
+            "incremental",
+            "canonical"
+          ],
+          "incremental_setup_seconds": 0.33742320800000414,
+          "per_move_seconds": {
+            "incremental": [
+              0.002479250000000377,
+              0.001080542000003959,
+              0.0005777499999979341,
+              0.0010830840000011221,
+              0.0014499170000021877,
+              0.0006290829999997527,
+              0.0009340830000041933,
+              0.0011366250000008904
+            ],
+            "canonical": [
+              1.286036082999999,
+              1.3015485420000061,
+              1.338194584,
+              1.3254387499999964,
+              1.3372853750000004,
+              1.2936137499999987,
+              1.3183267079999936,
+              1.2977029999999985
+            ]
+          },
+          "costs": {
+            "incremental": [
+              {
+                "wl": 0.06491103903133365,
+                "density": 0.8144978753831087,
+                "congestion": 1.1509212454156081,
+                "proxy": 1.047620599430692
+              },
+              {
+                "wl": 0.06514257734342688,
+                "density": 0.8144978753831087,
+                "congestion": 1.15086851807933,
+                "proxy": 1.0478257740746462
+              },
+              {
+                "wl": 0.065192259873182,
+                "density": 0.8144978753831087,
+                "congestion": 1.1512176238052296,
+                "proxy": 1.0480500094673513
+              },
+              {
+                "wl": 0.06536018816380168,
+                "density": 0.8149169099304338,
+                "congestion": 1.1516595221928518,
+                "proxy": 1.0486484042254445
+              },
+              {
+                "wl": 0.06532002502213127,
+                "density": 0.8183635187455979,
+                "congestion": 1.162213154241882,
+                "proxy": 1.0556083615158713
+              },
+              {
+                "wl": 0.06528647245574312,
+                "density": 0.8183635187455979,
+                "congestion": 1.1616177397603975,
+                "proxy": 1.0552771017087408
+              },
+              {
+                "wl": 0.06543506358494272,
+                "density": 0.8171671277815256,
+                "congestion": 1.1616177397603973,
+                "proxy": 1.0548274973559042
+              },
+              {
+                "wl": 0.06572795699809322,
+                "density": 0.8171671277815256,
+                "congestion": 1.1626093819076397,
+                "proxy": 1.055616211842676
+              }
+            ],
+            "canonical": [
+              {
+                "wl": 0.06491103903133363,
+                "density": 0.814497875383109,
+                "congestion": 1.150921245415607,
+                "proxy": 1.0476205994306915
+              },
+              {
+                "wl": 0.06514257734342689,
+                "density": 0.814497875383109,
+                "congestion": 1.1508685180793294,
+                "proxy": 1.0478257740746462
+              },
+              {
+                "wl": 0.06519225987318202,
+                "density": 0.814497875383109,
+                "congestion": 1.1512176238052292,
+                "proxy": 1.048050009467351
+              },
+              {
+                "wl": 0.06536018816380168,
+                "density": 0.8149169099304341,
+                "congestion": 1.1516595221928514,
+                "proxy": 1.0486484042254445
+              },
+              {
+                "wl": 0.06532002502213129,
+                "density": 0.8183635187455982,
+                "congestion": 1.1622131542418819,
+                "proxy": 1.0556083615158713
+              },
+              {
+                "wl": 0.06528647245574314,
+                "density": 0.8183635187455982,
+                "congestion": 1.1616177397603975,
+                "proxy": 1.055277101708741
+              },
+              {
+                "wl": 0.0654350635849427,
+                "density": 0.8171671277815257,
+                "congestion": 1.1616177397603975,
+                "proxy": 1.0548274973559044
+              },
+              {
+                "wl": 0.06572795699809321,
+                "density": 0.8171671277815257,
+                "congestion": 1.16260938190764,
+                "proxy": 1.055616211842676
+              }
+            ]
+          },
+          "worst_absolute_component_error": 1.1102230246251565e-15,
+          "worst_relative_component_error": 9.646385702300986e-16,
+          "final_overlap_metrics": {
+            "overlap_count": 76,
+            "total_overlap_area": 1.82922551940672,
+            "max_overlap_area": 0.6147685685058586,
+            "num_macros_with_overlaps": 123,
+            "overlap_ratio": 0.10789473684210527
+          },
+          "final_overlap_check_seconds": 0.030469832999997948,
+          "component_speedup": 1120.3599350875138
+        }
+      ],
+      "summary": {
+        "median_speedup": 1120.3599350875138,
+        "min_speedup": 915.7489253509801,
+        "max_speedup": 1141.6952029323097,
+        "mean_incremental_ms_per_move": 1.3402744166669904,
+        "mean_canonical_ms_per_move": 1400.0428021249998,
+        "mean_incremental_setup_seconds": 0.35290693066666695,
+        "mean_final_overlap_seconds": 0.031126778000000854
+      }
+    }
+  ]
+}

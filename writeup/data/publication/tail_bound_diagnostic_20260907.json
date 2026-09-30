@@ -1,0 +1,328 @@
+{
+  "classification": "topk_stability_illustration_on_frozen_move_sequences",
+  "created_utc": "2026-09-08T03:18:40.901041+00:00",
+  "source_sha256": {
+    "scripts/measure_publication_tail_bounds.py": "3e13fc96d48b6aa3d267e852d526d5ee2b604897bc7b431971158ae791f3a851",
+    "macro_place/loader.py": "7ac77a987d8cae97126e17589568afa17a21b6ddb2ce914b3785f94bc82c5380",
+    "macro_place/objective.py": "ea83e02277f39525226f4f2a167907f89f45383a80af7a07e078c81ddcc2ebab",
+    "macro_place/incremental_evaluator.py": "8932e9b2298c813c208d239875604d629aa9600b7c4501074947502a6a8deac8"
+  },
+  "environment": {
+    "python": "3.9.6 (default, May 22 2026, 11:13:45) \n[Clang 21.0.0 (clang-2100.1.1.101)]",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "torch": "2.8.0",
+    "torch_threads": 1
+  },
+  "definition": "rho=grid_occupied/grid_area; density_fixed_k=0.5*mean(topk(rho,floor(.1G))); bound=0.5*min(norm_inf(delta),norm_2(delta)/sqrt(k),norm_1(delta)/k)",
+  "scope": "New replica-grid derivation on 14 existing prescribed moves; no solver-quality, timing, or fresh canonical-parity claim.",
+  "traces": [
+    {
+      "benchmark": "ibm01",
+      "source": "writeup/data/publication/evaluator_ibm01_mac.json",
+      "source_sha256": "2c39ce3dba8c6d71c8934a0a1b499ed5c8f813b9d0e3282993554d0039b1efed",
+      "benchmark_files": {
+        "ibm01.pb.txt": "ce6ec9930d07fbcc027b713946da03a15bcf1658223a9c4d3d3f91a649ecbc09",
+        "initial.plc": "f5202ce7295ba2ae38781a6a658b5affaa0ee933110ec071f41dd14961b133ad",
+        "netlist.pb.txt": "ca97cee4652966bc0afc16562ccc9aec224de31de1cfb317b61972a4ba1a4c96"
+      },
+      "grid_cells": 1845,
+      "k": 184,
+      "moves": [
+        {
+          "index": 0,
+          "macro_index": 228,
+          "density_before_fixed_k": 0.8119845723959338,
+          "density_after_fixed_k": 0.8144978753831087,
+          "replica_density_after": 0.8144978753831087,
+          "replica_vs_fixed_k_absolute_difference": 0.0,
+          "absolute_density_change": 0.0025133029871748924,
+          "upper_bounds": {
+            "linf": 0.4569237607787922,
+            "l2": 0.06983809049552861,
+            "l1": 0.015291986359761329
+          },
+          "tightest_bound": 0.015291986359761329,
+          "change_divided_by_bound": 0.16435425248535987,
+          "minimum_grid_load_before": 0.0,
+          "minimum_grid_load_after": 0.0,
+          "changed_grid_cells": 12
+        },
+        {
+          "index": 1,
+          "macro_index": 457,
+          "density_before_fixed_k": 0.8144978753831087,
+          "density_after_fixed_k": 0.8144978753831087,
+          "replica_density_after": 0.8144978753831087,
+          "replica_vs_fixed_k_absolute_difference": 0.0,
+          "absolute_density_change": 0.0,
+          "upper_bounds": {
+            "linf": 0.15824012241397717,
+            "l2": 0.015665588966571616,
+            "l1": 0.002002521989168179
+          },
+          "tightest_bound": 0.002002521989168179,
+          "change_divided_by_bound": 0.0,
+          "minimum_grid_load_before": 0.0,
+          "minimum_grid_load_after": 0.0,
+          "changed_grid_cells": 4
+        },
+        {
+          "index": 2,
+          "macro_index": 1116,
+          "density_before_fixed_k": 0.8144978753831087,
+          "density_after_fixed_k": 0.8144978753831087,
+          "replica_density_after": 0.8144978753831087,
+          "replica_vs_fixed_k_absolute_difference": 0.0,
+          "absolute_density_change": 0.0,
+          "upper_bounds": {
+            "linf": 0.04154910215911334,
+            "l2": 0.0042343835263047155,
+            "l1": 0.000546142367715898
+          },
+          "tightest_bound": 0.000546142367715898,
+          "change_divided_by_bound": 0.0,
+          "minimum_grid_load_before": 0.0,
+          "minimum_grid_load_after": 0.0,
+          "changed_grid_cells": 4
+        },
+        {
+          "index": 3,
+          "macro_index": 61,
+          "density_before_fixed_k": 0.8144978753831087,
+          "density_after_fixed_k": 0.8149169099304338,
+          "replica_density_after": 0.8149169099304338,
+          "replica_vs_fixed_k_absolute_difference": 0.0,
+          "absolute_density_change": 0.00041903454732505896,
+          "upper_bounds": {
+            "linf": 0.5000000000000004,
+            "l2": 0.06925393107491996,
+            "l1": 0.015291986359761292
+          },
+          "tightest_bound": 0.015291986359761292,
+          "change_divided_by_bound": 0.027402231303821283,
+          "minimum_grid_load_before": 0.0,
+          "minimum_grid_load_after": 0.0,
+          "changed_grid_cells": 13
+        },
+        {
+          "index": 4,
+          "macro_index": 54,
+          "density_before_fixed_k": 0.8149169099304338,
+          "density_after_fixed_k": 0.8183635187455979,
+          "replica_density_after": 0.8183635187455979,
+          "replica_vs_fixed_k_absolute_difference": 0.0,
+          "absolute_density_change": 0.0034466088151641205,
+          "upper_bounds": {
+            "linf": 0.4999995248185295,
+            "l2": 0.07269342323298886,
+            "l1": 0.015291986359761338
+          },
+          "tightest_bound": 0.015291986359761338,
+          "change_divided_by_bound": 0.22538660014982592,
+          "minimum_grid_load_before": 0.0,
+          "minimum_grid_load_after": 0.0,
+          "changed_grid_cells": 10
+        },
+        {
+          "index": 5,
+          "macro_index": 1116,
+          "density_before_fixed_k": 0.8183635187455979,
+          "density_after_fixed_k": 0.8183635187455979,
+          "replica_density_after": 0.8183635187455979,
+          "replica_vs_fixed_k_absolute_difference": 0.0,
+          "absolute_density_change": 0.0,
+          "upper_bounds": {
+            "linf": 0.04154910215911334,
+            "l2": 0.0040864590917796895,
+            "l1": 0.0005461423677158801
+          },
+          "tightest_bound": 0.0005461423677158801,
+          "change_divided_by_bound": 0.0,
+          "minimum_grid_load_before": 0.0,
+          "minimum_grid_load_after": 0.0,
+          "changed_grid_cells": 4
+        },
+        {
+          "index": 6,
+          "macro_index": 569,
+          "density_before_fixed_k": 0.8183635187455979,
+          "density_after_fixed_k": 0.8171671277815256,
+          "replica_density_after": 0.8171671277815256,
+          "replica_vs_fixed_k_absolute_difference": 0.0,
+          "absolute_density_change": 0.0011963909640723136,
+          "upper_bounds": {
+            "linf": 0.3233463698644574,
+            "l2": 0.03131598165871673,
+            "l1": 0.00430845631887832
+          },
+          "tightest_bound": 0.00430845631887832,
+          "change_divided_by_bound": 0.2776843666326845,
+          "minimum_grid_load_before": 0.0,
+          "minimum_grid_load_after": 0.0,
+          "changed_grid_cells": 8
+        },
+        {
+          "index": 7,
+          "macro_index": 326,
+          "density_before_fixed_k": 0.8171671277815256,
+          "density_after_fixed_k": 0.8171671277815256,
+          "replica_density_after": 0.8171671277815256,
+          "replica_vs_fixed_k_absolute_difference": 0.0,
+          "absolute_density_change": 0.0,
+          "upper_bounds": {
+            "linf": 0.07705270757729202,
+            "l2": 0.011036994703831104,
+            "l1": 0.0020025219891681803
+          },
+          "tightest_bound": 0.0020025219891681803,
+          "change_divided_by_bound": 0.0,
+          "minimum_grid_load_before": 0.0,
+          "minimum_grid_load_after": 0.0,
+          "changed_grid_cells": 8
+        }
+      ]
+    },
+    {
+      "benchmark": "ibm10",
+      "source": "writeup/data/publication/evaluator_ibm10_mac.json",
+      "source_sha256": "4bc56dbc085de6cc93b6c10b2c5f8f70986777b1b6a6826175654401e7ac8dcd",
+      "benchmark_files": {
+        "ibm10.pb.txt": "e5d32831732ca68b1a56d671c7ff09c2b4dc995a14376492b9dca71e6e8ac647",
+        "initial.plc": "a5dfc34b7b0dd2a4c7cb0c9a46f115f65fd9e0986895b1c4eef87b8274c6f149",
+        "netlist.pb.txt": "ffb653f7a13fd9645385e4bd74c2c42c76a261a05e58d4a2490f4b73cd4c6ede"
+      },
+      "grid_cells": 2255,
+      "k": 225,
+      "moves": [
+        {
+          "index": 0,
+          "macro_index": 2619,
+          "density_before_fixed_k": 0.6682543960163293,
+          "density_after_fixed_k": 0.6682587154660812,
+          "replica_density_after": 0.6682587154660812,
+          "replica_vs_fixed_k_absolute_difference": 0.0,
+          "absolute_density_change": 4.319449751877258e-06,
+          "upper_bounds": {
+            "linf": 0.05516726203086697,
+            "l2": 0.004829615462999927,
+            "l1": 0.0004965490373393664
+          },
+          "tightest_bound": 0.0004965490373393664,
+          "change_divided_by_bound": 0.008698938930627974,
+          "minimum_grid_load_before": 0.0,
+          "minimum_grid_load_after": 0.0,
+          "changed_grid_cells": 4
+        },
+        {
+          "index": 1,
+          "macro_index": 1003,
+          "density_before_fixed_k": 0.6682587154660812,
+          "density_after_fixed_k": 0.6682587154660812,
+          "replica_density_after": 0.6682587154660812,
+          "replica_vs_fixed_k_absolute_difference": 0.0,
+          "absolute_density_change": 0.0,
+          "upper_bounds": {
+            "linf": 0.01948501580018175,
+            "l2": 0.0018142747285217922,
+            "l1": 0.00017810998386674214
+          },
+          "tightest_bound": 0.00017810998386674214,
+          "change_divided_by_bound": 0.0,
+          "minimum_grid_load_before": 0.0,
+          "minimum_grid_load_after": 0.0,
+          "changed_grid_cells": 4
+        },
+        {
+          "index": 2,
+          "macro_index": 2233,
+          "density_before_fixed_k": 0.6682587154660812,
+          "density_after_fixed_k": 0.6682587154660812,
+          "replica_density_after": 0.6682587154660812,
+          "replica_vs_fixed_k_absolute_difference": 0.0,
+          "absolute_density_change": 0.0,
+          "upper_bounds": {
+            "linf": 0.09921071824235467,
+            "l2": 0.010134355996008019,
+            "l1": 0.0012683589438001381
+          },
+          "tightest_bound": 0.0012683589438001381,
+          "change_divided_by_bound": 0.0,
+          "minimum_grid_load_before": 0.0,
+          "minimum_grid_load_after": 0.0,
+          "changed_grid_cells": 4
+        }
+      ]
+    },
+    {
+      "benchmark": "ibm10",
+      "source": "writeup/data/publication/evaluator_ibm10_hard_mac.json",
+      "source_sha256": "cf34c85a7b35e9bbcbb5a083ec79960bc0be581313d8884005a405142f637126",
+      "benchmark_files": {
+        "ibm10.pb.txt": "e5d32831732ca68b1a56d671c7ff09c2b4dc995a14376492b9dca71e6e8ac647",
+        "initial.plc": "a5dfc34b7b0dd2a4c7cb0c9a46f115f65fd9e0986895b1c4eef87b8274c6f149",
+        "netlist.pb.txt": "ffb653f7a13fd9645385e4bd74c2c42c76a261a05e58d4a2490f4b73cd4c6ede"
+      },
+      "grid_cells": 2255,
+      "k": 225,
+      "moves": [
+        {
+          "index": 0,
+          "macro_index": 654,
+          "density_before_fixed_k": 0.6682543960163293,
+          "density_after_fixed_k": 0.6686949332832399,
+          "replica_density_after": 0.6686949332832399,
+          "replica_vs_fixed_k_absolute_difference": 0.0,
+          "absolute_density_change": 0.00044053726691062334,
+          "upper_bounds": {
+            "linf": 0.15331627089161828,
+            "l2": 0.014454796641826242,
+            "l1": 0.0013628112968143825
+          },
+          "tightest_bound": 0.0013628112968143825,
+          "change_divided_by_bound": 0.323256248271785,
+          "minimum_grid_load_before": 0.0,
+          "minimum_grid_load_after": 0.0,
+          "changed_grid_cells": 2
+        },
+        {
+          "index": 1,
+          "macro_index": 250,
+          "density_before_fixed_k": 0.6686949332832399,
+          "density_after_fixed_k": 0.6690211243807196,
+          "replica_density_after": 0.6690211243807196,
+          "replica_vs_fixed_k_absolute_difference": 0.0,
+          "absolute_density_change": 0.0003261910974796667,
+          "upper_bounds": {
+            "linf": 0.14554870222392552,
+            "l2": 0.012282074480722526,
+            "l1": 0.0013601126605830673
+          },
+          "tightest_bound": 0.0013601126605830673,
+          "change_divided_by_bound": 0.2398265282964366,
+          "minimum_grid_load_before": 0.0,
+          "minimum_grid_load_after": 0.0,
+          "changed_grid_cells": 4
+        },
+        {
+          "index": 2,
+          "macro_index": 692,
+          "density_before_fixed_k": 0.6690211243807196,
+          "density_after_fixed_k": 0.6690211243807196,
+          "replica_density_after": 0.6690211243807196,
+          "replica_vs_fixed_k_absolute_difference": 0.0,
+          "absolute_density_change": 0.0,
+          "upper_bounds": {
+            "linf": 0.15331627089161826,
+            "l2": 0.013811440527417122,
+            "l1": 0.0013628112968143847
+          },
+          "tightest_bound": 0.0013628112968143847,
+          "change_divided_by_bound": 0.0,
+          "minimum_grid_load_before": 0.0,
+          "minimum_grid_load_after": 0.0,
+          "changed_grid_cells": 3
+        }
+      ]
+    }
+  ]
+}

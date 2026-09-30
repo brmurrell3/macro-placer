@@ -1,0 +1,14 @@
+start lane0 bench=ibm17 device=cpu seed=42 pid=52258 nthr=3
+loaded bench dir=/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm17
+  descent attempt 1: ovl_end=10.0 steps=500
+FATAL TRACEBACK:
+Traceback (most recent call last):
+  File "/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v2/worker.py", line 218, in lane_entry
+    pos_try = descender.place(benchmark)
+  File "/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v2/smooth_global_placer_v4.py", line 260, in place
+    positions, descend_stats = self.descend(benchmark, plc)
+  File "/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v2/smooth_global_placer_v4_gaussian.py", line 84, in descend
+    require_time(self.deadline)
+  File "/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/common/runtime_safety.py", line 30, in require_time
+    raise TimeoutError("Placement deadline exhausted")
+TimeoutError: Placement deadline exhausted

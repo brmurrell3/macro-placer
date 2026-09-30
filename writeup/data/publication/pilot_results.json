@@ -1,0 +1,2035 @@
+{
+  "aggregate_by_variant": {
+    "v1": {
+      "all_run_mean_supervisor_wall_seconds": 72.06668214599999,
+      "checkpoint_recovery_count": 0,
+      "completed_run_count": 1,
+      "eligible_noncompleted_operating_result_count": 1,
+      "error_count": 3,
+      "matched_pilot_mean_proxy": null,
+      "matched_pilot_mean_proxy_available": false,
+      "matched_pilot_mean_proxy_unavailable_reason": "requires an eligible finite proxy for every planned benchmark",
+      "missing_count": 0,
+      "partial_phase_completion_count": 1,
+      "pipeline_completed_run_count": 0,
+      "planned_run_count": 4,
+      "recorded_run_count": 4,
+      "study_eligible_run_count": 1,
+      "timeout_count": 0,
+      "usable_operating_result_count": 1,
+      "valid_run_count": 1
+    },
+    "v2-a": {
+      "all_run_mean_supervisor_wall_seconds": 112.69907343725,
+      "checkpoint_recovery_count": 1,
+      "completed_run_count": 2,
+      "eligible_noncompleted_operating_result_count": 1,
+      "error_count": 2,
+      "matched_pilot_mean_proxy": null,
+      "matched_pilot_mean_proxy_available": false,
+      "matched_pilot_mean_proxy_unavailable_reason": "requires an eligible finite proxy for every planned benchmark",
+      "missing_count": 0,
+      "partial_phase_completion_count": 0,
+      "pipeline_completed_run_count": 1,
+      "planned_run_count": 4,
+      "recorded_run_count": 4,
+      "study_eligible_run_count": 2,
+      "timeout_count": 0,
+      "usable_operating_result_count": 2,
+      "valid_run_count": 2
+    },
+    "v2-abc": {
+      "all_run_mean_supervisor_wall_seconds": 145.15663080225,
+      "checkpoint_recovery_count": 2,
+      "completed_run_count": 2,
+      "eligible_noncompleted_operating_result_count": 2,
+      "error_count": 2,
+      "matched_pilot_mean_proxy": null,
+      "matched_pilot_mean_proxy_available": false,
+      "matched_pilot_mean_proxy_unavailable_reason": "requires an eligible finite proxy for every planned benchmark",
+      "missing_count": 0,
+      "partial_phase_completion_count": 0,
+      "pipeline_completed_run_count": 0,
+      "planned_run_count": 4,
+      "recorded_run_count": 4,
+      "study_eligible_run_count": 2,
+      "timeout_count": 0,
+      "usable_operating_result_count": 2,
+      "valid_run_count": 2
+    }
+  },
+  "artifact_status": "final_complete",
+  "benchmarks": [
+    "ibm01",
+    "ibm10",
+    "ibm17",
+    "ariane133_ng45"
+  ],
+  "causal_quality_comparison": false,
+  "coverage": {
+    "checkpoint_recovery_count": 3,
+    "completed_run_count": 5,
+    "eligible_noncompleted_operating_result_count": 4,
+    "error_count": 7,
+    "missing_count": 0,
+    "partial_phase_completion_count": 1,
+    "pipeline_completed_run_count": 1,
+    "planned_run_count": 12,
+    "recorded_run_count": 12,
+    "study_eligible_run_count": 5,
+    "timeout_count": 0,
+    "usable_operating_result_count": 5,
+    "valid_run_count": 5
+  },
+  "evidence_classification": "limited_budget_engineering_pilot",
+  "generated_at": "2026-09-08T02:29:00.824862+00:00",
+  "interpretation": "Finite 180-second solver-budget evidence only. Results include every planned run, including errors, timeouts, partial phases, and checkpoint recoveries. No extrapolation to the predeclared publication budget is made.",
+  "latex_label_prefix": "pilot",
+  "manifest": "writeup/runs/pilot-20260906-final/manifest.json",
+  "manifest_sha256": "17c11be4483fc7fb6113f2ca8770a9f57f481c254871bc88f3dfa1cf06abfb4e",
+  "missing_run_count": 0,
+  "nominal_seeds": [
+    42
+  ],
+  "official_budget_extrapolation": false,
+  "planned_run_count": 12,
+  "pooled_with_primary_pilot": null,
+  "prefix_diversity": {
+    "alias_handling": "Checkpoint aliases such as laneN.pkl and laneN_PHASE.pkl are collapsed by lane, phase, and coordinate hash; conflicting hashes fail rendering.",
+    "benchmarks": [
+      {
+        "abc_run_id": "ibm01__v2-abc__seed42__9d66ef78d6a6",
+        "benchmark": "ibm01",
+        "configured_nominal_lane_seeds": {
+          "A": 42,
+          "B": 142,
+          "C": 242
+        },
+        "measured_effective_initializer_seeds": {
+          "A": 42,
+          "B": 42,
+          "C": 42
+        },
+        "phases": {
+          "descent_legalized": {
+            "abc_all_three_available": true,
+            "abc_all_three_equal": true,
+            "abc_available_lanes": [
+              "A",
+              "B",
+              "C"
+            ],
+            "abc_distinct_coordinate_hash_count": 1,
+            "abc_lane_coordinate_sha256": {
+              "A": "857303c2ef969789fadc0bf96712b09e9009cd68a579bc07184f43c6c41a0734",
+              "B": "857303c2ef969789fadc0bf96712b09e9009cd68a579bc07184f43c6c41a0734",
+              "C": "857303c2ef969789fadc0bf96712b09e9009cd68a579bc07184f43c6c41a0734"
+            },
+            "abc_lane_equal_to_standalone_a": {
+              "A": true,
+              "B": true,
+              "C": true
+            },
+            "abc_missing_lanes": [],
+            "all_three_equal_to_standalone_a": true,
+            "comparison_available": true,
+            "standalone_a_available": true,
+            "standalone_a_coordinate_sha256": "857303c2ef969789fadc0bf96712b09e9009cd68a579bc07184f43c6c41a0734"
+          },
+          "initializer": {
+            "abc_all_three_available": true,
+            "abc_all_three_equal": true,
+            "abc_available_lanes": [
+              "A",
+              "B",
+              "C"
+            ],
+            "abc_distinct_coordinate_hash_count": 1,
+            "abc_lane_coordinate_sha256": {
+              "A": "d8fc4aa3939a818a7676e8ef7a128cd27a01add6703c42b898d931612438ba4a",
+              "B": "d8fc4aa3939a818a7676e8ef7a128cd27a01add6703c42b898d931612438ba4a",
+              "C": "d8fc4aa3939a818a7676e8ef7a128cd27a01add6703c42b898d931612438ba4a"
+            },
+            "abc_lane_equal_to_standalone_a": {
+              "A": true,
+              "B": true,
+              "C": true
+            },
+            "abc_missing_lanes": [],
+            "all_three_equal_to_standalone_a": true,
+            "comparison_available": true,
+            "standalone_a_available": true,
+            "standalone_a_coordinate_sha256": "d8fc4aa3939a818a7676e8ef7a128cd27a01add6703c42b898d931612438ba4a"
+          }
+        },
+        "standalone_a_run_id": "ibm01__v2-a__seed42__e0d3cab82af9"
+      },
+      {
+        "abc_run_id": "ibm10__v2-abc__seed42__7198ce733fe2",
+        "benchmark": "ibm10",
+        "configured_nominal_lane_seeds": {
+          "A": 42,
+          "B": 142,
+          "C": 242
+        },
+        "measured_effective_initializer_seeds": {
+          "A": null,
+          "B": null,
+          "C": null
+        },
+        "phases": {
+          "descent_legalized": {
+            "abc_all_three_available": true,
+            "abc_all_three_equal": true,
+            "abc_available_lanes": [
+              "A",
+              "B",
+              "C"
+            ],
+            "abc_distinct_coordinate_hash_count": 1,
+            "abc_lane_coordinate_sha256": {
+              "A": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1",
+              "B": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1",
+              "C": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1"
+            },
+            "abc_lane_equal_to_standalone_a": {
+              "A": true,
+              "B": true,
+              "C": true
+            },
+            "abc_missing_lanes": [],
+            "all_three_equal_to_standalone_a": true,
+            "comparison_available": true,
+            "standalone_a_available": true,
+            "standalone_a_coordinate_sha256": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1"
+          },
+          "initializer": {
+            "abc_all_three_available": false,
+            "abc_all_three_equal": null,
+            "abc_available_lanes": [],
+            "abc_distinct_coordinate_hash_count": null,
+            "abc_lane_coordinate_sha256": {
+              "A": null,
+              "B": null,
+              "C": null
+            },
+            "abc_lane_equal_to_standalone_a": {
+              "A": null,
+              "B": null,
+              "C": null
+            },
+            "abc_missing_lanes": [
+              "A",
+              "B",
+              "C"
+            ],
+            "all_three_equal_to_standalone_a": null,
+            "comparison_available": false,
+            "standalone_a_available": false,
+            "standalone_a_coordinate_sha256": null
+          }
+        },
+        "standalone_a_run_id": "ibm10__v2-a__seed42__092ef5a92391"
+      },
+      {
+        "abc_run_id": "ibm17__v2-abc__seed42__05a0010d5105",
+        "benchmark": "ibm17",
+        "configured_nominal_lane_seeds": {
+          "A": 42,
+          "B": 142,
+          "C": 242
+        },
+        "measured_effective_initializer_seeds": {
+          "A": null,
+          "B": null,
+          "C": null
+        },
+        "phases": {
+          "descent_legalized": {
+            "abc_all_three_available": false,
+            "abc_all_three_equal": null,
+            "abc_available_lanes": [],
+            "abc_distinct_coordinate_hash_count": null,
+            "abc_lane_coordinate_sha256": {
+              "A": null,
+              "B": null,
+              "C": null
+            },
+            "abc_lane_equal_to_standalone_a": {
+              "A": null,
+              "B": null,
+              "C": null
+            },
+            "abc_missing_lanes": [
+              "A",
+              "B",
+              "C"
+            ],
+            "all_three_equal_to_standalone_a": null,
+            "comparison_available": false,
+            "standalone_a_available": false,
+            "standalone_a_coordinate_sha256": null
+          },
+          "initializer": {
+            "abc_all_three_available": false,
+            "abc_all_three_equal": null,
+            "abc_available_lanes": [],
+            "abc_distinct_coordinate_hash_count": null,
+            "abc_lane_coordinate_sha256": {
+              "A": null,
+              "B": null,
+              "C": null
+            },
+            "abc_lane_equal_to_standalone_a": {
+              "A": null,
+              "B": null,
+              "C": null
+            },
+            "abc_missing_lanes": [
+              "A",
+              "B",
+              "C"
+            ],
+            "all_three_equal_to_standalone_a": null,
+            "comparison_available": false,
+            "standalone_a_available": false,
+            "standalone_a_coordinate_sha256": null
+          }
+        },
+        "standalone_a_run_id": "ibm17__v2-a__seed42__60f27cf83f13"
+      },
+      {
+        "abc_run_id": "ariane133_ng45__v2-abc__seed42__a2e74642dcad",
+        "benchmark": "ariane133_ng45",
+        "configured_nominal_lane_seeds": {
+          "A": 42,
+          "B": 142,
+          "C": 242
+        },
+        "measured_effective_initializer_seeds": {
+          "A": null,
+          "B": null,
+          "C": null
+        },
+        "phases": {
+          "descent_legalized": {
+            "abc_all_three_available": false,
+            "abc_all_three_equal": null,
+            "abc_available_lanes": [],
+            "abc_distinct_coordinate_hash_count": null,
+            "abc_lane_coordinate_sha256": {
+              "A": null,
+              "B": null,
+              "C": null
+            },
+            "abc_lane_equal_to_standalone_a": {
+              "A": null,
+              "B": null,
+              "C": null
+            },
+            "abc_missing_lanes": [
+              "A",
+              "B",
+              "C"
+            ],
+            "all_three_equal_to_standalone_a": null,
+            "comparison_available": false,
+            "standalone_a_available": false,
+            "standalone_a_coordinate_sha256": null
+          },
+          "initializer": {
+            "abc_all_three_available": false,
+            "abc_all_three_equal": null,
+            "abc_available_lanes": [],
+            "abc_distinct_coordinate_hash_count": null,
+            "abc_lane_coordinate_sha256": {
+              "A": null,
+              "B": null,
+              "C": null
+            },
+            "abc_lane_equal_to_standalone_a": {
+              "A": null,
+              "B": null,
+              "C": null
+            },
+            "abc_missing_lanes": [
+              "A",
+              "B",
+              "C"
+            ],
+            "all_three_equal_to_standalone_a": null,
+            "comparison_available": false,
+            "standalone_a_available": false,
+            "standalone_a_coordinate_sha256": null
+          }
+        },
+        "standalone_a_run_id": "ariane133_ng45__v2-a__seed42__940f55b712ef"
+      }
+    ],
+    "checkpoint_phases": [
+      "initializer",
+      "descent_legalized"
+    ],
+    "classification": "measured_checkpoint_coordinate_hash_equality",
+    "coverage": {
+      "abc_all_three_available_cell_count": 3,
+      "benchmark_phase_cell_count": 8,
+      "cells_with_missing_abc_or_standalone_coverage": 5,
+      "standalone_comparison_available_cell_count": 3
+    },
+    "interpretation": "Exact coordinate-hash equality is reported only from checkpoint inventories embedded in finalized result metadata. Missing metadata does not prove that no physical checkpoint file was written; a timed-out worker may leave files that were not inventoried because result finalization did not finish. Different nominal lane seeds do not establish independent basin starts; effective initializer seeds are reported where recorded. Equality can motivate a future shared-prefix implementation, but no speedup is measured or claimed here."
+  },
+  "profile": "primary",
+  "profile_title": "Limited-budget pilot",
+  "recorded_run_count": 12,
+  "resource_context": {
+    "argv": [
+      "/Users/brendan/Developer/macro-place-challenge-2026/.venv/bin/python",
+      "/Users/brendan/Developer/macro-place-challenge-2026/scripts/run_publication_study.py",
+      "--config",
+      "writeup/study/pilot.json",
+      "--output",
+      "writeup/runs/pilot-20260906-final"
+    ],
+    "benchmarks": [
+      "ibm01",
+      "ibm10",
+      "ibm17",
+      "ariane133_ng45"
+    ],
+    "budget_seconds": 180.0,
+    "cd_seconds": 30.0,
+    "config_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/study/pilot.json",
+    "device": "cpu",
+    "fail_on_degraded": true,
+    "jobs": 1,
+    "num_steps": 500,
+    "output": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final",
+    "retry_failures": false,
+    "seeds": [
+      42
+    ],
+    "study_kind": "limited-budget-pilot",
+    "study_notes": "Twelve-run readiness pilot; the 180-second solver budget is not the publication study budget.",
+    "threads": 3,
+    "timeout_seconds": 240.0,
+    "variants": [
+      "v1",
+      "v2-a",
+      "v2-abc"
+    ]
+  },
+  "runs": [
+    {
+      "benchmark": "ibm01",
+      "canonical_cost": {
+        "congestion_cost": 1.029052959988857,
+        "density_cost": 0.6561383008956909,
+        "proxy_cost": 0.9278557300567627,
+        "wirelength_cost": 0.08526010811328888
+      },
+      "checkpoint_inventory": [
+        {
+          "artifact_sha256": "be73cc1270b2f8b5815416d94db55f1b8dc3eda7f675da65e77e97dfdf247582",
+          "coordinates_sha256": "988cbbe7fcbae37c0a49f5a1ad78de72a283d00f0ec4121ed6426d09e7ffb5f2",
+          "effective_rng_seed": null,
+          "initializer_attempt": null,
+          "initializer_method": null,
+          "lane_index": null,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v1__seed42__35e91d781fe5/checkpoints/attempt-001/v1_e25.pkl",
+          "phase": "e25",
+          "rng_seed": null,
+          "size_bytes": 9531
+        },
+        {
+          "artifact_sha256": "3eff6a279d8ba9a842d250a28afdaa5161da72ae732d72d1cb9c73dc6c52d969",
+          "coordinates_sha256": "988cbbe7fcbae37c0a49f5a1ad78de72a283d00f0ec4121ed6426d09e7ffb5f2",
+          "effective_rng_seed": null,
+          "initializer_attempt": null,
+          "initializer_method": null,
+          "lane_index": null,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v1__seed42__35e91d781fe5/checkpoints/attempt-001/v1_stacked.pkl",
+          "phase": "stacked",
+          "rng_seed": null,
+          "size_bytes": 9596
+        }
+      ],
+      "constructor_parameters": {
+        "budget_seconds": 180.0,
+        "checkpoint_dir": "<per-run-checkpoint-dir>",
+        "device": "cpu",
+        "num_threads": 3,
+        "rng_seed": 42
+      },
+      "degraded_lanes": [],
+      "error": null,
+      "identity_sha256": "35e91d781fe5bb6100eeee33e4e52f17af365f17e746ba520c1e315d97766a02",
+      "incomplete_phases": [
+        "cascade",
+        "e41",
+        "portfolio"
+      ],
+      "lane_worker_errors": {},
+      "legality": {
+        "full_legal": true,
+        "full_violations": [],
+        "overlap_count": 0
+      },
+      "nominal_seed": 42,
+      "peak_rss_bytes": 399605760,
+      "phase_errors": {},
+      "phase_outcomes": {
+        "cascade": {
+          "accepted": null,
+          "attempted": false,
+          "completed": false,
+          "error": null,
+          "failed": false,
+          "reason": "budget_exhausted",
+          "skipped": true
+        },
+        "e25": {
+          "accepted": true,
+          "attempted": true,
+          "completed": true,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "e41": {
+          "accepted": null,
+          "attempted": false,
+          "completed": false,
+          "error": null,
+          "failed": false,
+          "reason": "budget_exhausted",
+          "skipped": true
+        },
+        "periphery": {
+          "accepted": false,
+          "attempted": true,
+          "completed": true,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "portfolio": {
+          "accepted": null,
+          "attempted": false,
+          "completed": false,
+          "error": null,
+          "failed": false,
+          "reason": "budget_exhausted",
+          "skipped": true
+        }
+      },
+      "pipeline_completed": false,
+      "result_record": "writeup/runs/pilot-20260906-final/runs/ibm01__v1__seed42__35e91d781fe5/result.json",
+      "result_record_sha256": "76bb76a0d214faf5a82aa09d05813db506a1b1c566d4b6902aa297dcd13cd3c5",
+      "run_id": "ibm01__v1__seed42__35e91d781fe5",
+      "seed_provenance": {
+        "constructor_seeds": {
+          "rng_seed": 42
+        },
+        "effective_initializer_seeds": {
+          "pipeline": 42
+        },
+        "initializer_seed": 42,
+        "initializer_seed_note": "The current SDF initializer uses seed 42 independently of lane/rng seeds.",
+        "nominal_search_seeds": {
+          "rng_seed": 42
+        },
+        "nominal_seed": 42,
+        "runtime_seed_metadata": null
+      },
+      "solver_outcome": "partial_phase_completion",
+      "source_sha256": "d80194b7024a32b81907f1120da8d8712ee1b186808fcf1ac918562e02acfbf6",
+      "status": "completed",
+      "study_eligible": true,
+      "timing": {
+        "external_timeout_seconds": 240.0,
+        "solver_budget_seconds": 180.0,
+        "solver_place_seconds": 140.759865791,
+        "supervisor_wall_seconds": 145.13704004200002,
+        "worker_total_seconds": 144.69676125
+      },
+      "usable_operating_result": true,
+      "used_fallback": false,
+      "valid": true,
+      "variant": "v1",
+      "worker_error": null
+    },
+    {
+      "benchmark": "ibm01",
+      "canonical_cost": {
+        "congestion_cost": 0.9667372830883574,
+        "density_cost": 0.5364000201225281,
+        "proxy_cost": 0.836167573928833,
+        "wirelength_cost": 0.08459889143705368
+      },
+      "checkpoint_inventory": [
+        {
+          "artifact_sha256": "97e746174a6b3ec02f277d2192150b3fd98105dd9c7b281f0767bfa044757ef6",
+          "coordinates_sha256": "8cfb6bad563a755ec84adf70a582ae45c16df14a48f8cad6869108e3c2e56d60",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 0,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-a__seed42__e0d3cab82af9/checkpoints/attempt-001/lane0.pkl",
+          "phase": "final",
+          "rng_seed": 42,
+          "size_bytes": 10063
+        },
+        {
+          "artifact_sha256": "48bf8c06435429a9d57b0a805151a36fa76d05214cf1fdb8527bc51026985734",
+          "coordinates_sha256": "857303c2ef969789fadc0bf96712b09e9009cd68a579bc07184f43c6c41a0734",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 0,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-a__seed42__e0d3cab82af9/checkpoints/attempt-001/lane0_descent_legalized.pkl",
+          "phase": "descent_legalized",
+          "rng_seed": 42,
+          "size_bytes": 9955
+        },
+        {
+          "artifact_sha256": "cc6f642f491016ad42320fe64e109eb13c80c1446415ab1d2b66a9ffc7bd4ebc",
+          "coordinates_sha256": "8cfb6bad563a755ec84adf70a582ae45c16df14a48f8cad6869108e3c2e56d60",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 0,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-a__seed42__e0d3cab82af9/checkpoints/attempt-001/lane0_final.pkl",
+          "phase": "final",
+          "rng_seed": 42,
+          "size_bytes": 10000
+        },
+        {
+          "artifact_sha256": "4dcc1fc355f0a2039ae95fb96dd1d85bc455a94a6dfb7956e9725c27a5b6fb6a",
+          "coordinates_sha256": "d8fc4aa3939a818a7676e8ef7a128cd27a01add6703c42b898d931612438ba4a",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 0,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-a__seed42__e0d3cab82af9/checkpoints/attempt-001/lane0_initializer.pkl",
+          "phase": "initializer",
+          "rng_seed": 42,
+          "size_bytes": 9908
+        }
+      ],
+      "constructor_parameters": {
+        "budget_seconds": 180.0,
+        "cd_polish_s": 30.0,
+        "checkpoint_dir": "<per-run-checkpoint-dir>",
+        "device": "cpu",
+        "lane_a_seed": 42,
+        "lane_b_seed": 142,
+        "lane_c_seed": 242,
+        "lanes": "A",
+        "num_steps": 500,
+        "num_threads": 3
+      },
+      "degraded_lanes": [],
+      "error": null,
+      "identity_sha256": "e0d3cab82af95edf64aa787de9536638b810a43c9b2a18614bcd25c9b67744df",
+      "incomplete_phases": [],
+      "lane_worker_errors": {},
+      "legality": {
+        "full_legal": true,
+        "full_violations": [],
+        "overlap_count": 0
+      },
+      "nominal_seed": 42,
+      "peak_rss_bytes": 729350144,
+      "phase_errors": {},
+      "phase_outcomes": {
+        "A": {
+          "cd": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        }
+      },
+      "pipeline_completed": true,
+      "result_record": "writeup/runs/pilot-20260906-final/runs/ibm01__v2-a__seed42__e0d3cab82af9/result.json",
+      "result_record_sha256": "33e8f68f170f9e24b2d0c23c2923eb1765a18a23b7e8a0cf33cfff22caf5116c",
+      "run_id": "ibm01__v2-a__seed42__e0d3cab82af9",
+      "seed_provenance": {
+        "constructor_seeds": {
+          "hung_seed_base": 42,
+          "lane_a_seed": 42,
+          "lane_b_seed": 142,
+          "lane_c_seed": 242
+        },
+        "effective_initializer_seeds": {
+          "A": 42
+        },
+        "initializer_seed": 42,
+        "initializer_seed_note": "The current SDF initializer uses seed 42 independently of lane/rng seeds.",
+        "nominal_search_seeds": {
+          "hung_seed_base": 42,
+          "lane_a_seed": 42,
+          "lane_b_seed": 142,
+          "lane_c_seed": 242
+        },
+        "nominal_seed": 42,
+        "runtime_seed_metadata": null
+      },
+      "solver_outcome": "pipeline_completed",
+      "source_sha256": "122762450117bdf7be2e3eaae6c84c304fc4ea8584c3a9e97a3c92f54cd00371",
+      "status": "completed",
+      "study_eligible": true,
+      "timing": {
+        "external_timeout_seconds": 240.0,
+        "solver_budget_seconds": 180.0,
+        "solver_place_seconds": 51.339128374999994,
+        "supervisor_wall_seconds": 54.42095354200001,
+        "worker_total_seconds": 54.149704332999995
+      },
+      "usable_operating_result": true,
+      "used_fallback": false,
+      "valid": true,
+      "variant": "v2-a",
+      "worker_error": null
+    },
+    {
+      "benchmark": "ibm01",
+      "canonical_cost": {
+        "congestion_cost": 0.9623912493013521,
+        "density_cost": 0.5246026515960693,
+        "proxy_cost": 0.8278663158416748,
+        "wirelength_cost": 0.08436935395002365
+      },
+      "checkpoint_inventory": [
+        {
+          "artifact_sha256": "3c340f61bef83d463000e770614f2de10677856af6b8adf68b344ee82b82c58e",
+          "coordinates_sha256": "be03e96f7896986f9cdd2a2fecc93c7c1bc4218df932794c567dc00a8551afe9",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 0,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-abc__seed42__9d66ef78d6a6/checkpoints/attempt-001/lane0.pkl",
+          "phase": "final",
+          "rng_seed": 42,
+          "size_bytes": 10063
+        },
+        {
+          "artifact_sha256": "bd45d8631d6848c533dbfe30243861ab66ba4cc9bc6d44bc11c66f27e75037ee",
+          "coordinates_sha256": "857303c2ef969789fadc0bf96712b09e9009cd68a579bc07184f43c6c41a0734",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 0,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-abc__seed42__9d66ef78d6a6/checkpoints/attempt-001/lane0_descent_legalized.pkl",
+          "phase": "descent_legalized",
+          "rng_seed": 42,
+          "size_bytes": 9955
+        },
+        {
+          "artifact_sha256": "65c82c142c65d1f8ccf459603fc8c3e4b9d1cf1e52fbaeb91acf69548b6c954f",
+          "coordinates_sha256": "be03e96f7896986f9cdd2a2fecc93c7c1bc4218df932794c567dc00a8551afe9",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 0,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-abc__seed42__9d66ef78d6a6/checkpoints/attempt-001/lane0_final.pkl",
+          "phase": "final",
+          "rng_seed": 42,
+          "size_bytes": 10000
+        },
+        {
+          "artifact_sha256": "134086d30cdba6ee2866fdb073fdc3e15a9ba5e011cca222ba1b80483a2ddc7e",
+          "coordinates_sha256": "d8fc4aa3939a818a7676e8ef7a128cd27a01add6703c42b898d931612438ba4a",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 0,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-abc__seed42__9d66ef78d6a6/checkpoints/attempt-001/lane0_initializer.pkl",
+          "phase": "initializer",
+          "rng_seed": 42,
+          "size_bytes": 9908
+        },
+        {
+          "artifact_sha256": "63a177fe4407d416f60109a9737735ed841db835bcd8d4d27422e6d0f0e627de",
+          "coordinates_sha256": "c630ffab9eaf8878d52995b85d45abba94b1e4fa7e3e3e7eb437360a7cb80b65",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 1,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-abc__seed42__9d66ef78d6a6/checkpoints/attempt-001/lane1.pkl",
+          "phase": "post_saddle",
+          "rng_seed": 142,
+          "size_bytes": 10796
+        },
+        {
+          "artifact_sha256": "d50cdbdeb45206caaec662aeac39541c41c479cc16d9bd2adea25db051c28aa9",
+          "coordinates_sha256": "3ced0d746e92171f28e3b45471f702e9466fe839b57e81a75c1541914a365794",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 1,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-abc__seed42__9d66ef78d6a6/checkpoints/attempt-001/lane1_cd1.pkl",
+          "phase": "cd1",
+          "rng_seed": 142,
+          "size_bytes": 10068
+        },
+        {
+          "artifact_sha256": "c7ead36fde6c8b5581aaff6635dc523f5763fe41b9cba3ca2712db6a3e6b23e7",
+          "coordinates_sha256": "857303c2ef969789fadc0bf96712b09e9009cd68a579bc07184f43c6c41a0734",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 1,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-abc__seed42__9d66ef78d6a6/checkpoints/attempt-001/lane1_descent_legalized.pkl",
+          "phase": "descent_legalized",
+          "rng_seed": 142,
+          "size_bytes": 10022
+        },
+        {
+          "artifact_sha256": "14a6653f9c4bda815d36ebf456a7fe02de77bd6b2a81b9e95a4d1c8d9cb68942",
+          "coordinates_sha256": "d8fc4aa3939a818a7676e8ef7a128cd27a01add6703c42b898d931612438ba4a",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 1,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-abc__seed42__9d66ef78d6a6/checkpoints/attempt-001/lane1_initializer.pkl",
+          "phase": "initializer",
+          "rng_seed": 142,
+          "size_bytes": 9975
+        },
+        {
+          "artifact_sha256": "63a177fe4407d416f60109a9737735ed841db835bcd8d4d27422e6d0f0e627de",
+          "coordinates_sha256": "c630ffab9eaf8878d52995b85d45abba94b1e4fa7e3e3e7eb437360a7cb80b65",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 1,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-abc__seed42__9d66ef78d6a6/checkpoints/attempt-001/lane1_post_saddle.pkl",
+          "phase": "post_saddle",
+          "rng_seed": 142,
+          "size_bytes": 10796
+        },
+        {
+          "artifact_sha256": "060bb44834c61d7ce3605704a35eb600cd85ded89af44745f1b5aa03c19edee7",
+          "coordinates_sha256": "b7b69afb1cc25c29831bcf00908b80c8e272da521671c2a172424236dcefe7b6",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 2,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-abc__seed42__9d66ef78d6a6/checkpoints/attempt-001/lane2.pkl",
+          "phase": "post_hungarian",
+          "rng_seed": 242,
+          "size_bytes": 10570
+        },
+        {
+          "artifact_sha256": "af61ed60d6f46129a5a1144692db0c4ab826b1ac5669b8745779d2413cf9307d",
+          "coordinates_sha256": "b7b69afb1cc25c29831bcf00908b80c8e272da521671c2a172424236dcefe7b6",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 2,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-abc__seed42__9d66ef78d6a6/checkpoints/attempt-001/lane2_cd1.pkl",
+          "phase": "cd1",
+          "rng_seed": 242,
+          "size_bytes": 10071
+        },
+        {
+          "artifact_sha256": "872dd361854b38c24c9a2d11a302c2e038f366f24f19837d232d1df20c7cc2b7",
+          "coordinates_sha256": "857303c2ef969789fadc0bf96712b09e9009cd68a579bc07184f43c6c41a0734",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 2,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-abc__seed42__9d66ef78d6a6/checkpoints/attempt-001/lane2_descent_legalized.pkl",
+          "phase": "descent_legalized",
+          "rng_seed": 242,
+          "size_bytes": 10025
+        },
+        {
+          "artifact_sha256": "43113d92e048179a817e84002371a2892827b2735eb3ef56448105b021a9fc57",
+          "coordinates_sha256": "d8fc4aa3939a818a7676e8ef7a128cd27a01add6703c42b898d931612438ba4a",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 2,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-abc__seed42__9d66ef78d6a6/checkpoints/attempt-001/lane2_initializer.pkl",
+          "phase": "initializer",
+          "rng_seed": 242,
+          "size_bytes": 9978
+        },
+        {
+          "artifact_sha256": "060bb44834c61d7ce3605704a35eb600cd85ded89af44745f1b5aa03c19edee7",
+          "coordinates_sha256": "b7b69afb1cc25c29831bcf00908b80c8e272da521671c2a172424236dcefe7b6",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 2,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm01__v2-abc__seed42__9d66ef78d6a6/checkpoints/attempt-001/lane2_post_hungarian.pkl",
+          "phase": "post_hungarian",
+          "rng_seed": 242,
+          "size_bytes": 10570
+        }
+      ],
+      "constructor_parameters": {
+        "budget_seconds": 180.0,
+        "cd_polish_s": 30.0,
+        "checkpoint_dir": "<per-run-checkpoint-dir>",
+        "device": "cpu",
+        "lane_a_seed": 42,
+        "lane_b_seed": 142,
+        "lane_c_seed": 242,
+        "lanes": "ABC",
+        "num_steps": 500,
+        "num_threads": 3
+      },
+      "degraded_lanes": [
+        "B",
+        "C"
+      ],
+      "error": null,
+      "identity_sha256": "9d66ef78d6a65351a9108b9421f70053178424de406e18437709bb814087c456",
+      "incomplete_phases": [
+        "B.cd2",
+        "B.final",
+        "C.cd2",
+        "C.final"
+      ],
+      "lane_worker_errors": {
+        "B": {
+          "worker_status": "interrupted"
+        },
+        "C": {
+          "worker_status": "interrupted"
+        }
+      },
+      "legality": {
+        "full_legal": true,
+        "full_violations": [],
+        "overlap_count": 0
+      },
+      "nominal_seed": 42,
+      "peak_rss_bytes": 1604468736,
+      "phase_errors": {},
+      "phase_outcomes": {
+        "A": {
+          "cd": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        },
+        "B": {
+          "cd1": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "cd2": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "saddle": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        },
+        "C": {
+          "cd1": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "cd2": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "hungarian": {
+            "accepted": false,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        }
+      },
+      "pipeline_completed": false,
+      "result_record": "writeup/runs/pilot-20260906-final/runs/ibm01__v2-abc__seed42__9d66ef78d6a6/result.json",
+      "result_record_sha256": "39b9ba9401dd0d7dc9c765d4b17d7b0e5b1069e01f5d55e919ed91471c538e84",
+      "run_id": "ibm01__v2-abc__seed42__9d66ef78d6a6",
+      "seed_provenance": {
+        "constructor_seeds": {
+          "hung_seed_base": 42,
+          "lane_a_seed": 42,
+          "lane_b_seed": 142,
+          "lane_c_seed": 242
+        },
+        "effective_initializer_seeds": {
+          "A": 42,
+          "B": 42,
+          "C": 42
+        },
+        "initializer_seed": 42,
+        "initializer_seed_note": "The current SDF initializer uses seed 42 independently of lane/rng seeds.",
+        "nominal_search_seeds": {
+          "hung_seed_base": 42,
+          "lane_a_seed": 42,
+          "lane_b_seed": 142,
+          "lane_c_seed": 242
+        },
+        "nominal_seed": 42,
+        "runtime_seed_metadata": null
+      },
+      "solver_outcome": "checkpoint_recovery",
+      "source_sha256": "122762450117bdf7be2e3eaae6c84c304fc4ea8584c3a9e97a3c92f54cd00371",
+      "status": "completed",
+      "study_eligible": true,
+      "timing": {
+        "external_timeout_seconds": 240.0,
+        "solver_budget_seconds": 180.0,
+        "solver_place_seconds": 180.023767875,
+        "supervisor_wall_seconds": 183.01687074999998,
+        "worker_total_seconds": 182.754180334
+      },
+      "usable_operating_result": true,
+      "used_fallback": true,
+      "valid": true,
+      "variant": "v2-abc",
+      "worker_error": null
+    },
+    {
+      "benchmark": "ibm10",
+      "canonical_cost": {
+        "congestion_cost": null,
+        "density_cost": null,
+        "proxy_cost": null,
+        "wirelength_cost": null
+      },
+      "checkpoint_inventory": [],
+      "constructor_parameters": {
+        "budget_seconds": 180.0,
+        "checkpoint_dir": "<per-run-checkpoint-dir>",
+        "device": "cpu",
+        "num_threads": 3,
+        "rng_seed": 42
+      },
+      "degraded_lanes": [],
+      "error": "worker exited with code 1",
+      "identity_sha256": "8c5b4ff5c2911b0388c95f3864613a8bcd3c1cceb8e904467d90d4322bc25a88",
+      "incomplete_phases": [],
+      "lane_worker_errors": {},
+      "legality": {
+        "full_legal": false,
+        "full_violations": [],
+        "overlap_count": null
+      },
+      "nominal_seed": 42,
+      "peak_rss_bytes": 749142016,
+      "phase_errors": {},
+      "phase_outcomes": null,
+      "pipeline_completed": false,
+      "result_record": "writeup/runs/pilot-20260906-final/runs/ibm10__v1__seed42__8c5b4ff5c291/result.json",
+      "result_record_sha256": "fa57aa14bd269e3bd333e164ce1056c5367338e5a0b11706c2746861c9530db5",
+      "run_id": "ibm10__v1__seed42__8c5b4ff5c291",
+      "seed_provenance": null,
+      "solver_outcome": "worker_did_not_complete",
+      "source_sha256": "d80194b7024a32b81907f1120da8d8712ee1b186808fcf1ac918562e02acfbf6",
+      "status": "error",
+      "study_eligible": false,
+      "timing": {
+        "external_timeout_seconds": 240.0,
+        "solver_budget_seconds": null,
+        "solver_place_seconds": null,
+        "supervisor_wall_seconds": 70.07281295799999,
+        "worker_total_seconds": null
+      },
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "variant": "v1",
+      "worker_error": {
+        "error": "RuntimeError: Both E25 and E41 placers failed; cannot proceed",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 603, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 492, in run_request\n    placement = placer.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v1/placer.py\", line 182, in place\n    base_placement = stacked.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v1/stacked.py\", line 168, in place\n    raise RuntimeError(\"Both E25 and E41 placers failed; cannot proceed\")\nRuntimeError: Both E25 and E41 placers failed; cannot proceed\n"
+      }
+    },
+    {
+      "benchmark": "ibm10",
+      "canonical_cost": {
+        "congestion_cost": 1.5059858594714963,
+        "density_cost": 0.6562938690185547,
+        "proxy_cost": 1.166864037513733,
+        "wirelength_cost": 0.08572417497634888
+      },
+      "checkpoint_inventory": [
+        {
+          "artifact_sha256": "f250c8fe49180f59bd2095c93450c4d684b77ad8092986872e2e741d2a4260ac",
+          "coordinates_sha256": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 0,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-a__seed42__092ef5a92391/checkpoints/attempt-001/lane0.pkl",
+          "phase": "descent_legalized",
+          "rng_seed": 42,
+          "size_bytes": 22979
+        },
+        {
+          "artifact_sha256": "f250c8fe49180f59bd2095c93450c4d684b77ad8092986872e2e741d2a4260ac",
+          "coordinates_sha256": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 0,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-a__seed42__092ef5a92391/checkpoints/attempt-001/lane0_descent_legalized.pkl",
+          "phase": "descent_legalized",
+          "rng_seed": 42,
+          "size_bytes": 22979
+        }
+      ],
+      "constructor_parameters": {
+        "budget_seconds": 180.0,
+        "cd_polish_s": 30.0,
+        "checkpoint_dir": "<per-run-checkpoint-dir>",
+        "device": "cpu",
+        "lane_a_seed": 42,
+        "lane_b_seed": 142,
+        "lane_c_seed": 242,
+        "lanes": "A",
+        "num_steps": 500,
+        "num_threads": 3
+      },
+      "degraded_lanes": [
+        "A"
+      ],
+      "error": null,
+      "identity_sha256": "092ef5a923914398d2c606a10f1c406487de57602dc17c992a632e52f1845fd6",
+      "incomplete_phases": [
+        "A.cd",
+        "A.final"
+      ],
+      "lane_worker_errors": {
+        "A": {
+          "worker_status": "interrupted"
+        }
+      },
+      "legality": {
+        "full_legal": true,
+        "full_violations": [],
+        "overlap_count": 0
+      },
+      "nominal_seed": 42,
+      "peak_rss_bytes": 1181286400,
+      "phase_errors": {},
+      "phase_outcomes": {
+        "A": {
+          "cd": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        }
+      },
+      "pipeline_completed": false,
+      "result_record": "writeup/runs/pilot-20260906-final/runs/ibm10__v2-a__seed42__092ef5a92391/result.json",
+      "result_record_sha256": "70f480d3be1ee9bf8e4ff7e4cc4a6f850d705e6bebb374403d5864d75956e27b",
+      "run_id": "ibm10__v2-a__seed42__092ef5a92391",
+      "seed_provenance": {
+        "constructor_seeds": {
+          "hung_seed_base": 42,
+          "lane_a_seed": 42,
+          "lane_b_seed": 142,
+          "lane_c_seed": 242
+        },
+        "effective_initializer_seeds": {
+          "A": 42
+        },
+        "initializer_seed": 42,
+        "initializer_seed_note": "The current SDF initializer uses seed 42 independently of lane/rng seeds.",
+        "nominal_search_seeds": {
+          "hung_seed_base": 42,
+          "lane_a_seed": 42,
+          "lane_b_seed": 142,
+          "lane_c_seed": 242
+        },
+        "nominal_seed": 42,
+        "runtime_seed_metadata": null
+      },
+      "solver_outcome": "checkpoint_recovery",
+      "source_sha256": "122762450117bdf7be2e3eaae6c84c304fc4ea8584c3a9e97a3c92f54cd00371",
+      "status": "completed",
+      "study_eligible": true,
+      "timing": {
+        "external_timeout_seconds": 240.0,
+        "solver_budget_seconds": 180.0,
+        "solver_place_seconds": 180.01512175,
+        "supervisor_wall_seconds": 209.48804383300006,
+        "worker_total_seconds": 209.193112459
+      },
+      "usable_operating_result": true,
+      "used_fallback": true,
+      "valid": true,
+      "variant": "v2-a",
+      "worker_error": null
+    },
+    {
+      "benchmark": "ibm10",
+      "canonical_cost": {
+        "congestion_cost": 1.5059858594714963,
+        "density_cost": 0.6562938690185547,
+        "proxy_cost": 1.166864037513733,
+        "wirelength_cost": 0.08572417497634888
+      },
+      "checkpoint_inventory": [
+        {
+          "artifact_sha256": "13ed9094f3e320d548431b2faae6fa274c7103841ef67a01b10383e77a0f7abb",
+          "coordinates_sha256": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 0,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-abc__seed42__7198ce733fe2/checkpoints/attempt-001/lane0.pkl",
+          "phase": "descent_legalized",
+          "rng_seed": 42,
+          "size_bytes": 22979
+        },
+        {
+          "artifact_sha256": "13ed9094f3e320d548431b2faae6fa274c7103841ef67a01b10383e77a0f7abb",
+          "coordinates_sha256": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 0,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-abc__seed42__7198ce733fe2/checkpoints/attempt-001/lane0_descent_legalized.pkl",
+          "phase": "descent_legalized",
+          "rng_seed": 42,
+          "size_bytes": 22979
+        },
+        {
+          "artifact_sha256": "3d0623d250d8b9fdfc4476ddc1f7ef41efe8021faf8e50cc0dc76254ced1b8f9",
+          "coordinates_sha256": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 1,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-abc__seed42__7198ce733fe2/checkpoints/attempt-001/lane1.pkl",
+          "phase": "descent_legalized",
+          "rng_seed": 142,
+          "size_bytes": 23046
+        },
+        {
+          "artifact_sha256": "3d0623d250d8b9fdfc4476ddc1f7ef41efe8021faf8e50cc0dc76254ced1b8f9",
+          "coordinates_sha256": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 1,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-abc__seed42__7198ce733fe2/checkpoints/attempt-001/lane1_descent_legalized.pkl",
+          "phase": "descent_legalized",
+          "rng_seed": 142,
+          "size_bytes": 23046
+        },
+        {
+          "artifact_sha256": "4fab37fb0bf91e425279ac1535fd3d843879adef0c1e215c8fbd2ac49e9c056d",
+          "coordinates_sha256": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 2,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-abc__seed42__7198ce733fe2/checkpoints/attempt-001/lane2.pkl",
+          "phase": "descent_legalized",
+          "rng_seed": 242,
+          "size_bytes": 23049
+        },
+        {
+          "artifact_sha256": "4fab37fb0bf91e425279ac1535fd3d843879adef0c1e215c8fbd2ac49e9c056d",
+          "coordinates_sha256": "3531f2fe2c87e914f52dfd58765ba293fa5030ef3fa414fd493e584f699f57b1",
+          "effective_rng_seed": 42,
+          "initializer_attempt": 1,
+          "initializer_method": "sdf",
+          "lane_index": 2,
+          "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/pilot-20260906-final/runs/ibm10__v2-abc__seed42__7198ce733fe2/checkpoints/attempt-001/lane2_descent_legalized.pkl",
+          "phase": "descent_legalized",
+          "rng_seed": 242,
+          "size_bytes": 23049
+        }
+      ],
+      "constructor_parameters": {
+        "budget_seconds": 180.0,
+        "cd_polish_s": 30.0,
+        "checkpoint_dir": "<per-run-checkpoint-dir>",
+        "device": "cpu",
+        "lane_a_seed": 42,
+        "lane_b_seed": 142,
+        "lane_c_seed": 242,
+        "lanes": "ABC",
+        "num_steps": 500,
+        "num_threads": 3
+      },
+      "degraded_lanes": [
+        "A",
+        "B",
+        "C"
+      ],
+      "error": null,
+      "identity_sha256": "7198ce733fe24e86243b9e37cdffb3b10ae706512e3a8443e9de29f16fc6d8e2",
+      "incomplete_phases": [
+        "A.cd",
+        "A.final",
+        "B.cd1",
+        "B.cd2",
+        "B.final",
+        "B.saddle",
+        "C.cd1",
+        "C.cd2",
+        "C.final",
+        "C.hungarian"
+      ],
+      "lane_worker_errors": {
+        "A": {
+          "worker_status": "interrupted"
+        },
+        "B": {
+          "worker_status": "interrupted"
+        },
+        "C": {
+          "worker_status": "interrupted"
+        }
+      },
+      "legality": {
+        "full_legal": true,
+        "full_violations": [],
+        "overlap_count": 0
+      },
+      "nominal_seed": 42,
+      "peak_rss_bytes": 2872786944,
+      "phase_errors": {},
+      "phase_outcomes": {
+        "A": {
+          "cd": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        },
+        "B": {
+          "cd1": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "cd2": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "saddle": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        },
+        "C": {
+          "cd1": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "cd2": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "hungarian": {
+            "accepted": null,
+            "attempted": false,
+            "completed": false,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        }
+      },
+      "pipeline_completed": false,
+      "result_record": "writeup/runs/pilot-20260906-final/runs/ibm10__v2-abc__seed42__7198ce733fe2/result.json",
+      "result_record_sha256": "a9a850d6c4ef3c0f7b4bc9b2d048bf965c203808141336ef1d957b248862a893",
+      "run_id": "ibm10__v2-abc__seed42__7198ce733fe2",
+      "seed_provenance": {
+        "constructor_seeds": {
+          "hung_seed_base": 42,
+          "lane_a_seed": 42,
+          "lane_b_seed": 142,
+          "lane_c_seed": 242
+        },
+        "effective_initializer_seeds": {
+          "A": 42,
+          "B": 42,
+          "C": 42
+        },
+        "initializer_seed": 42,
+        "initializer_seed_note": "The current SDF initializer uses seed 42 independently of lane/rng seeds.",
+        "nominal_search_seeds": {
+          "hung_seed_base": 42,
+          "lane_a_seed": 42,
+          "lane_b_seed": 142,
+          "lane_c_seed": 242
+        },
+        "nominal_seed": 42,
+        "runtime_seed_metadata": null
+      },
+      "solver_outcome": "checkpoint_recovery",
+      "source_sha256": "122762450117bdf7be2e3eaae6c84c304fc4ea8584c3a9e97a3c92f54cd00371",
+      "status": "completed",
+      "study_eligible": true,
+      "timing": {
+        "external_timeout_seconds": 240.0,
+        "solver_budget_seconds": 180.0,
+        "solver_place_seconds": 180.023856125,
+        "supervisor_wall_seconds": 211.006987708,
+        "worker_total_seconds": 210.687888417
+      },
+      "usable_operating_result": true,
+      "used_fallback": true,
+      "valid": true,
+      "variant": "v2-abc",
+      "worker_error": null
+    },
+    {
+      "benchmark": "ibm17",
+      "canonical_cost": {
+        "congestion_cost": null,
+        "density_cost": null,
+        "proxy_cost": null,
+        "wirelength_cost": null
+      },
+      "checkpoint_inventory": [],
+      "constructor_parameters": {
+        "budget_seconds": 180.0,
+        "checkpoint_dir": "<per-run-checkpoint-dir>",
+        "device": "cpu",
+        "num_threads": 3,
+        "rng_seed": 42
+      },
+      "degraded_lanes": [],
+      "error": "worker exited with code 1",
+      "identity_sha256": "65ca7e671ea3ca12196ad56cc94bb283fc385d954b9d337e1f66228c4360ed82",
+      "incomplete_phases": [],
+      "lane_worker_errors": {},
+      "legality": {
+        "full_legal": false,
+        "full_violations": [],
+        "overlap_count": null
+      },
+      "nominal_seed": 42,
+      "peak_rss_bytes": 950272000,
+      "phase_errors": {},
+      "phase_outcomes": null,
+      "pipeline_completed": false,
+      "result_record": "writeup/runs/pilot-20260906-final/runs/ibm17__v1__seed42__65ca7e671ea3/result.json",
+      "result_record_sha256": "64ec2824705ff7e43f81396b830831fc8b682f49833898d0a3b0bb00ebac6cdd",
+      "run_id": "ibm17__v1__seed42__65ca7e671ea3",
+      "seed_provenance": null,
+      "solver_outcome": "worker_did_not_complete",
+      "source_sha256": "d80194b7024a32b81907f1120da8d8712ee1b186808fcf1ac918562e02acfbf6",
+      "status": "error",
+      "study_eligible": false,
+      "timing": {
+        "external_timeout_seconds": 240.0,
+        "solver_budget_seconds": null,
+        "solver_place_seconds": null,
+        "supervisor_wall_seconds": 70.95653025000001,
+        "worker_total_seconds": null
+      },
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "variant": "v1",
+      "worker_error": {
+        "error": "RuntimeError: Both E25 and E41 placers failed; cannot proceed",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 603, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 492, in run_request\n    placement = placer.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v1/placer.py\", line 182, in place\n    base_placement = stacked.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v1/stacked.py\", line 168, in place\n    raise RuntimeError(\"Both E25 and E41 placers failed; cannot proceed\")\nRuntimeError: Both E25 and E41 placers failed; cannot proceed\n"
+      }
+    },
+    {
+      "benchmark": "ibm17",
+      "canonical_cost": {
+        "congestion_cost": null,
+        "density_cost": null,
+        "proxy_cost": null,
+        "wirelength_cost": null
+      },
+      "checkpoint_inventory": [],
+      "constructor_parameters": {
+        "budget_seconds": 180.0,
+        "cd_polish_s": 30.0,
+        "checkpoint_dir": "<per-run-checkpoint-dir>",
+        "device": "cpu",
+        "lane_a_seed": 42,
+        "lane_b_seed": 142,
+        "lane_c_seed": 242,
+        "lanes": "A",
+        "num_steps": 500,
+        "num_threads": 3
+      },
+      "degraded_lanes": [],
+      "error": "worker exited with code 1",
+      "identity_sha256": "60f27cf83f134dcb6cd445cb54956f431174bb26e13138a3a3870e7f2f3cdfa3",
+      "incomplete_phases": [],
+      "lane_worker_errors": {},
+      "legality": {
+        "full_legal": false,
+        "full_violations": [],
+        "overlap_count": null
+      },
+      "nominal_seed": 42,
+      "peak_rss_bytes": 1493975040,
+      "phase_errors": {},
+      "phase_outcomes": null,
+      "pipeline_completed": false,
+      "result_record": "writeup/runs/pilot-20260906-final/runs/ibm17__v2-a__seed42__60f27cf83f13/result.json",
+      "result_record_sha256": "01c646da621ce3a111ec263c7176824cc74ca3e8c08b2e21057920a7096b62ae",
+      "run_id": "ibm17__v2-a__seed42__60f27cf83f13",
+      "seed_provenance": null,
+      "solver_outcome": "worker_did_not_complete",
+      "source_sha256": "122762450117bdf7be2e3eaae6c84c304fc4ea8584c3a9e97a3c92f54cd00371",
+      "status": "error",
+      "study_eligible": false,
+      "timing": {
+        "external_timeout_seconds": 240.0,
+        "solver_budget_seconds": null,
+        "solver_place_seconds": null,
+        "supervisor_wall_seconds": 183.77756829099997,
+        "worker_total_seconds": null
+      },
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "variant": "v2-a",
+      "worker_error": {
+        "error": "TimeoutError: Placement deadline exhausted without a valid lane checkpoint",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 603, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 492, in run_request\n    placement = placer.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v2/placer.py\", line 255, in place\n    raise TimeoutError(\"Placement deadline exhausted without a valid lane checkpoint\")\nTimeoutError: Placement deadline exhausted without a valid lane checkpoint\n"
+      }
+    },
+    {
+      "benchmark": "ibm17",
+      "canonical_cost": {
+        "congestion_cost": null,
+        "density_cost": null,
+        "proxy_cost": null,
+        "wirelength_cost": null
+      },
+      "checkpoint_inventory": [],
+      "constructor_parameters": {
+        "budget_seconds": 180.0,
+        "cd_polish_s": 30.0,
+        "checkpoint_dir": "<per-run-checkpoint-dir>",
+        "device": "cpu",
+        "lane_a_seed": 42,
+        "lane_b_seed": 142,
+        "lane_c_seed": 242,
+        "lanes": "ABC",
+        "num_steps": 500,
+        "num_threads": 3
+      },
+      "degraded_lanes": [],
+      "error": "worker exited with code 1",
+      "identity_sha256": "05a0010d5105ec5702516ec7410c1352541a27fca04f3b47264fcf332f6c3285",
+      "incomplete_phases": [],
+      "lane_worker_errors": {},
+      "legality": {
+        "full_legal": false,
+        "full_violations": [],
+        "overlap_count": null
+      },
+      "nominal_seed": 42,
+      "peak_rss_bytes": 3724034048,
+      "phase_errors": {},
+      "phase_outcomes": null,
+      "pipeline_completed": false,
+      "result_record": "writeup/runs/pilot-20260906-final/runs/ibm17__v2-abc__seed42__05a0010d5105/result.json",
+      "result_record_sha256": "4c092886f0f382787d1dc33b8f46ddeda402200b6e1b24f3b86b8fdda18fe612",
+      "run_id": "ibm17__v2-abc__seed42__05a0010d5105",
+      "seed_provenance": null,
+      "solver_outcome": "worker_did_not_complete",
+      "source_sha256": "122762450117bdf7be2e3eaae6c84c304fc4ea8584c3a9e97a3c92f54cd00371",
+      "status": "error",
+      "study_eligible": false,
+      "timing": {
+        "external_timeout_seconds": 240.0,
+        "solver_budget_seconds": null,
+        "solver_place_seconds": null,
+        "supervisor_wall_seconds": 183.64815145900002,
+        "worker_total_seconds": null
+      },
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "variant": "v2-abc",
+      "worker_error": {
+        "error": "TimeoutError: Placement deadline exhausted without a valid lane checkpoint",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 603, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 492, in run_request\n    placement = placer.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v2/placer.py\", line 255, in place\n    raise TimeoutError(\"Placement deadline exhausted without a valid lane checkpoint\")\nTimeoutError: Placement deadline exhausted without a valid lane checkpoint\n"
+      }
+    },
+    {
+      "benchmark": "ariane133_ng45",
+      "canonical_cost": {
+        "congestion_cost": null,
+        "density_cost": null,
+        "proxy_cost": null,
+        "wirelength_cost": null
+      },
+      "checkpoint_inventory": [],
+      "constructor_parameters": {
+        "budget_seconds": 180.0,
+        "checkpoint_dir": "<per-run-checkpoint-dir>",
+        "device": "cpu",
+        "num_threads": 3,
+        "rng_seed": 42
+      },
+      "degraded_lanes": [],
+      "error": "worker exited with code 1",
+      "identity_sha256": "07ce7f88a8b349d50d776c1225e28750f729fe8217fb9d8f78123799e84e0b73",
+      "incomplete_phases": [],
+      "lane_worker_errors": {},
+      "legality": {
+        "full_legal": false,
+        "full_violations": [],
+        "overlap_count": null
+      },
+      "nominal_seed": 42,
+      "peak_rss_bytes": 271171584,
+      "phase_errors": {},
+      "phase_outcomes": null,
+      "pipeline_completed": false,
+      "result_record": "writeup/runs/pilot-20260906-final/runs/ariane133_ng45__v1__seed42__07ce7f88a8b3/result.json",
+      "result_record_sha256": "a6bcf9e6f8cdb2e646fac7649ae128d656d3d035014eec8a30701c0b0c62ef25",
+      "run_id": "ariane133_ng45__v1__seed42__07ce7f88a8b3",
+      "seed_provenance": null,
+      "solver_outcome": "worker_did_not_complete",
+      "source_sha256": "d80194b7024a32b81907f1120da8d8712ee1b186808fcf1ac918562e02acfbf6",
+      "status": "error",
+      "study_eligible": false,
+      "timing": {
+        "external_timeout_seconds": 240.0,
+        "solver_budget_seconds": null,
+        "solver_place_seconds": null,
+        "supervisor_wall_seconds": 2.1003453339999396,
+        "worker_total_seconds": null
+      },
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "variant": "v1",
+      "worker_error": {
+        "error": "FileNotFoundError: Benchmark 'ariane133_ng45': no source dir found.\n  Tried: ['/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45/netlist/output_CT_Grouping', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ariane133_ng45/netlist/output_CT_Grouping', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/NG45/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/NG45/ariane133_ng45/netlist/output_CT_Grouping', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45/netlist/output_CT_Grouping']\n  Set $BENCH_ROOT to override the search root.",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 603, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 492, in run_request\n    placement = placer.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v1/placer.py\", line 182, in place\n    base_placement = stacked.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v1/stacked.py\", line 103, in place\n    bench_dir = find_benchmark_dir(benchmark.name)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/common/bench_paths.py\", line 69, in find_benchmark_dir\n    raise FileNotFoundError(\nFileNotFoundError: Benchmark 'ariane133_ng45': no source dir found.\n  Tried: ['/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45/netlist/output_CT_Grouping', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ariane133_ng45/netlist/output_CT_Grouping', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/NG45/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/NG45/ariane133_ng45/netlist/output_CT_Grouping', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45', '/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Flows/NanGate45/ariane133_ng45/netlist/output_CT_Grouping']\n  Set $BENCH_ROOT to override the search root.\n"
+      }
+    },
+    {
+      "benchmark": "ariane133_ng45",
+      "canonical_cost": {
+        "congestion_cost": null,
+        "density_cost": null,
+        "proxy_cost": null,
+        "wirelength_cost": null
+      },
+      "checkpoint_inventory": [],
+      "constructor_parameters": {
+        "budget_seconds": 180.0,
+        "cd_polish_s": 30.0,
+        "checkpoint_dir": "<per-run-checkpoint-dir>",
+        "device": "cpu",
+        "lane_a_seed": 42,
+        "lane_b_seed": 142,
+        "lane_c_seed": 242,
+        "lanes": "A",
+        "num_steps": 500,
+        "num_threads": 3
+      },
+      "degraded_lanes": [],
+      "error": "worker exited with code 1",
+      "identity_sha256": "940f55b712efd8c6aa0612a957f8ecbd02454a6b9a840b6e3501345965c5562f",
+      "incomplete_phases": [],
+      "lane_worker_errors": {},
+      "legality": {
+        "full_legal": false,
+        "full_violations": [],
+        "overlap_count": null
+      },
+      "nominal_seed": 42,
+      "peak_rss_bytes": 483770368,
+      "phase_errors": {},
+      "phase_outcomes": null,
+      "pipeline_completed": false,
+      "result_record": "writeup/runs/pilot-20260906-final/runs/ariane133_ng45__v2-a__seed42__940f55b712ef/result.json",
+      "result_record_sha256": "1cc548cbf4d575f47cf0eb21a35bf4ddd6b29ed9f8a3c4048565a1e950e5d759",
+      "run_id": "ariane133_ng45__v2-a__seed42__940f55b712ef",
+      "seed_provenance": null,
+      "solver_outcome": "worker_did_not_complete",
+      "source_sha256": "122762450117bdf7be2e3eaae6c84c304fc4ea8584c3a9e97a3c92f54cd00371",
+      "status": "error",
+      "study_eligible": false,
+      "timing": {
+        "external_timeout_seconds": 240.0,
+        "solver_budget_seconds": null,
+        "solver_place_seconds": null,
+        "supervisor_wall_seconds": 3.1097280829999363,
+        "worker_total_seconds": null
+      },
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "variant": "v2-a",
+      "worker_error": {
+        "error": "RuntimeError: All lanes failed without a valid checkpoint",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 603, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 492, in run_request\n    placement = placer.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v2/placer.py\", line 256, in place\n    raise RuntimeError(\"All lanes failed without a valid checkpoint\")\nRuntimeError: All lanes failed without a valid checkpoint\n"
+      }
+    },
+    {
+      "benchmark": "ariane133_ng45",
+      "canonical_cost": {
+        "congestion_cost": null,
+        "density_cost": null,
+        "proxy_cost": null,
+        "wirelength_cost": null
+      },
+      "checkpoint_inventory": [],
+      "constructor_parameters": {
+        "budget_seconds": 180.0,
+        "cd_polish_s": 30.0,
+        "checkpoint_dir": "<per-run-checkpoint-dir>",
+        "device": "cpu",
+        "lane_a_seed": 42,
+        "lane_b_seed": 142,
+        "lane_c_seed": 242,
+        "lanes": "ABC",
+        "num_steps": 500,
+        "num_threads": 3
+      },
+      "degraded_lanes": [],
+      "error": "worker exited with code 1",
+      "identity_sha256": "a2e74642dcade9cbb635b9f3d3f820160a8583cf678ac5be28bd351e66229953",
+      "incomplete_phases": [],
+      "lane_worker_errors": {},
+      "legality": {
+        "full_legal": false,
+        "full_violations": [],
+        "overlap_count": null
+      },
+      "nominal_seed": 42,
+      "peak_rss_bytes": 943833088,
+      "phase_errors": {},
+      "phase_outcomes": null,
+      "pipeline_completed": false,
+      "result_record": "writeup/runs/pilot-20260906-final/runs/ariane133_ng45__v2-abc__seed42__a2e74642dcad/result.json",
+      "result_record_sha256": "f3bafdef50284a781decd653ec06e82efec26af0bbfc3f36e507866a4d557543",
+      "run_id": "ariane133_ng45__v2-abc__seed42__a2e74642dcad",
+      "seed_provenance": null,
+      "solver_outcome": "worker_did_not_complete",
+      "source_sha256": "122762450117bdf7be2e3eaae6c84c304fc4ea8584c3a9e97a3c92f54cd00371",
+      "status": "error",
+      "study_eligible": false,
+      "timing": {
+        "external_timeout_seconds": 240.0,
+        "solver_budget_seconds": null,
+        "solver_place_seconds": null,
+        "supervisor_wall_seconds": 2.9545132920000015,
+        "worker_total_seconds": null
+      },
+      "usable_operating_result": false,
+      "used_fallback": null,
+      "valid": false,
+      "variant": "v2-abc",
+      "worker_error": {
+        "error": "RuntimeError: All lanes failed without a valid checkpoint",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 603, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 492, in run_request\n    placement = placer.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v2/placer.py\", line 256, in place\n    raise RuntimeError(\"All lanes failed without a valid checkpoint\")\nRuntimeError: All lanes failed without a valid checkpoint\n"
+      }
+    }
+  ],
+  "schema_version": 2,
+  "separation_warning": null,
+  "study_directory": "writeup/runs/pilot-20260906-final",
+  "variants": [
+    "v1",
+    "v2-a",
+    "v2-abc"
+  ]
+}

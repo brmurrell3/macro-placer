@@ -1,0 +1,6 @@
+# The publication runs are retained evidence, including failures and checkpoints.
+!**/stdout.log
+!**/driver.log
+!**/final.pt
+!**/checkpoints/
+!**/checkpoints/**

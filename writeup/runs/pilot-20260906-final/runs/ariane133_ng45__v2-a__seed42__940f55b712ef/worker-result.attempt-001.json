@@ -1,0 +1,15 @@
+{
+  "environment": {
+    "python_executable": "/Users/brendan/Developer/macro-place-challenge-2026/.venv/bin/python",
+    "python_version": "3.9.6",
+    "worker_runtime": "worker failed before complete environment capture"
+  },
+  "error": "RuntimeError: All lanes failed without a valid checkpoint",
+  "finished_at": "2026-09-06T17:21:26.659686+00:00",
+  "identity_sha256": "940f55b712efd8c6aa0612a957f8ecbd02454a6b9a840b6e3501345965c5562f",
+  "run_id": "ariane133_ng45__v2-a__seed42__940f55b712ef",
+  "schema_version": 1,
+  "status": "error",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 603, in main\n    result = run_request(request)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/scripts/publication_worker.py\", line 492, in run_request\n    placement = placer.place(benchmark)\n  File \"/Users/brendan/Developer/macro-place-challenge-2026/thinkorplace/v2/placer.py\", line 256, in place\n    raise RuntimeError(\"All lanes failed without a valid checkpoint\")\nRuntimeError: All lanes failed without a valid checkpoint\n",
+  "valid": false
+}

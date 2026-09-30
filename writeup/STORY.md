@@ -18,7 +18,11 @@ the smooth proxy, then apply transition-state methods from chemistry /
 materials science to escape it — landing 1.07820 (cascade alone, Option A)
 or 1.06650 (cascade + DREAMPlace 3rd lane, Option B) on 17 IBM
 benchmarks vs RePlAce 1.4578 (−26.9 % at Option B), under partcl's 60-min
-cap, with zero overlaps and no per-benchmark tuning.**
+cap, with zero overlaps and no per-benchmark tuning. The shipped
+submission (`thinkorplace-v2`, Era 4) extends that chain with a C∞-smooth
+analytical descent (V4+Gaussian density) and a 3-lane parallel polish
+ensemble (extended CD / bounded saddle / K=50 Hungarian), reaching
+0.98387 on EPYC 2-way — within +0.6 % of the verified leaderboard #2.**
 
 That sentence carries the headline: a *new mechanism* (the saddle reframing),
 a *verified result* on the field's reference baseline, the *generalization
@@ -233,6 +237,82 @@ the test that produced it.*
 
 ---
 
+### Act 5 (epilogue) — The shipped system: V4+Gaussian descent + 3-lane polish ensemble (→ §8.13)
+
+**Wall:** Option B at 1.06650 still trails verified leaderboard #1
+(Carrotato 0.967) and #2 (Shoom 0.978) by ≥9 % and ≥8 % respectively.
+The cascade pipeline is anchored on SDF/DPO/DREAMPlace init lanes
+whose smooth-proxy surrogate has a step-discontinuous density term
+(`_grid_density` is bbox-uniform per-cell, C⁰-not-C¹ at bin
+boundaries). Adam descent through that kink picks basins by alignment
+with the bin grid rather than placement geometry — the analogue of
+§7's RUDY mismatch for the density component.
+
+**Diagnostic moves:**
+- *E117 — Gaussian-smeared density.* Replace bbox-uniform per-cell
+  overlap with an analytic 2D-Gaussian integral via `torch.erf`.
+  Result is C∞-smooth in macro positions; mass-conserving regardless
+  of bin alignment. M3 `--all` lifts −2.07 % vs the V3 baseline
+  before any polish change. Biggest lifts on density-hard benches
+  (ibm17 −2.36 %, ibm18 −4.0 %, ibm04 −2.61 %) — the diagnostic
+  prediction is empirically confirmed.
+- *CD polish was budget-limited, not saturated.* A single-bench probe
+  on ibm17 (hardest case, density-dominated) shows CD at 600 s
+  plateaus at 1.200 but at 900 s reaches 1.183 — a −1.4 % lift
+  recovered by *budget alone*. The §8.12 autopsy refutation pattern
+  applies to our own pipeline: appearance of plateau ≠ saturation
+  until polish budget is matched.
+
+**Mechanism (E115 / E117 / E138 / E159, → §8.13):**
+- *V4+Gaussian smooth global placer* — E115 V4 backbone
+  (FastDiffProxy, 16.85× per Adam step on CUDA) + E117 erf-Gaussian
+  density. Single descent basin feeds all three polish lanes.
+- *3-lane parallel ensemble* — three subprocesses per benchmark:
+  - **Lane A**: V4+Gaussian → legalize → CD 900 s.
+  - **Lane B**: A + bounded cascading Hessian saddle escape (E138,
+    eigsh `maxiter=50, tol=1e-2`) between CD1 and CD2.
+  - **Lane C**: A + K=50 Hungarian joint permutation loop (E159) on
+    movable-macro clusters between CD1 and CD2.
+- Master joins all three within a 1500 s wall budget; picks the
+  canonical-best overlap-clean placement. Plateau-pick semantics
+  identical to §8.6 / §8.12 (per-bench best-of) but now over polish
+  outputs rather than init outputs.
+
+**Result (EPYC 2-way, the judges' hardware class):**
+
+| Configuration | Avg `--all` | Note |
+|---|---:|---|
+| M3 V4+Gaussian standalone | 0.98199 | Before ensemble |
+| M3 3-lane v2 (default 720 s budget) | 0.99115 | Pre-extCD |
+| EPYC 4-way extended CD | 1.00746 | Regressed: vCPU contention |
+| **EPYC 2-way extended CD** | **0.98387** | **Shipped** |
+
+vs leaderboard: Carrotato 0.967 (+1.7 %), Shoom 0.978 (+0.6 %),
+vmallela 1.011 (−2.7 %). Projected rank #2–#3.
+
+**Key insights (paper-level):**
+1. *Smooth-proxy density kink is the analogue of §7's RUDY mismatch.*
+   Surrogate-calibration failures recur at every component of the
+   composite proxy; the diagnostic ("is the surrogate gradient
+   smooth enough at canonical-proxy scale?") generalizes.
+2. *Parallel-ensemble polish pick is §8.6 one level deeper.* §8.6 ran
+   two init lanes; §8.12 generalized to three init lanes + cascade
+   polish; §8.13 generalizes again to *one shared descent basin, three
+   orthogonal polish heuristics, plateau pick over polish outputs*.
+   The offline per-bench MIN over the three lanes on EPYC reaches
+   0.97745 — beating Shoom 0.978 — so the ensemble has headroom the
+   master plateau pick is not yet extracting.
+3. *Budget-limit-vs-plateau confound recurs in our own history.*
+   Every §§8.5–8.11 promotion was measured against a 600 s-class CD
+   wall; lengthening to 900 s recovers −0.73 % across `--all`
+   without algorithmic change. The §8.12 autopsy refutation applies
+   to our own pipeline.
+
+**Paper sections:** §8.13 (drafted 2026-05-22, status: complete prose,
+TODO figures + frozen-data CSVs).
+
+---
+
 ## Formal-paper section mapping
 
 Standard CAD-paper structure → our content.
@@ -253,7 +333,8 @@ Standard CAD-paper structure → our content.
 | **§8.10 Cascading** | Iterate until eigenvalue ≥ 0; 1.0612 uncapped | drafted 2026-05-13 |
 | **§8.11 PATH A speedup** | 5.36× delta_cost + LNS-helper conversions | drafted 2026-05-13 |
 | **§8.12 DREAMPlace Lane** | E91 autopsy refutation; Option B architecture | **drafted** 2026-05-16 |
-| **§9 Empirical Results** | Lineage table through Option A/B; NG45 transfer; compute envelope | **drafted** 2026-05-16 (per-bench data table TODO) |
+| **§8.13 The Shipped System (Era 4)** | V4+Gaussian (E115/E117) + 3-lane parallel ensemble (E138 saddle + E159 Hungarian); EPYC 0.98387 | **drafted** 2026-05-22 |
+| **§9 Empirical Results** | Lineage table through Option A/B + v2; NG45 transfer; compute envelope | **drafted** 2026-05-16 (per-bench data table TODO; v2 EPYC table at §8.13) |
 | **§10 Discussion** | Objective mismatch recurrence; bypass-don't-fix; compositional multiplicativity; OOD pattern; limitations; field implications | **drafted** 2026-05-16 |
 | **§11 References** | NEB / dimer / GAD references + macro placement literature + OOD generalization | drafted 2026-05-13 |
 
@@ -299,6 +380,12 @@ In priority order, what to draft next:
    - `writeup/data/lp_hpwl_correlations_ibm01.csv`.
    - `writeup/data/lane_pick_distribution.csv` (lane-pick winners
      per bench for §8.12 Figure 6).
+   - `writeup/data/e117_gaussian_lift.csv` (per-bench V3 vs
+     V4+Gaussian for §8.13.1 Figure left panel).
+   - `writeup/data/v2_extcd_per_bench.csv` (per-bench v2-default
+     vs v2-extCD EPYC for §8.13.3 / §8.13.4 right panel).
+   - `writeup/data/v2_lane_pick_distribution.csv` (which of
+     A/B/C wins per bench for §8.13.2 plateau-pick figure).
 
 5. **Cold-read pass.** All prose drafted but unchecked against a fresh
    reader's understanding. Pass should flag run-on paragraphs,

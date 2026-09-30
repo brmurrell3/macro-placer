@@ -1,0 +1,111 @@
+Thinkorplace focused verification receipt
+started_utc=2026-09-06T17:52:29Z
+started_local=2026-09-06T13:52:29-0400
+cwd=/Users/brendan/Developer/macro-place-challenge-2026
+python=Python 3.9.6
+canonical_loader_sha256=7ac77a987d8cae97126e17589568afa17a21b6ddb2ce914b3785f94bc82c5380
+command=.venv/bin/python -m pytest test/test_submission_safety.py test/test_thinkorplace_package.py test/test_postpilot_repairs.py test/test_sdf_topology.py test/test_publication_runner.py
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Users/brendan/Developer/macro-place-challenge-2026/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/brendan/Developer/macro-place-challenge-2026
+configfile: pyproject.toml
+collecting ... collected 64 items
+
+test/test_submission_safety.py::test_expired_budget_never_spawns PASSED  [  1%]
+test/test_submission_safety.py::test_expired_join_is_zero_and_all_children_cleaned PASSED [  3%]
+test/test_submission_safety.py::test_cleanup_on_join_exception PASSED    [  4%]
+test/test_submission_safety.py::test_actual_child_terminated PASSED      [  6%]
+test/test_submission_safety.py::test_invalid_better_lane_rejected[bad_pos0] PASSED [  7%]
+test/test_submission_safety.py::test_invalid_better_lane_rejected[bad_pos1] PASSED [  9%]
+test/test_submission_safety.py::test_invalid_better_lane_rejected[bad_pos2] PASSED [ 10%]
+test/test_submission_safety.py::test_invalid_better_lane_rejected[bad_pos3] PASSED [ 12%]
+test/test_submission_safety.py::test_timed_out_lane_retains_valid_phase_checkpoint PASSED [ 14%]
+test/test_submission_safety.py::test_returned_lane_with_phase_failure_is_not_checkpoint_recovery PASSED [ 15%]
+test/test_submission_safety.py::test_atomic_failure_keeps_old_checkpoint PASSED [ 17%]
+test/test_submission_safety.py::test_hierarchical_pin_uses_plc_owner_and_tensor_mapping[submissions/thinkorplace-v2/lib/ablation_v2_steps.py-safety_topology_v2] PASSED [ 18%]
+test/test_submission_safety.py::test_hierarchical_pin_uses_plc_owner_and_tensor_mapping[writeup/archive/submissions/dpo/ablation_v2_steps.py-safety_topology_v1] PASSED [ 20%]
+test/test_submission_safety.py::test_hierarchical_pin_uses_plc_owner_and_tensor_mapping[thinkorplace/common/smooth_primitives.py-safety_topology_common] PASSED [ 21%]
+test/test_submission_safety.py::test_hierarchical_pin_uses_plc_owner_and_tensor_mapping[thinkorplace/v1/dpo_init.py-safety_topology_dpo] PASSED [ 23%]
+test/test_submission_safety.py::test_worker_failure_preserves_descent_checkpoint[42] PASSED [ 25%]
+test/test_submission_safety.py::test_worker_failure_preserves_descent_checkpoint[142] PASSED [ 26%]
+test/test_submission_safety.py::test_v1_expired_budget_does_not_start_cascade PASSED [ 28%]
+test/test_submission_safety.py::test_v1_periphery_execution_is_separate_from_acceptance[rejected] PASSED [ 29%]
+test/test_submission_safety.py::test_v1_periphery_execution_is_separate_from_acceptance[failed] PASSED [ 31%]
+test/test_submission_safety.py::test_v1_periphery_execution_is_separate_from_acceptance[budget_skipped] PASSED [ 32%]
+test/test_submission_safety.py::test_specialization_failure_remains_visible_after_valid_return[1-saddle] PASSED [ 34%]
+test/test_submission_safety.py::test_specialization_failure_remains_visible_after_valid_return[2-hungarian] PASSED [ 35%]
+test/test_submission_safety.py::test_worker_expired_budget_never_starts_sdf PASSED [ 37%]
+test/test_submission_safety.py::test_deadline_clock_is_shared_with_spawned_interpreter PASSED [ 39%]
+test/test_submission_safety.py::test_cascade_exhausted_budget_keeps_incumbent[thinkorplace/v2/bounded_saddle.py-safety_bounded-bounded_cascading_saddle_escape] PASSED [ 40%]
+test/test_submission_safety.py::test_cascade_exhausted_budget_keeps_incumbent[thinkorplace/v1/cascade.py-safety_cascade-cascading_saddle_escape] PASSED [ 42%]
+test/test_submission_safety.py::test_bounded_eigensolver_checks_deadline_between_hvps PASSED [ 43%]
+test/test_submission_safety.py::test_polish_cap_accounts_for_eigensolver_and_legalizer[thinkorplace/v2/bounded_saddle.py-safety_clamp_v2-bounded_cascading_saddle_escape-find_softest_eigenvectors_bounded] PASSED [ 45%]
+test/test_submission_safety.py::test_polish_cap_accounts_for_eigensolver_and_legalizer[thinkorplace/v1/cascade.py-safety_clamp_v1-cascading_saddle_escape-find_softest_eigenvectors] PASSED [ 46%]
+test/test_thinkorplace_package.py::test_legalizer_clamps_soft_clusters_and_preserves_fixed PASSED [ 48%]
+test/test_thinkorplace_package.py::test_runtime_uses_only_namespaced_and_canonical_imports PASSED [ 50%]
+test/test_thinkorplace_package.py::test_runtime_validation_matches_canonical_float32_endpoint_counterexample PASSED [ 51%]
+test/test_thinkorplace_package.py::test_runtime_validation_matches_canonical_randomized_geometry PASSED [ 53%]
+test/test_thinkorplace_package.py::test_runtime_validation_checks_pairs_across_vector_blocks PASSED [ 54%]
+test/test_thinkorplace_package.py::test_package_imports_with_pristine_upstream_and_without_research_tree PASSED [ 56%]
+test/test_thinkorplace_package.py::test_extracted_primitives_preserve_algorithm_ast PASSED [ 57%]
+test/test_postpilot_repairs.py::test_sdf_repairs_soft_bounds_without_relying_on_cd PASSED [ 59%]
+test/test_postpilot_repairs.py::test_sdf_legalizer_places_fixed_obstacles_before_larger_movables PASSED [ 60%]
+test/test_postpilot_repairs.py::test_float64_export_restores_fixed_and_repairs_soft_bounds PASSED [ 62%]
+test/test_postpilot_repairs.py::test_float32_upper_endpoint_steps_inward_without_tolerance PASSED [ 64%]
+test/test_postpilot_repairs.py::test_infeasible_fixed_reference_is_rejected[False] PASSED [ 65%]
+test/test_postpilot_repairs.py::test_infeasible_fixed_reference_is_rejected[True] PASSED [ 67%]
+test/test_postpilot_repairs.py::test_unresolved_hard_geometry_is_rejected PASSED [ 68%]
+test/test_postpilot_repairs.py::test_ng45_processed_alias_resolves_source_directory[] PASSED [ 70%]
+test/test_postpilot_repairs.py::test_ng45_processed_alias_resolves_source_directory[netlist/output_CT_Grouping] PASSED [ 71%]
+test/test_postpilot_repairs.py::test_exact_benchmark_name_precedes_alias_and_no_recursive_fallback PASSED [ 73%]
+test/test_postpilot_repairs.py::test_rejected_initializer_is_persisted_as_diagnostic_not_candidate PASSED [ 75%]
+test/test_postpilot_repairs.py::test_fatal_worker_result_preserves_phase_errors PASSED [ 76%]
+test/test_sdf_topology.py::test_sdf_edges_use_plc_pin_ownership_and_ignore_ports[flat-local-macro-place] PASSED [ 78%]
+test/test_sdf_topology.py::test_sdf_edges_use_plc_pin_ownership_and_ignore_ports[flat-namespaced-thinkorplace] PASSED [ 79%]
+test/test_sdf_topology.py::test_sdf_edges_use_plc_pin_ownership_and_ignore_ports[hierarchical-local-macro-place] PASSED [ 81%]
+test/test_sdf_topology.py::test_sdf_edges_use_plc_pin_ownership_and_ignore_ports[hierarchical-namespaced-thinkorplace] PASSED [ 82%]
+test/test_publication_runner.py::test_scoped_arbitrary_placer_parameters_are_explicit PASSED [ 84%]
+test/test_publication_runner.py::test_worker_loads_and_validates_tiny_dummy_placer PASSED [ 85%]
+test/test_publication_runner.py::test_checkpoint_recovery_is_valid_but_not_normal_completion PASSED [ 87%]
+test/test_publication_runner.py::test_valid_checkpoint_recovery_remains_in_study_aggregate PASSED [ 89%]
+test/test_publication_runner.py::test_partial_phase_completion_is_not_checkpoint_fallback_or_worker_error PASSED [ 90%]
+test/test_publication_runner.py::test_selected_lane_worker_failure_is_checkpoint_recovery PASSED [ 92%]
+test/test_publication_runner.py::test_selected_checkpoint_without_worker_completion_is_recovery PASSED [ 93%]
+test/test_publication_runner.py::test_external_timeout_kills_descendant_process_group PASSED [ 95%]
+test/test_publication_runner.py::test_resume_requires_matching_identity PASSED [ 96%]
+test/test_publication_runner.py::test_dry_run_writes_manifest_without_importing_torch PASSED [ 98%]
+test/test_publication_runner.py::test_checkpoint_inventory_hashes_artifact_phase_and_coordinates PASSED [100%]
+
+=============================== warnings summary ===============================
+.venv/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:64
+  /Users/brendan/Developer/macro-place-challenge-2026/.venv/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:64: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    prop = Group((name + Suppress("=") + comma_separated(value)) | oneOf(_CONSTANTS))
+
+.venv/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+.venv/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+.venv/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+.venv/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+.venv/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+.venv/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85
+  /Users/brendan/Developer/macro-place-challenge-2026/.venv/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+    parse = parser.parseString(pattern)
+
+.venv/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+.venv/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+.venv/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+.venv/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+.venv/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+.venv/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89
+  /Users/brendan/Developer/macro-place-challenge-2026/.venv/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+    parser.resetCache()
+
+.venv/lib/python3.9/site-packages/matplotlib/_mathtext.py:45
+  /Users/brendan/Developer/macro-place-challenge-2026/.venv/lib/python3.9/site-packages/matplotlib/_mathtext.py:45: PyparsingDeprecationWarning: 'enablePackrat' deprecated - use 'enable_packrat'
+    ParserElement.enablePackrat()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 64 passed, 14 warnings in 5.47s ========================
+finished_utc=2026-09-06T17:52:35Z
+finished_local=2026-09-06T13:52:35-0400
+exit_code=0

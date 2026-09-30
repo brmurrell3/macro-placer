@@ -1,0 +1,12 @@
+\subsection{Final NG45 integration}
+A separate check of runtime archive \code{5aa4c719cf18} ran all three entry configurations on ariane133 with a 60-second solver budget, a 120-second external limit, and three concurrent jobs. A and A+B+C used five analytical steps and zero-second CD phase budgets; v1 retained its distinct budget-derived refinement stages. All three outputs were valid and study-eligible. Only A completed its configured pipeline; v1 and A+B+C returned valid partial-phase outputs. These are integration checks, not comparable quality measurements.
+
+\begin{table}[htbp]\centering\small
+\caption{Final NG45 integration after the SDF graph repair; every row returned a valid placement within its external limit.}
+\label{tab:final-ng45-integration}
+\begin{tabular}{lrrl}\toprule
+Variant & Solver time (s) & Wall time (s) & Outcome \\ \midrule
+v1 & 34.6 & 44.0 & partial phases \\
+A & 45.7 & 53.7 & complete \\
+A+B+C & 60.0 & 67.8 & partial phases \\
+\bottomrule\end{tabular}\end{table}

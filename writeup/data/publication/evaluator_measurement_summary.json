@@ -1,0 +1,59 @@
+[
+  {
+    "file": "evaluator_ibm01_mac.json",
+    "file_sha256": "2c39ce3dba8c6d71c8934a0a1b499ed5c8f813b9d0e3282993554d0039b1efed",
+    "name": "ibm01",
+    "macro_kind_observed": "mixed",
+    "moves_per_repetition": 8,
+    "hard_moves_per_repetition": 3,
+    "repetitions": 3,
+    "summary": {
+      "median_speedup": 1040.1859519274346,
+      "min_speedup": 1034.7480587591615,
+      "max_speedup": 1196.8688314354658,
+      "mean_incremental_ms_per_move": 1.2869670833334235,
+      "mean_canonical_ms_per_move": 1401.5996163333336,
+      "mean_incremental_setup_seconds": 0.3312192496666662,
+      "mean_final_overlap_seconds": 0.03292393033333241
+    },
+    "maximum_relative_component_error": 9.646385702300986e-16
+  },
+  {
+    "file": "evaluator_ibm10_mac.json",
+    "file_sha256": "4bc56dbc085de6cc93b6c10b2c5f8f70986777b1b6a6826175654401e7ac8dcd",
+    "name": "ibm10",
+    "macro_kind_observed": "soft",
+    "moves_per_repetition": 3,
+    "hard_moves_per_repetition": 0,
+    "repetitions": 2,
+    "summary": {
+      "median_speedup": 7268.703570181432,
+      "min_speedup": 7054.554781794999,
+      "max_speedup": 7482.852358567865,
+      "mean_incremental_ms_per_move": 3.671729166657182,
+      "mean_canonical_ms_per_move": 26682.067757166664,
+      "mean_incremental_setup_seconds": 1.475180562000002,
+      "mean_final_overlap_seconds": 0.30661664599999483
+    },
+    "maximum_relative_component_error": 2.1529791207261014e-15
+  },
+  {
+    "file": "evaluator_ibm10_hard_mac.json",
+    "file_sha256": "cf34c85a7b35e9bbcbb5a083ec79960bc0be581313d8884005a405142f637126",
+    "name": "ibm10",
+    "macro_kind_observed": "hard",
+    "moves_per_repetition": 3,
+    "hard_moves_per_repetition": 3,
+    "repetitions": 2,
+    "summary": {
+      "median_speedup": 18022.548503718324,
+      "min_speedup": 17249.859740553486,
+      "max_speedup": 18795.237266883163,
+      "mean_incremental_ms_per_move": 1.4919791666739475,
+      "mean_canonical_ms_per_move": 26865.39403466666,
+      "mean_incremental_setup_seconds": 1.4541671044999998,
+      "mean_final_overlap_seconds": 0.31320949999999925
+    },
+    "maximum_relative_component_error": 2.561729937666251e-15
+  }
+]
