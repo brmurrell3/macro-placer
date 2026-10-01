@@ -1,6 +1,6 @@
 # Thinkorplace: Smooth Proposals and Exact Local Search for Chip Macro Placement
 
-Brendan Murrell · 30 September 2026 · Technical report 1.0
+Brendan Murrell, Xiaofei Zhang, Andrew Murrell · 30 September 2026 · Technical report 1.0
 
 ![Dot plot of the top ten entries on the final leaderboard by mean proxy cost over the 17 IBM designs, where lower is better: Archgen first at 0.9507, Carrotato second at 0.9522, and Thinkorplace, highlighted, ninth at 0.9974. A broken axis marks the published RePlAce baseline at 1.4578 and the simulated-annealing baseline at 2.1251.](interactive/result-context.svg)
 
@@ -48,13 +48,6 @@ Lessons:
 The results are proxy scores only, without full place-and-route; the 17
 public designs that set the ranking were also used in development; and the
 ranked configuration has not yet been reproduced end to end.
-
-**Author's note.** The organizers' leaderboard lists team "thinkorplace" as
-Brendan Murrell and Xiaofei Zhang; this report and the post-competition
-analysis are by Brendan Murrell. AI coding agents, including Anthropic's
-Claude Code, implemented and ran most experiments and drafted text; the author
-proposed the hypotheses, set the evaluation protocol, decided which results to
-keep, and is responsible for the claims.
 
 [Read the technical report](thinkorplace-technical-report.pdf) ·
 [View source](https://github.com/brmurrell3/macro-placer) ·

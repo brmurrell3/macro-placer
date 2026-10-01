@@ -126,9 +126,11 @@ of 17 public IBM benchmark designs, within one hour per design and with zero
 hard-macro overlaps, scored by a published proxy cost; see the
 [upstream repository](https://github.com/partcleda/macro-place-challenge-2026).
 
-## Author's note
+## Authors
 
-Thinkorplace was entered in the Partcl/HRT Macro Placement Challenge 2026 as team "thinkorplace"; the organizers' leaderboard lists Brendan Murrell and Xiaofei Zhang. This report and the post-competition analysis are by Brendan Murrell. Development used AI coding agents, including Anthropic's Claude Code, to implement and run most experiments and to draft text. The author proposed the hypotheses, set the evaluation protocol and acceptance thresholds, decided which results to keep, and is responsible for the claims made here.
+Brendan Murrell (lead and corresponding author,
+[brendanmurrell.com](https://brendanmurrell.com)), Xiaofei Zhang, and Andrew
+Murrell. The competition entry was submitted as team "thinkorplace".
 
 ## Citation
 

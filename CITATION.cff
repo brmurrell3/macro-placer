@@ -5,6 +5,10 @@ title: "Thinkorplace: Smooth Proposals and Exact Local Search for Chip Macro Pla
 authors:
   - family-names: Murrell
     given-names: Brendan
+  - family-names: Zhang
+    given-names: Xiaofei
+  - family-names: Murrell
+    given-names: Andrew
 repository-code: "https://github.com/brmurrell3/macro-placer"
 license: Apache-2.0
 version: "1.0"
@@ -15,6 +19,10 @@ preferred-citation:
   authors:
     - family-names: Murrell
       given-names: Brendan
+    - family-names: Zhang
+      given-names: Xiaofei
+    - family-names: Murrell
+      given-names: Andrew
   month: 9
   year: 2026
   url: "https://github.com/brmurrell3/macro-placer"

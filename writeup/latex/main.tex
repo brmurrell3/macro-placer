@@ -36,7 +36,7 @@
 \definecolor{panel}{HTML}{F2F5F7}
 \definecolor{rulegray}{HTML}{CAD2D9}
 \hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue,
-  pdfauthor={Brendan Murrell},
+  pdfauthor={Brendan Murrell, Xiaofei Zhang, Andrew Murrell},
   pdftitle={Thinkorplace: Smooth Proposals and Exact Local Search for Chip Macro Placement},
   pdfsubject={Technical report 1.0 on a macro placer for the Partcl/HRT Macro Placement Challenge 2026},
   pdfkeywords={macro placement, physical design, analytical placement, coordinate descent, incremental evaluation, Hungarian assignment, negative curvature},
@@ -119,12 +119,14 @@ for Chip Macro Placement\par}
 \vspace{0.55em}
 {\normalsize\itshape Ninth on the final leaderboard of the Partcl/HRT Macro Placement
 Challenge 2026\\ (verified mean proxy 0.9974)\par}
-\vspace{0.7em}
-{\large Brendan Murrell\par}
-\vspace{0.35em}
-{\small Technical report 1.0 \textperiodcentered{} 30 September 2026\par}
+\vspace{0.6em}
+{\large Brendan Murrell\textsuperscript{*}\qquad Xiaofei Zhang\qquad Andrew Murrell\par}
 \vspace{0.15em}
-{\small Code: \url{https://github.com/brmurrell3/macro-placer}\par}
+{\footnotesize\textsuperscript{*}Lead and corresponding author,
+\url{https://brendanmurrell.com}\par}
+\vspace{0.3em}
+{\small Technical report 1.0 \textperiodcentered{} 30 September 2026
+\textperiodcentered{} Code: \url{https://github.com/brmurrell3/macro-placer}\par}
 \end{center}
 \thispagestyle{plain}
 \suppressfloats[t]
@@ -193,16 +195,6 @@ simulated-annealing (SA) baselines (broken axis; lower is better).}
 \input{sections/limitations.tex}
 \input{sections/related.tex}
 \input{sections/conclusion.tex}
-
-\section*{Author's note}
-\addcontentsline{toc}{section}{Author's note}
-Thinkorplace was entered in the Partcl/HRT Macro Placement Challenge 2026 as team
-``thinkorplace''; the organizers' leaderboard lists Brendan Murrell and Xiaofei
-Zhang. This report and the post-competition analysis are by Brendan Murrell.
-Development used AI coding agents, including Anthropic's Claude Code, to implement
-and run most experiments and to draft text. The author proposed the hypotheses, set
-the evaluation protocol and acceptance thresholds, decided which results to keep,
-and is responsible for the claims made here.
 
 \section*{Acknowledgments}
 \addcontentsline{toc}{section}{Acknowledgments}
