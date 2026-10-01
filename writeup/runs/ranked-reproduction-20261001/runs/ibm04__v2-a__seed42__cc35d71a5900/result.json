@@ -1,0 +1,613 @@
+{
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "checkpoint_dir": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm04__v2-a__seed42__cc35d71a5900/checkpoints/attempt-001",
+      "error": null,
+      "finished_at": "2026-10-01T21:39:54.801550+00:00",
+      "log_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm04__v2-a__seed42__cc35d71a5900/stdout.log",
+      "started_at": "2026-10-01T21:34:07.829701+00:00",
+      "status": "completed",
+      "supervisor": {
+        "memory_sample_count": 2727,
+        "peak_memory_scope": "observed_process_group_member_rss_sum",
+        "peak_rss_bytes": 725565440,
+        "process_group_note": "RSS is summed over processes observed in the worker process group; it is not asserted to cover descendants that changed process group.",
+        "return_code": 0,
+        "status": "exited",
+        "terminate_grace_seconds": 2.0,
+        "timed_out": false,
+        "timeout_seconds": 3600.0,
+        "wall_seconds": 346.9717760410001
+      },
+      "valid": true,
+      "worker_result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm04__v2-a__seed42__cc35d71a5900/worker-result.attempt-001.json"
+    }
+  ],
+  "benchmark": {
+    "bench_root": "/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04",
+    "benchmark_path": "/Users/brendan/Developer/macro-place-challenge-2026/benchmarks/processed/public/ibm04.pt",
+    "benchmark_sha256": "a8b4ede112a48df23048de4f48f294cad89f3cbbb8d96d7c18731ab0ad6374fd",
+    "design_name": "ibm04",
+    "initial_plc_path": "/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm04/initial.plc",
+    "initial_plc_sha256": "94aa5b8956d87b8851cf5bc156d4b0a14a8bdcfcdb6282bc41ed281ce7671f0b",
+    "netlist_path": "/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm04/netlist.pb.txt",
+    "netlist_sha256": "347924f72a646c0295f32858b4e58c41b1f18739286e8e5c8250226222ca188a",
+    "requested_name": "ibm04",
+    "source_dir": "/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm04"
+  },
+  "canonical_cost": {
+    "congestion_cost": 1.1524392513486161,
+    "density_cost": 0.506847620010376,
+    "proxy_cost": 0.9191014766693115,
+    "wirelength_cost": 0.08945801854133606
+  },
+  "checkpoint_artifacts": [
+    {
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm04__v2-a__seed42__cc35d71a5900/checkpoints/attempt-001/lane0.log",
+      "sha256": "b1397a401716a42ca48f12d4367e6fc55f360cfc1250862143676f8f9cfe9ee6",
+      "size_bytes": 352
+    },
+    {
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm04__v2-a__seed42__cc35d71a5900/checkpoints/attempt-001/lane0.pkl",
+      "sha256": "9cfc922bdbae6a777bb6694da98580ee835380eceda32f56c38c49793b4eaa28",
+      "size_bytes": 12018
+    },
+    {
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm04__v2-a__seed42__cc35d71a5900/checkpoints/attempt-001/lane0_descent_legalized.pkl",
+      "sha256": "75964d8c69db9d3c2cabbd15c7a7183a35b221fb67cf648d96a63f237e714d75",
+      "size_bytes": 11909
+    },
+    {
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm04__v2-a__seed42__cc35d71a5900/checkpoints/attempt-001/lane0_final.pkl",
+      "sha256": "b72d3bac58145db54d343eb93c320cbb352dbc3fb646144043fc8781ff5ce0d6",
+      "size_bytes": 11955
+    },
+    {
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm04__v2-a__seed42__cc35d71a5900/checkpoints/attempt-001/lane0_initializer.pkl",
+      "sha256": "e54142e6833179479ba7e17437900a2f630c0a711e98e7dec5311576943445b4",
+      "size_bytes": 11862
+    }
+  ],
+  "checkpoint_dir": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm04__v2-a__seed42__cc35d71a5900/checkpoints/attempt-001",
+  "checkpoint_inventory": [
+    {
+      "artifact_sha256": "9cfc922bdbae6a777bb6694da98580ee835380eceda32f56c38c49793b4eaa28",
+      "coordinates_sha256": "8c57e4aa222bb8ad43ba1ca550adc9a4e085c10aa8e3530b16e2f7325502145a",
+      "effective_rng_seed": 42,
+      "initializer_attempt": 1,
+      "initializer_method": "sdf",
+      "lane_index": 0,
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm04__v2-a__seed42__cc35d71a5900/checkpoints/attempt-001/lane0.pkl",
+      "phase": "final",
+      "rng_seed": 42,
+      "size_bytes": 12018
+    },
+    {
+      "artifact_sha256": "75964d8c69db9d3c2cabbd15c7a7183a35b221fb67cf648d96a63f237e714d75",
+      "coordinates_sha256": "3b2ee5cffda41bde24a0f3411eb234f9f390207b32694c1ae45fad17a2f93fb9",
+      "effective_rng_seed": 42,
+      "initializer_attempt": 1,
+      "initializer_method": "sdf",
+      "lane_index": 0,
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm04__v2-a__seed42__cc35d71a5900/checkpoints/attempt-001/lane0_descent_legalized.pkl",
+      "phase": "descent_legalized",
+      "rng_seed": 42,
+      "size_bytes": 11909
+    },
+    {
+      "artifact_sha256": "b72d3bac58145db54d343eb93c320cbb352dbc3fb646144043fc8781ff5ce0d6",
+      "coordinates_sha256": "8c57e4aa222bb8ad43ba1ca550adc9a4e085c10aa8e3530b16e2f7325502145a",
+      "effective_rng_seed": 42,
+      "initializer_attempt": 1,
+      "initializer_method": "sdf",
+      "lane_index": 0,
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm04__v2-a__seed42__cc35d71a5900/checkpoints/attempt-001/lane0_final.pkl",
+      "phase": "final",
+      "rng_seed": 42,
+      "size_bytes": 11955
+    },
+    {
+      "artifact_sha256": "e54142e6833179479ba7e17437900a2f630c0a711e98e7dec5311576943445b4",
+      "coordinates_sha256": "94d012142e641b3feef80b2192093dd3547418be255c789779b3a2151007196b",
+      "effective_rng_seed": 42,
+      "initializer_attempt": 1,
+      "initializer_method": "sdf",
+      "lane_index": 0,
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm04__v2-a__seed42__cc35d71a5900/checkpoints/attempt-001/lane0_initializer.pkl",
+      "phase": "initializer",
+      "rng_seed": 42,
+      "size_bytes": 11862
+    }
+  ],
+  "completed_within_external_timeout": true,
+  "constructor_parameters": {
+    "budget_seconds": 720.0,
+    "cd_plateau_threshold": 0.001,
+    "cd_polish_s": 600.0,
+    "checkpoint_dir": "<per-run-checkpoint-dir>",
+    "device": "cpu",
+    "gamma_end_frac": 5e-05,
+    "gamma_start_frac": 0.005,
+    "init": "sdf",
+    "lane_a_seed": 42,
+    "lane_b_seed": 142,
+    "lane_c_seed": 242,
+    "lanes": "A",
+    "lr_frac": 0.005,
+    "num_steps": 500,
+    "num_threads": 3,
+    "overlap_lambda_end": 10.0,
+    "overlap_ramp_pct": 0.7
+  },
+  "degraded_lanes": [],
+  "environment": {
+    "cuda_available": false,
+    "cuda_version": null,
+    "device_detail": "arm",
+    "installed_distributions_sha256": "fd0de2876413a39e65d6f1760ee6ec37b835c306635d60efe1270004ce0f457b",
+    "installed_packages": {
+      "Jinja2": "3.1.6",
+      "MarkupSafe": "3.0.3",
+      "PyMetis": "2023.1.1",
+      "Pygments": "2.20.0",
+      "absl-py": "2.3.1",
+      "contourpy": "1.3.0",
+      "cycler": "0.12.1",
+      "exceptiongroup": "1.3.1",
+      "filelock": "3.19.1",
+      "fonttools": "4.60.2",
+      "fsspec": "2025.10.0",
+      "geomloss": "0.2.6",
+      "highspy": "1.13.1",
+      "importlib_resources": "6.5.2",
+      "iniconfig": "2.1.0",
+      "joblib": "1.5.3",
+      "kahypar": "1.3.6",
+      "kiwisolver": "1.4.7",
+      "macro-place": "0.1.0",
+      "matplotlib": "3.9.4",
+      "mpmath": "1.3.0",
+      "networkx": "3.2.1",
+      "numpy": "2.0.2",
+      "packaging": "26.0",
+      "pillow": "11.3.0",
+      "pluggy": "1.6.0",
+      "py-spy": "0.4.2",
+      "pyparsing": "3.3.2",
+      "pytest": "8.4.2",
+      "python-dateutil": "2.9.0.post0",
+      "pytorch-ranger": "0.1.1",
+      "scikit-learn": "1.6.1",
+      "scipy": "1.13.1",
+      "six": "1.17.0",
+      "sympy": "1.14.0",
+      "threadpoolctl": "3.6.0",
+      "tomli": "2.4.1",
+      "torch": "2.8.0",
+      "torch-optimizer": "0.3.0",
+      "tqdm": "4.67.3",
+      "typing_extensions": "4.15.0",
+      "zipp": "3.23.0"
+    },
+    "mps_available": true,
+    "python_executable": "/Users/brendan/Developer/macro-place-challenge-2026/.venv/bin/python",
+    "python_version": "3.9.6",
+    "requested_device": "cpu",
+    "requested_thread_limit": 3,
+    "thread_environment": {
+      "MKL_NUM_THREADS": "3",
+      "NUMEXPR_NUM_THREADS": "3",
+      "OMP_NUM_THREADS": "3",
+      "OPENBLAS_NUM_THREADS": "3",
+      "VECLIB_MAXIMUM_THREADS": "3"
+    },
+    "torch_num_threads": 3,
+    "torch_version": "2.8.0"
+  },
+  "environment_matches_manifest": true,
+  "error": null,
+  "final_placement_file_sha256": "1ccde7cc0960b5aa7ddbb3c7b87ab8e6302452a9aa63af064e0772c6101949fe",
+  "final_placement_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm04__v2-a__seed42__cc35d71a5900/final.pt",
+  "final_placement_tensor_sha256": "8c57e4aa222bb8ad43ba1ca550adc9a4e085c10aa8e3530b16e2f7325502145a",
+  "finished_at": "2026-10-01T21:39:54.568070+00:00",
+  "host": {
+    "cpu_model": "Apple M3 Max",
+    "hostname": "Brendans-MacBook-Pro.local",
+    "installed_distributions": {
+      "Jinja2": "3.1.6",
+      "MarkupSafe": "3.0.3",
+      "PyMetis": "2023.1.1",
+      "Pygments": "2.20.0",
+      "absl-py": "2.3.1",
+      "contourpy": "1.3.0",
+      "cycler": "0.12.1",
+      "exceptiongroup": "1.3.1",
+      "filelock": "3.19.1",
+      "fonttools": "4.60.2",
+      "fsspec": "2025.10.0",
+      "geomloss": "0.2.6",
+      "highspy": "1.13.1",
+      "importlib_resources": "6.5.2",
+      "iniconfig": "2.1.0",
+      "joblib": "1.5.3",
+      "kahypar": "1.3.6",
+      "kiwisolver": "1.4.7",
+      "macro-place": "0.1.0",
+      "matplotlib": "3.9.4",
+      "mpmath": "1.3.0",
+      "networkx": "3.2.1",
+      "numpy": "2.0.2",
+      "packaging": "26.0",
+      "pillow": "11.3.0",
+      "pluggy": "1.6.0",
+      "py-spy": "0.4.2",
+      "pyparsing": "3.3.2",
+      "pytest": "8.4.2",
+      "python-dateutil": "2.9.0.post0",
+      "pytorch-ranger": "0.1.1",
+      "scikit-learn": "1.6.1",
+      "scipy": "1.13.1",
+      "six": "1.17.0",
+      "sympy": "1.14.0",
+      "threadpoolctl": "3.6.0",
+      "tomli": "2.4.1",
+      "torch": "2.8.0",
+      "torch-optimizer": "0.3.0",
+      "tqdm": "4.67.3",
+      "typing_extensions": "4.15.0",
+      "zipp": "3.23.0"
+    },
+    "installed_distributions_sha256": "fd0de2876413a39e65d6f1760ee6ec37b835c306635d60efe1270004ce0f457b",
+    "logical_cpu_count": 14,
+    "machine": "arm64",
+    "os": "macOS-27.0.1-arm64-arm-64bit",
+    "processor": "arm",
+    "python_executable": "/Users/brendan/Developer/macro-place-challenge-2026/.venv/bin/python",
+    "python_implementation": "CPython",
+    "python_version": "3.9.6",
+    "release": "27.0.0",
+    "system": "Darwin",
+    "total_memory_bytes": 38654705664
+  },
+  "identity_sha256": "cc35d71a5900d05e112bb4abd227768d28e7d807467494a7a7f98b0c640b2d6a",
+  "incomplete_phases": [],
+  "initial_placement_sha256": "29a1814d6f3496a28ec7655db3ed7a4c81a808b1aa9159c0144e75524326b686",
+  "lane_worker_errors": {},
+  "legality": {
+    "full_legal": true,
+    "full_violations": [],
+    "hard_macro_overlap": {
+      "max_overlap_area": 0.0,
+      "num_macros_with_overlaps": 0,
+      "overlap_count": 0,
+      "overlap_ratio": 0.0,
+      "total_overlap_area": 0.0
+    },
+    "structural_legal_without_overlap": true,
+    "structural_violations_without_overlap": []
+  },
+  "nominal_seed": 42,
+  "phase_completion": {
+    "A": {
+      "checkpoint_phase": "final",
+      "phase_details": {
+        "cd": {
+          "accepted": true,
+          "attempted": true,
+          "completed": true,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "descent": {
+          "accepted": true,
+          "attempted": true,
+          "completed": true,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "final": {
+          "accepted": true,
+          "attempted": true,
+          "completed": true,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "initializer": {
+          "accepted": true,
+          "attempted": true,
+          "completed": true,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        }
+      },
+      "pipeline_completed": true,
+      "worker_status": "ok"
+    }
+  },
+  "phase_errors": {},
+  "phase_outcomes": {
+    "A": {
+      "cd": {
+        "accepted": true,
+        "attempted": true,
+        "completed": true,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "descent": {
+        "accepted": true,
+        "attempted": true,
+        "completed": true,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "final": {
+        "accepted": true,
+        "attempted": true,
+        "completed": true,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "initializer": {
+        "accepted": true,
+        "attempted": true,
+        "completed": true,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      }
+    }
+  },
+  "pipeline_completed": true,
+  "repository": {
+    "branch": "codex/publication-study",
+    "dirty": false,
+    "dirty_entries": [],
+    "excluded_generated_run_artifact_entries": 0,
+    "head_commit": "64b50a7174e5a6db5af5e387c3dd580a02309f5a",
+    "tilos_submodule_commit": "45a721d01dfe56fc4800b95da52e9b4193b76d04",
+    "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "request_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm04__v2-a__seed42__cc35d71a5900/request.json",
+  "resource_allocation": {
+    "concurrent_benchmark_jobs": 1,
+    "device": "cpu",
+    "external_timeout_seconds": 3600.0,
+    "threads_per_benchmark_run": 3
+  },
+  "run_id": "ibm04__v2-a__seed42__cc35d71a5900",
+  "runtime_artifact_parameters": {
+    "checkpoint_dir": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm04__v2-a__seed42__cc35d71a5900/checkpoints/attempt-001"
+  },
+  "schema_version": 1,
+  "seeds": {
+    "constructor_seeds": {
+      "hung_seed_base": 42,
+      "lane_a_seed": 42,
+      "lane_b_seed": 142,
+      "lane_c_seed": 242
+    },
+    "effective_initializer_seeds": {
+      "A": 42
+    },
+    "initializer_seed": 42,
+    "initializer_seed_note": "The current SDF initializer uses seed 42 independently of lane/rng seeds.",
+    "nominal_search_seeds": {
+      "hung_seed_base": 42,
+      "lane_a_seed": 42,
+      "lane_b_seed": 142,
+      "lane_c_seed": 242
+    },
+    "nominal_seed": 42,
+    "runtime_seed_metadata": null
+  },
+  "solver_metadata": {
+    "degraded_lanes": [],
+    "exitcodes": {
+      "A": 0
+    },
+    "lane_results": [
+      {
+        "bounds_clamp_max_shift": 0.0,
+        "device": "cpu",
+        "effective_rng_seed": 42,
+        "initializer_attempt": 1,
+        "initializer_method": "sdf",
+        "lane_idx": 0,
+        "num_threads": 3,
+        "phase": "final",
+        "phase_details": {
+          "cd": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        },
+        "pipeline_completed": true,
+        "proxy": 0.9191014766693115,
+        "rng_seed": 42,
+        "status": "ok",
+        "wall": 337.85679400000663,
+        "worker_status": "ok",
+        "worker_wall": 341.1924149999977
+      }
+    ],
+    "lanes": "A",
+    "phase_completion": {
+      "A": {
+        "checkpoint_phase": "final",
+        "phase_details": {
+          "cd": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        },
+        "pipeline_completed": true,
+        "worker_status": "ok"
+      }
+    },
+    "picked_lane": "A",
+    "pipeline_completed": true,
+    "proxy": 0.9191014766693115,
+    "solver_outcome": "pipeline_completed",
+    "timed_out_lanes": [],
+    "used_fallback": false,
+    "wall": 341.54270499999984
+  },
+  "solver_outcome": "pipeline_completed",
+  "source": {
+    "evaluator_source_sha256": "5811dd0348480c2710d71c7395090163518e89f66af9853efcec695b3c1e075b",
+    "source_file_count": 35,
+    "source_files": [
+      "macro_place/__init__.py",
+      "macro_place/_plc.py",
+      "macro_place/bench_paths.py",
+      "macro_place/benchmark.py",
+      "macro_place/cd_core.py",
+      "macro_place/def_writer.py",
+      "macro_place/evaluate.py",
+      "macro_place/incremental_evaluator.py",
+      "macro_place/loader.py",
+      "macro_place/objective.py",
+      "macro_place/sdf_init.py",
+      "macro_place/utils.py",
+      "scripts/publication_worker.py",
+      "scripts/run_publication_study.py",
+      "thinkorplace/__init__.py",
+      "thinkorplace/common/__init__.py",
+      "thinkorplace/common/bench_paths.py",
+      "thinkorplace/common/cd_core.py",
+      "thinkorplace/common/hessian.py",
+      "thinkorplace/common/incremental_evaluator.py",
+      "thinkorplace/common/runtime_safety.py",
+      "thinkorplace/common/sdf_init.py",
+      "thinkorplace/common/smooth_primitives.py",
+      "thinkorplace/v2/__init__.py",
+      "thinkorplace/v2/bounded_saddle.py",
+      "thinkorplace/v2/fast_proxy.py",
+      "thinkorplace/v2/gaussian_density.py",
+      "thinkorplace/v2/kjoint_hungarian.py",
+      "thinkorplace/v2/macro_legalizer.py",
+      "thinkorplace/v2/per_net_trace_proxy.py",
+      "thinkorplace/v2/placer.py",
+      "thinkorplace/v2/smooth_global_placer_v4.py",
+      "thinkorplace/v2/smooth_global_placer_v4_gaussian.py",
+      "thinkorplace/v2/v4_gaussian_proxy.py",
+      "thinkorplace/v2/worker.py"
+    ],
+    "variant_source_sha256": "c20765889d3875c4e8948b87bd3a26b536b06467795585b8dc261a4db852d478",
+    "worker_sha256": "2c9155af4078fd2f058205d2f1409775c32f57d9b5eb2d5ddaf74ea0e7e181ff"
+  },
+  "source_consistent": true,
+  "started_at": "2026-10-01T21:34:07.913900+00:00",
+  "status": "completed",
+  "stdout_log": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm04__v2-a__seed42__cc35d71a5900/stdout.log",
+  "study_eligible": true,
+  "supervisor": {
+    "memory_sample_count": 2727,
+    "peak_memory_scope": "observed_process_group_member_rss_sum",
+    "peak_rss_bytes": 725565440,
+    "process_group_note": "RSS is summed over processes observed in the worker process group; it is not asserted to cover descendants that changed process group.",
+    "return_code": 0,
+    "status": "exited",
+    "terminate_grace_seconds": 2.0,
+    "timed_out": false,
+    "timeout_seconds": 3600.0,
+    "wall_seconds": 346.9717760410001
+  },
+  "timing": {
+    "benchmark_and_placer_setup_seconds": 0.630353417,
+    "canonical_validation_and_export_seconds": 3.4237007909999875,
+    "external_timeout_seconds": 3600.0,
+    "input_verification_seconds": 0.007854833000000006,
+    "runtime_import_seconds": 0.987002083,
+    "solver_budget_seconds": 720.0,
+    "solver_place_seconds": 341.545701167,
+    "worker_through_environment_capture_seconds": 346.655243667
+  },
+  "usable_operating_result": true,
+  "used_fallback": false,
+  "valid": true,
+  "variant": "v2-a",
+  "worker_error": null
+}

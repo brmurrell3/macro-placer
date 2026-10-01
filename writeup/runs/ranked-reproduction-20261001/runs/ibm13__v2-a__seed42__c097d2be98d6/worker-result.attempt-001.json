@@ -1,0 +1,485 @@
+{
+  "benchmark": {
+    "bench_root": "/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04",
+    "benchmark_path": "/Users/brendan/Developer/macro-place-challenge-2026/benchmarks/processed/public/ibm13.pt",
+    "benchmark_sha256": "006407f9aaace0a485e6d39533edab79afdd9e38a4e19273aa8bb7ae93b2bd24",
+    "design_name": "ibm13",
+    "initial_plc_path": "/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm13/initial.plc",
+    "initial_plc_sha256": "71a912a8176d286ce43c0e65e93fc01ed349f9e79ced5cfa1d68a3b95a9491e7",
+    "netlist_path": "/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm13/netlist.pb.txt",
+    "netlist_sha256": "d0323244eaf4192aea823164a8d0e13176411bd6a861ca8ea660cf4fb2034d2f",
+    "requested_name": "ibm13",
+    "source_dir": "/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm13"
+  },
+  "canonical_cost": {
+    "congestion_cost": 1.0297126379136423,
+    "density_cost": 0.5203973650932312,
+    "proxy_cost": 0.8409759998321533,
+    "wirelength_cost": 0.06592100858688354
+  },
+  "checkpoint_dir": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm13__v2-a__seed42__c097d2be98d6/checkpoints/attempt-001",
+  "checkpoint_inventory": [
+    {
+      "artifact_sha256": "d7344005a35c38ba0c1f26a709ad0e3f4c4ebc1e86d80006971dc3988e6300fc",
+      "coordinates_sha256": "4f5494cd6f5986eccc8b26179047eb65f0d82fd6651a682ea6020b5168438886",
+      "effective_rng_seed": 42,
+      "initializer_attempt": 1,
+      "initializer_method": "sdf",
+      "lane_index": 0,
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm13__v2-a__seed42__c097d2be98d6/checkpoints/attempt-001/lane0.pkl",
+      "phase": "final",
+      "rng_seed": 42,
+      "size_bytes": 14777
+    },
+    {
+      "artifact_sha256": "32876debfea525198c79ab455e0609e7bdb2b88895df1e0a9eccdcd265a7a9e5",
+      "coordinates_sha256": "166002e28c38e370d6788c087c19b38e25d84e9ba4d4e5311755bb3e996c723a",
+      "effective_rng_seed": 42,
+      "initializer_attempt": 1,
+      "initializer_method": "sdf",
+      "lane_index": 0,
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm13__v2-a__seed42__c097d2be98d6/checkpoints/attempt-001/lane0_descent_legalized.pkl",
+      "phase": "descent_legalized",
+      "rng_seed": 42,
+      "size_bytes": 14668
+    },
+    {
+      "artifact_sha256": "23e0a89dd7e6e53c4e9ce40664f8def661718ae0ab27c1c4cb0097f3740351fc",
+      "coordinates_sha256": "4f5494cd6f5986eccc8b26179047eb65f0d82fd6651a682ea6020b5168438886",
+      "effective_rng_seed": 42,
+      "initializer_attempt": 1,
+      "initializer_method": "sdf",
+      "lane_index": 0,
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm13__v2-a__seed42__c097d2be98d6/checkpoints/attempt-001/lane0_final.pkl",
+      "phase": "final",
+      "rng_seed": 42,
+      "size_bytes": 14714
+    },
+    {
+      "artifact_sha256": "8853481f457bc1a4ffc32e30cdecd8d44905a009c8f6a947c5747e071a22cc09",
+      "coordinates_sha256": "f57ba41dcc9b128a8a5aa09200ece411088aa61a8513ccecbd530a90239a9c46",
+      "effective_rng_seed": 42,
+      "initializer_attempt": 1,
+      "initializer_method": "sdf",
+      "lane_index": 0,
+      "path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm13__v2-a__seed42__c097d2be98d6/checkpoints/attempt-001/lane0_initializer.pkl",
+      "phase": "initializer",
+      "rng_seed": 42,
+      "size_bytes": 14621
+    }
+  ],
+  "constructor_parameters": {
+    "budget_seconds": 720.0,
+    "cd_plateau_threshold": 0.001,
+    "cd_polish_s": 600.0,
+    "checkpoint_dir": "<per-run-checkpoint-dir>",
+    "device": "cpu",
+    "gamma_end_frac": 5e-05,
+    "gamma_start_frac": 0.005,
+    "init": "sdf",
+    "lane_a_seed": 42,
+    "lane_b_seed": 142,
+    "lane_c_seed": 242,
+    "lanes": "A",
+    "lr_frac": 0.005,
+    "num_steps": 500,
+    "num_threads": 3,
+    "overlap_lambda_end": 10.0,
+    "overlap_ramp_pct": 0.7
+  },
+  "degraded_lanes": [],
+  "environment": {
+    "cuda_available": false,
+    "cuda_version": null,
+    "device_detail": "arm",
+    "installed_distributions_sha256": "fd0de2876413a39e65d6f1760ee6ec37b835c306635d60efe1270004ce0f457b",
+    "installed_packages": {
+      "Jinja2": "3.1.6",
+      "MarkupSafe": "3.0.3",
+      "PyMetis": "2023.1.1",
+      "Pygments": "2.20.0",
+      "absl-py": "2.3.1",
+      "contourpy": "1.3.0",
+      "cycler": "0.12.1",
+      "exceptiongroup": "1.3.1",
+      "filelock": "3.19.1",
+      "fonttools": "4.60.2",
+      "fsspec": "2025.10.0",
+      "geomloss": "0.2.6",
+      "highspy": "1.13.1",
+      "importlib_resources": "6.5.2",
+      "iniconfig": "2.1.0",
+      "joblib": "1.5.3",
+      "kahypar": "1.3.6",
+      "kiwisolver": "1.4.7",
+      "macro-place": "0.1.0",
+      "matplotlib": "3.9.4",
+      "mpmath": "1.3.0",
+      "networkx": "3.2.1",
+      "numpy": "2.0.2",
+      "packaging": "26.0",
+      "pillow": "11.3.0",
+      "pluggy": "1.6.0",
+      "py-spy": "0.4.2",
+      "pyparsing": "3.3.2",
+      "pytest": "8.4.2",
+      "python-dateutil": "2.9.0.post0",
+      "pytorch-ranger": "0.1.1",
+      "scikit-learn": "1.6.1",
+      "scipy": "1.13.1",
+      "six": "1.17.0",
+      "sympy": "1.14.0",
+      "threadpoolctl": "3.6.0",
+      "tomli": "2.4.1",
+      "torch": "2.8.0",
+      "torch-optimizer": "0.3.0",
+      "tqdm": "4.67.3",
+      "typing_extensions": "4.15.0",
+      "zipp": "3.23.0"
+    },
+    "mps_available": true,
+    "python_executable": "/Users/brendan/Developer/macro-place-challenge-2026/.venv/bin/python",
+    "python_version": "3.9.6",
+    "requested_device": "cpu",
+    "requested_thread_limit": 3,
+    "thread_environment": {
+      "MKL_NUM_THREADS": "3",
+      "NUMEXPR_NUM_THREADS": "3",
+      "OMP_NUM_THREADS": "3",
+      "OPENBLAS_NUM_THREADS": "3",
+      "VECLIB_MAXIMUM_THREADS": "3"
+    },
+    "torch_num_threads": 3,
+    "torch_version": "2.8.0"
+  },
+  "environment_matches_manifest": true,
+  "final_placement_file_sha256": "8b964b077ccecad82057def1d65a5fa4cca86e9779a4071204ba31321968d307",
+  "final_placement_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm13__v2-a__seed42__c097d2be98d6/final.pt",
+  "final_placement_tensor_sha256": "4f5494cd6f5986eccc8b26179047eb65f0d82fd6651a682ea6020b5168438886",
+  "finished_at": "2026-10-01T22:42:19.405262+00:00",
+  "identity_sha256": "c097d2be98d6cbf5cf0a7bc3cfc155cf877c07609b0929417a711140deabf97c",
+  "incomplete_phases": [],
+  "initial_placement_sha256": "02e81a835682862b6e172e918f26e65399492cbf6430e30fe0456e70b09943f3",
+  "lane_worker_errors": {},
+  "legality": {
+    "full_legal": true,
+    "full_violations": [],
+    "hard_macro_overlap": {
+      "max_overlap_area": 0.0,
+      "num_macros_with_overlaps": 0,
+      "overlap_count": 0,
+      "overlap_ratio": 0.0,
+      "total_overlap_area": 0.0
+    },
+    "structural_legal_without_overlap": true,
+    "structural_violations_without_overlap": []
+  },
+  "nominal_seed": 42,
+  "phase_completion": {
+    "A": {
+      "checkpoint_phase": "final",
+      "phase_details": {
+        "cd": {
+          "accepted": true,
+          "attempted": true,
+          "completed": true,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "descent": {
+          "accepted": true,
+          "attempted": true,
+          "completed": true,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "final": {
+          "accepted": true,
+          "attempted": true,
+          "completed": true,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        },
+        "initializer": {
+          "accepted": true,
+          "attempted": true,
+          "completed": true,
+          "error": null,
+          "failed": false,
+          "reason": null,
+          "skipped": false
+        }
+      },
+      "pipeline_completed": true,
+      "worker_status": "ok"
+    }
+  },
+  "phase_errors": {},
+  "phase_outcomes": {
+    "A": {
+      "cd": {
+        "accepted": true,
+        "attempted": true,
+        "completed": true,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "descent": {
+        "accepted": true,
+        "attempted": true,
+        "completed": true,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "final": {
+        "accepted": true,
+        "attempted": true,
+        "completed": true,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      },
+      "initializer": {
+        "accepted": true,
+        "attempted": true,
+        "completed": true,
+        "error": null,
+        "failed": false,
+        "reason": null,
+        "skipped": false
+      }
+    }
+  },
+  "pipeline_completed": true,
+  "repository": {
+    "branch": "codex/publication-study",
+    "dirty": false,
+    "dirty_entries": [],
+    "excluded_generated_run_artifact_entries": 0,
+    "head_commit": "64b50a7174e5a6db5af5e387c3dd580a02309f5a",
+    "tilos_submodule_commit": "45a721d01dfe56fc4800b95da52e9b4193b76d04",
+    "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "resource_allocation": {
+    "concurrent_benchmark_jobs": 1,
+    "device": "cpu",
+    "external_timeout_seconds": 3600.0,
+    "threads_per_benchmark_run": 3
+  },
+  "run_id": "ibm13__v2-a__seed42__c097d2be98d6",
+  "runtime_artifact_parameters": {
+    "checkpoint_dir": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001/runs/ibm13__v2-a__seed42__c097d2be98d6/checkpoints/attempt-001"
+  },
+  "schema_version": 1,
+  "seeds": {
+    "constructor_seeds": {
+      "hung_seed_base": 42,
+      "lane_a_seed": 42,
+      "lane_b_seed": 142,
+      "lane_c_seed": 242
+    },
+    "effective_initializer_seeds": {
+      "A": 42
+    },
+    "initializer_seed": 42,
+    "initializer_seed_note": "The current SDF initializer uses seed 42 independently of lane/rng seeds.",
+    "nominal_search_seeds": {
+      "hung_seed_base": 42,
+      "lane_a_seed": 42,
+      "lane_b_seed": 142,
+      "lane_c_seed": 242
+    },
+    "nominal_seed": 42,
+    "runtime_seed_metadata": null
+  },
+  "solver_metadata": {
+    "degraded_lanes": [],
+    "exitcodes": {
+      "A": 0
+    },
+    "lane_results": [
+      {
+        "bounds_clamp_max_shift": 3.814697265625e-06,
+        "device": "cpu",
+        "effective_rng_seed": 42,
+        "initializer_attempt": 1,
+        "initializer_method": "sdf",
+        "lane_idx": 0,
+        "num_threads": 3,
+        "phase": "final",
+        "phase_details": {
+          "cd": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        },
+        "pipeline_completed": true,
+        "proxy": 0.8409759998321533,
+        "rng_seed": 42,
+        "status": "ok",
+        "wall": 377.0697450000007,
+        "worker_status": "ok",
+        "worker_wall": 386.81756999999925
+      }
+    ],
+    "lanes": "A",
+    "phase_completion": {
+      "A": {
+        "checkpoint_phase": "final",
+        "phase_details": {
+          "cd": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "descent": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "final": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          },
+          "initializer": {
+            "accepted": true,
+            "attempted": true,
+            "completed": true,
+            "error": null,
+            "failed": false,
+            "reason": null,
+            "skipped": false
+          }
+        },
+        "pipeline_completed": true,
+        "worker_status": "ok"
+      }
+    },
+    "picked_lane": "A",
+    "pipeline_completed": true,
+    "proxy": 0.8409759998321533,
+    "solver_outcome": "pipeline_completed",
+    "timed_out_lanes": [],
+    "used_fallback": false,
+    "wall": 387.06773599999724
+  },
+  "solver_outcome": "pipeline_completed",
+  "source": {
+    "evaluator_source_sha256": "5811dd0348480c2710d71c7395090163518e89f66af9853efcec695b3c1e075b",
+    "source_file_count": 35,
+    "source_files": [
+      "macro_place/__init__.py",
+      "macro_place/_plc.py",
+      "macro_place/bench_paths.py",
+      "macro_place/benchmark.py",
+      "macro_place/cd_core.py",
+      "macro_place/def_writer.py",
+      "macro_place/evaluate.py",
+      "macro_place/incremental_evaluator.py",
+      "macro_place/loader.py",
+      "macro_place/objective.py",
+      "macro_place/sdf_init.py",
+      "macro_place/utils.py",
+      "scripts/publication_worker.py",
+      "scripts/run_publication_study.py",
+      "thinkorplace/__init__.py",
+      "thinkorplace/common/__init__.py",
+      "thinkorplace/common/bench_paths.py",
+      "thinkorplace/common/cd_core.py",
+      "thinkorplace/common/hessian.py",
+      "thinkorplace/common/incremental_evaluator.py",
+      "thinkorplace/common/runtime_safety.py",
+      "thinkorplace/common/sdf_init.py",
+      "thinkorplace/common/smooth_primitives.py",
+      "thinkorplace/v2/__init__.py",
+      "thinkorplace/v2/bounded_saddle.py",
+      "thinkorplace/v2/fast_proxy.py",
+      "thinkorplace/v2/gaussian_density.py",
+      "thinkorplace/v2/kjoint_hungarian.py",
+      "thinkorplace/v2/macro_legalizer.py",
+      "thinkorplace/v2/per_net_trace_proxy.py",
+      "thinkorplace/v2/placer.py",
+      "thinkorplace/v2/smooth_global_placer_v4.py",
+      "thinkorplace/v2/smooth_global_placer_v4_gaussian.py",
+      "thinkorplace/v2/v4_gaussian_proxy.py",
+      "thinkorplace/v2/worker.py"
+    ],
+    "variant_source_sha256": "c20765889d3875c4e8948b87bd3a26b536b06467795585b8dc261a4db852d478",
+    "worker_sha256": "2c9155af4078fd2f058205d2f1409775c32f57d9b5eb2d5ddaf74ea0e7e181ff"
+  },
+  "source_consistent": true,
+  "started_at": "2026-10-01T22:35:40.191521+00:00",
+  "status": "completed",
+  "study_eligible": true,
+  "timing": {
+    "benchmark_and_placer_setup_seconds": 1.022272542,
+    "canonical_validation_and_export_seconds": 10.384583708999969,
+    "external_timeout_seconds": 3600.0,
+    "input_verification_seconds": 0.008125,
+    "runtime_import_seconds": 0.684675625,
+    "solver_budget_seconds": 720.0,
+    "solver_place_seconds": 387.06756025000004,
+    "worker_through_environment_capture_seconds": 399.2120545
+  },
+  "usable_operating_result": true,
+  "used_fallback": false,
+  "valid": true,
+  "variant": "v2-a",
+  "worker_error": null
+}
