@@ -86,12 +86,26 @@ def phases_completed(details):
                for d in details.values())
 
 
+CHECKPOINT_BOUNDS_SHIFT_MAX = 1e-4
+
+
 def checkpoint(path, pos, benchmark, plc, phase, t0, **metadata):
-    """Save only a fully usable float32 candidate. Invalid candidates never replace it."""
+    """Save only a fully usable float32 candidate. Invalid candidates never replace it.
+
+    Coordinate descent can leave an upper edge a few float32 steps past the
+    canvas. Apply the same inward projection as finalize_placement when it moves
+    no coordinate by more than CHECKPOINT_BOUNDS_SHIFT_MAX; larger violations are
+    validated unchanged and still fail.
+    """
     import numpy as np
     import torch
     from macro_place.objective import compute_proxy_cost
     pos = pos.detach().cpu().to(torch.float32)
+    clamped = clamp_to_canvas(pos, benchmark)
+    bounds_shift = float((clamped - pos).abs().max()) if pos.numel() else 0.0
+    if bounds_shift <= CHECKPOINT_BOUNDS_SHIFT_MAX:
+        pos = clamped
+        metadata["bounds_clamp_max_shift"] = bounds_shift
     valid, violations = valid_placement(pos, benchmark)
     if not valid:
         raise ValueError(f"Invalid {phase} placement: {violations}")

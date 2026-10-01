@@ -69,6 +69,23 @@ def test_float32_upper_endpoint_steps_inward_without_tolerance():
     assert result[0, 0] == torch.nextafter(upper, torch.tensor(-float("inf")))
 
 
+def test_checkpoint_steps_rounding_overshoot_inward_but_rejects_real_violation(monkeypatch):
+    import macro_place.objective as objective
+    from thinkorplace.common.runtime_safety import checkpoint
+    monkeypatch.setattr(objective, "compute_proxy_cost", lambda pos, bench, plc: {"proxy_cost": 1.0})
+    bench = benchmark()
+    upper = torch.tensor(bench.canvas_width) - bench.macro_sizes[1, 0] / 2
+    candidate = torch.tensor([[2., 2.], [7., 7.], [1., 5.], [5., 9.]])
+    candidate[1, 0] = torch.nextafter(upper, torch.tensor(float("inf")))
+    assert not validate_placement(candidate, bench)[0]
+    record = checkpoint(None, candidate, bench, None, "cd", monotonic_seconds())
+    assert validate_placement(torch.from_numpy(record["pos_np"]), bench) == (True, [])
+    assert 0 < record["bounds_clamp_max_shift"] <= 1e-6
+    candidate[1, 0] = upper + 0.5
+    with pytest.raises(ValueError, match="Invalid cd placement"):
+        checkpoint(None, candidate, bench, None, "cd", monotonic_seconds())
+
+
 @pytest.mark.parametrize("overlap", [False, True])
 def test_infeasible_fixed_reference_is_rejected(overlap):
     bench = benchmark()
