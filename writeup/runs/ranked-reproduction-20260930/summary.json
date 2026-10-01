@@ -1,0 +1,85 @@
+{
+  "completed_run_count": 4,
+  "degraded_run_count": 1,
+  "finished_run_count": 4,
+  "manifest_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20260930/manifest.json",
+  "pipeline_completed_run_count": 3,
+  "planned_run_count": 17,
+  "runs": [
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "incomplete_phases": [],
+      "phase_errors": {},
+      "pipeline_completed": true,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20260930/runs/ibm01__v2-a__seed42__f9f19a8d65eb/result.json",
+      "run_id": "ibm01__v2-a__seed42__f9f19a8d65eb",
+      "solver_outcome": "pipeline_completed",
+      "status": "completed",
+      "study_eligible": true,
+      "usable_operating_result": true,
+      "used_fallback": false,
+      "valid": true,
+      "worker_error": null
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "incomplete_phases": [],
+      "phase_errors": {},
+      "pipeline_completed": true,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20260930/runs/ibm02__v2-a__seed42__97e846b4de67/result.json",
+      "run_id": "ibm02__v2-a__seed42__97e846b4de67",
+      "solver_outcome": "pipeline_completed",
+      "status": "completed",
+      "study_eligible": true,
+      "usable_operating_result": true,
+      "used_fallback": false,
+      "valid": true,
+      "worker_error": null
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [
+        "A"
+      ],
+      "incomplete_phases": [
+        "A.final"
+      ],
+      "phase_errors": {
+        "A.final": "ValueError: Invalid final placement: ['Macros outside horizontal canvas bounds']"
+      },
+      "pipeline_completed": false,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20260930/runs/ibm03__v2-a__seed42__f20ae3b23d62/result.json",
+      "run_id": "ibm03__v2-a__seed42__f20ae3b23d62",
+      "solver_outcome": "checkpoint_recovery",
+      "status": "completed",
+      "study_eligible": true,
+      "usable_operating_result": true,
+      "used_fallback": true,
+      "valid": true,
+      "worker_error": null
+    },
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "incomplete_phases": [],
+      "phase_errors": {},
+      "pipeline_completed": true,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20260930/runs/ibm04__v2-a__seed42__ccfeabbd3653/result.json",
+      "run_id": "ibm04__v2-a__seed42__ccfeabbd3653",
+      "solver_outcome": "pipeline_completed",
+      "status": "completed",
+      "study_eligible": true,
+      "usable_operating_result": true,
+      "used_fallback": false,
+      "valid": true,
+      "worker_error": null
+    }
+  ],
+  "schema_version": 1,
+  "study_eligible_run_count": 4,
+  "updated_at": "2026-10-01T00:58:22.433689+00:00",
+  "usable_operating_result_count": 4,
+  "valid_run_count": 4
+}
