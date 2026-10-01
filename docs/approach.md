@@ -1,3 +1,5 @@
+> **Historical record (May 2026).** Development-era scores and champion labels below are superseded; see [technical report v1.0](../writeup/thinkorplace-report.pdf) for current results.
+
 # Approach
 
 The current submission optimizes the canonical proxy directly via
@@ -203,6 +205,6 @@ Full per-experiment archive at [`experiment_index.md`](experiment_index.md).
 - [`experiment_index.md`](experiment_index.md) — every experiment, live + falsified
 - [`decisions/`](decisions/) — Architecture Decision Records
 - [`gotchas.md`](gotchas.md) — codebase footguns
-- `writeup/evidence.md` §1, §1.1 — frozen-number archive
-- `writeup/paper.md` — innovation prize draft
-- `writeup/theory.md` — supplementary mathematical material
+- `writeup/archive/2026-05-drafts/evidence.md` §1, §1.1 — frozen-number archive
+- `writeup/archive/2026-05-drafts/paper.md` — innovation prize draft
+- `writeup/archive/2026-05-drafts/theory.md` — supplementary mathematical material

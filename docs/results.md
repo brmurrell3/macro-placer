@@ -1,3 +1,5 @@
+> **Historical record (May 2026).** Development-era scores and champion labels below are superseded; see [technical report v1.0](../writeup/thinkorplace-report.pdf) for current results.
+
 # Results
 
 This doc is split into two eras. **§Post-2026-05-06 status (verified, 2026-05-16)** is
@@ -18,7 +20,7 @@ Three Tier-1 entry candidates verified; submission-day pick is Option C
 | Placer | IBM `--all` | NG45 `--ng45` | Composite (21) | Verified | Wall (max) | Notes |
 |---|---:|---:|---:|---|---:|---|
 | `cd_lns_sa_cascade_stacked_periphery/placer.py` (**Option C, NEW CHAMPION**) | **1.05750** | **0.68930** | **0.987** | 2026-05-17 M3 | 56 min | Cascade saddle (canonical) → portfolio saddle (3 non-canonical Hessian weights). Periphery wrapper as safety. No external deps. |
-| `cd_lns_sa_cascade_dp_lane/placer.py` (Option B) | 1.06650 | 0.68086 | 0.993 | 2026-05-14 lambda 129.213.89.145 | <60 min | E25 + E41 + DP-polished, plateau picks best. Requires `DREAMPLACE_ROOT`; falls back to Option A otherwise. |
+| `cd_lns_sa_cascade_dp_lane/placer.py` (Option B) | 1.06650 | 0.68086 | 0.993 | 2026-05-14 lambda <redacted-host> | <60 min | E25 + E41 + DP-polished, plateau picks best. Requires `DREAMPLACE_ROOT`; falls back to Option A otherwise. |
 | `cd_lns_sa_cascade/placer_adaptive.py` (Option A) | 1.07820 | 0.68102 | 1.003 | 2026-05-16 aws-cpu | 57 min | PATH A post-A1. No external deps. Safest fallback. |
 
 E84 uncapped cascade saddle (3300+s budget removed) was the validation
@@ -151,7 +153,7 @@ Beats public leaderboard 1.1172 by **−2.80 %**.  Total --all wall (under
 ### Why not promote E83 to champion
 
 1. **Proxy is +0.41 % over the prior champion E48 hybrid** (1.08151).  Per
-   CLAUDE.md promotion gates, this is at-or-below E48 region but does not
+   CLAUDE.md promotion gates (now in `docs/competition/CLAUDE.competition-era.md`), this is at-or-below E48 region but does not
    improve.  E74 (1.0666) already supersedes E48 on proxy; E83 doesn't
    match E74.
 2. **Wall margin is too thin for EPYC.**  5/17 benches finished within
@@ -452,7 +454,7 @@ per-bench tuning. Closes the Tier-2 robustness check follow-up.
 
 Source JSON: `results/CDLNSGridBinPlacer_20260428_223405.json`. Full
 analysis: `experiments/E23_ng45_sanity/manifest.md` and
-`writeup/evidence.md` §9.A.
+`writeup/archive/2026-05-drafts/evidence.md` §9.A.
 
 ---
 

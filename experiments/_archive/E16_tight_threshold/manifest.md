@@ -58,7 +58,7 @@ conservative-defaults champion.
 ## Pointers
 - Code: `code/cd_adaptive_e16.py`.
 - Results: `results/CDAdaptiveE16Placer_20260428_050235.json`.
-- Discussion: `writeup/evidence.md` §7.6; `findings.md` "Verified score
+- Discussion: `writeup/archive/2026-05-drafts/evidence.md` §7.6; `findings.md` "Verified score
   lineage" row 2; `experiments_overnight.md` E16 block; ADR-004 (in
   progress, sibling agent).
 - Parent: `experiments/E9_plateau_detection/manifest.md`.

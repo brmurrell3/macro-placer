@@ -95,7 +95,7 @@ hard to bolt on), or (b) defer macro placement to ORFS.
 
 ## Files
 
-- AWS box: `tier2-cloud` (44.197.196.100), instance `i-0d5aafdd432119723`
+- AWS box: `tier2-cloud` (<redacted-host>), instance `<redacted-instance-id>`
 - All v4 reports: `/home/ubuntu/v4_reports/{multidir,hybrid,dual_levy,dp_multi,dp_lane}/ariane133/base/6_finish.rpt`
 - Snapshotted macro logs: `/home/ubuntu/v4_reports/*/2_2_macro.log`
 - Patched TCL generator: `/home/ubuntu/mpc-work/repo/scripts/generate_macro_placement_tcl.py`
@@ -108,5 +108,5 @@ AWS c6i.8xlarge from 2026-05-15T16:16 UTC to 2026-05-16T10:30 UTC â‰ˆ 18.25 hr Ã
 ## Terminate AWS when done
 
 ```bash
-aws ec2 terminate-instances --instance-ids i-0d5aafdd432119723 --region us-east-1
+aws ec2 terminate-instances --instance-ids <redacted-instance-id> --region us-east-1
 ```

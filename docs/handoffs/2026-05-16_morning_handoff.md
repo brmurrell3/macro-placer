@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-- **AWS CPU box up**: `aws-cpu` (13.220.11.97, c6a.4xlarge spot, $0.29/hr). Running 17-IBM `placer_adaptive` chain since 05:31 UTC, 4-bench parallel. Expected done ~10:00 UTC = 06:00 EDT.
+- **AWS CPU box up**: `aws-cpu` (<redacted-host>, c6a.4xlarge spot, $0.29/hr). Running 17-IBM `placer_adaptive` chain since 05:31 UTC, 4-bench parallel. Expected done ~10:00 UTC = 06:00 EDT.
 - **AWS GPU box**: blocked on quota approval (filed 01:07 EDT, status PENDING). Polling daemon (`/tmp/aws_quota_poll.log`) will auto-launch g5.xlarge + bootstrap when approved.
 - **Cached aggregate = 1.05156**: per-bench best across all 121 cached .pt files. Theoretical ceiling — needs rule-compliant ensemble to be usable.
 - **Xplace integration ready**: bookshelf converters done for all 21 benches; runner + setup scripts in `experiments/Xplace_integration/code/`. Fires when GPU box bootstraps.

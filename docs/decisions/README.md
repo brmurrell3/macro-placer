@@ -21,6 +21,10 @@ Each ADR is a short markdown file with five sections:
 
 ADRs use the template at the top of `001_optimize_full_proxy.md`.
 
+The ADR bodies cite the May 2026 drafts at their original paths
+(`writeup/evidence.md`, `writeup/contributions.md`). Those drafts now live in
+`writeup/archive/2026-05-drafts/`; the ADRs themselves are unchanged.
+
 ## Immutability
 
 ADRs are immutable once accepted. If a decision is later reversed or

@@ -2,7 +2,7 @@
 # Pull cloud results and aggregate hybrid --all proxy vs cascade reference.
 set -eo pipefail
 
-CLOUD="ubuntu@129.213.18.245"
+CLOUD="ubuntu@<redacted-host>"
 
 echo "=== Pulling latest experiment_log.jsonl from cloud ==="
 rsync -az "${CLOUD}:~/macro-place-challenge-2026/results/experiment_log.jsonl" \

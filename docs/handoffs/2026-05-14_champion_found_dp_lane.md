@@ -61,7 +61,7 @@ User feedback: shipped 1.078 is #3 on leaderboard, gap to #1 (~1.01) too big for
 
 ## Data source
 
-All numbers verified on lambda cloud `129.213.89.145`, aggregated across PATH B #1 Claude's overnight runs (May 13 morning EDT). 17/17 IBM + 4/4 NG45 designs all completed with zero overlaps.
+All numbers verified on lambda cloud `<redacted-host>`, aggregated across PATH B #1 Claude's overnight runs (May 13 morning EDT). 17/17 IBM + 4/4 NG45 designs all completed with zero overlaps.
 
 Per-bench JSON results at `~/macro-place-challenge-2026/results/CDLNSSACascadeDPLanePlacer_*.json` (54 files; deduplicated by minimum-proxy-per-bench).
 

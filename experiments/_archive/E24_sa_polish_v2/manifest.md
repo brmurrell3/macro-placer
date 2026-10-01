@@ -139,5 +139,5 @@ log: `experiments/E24_sa_polish_v2/run.log`. Logged with hypothesis tag
   mirrors), `macro_place/cd_core.py` (`legal_axis_range`,
   `axis_breakpoints`, `_grid_lines`, `run_cd_adaptive`).
 - Parent: ADR-003 ("CD plateau-bound, not budget-bound") via E14.
-- Lesson source: `writeup/evidence.md` §9.B (E14 falsification) and
+- Lesson source: `writeup/archive/2026-05-drafts/evidence.md` §9.B (E14 falsification) and
   `~/.claude/projects/.../memory/feedback_sa_implementation.md`.

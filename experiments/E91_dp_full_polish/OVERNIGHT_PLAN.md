@@ -1,6 +1,6 @@
 # Overnight Queue Plan (launched 2026-05-13 01:20 UTC)
 
-Cloud: lambda.ai 129.213.18.245. Master log: `/tmp/overnight_master.log`.
+Cloud: lambda.ai <redacted-host>. Master log: `/tmp/overnight_master.log`.
 Phase logs: `/tmp/overnight/<phase>_<bench>.log`.
 
 ## Sequence

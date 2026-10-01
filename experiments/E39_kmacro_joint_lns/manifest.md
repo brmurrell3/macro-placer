@@ -83,5 +83,5 @@ Wall budget: ~10–12 hr `--all` (E25 base ≈ 10.3 hr + ~2 hr K-macro phase).
   `run_sa_polish_v2`, `_is_legal_2d` from E25.
 - Related: E29 (MIQP joint, requires Gurobi); E15 (pair-swap, K=2);
   E32 (spatial cluster, K-region but greedy).
-- Discussion: `docs/experiment_index.md`; `writeup/evidence.md` if
+- Discussion: `docs/experiment_index.md`; `writeup/archive/2026-05-drafts/evidence.md` if
   graduated.

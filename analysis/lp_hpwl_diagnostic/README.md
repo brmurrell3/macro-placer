@@ -29,7 +29,7 @@ mathematically capped at ~5% improvement.
 
 ## Headline finding — Miftari correlation analysis
 
-From `writeup/evidence.md` §4.2. Across **24 feasible topologies on
+From `writeup/archive/2026-05-drafts/evidence.md` §4.2. Across **24 feasible topologies on
 ibm01** (Hamming distance 0–2249 from the base topology):
 
 | Pair | ρ |
@@ -66,7 +66,7 @@ top-level handoff notes).
 
 The Miftari ρ = −0.001 result was produced by an ad-hoc topology sweep
 not preserved as a single script — its conclusion is captured in
-`writeup/evidence.md` §4.2.
+`writeup/archive/2026-05-drafts/evidence.md` §4.2.
 
 ## Implication
 
@@ -78,7 +78,7 @@ ranks placements by an LP relaxation of any single component.
 ## Caveat
 
 The ρ = −0.001 measurement was on ibm01 only. Generalizing to
-ibm04/09/13 is on the writeup TODO list (see `writeup/paper.md`).
+ibm04/09/13 is on the writeup TODO list (see `writeup/archive/2026-05-drafts/paper.md`).
 
 ## Re-run policy
 

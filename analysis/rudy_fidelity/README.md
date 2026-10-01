@@ -22,11 +22,11 @@ uv run python analysis/rudy_fidelity/rudy_analysis.py
 ```
 
 No flags. Subject is hard-coded to ibm01 (the worst RUDY mismatch
-benchmark; see `writeup/evidence.md` §5).
+benchmark; see `writeup/archive/2026-05-drafts/evidence.md` §5).
 
 ## Headline finding
 
-From `writeup/evidence.md` §5.1:
+From `writeup/archive/2026-05-drafts/evidence.md` §5.1:
 
 - **Real/RUDY ABU-5% ratio = 3.1×** on ibm01 — *not* the ~2× implied by
   aggregate proxy metrics. Real exceeds RUDY on 1843/1845 cells.
@@ -43,7 +43,7 @@ From `writeup/evidence.md` §5.1:
 
 DPO's congestion gradient points at the wrong cells. A weight scaling
 cannot fix this — see the killed congestion-weight sweep in
-`writeup/evidence.md` §5.2: scaling 0.5 → 1.5 produced monotonic
+`writeup/archive/2026-05-drafts/evidence.md` §5.2: scaling 0.5 → 1.5 produced monotonic
 worsening (1.2081 → 1.2382). Amplifying a noisy signal makes things
 worse. This is the diagnostic that motivated the second pivot
 ("bypass don't fix" — abandon RUDY-based gradient methods, build the

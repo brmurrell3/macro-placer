@@ -54,5 +54,5 @@ benchmarks worse, not better.*
   `submissions/dpo/congestion_refine_placer.py`,
   `submissions/dpo/_e10_sweep_mild.py`,
   `submissions/dpo/_e10_sweep_aggressive.py`.
-- Discussion: `writeup/evidence.md` §9.2; `docs/experiment_index.md`
+- Discussion: `writeup/archive/2026-05-drafts/evidence.md` §9.2; `docs/experiment_index.md`
   (E10 row).

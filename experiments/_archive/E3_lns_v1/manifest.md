@@ -51,7 +51,7 @@ randomized destroy strategy — see E12.*
   `submissions/cd/lns.py`, `submissions/cd/cd_lns_placer.py`; preserved at
   `writeup/archive/submissions/lns.py`,
   `writeup/archive/submissions/cd_lns_placer.py`.
-- Discussion: `writeup/evidence.md` §9.4; `docs/experiment_index.md` (E3 v1 row).
+- Discussion: `writeup/archive/2026-05-drafts/evidence.md` §9.4; `docs/experiment_index.md` (E3 v1 row).
 - Successor: `experiments/E12_grid_bin_lns/manifest.md` — different move
   type (grid-bin centers, not full-grid cells), different destroy strategy.
 - Sibling: `experiments/E3_lns_v2/manifest.md` (5×5 local-window variant).

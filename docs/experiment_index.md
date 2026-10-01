@@ -1,3 +1,5 @@
+> **Historical record (May 2026).** Development-era scores and champion labels below are superseded; see [technical report v1.0](../writeup/thinkorplace-report.pdf) for current results.
+
 # Experiment Index
 
 Catalog of every experiment run during the Partcl/HRT Macro Placement
@@ -11,7 +13,7 @@ Last updated: 2026-05-16
 ## Post-E84 wave (2026-05-11 → 2026-05-16)
 
 Body tables below cover E1-E84. The post-E84 wave was driven by two
-parallel paths (per `CLAUDE.md` §TWO-PATH WORK PLAN): PATH A cascade
+parallel paths (per `CLAUDE.md` §TWO-PATH WORK PLAN, now archived as `docs/competition/CLAUDE.competition-era.md`): PATH A cascade
 speedup, PATH B DREAMPlace exploration; an unplanned PATH C (E97-E101
 Lévy/portfolio/cong-grad probes) ran in parallel.
 

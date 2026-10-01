@@ -68,4 +68,4 @@ most benches in practice, so realistic wall stays near ~1 hr/bench.
 - Parents: E18 (DPO init pipeline), E39 (K-joint phase).
 - Related: E25 (shared CD+LNS+SA-v2 backbone), E11 (basin sensitivity to
   init), E29 (MIQP joint reinsertion), E15 (pair-swap, K=2).
-- Discussion: `docs/experiment_index.md`; `writeup/evidence.md` if graduated.
+- Discussion: `docs/experiment_index.md`; `writeup/archive/2026-05-drafts/evidence.md` if graduated.

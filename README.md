@@ -1,400 +1,141 @@
-# Partcl/HRT Macro Placement Challenge
+# Thinkorplace
 
-**Thinkorplace post-competition work (September 2026):** see the
-[technical report source](writeup/latex/main.tex),
-[website summary](writeup/website-summary.md),
-[interactive placement comparison](writeup/interactive/placement-comparison.html),
-and [reproducible study runner](writeup/study/README.md).
-The repaired runtime lives in [`thinkorplace/`](thinkorplace/); submission paths
-remain compatibility entry points. Historical competition instructions and scores
-below predate that cleanup. The final official repository and results are at
-[Partcl EDA's final challenge repository](https://github.com/partcleda/macro-place-challenge-2026).
-Saved local scores are distinguished from final leaderboard verification in the
-[September audit](docs/reviews/2026-09-06-thinkorplace.md).
+Smooth proposals and exact local search for chip macro placement.
 
-<img src="assets/HRT.png" alt="Hudson River Trading" height="80"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img src="assets/partcl.png" alt="Partcl" height="80">
+Thinkorplace placed ninth on the final leaderboard of the Partcl/HRT Macro
+Placement Challenge 2026 (verified mean proxy 0.9974; the organizers report 132
+verified eligible submissions).
 
-## Submission entry (for judges)
+## Result
 
-**Setup** (one-time, after cloning):
+Official result: mean proxy cost over the 17 public IBM designs (lower is better).
 
-```bash
-git submodule update --init external/MacroPlacement
-```
+| Entry | Mean proxy |
+|---|---:|
+| Archgen (first) | 0.9507 |
+| Carrotato (second) | 0.9522 |
+| **thinkorplace (ninth)** | **0.9974** |
+| RePlAce (published baseline) | 1.4578 |
+| Simulated annealing (published baseline) | 2.1251 |
 
-The `external/MacroPlacement` submodule provides the benchmark testcases and
-PlacementCost evaluator that `eval_docker/Dockerfile` bakes into the image.
+The thinkorplace entry had zero hard-macro overlaps, a best design at 0.7829, a
+worst at 1.2602, and a listed runtime of 12 minutes per design. Its mean is 31.6%
+below the RePlAce mean and 4.9% above the winner's. Source: the organizers' final
+leaderboard at upstream revision
+[`996193c`](https://github.com/partcleda/macro-place-challenge-2026/blob/996193c83eaad151e5ae3fb166cedbd83372d060/README.md).
+The baselines are the published means from *An Updated Assessment of
+Reinforcement Learning for Macro Placement*, as cited by the challenge. Runtimes
+are self-listed, and hardware differs between entries.
 
-**One-line run** (after submodule init):
+## Read more
 
-```bash
-./eval_docker/run_eval.sh thinkorplace placer.py
-```
+- [Read the technical report](writeup/thinkorplace-report.pdf) (technical report 1.0, 30 September 2026)
+- [Website summary](writeup/website-summary.md): the article text for the
+  author's website; its relative links resolve in the packaged site built by
+  `scripts/package_publication.py`, not in this repository.
+- [Placement explorer](writeup/interactive/placement-comparison.html): a
+  standalone HTML page; download it and open it in a browser.
 
-That builds the eval Docker image on first run (~10 min, includes
-DREAMPlace Python deps), then evaluates our placer across all 17 IBM
-benchmarks (~50 min/bench, ~14 hr total serial — runs sequentially via
-partcl's `evaluate` harness). Results land in
-`eval_docker/results/thinkorplace.log`.
+## How it works
 
-**Entry placer:** [`placer.py`](placer.py) at the repo root — a thin
-launcher that adds the repo to `sys.path` and dispatches to
-[`submissions/thinkorplace-v2/placer.py`](submissions/thinkorplace-v2/placer.py)
-(`Placer`). v2 is a 3-lane parallel ensemble: each bench spawns three
-subprocesses running structurally distinct pipelines (A: V4+Gaussian
-descent + extended CD polish; B: A + bounded Hessian saddle escape;
-C: A + K=50 Hungarian joint permutation), and the master picks the
-canonical-best placement. Worst case (Lane A) reproduces the prior
-v2-extCD score; Lanes B and C strictly improve on benches where the
-perturbed basin is better.
+A chip floorplan holds a few hundred macros, large fixed-size blocks such as
+memories, which must sit inside the canvas without overlapping. The challenge
+scores a placement with a proxy cost: wirelength, plus half the placement
+density, plus half the routing congestion, as computed by the TILOS
+MacroPlacement evaluator. Thinkorplace first moves all macros at once by
+gradient descent on a smooth stand-in for that score, and a legalizer then
+removes the remaining overlaps. Exact coordinate descent improves the legal
+placement one macro at a time and accepts a move only when the true proxy score
+falls; an incremental evaluator makes each scored move take milliseconds instead
+of seconds. The judged commit was not recorded; from the listed runtime and the
+20 May resubmission date we infer that the ranked entry was most likely this
+single pipeline with a 720-second budget, about 12 minutes per design. Two
+plateau-escape ideas, a step along a negative-curvature direction of the smooth
+surrogate and a Hungarian reassignment of macros to slots, were committed before
+the deadline as extra lanes and, by the same inference, were never scored. In the
+historical development records, about 85% of the gain over the earlier serial
+pipeline came from lower routing congestion.
 
-| Mode | IBM `--all` | Overlaps | Verified |
-|---|---:|---:|---|
-| Lane A floor (v2-extCD, single pipeline) | **0.98387** | 0 | 2026-05-21 AWS EPYC c6a.4xlarge (2-way) |
-| 3-lane oracle (offline per-bench MIN of A/B/C) | **0.97745** | 0 | 2026-05-22 EPYC component runs |
+## Repository map
 
-**Algorithm description:** [`docs/approach.md`](docs/approach.md) ·
-**Full v2 detail:** [`SUBMISSION.md`](SUBMISSION.md)
-
-Default `budget_seconds=2700` (45 min/bench, safe under the 60-min cap
-on EPYC; each lane runs in its own subprocess with its full standalone
-CD/saddle/Hungarian budget). Single global algorithm; no per-benchmark
-hyperparameters; no benchmark-identity dispatch.
-
-**Run outside Docker** (development sanity check, requires `uv sync` first):
-```bash
-uv run evaluate placer.py --all --json
-uv run evaluate placer.py --ng45 --json
-```
-
-**Full submission guide:** [`SUBMISSION.md`](SUBMISSION.md).
-
-## Where to find things in this repo
-
-| Path | Purpose |
+| Path | Contents |
 |---|---|
-| [`submissions/README.md`](submissions/README.md) | Tier-1 entry candidates (Options A, B) + Tier-2 ORFS strategy |
-| [`docs/results.md`](docs/results.md) | Verified per-benchmark proxy scores (§Post-2026-05-06 is current) |
-| [`docs/approach.md`](docs/approach.md) | Algorithm description (cascade + Hessian saddle + optional DP lane) |
-| [`docs/roadmap.md`](docs/roadmap.md) | Submission timeline + priorities |
-| [`docs/experiment_index.md`](docs/experiment_index.md) | Every experiment — live + falsified |
-| [`docs/decisions/`](docs/decisions/) | Architecture Decision Records (immutable, structural) |
-| [`docs/handoffs/`](docs/handoffs/) | Dated session-end notes (overnight runs, breakthrough reports) |
-| [`docs/gotchas.md`](docs/gotchas.md) | Codebase footguns |
-| [`docs/problem.md`](docs/problem.md) | Formal mathematical problem statement |
-| [`writeup/paper.md`](writeup/paper.md) | Innovation prize draft |
-| [`writeup/evidence.md`](writeup/evidence.md) | Frozen-number archive cited by `paper.md` |
-| [`writeup/contributions.md`](writeup/contributions.md) | Claim / novelty / evidence registry |
-| [`writeup/theory.md`](writeup/theory.md) | Supplementary mathematical material |
-| [`experiments/`](experiments/) | Per-experiment manifests, code, and notes |
-| [`macro_place/`](macro_place/) | Library (incremental evaluator, CD core, smooth proxy) |
-| [`TODO.md`](TODO.md) | Current task list |
-| [`SETUP.md`](SETUP.md) | Setup + API reference |
-| [`SCORING.md`](SCORING.md) | Tier-2 ORFS scoring rules |
-| [`CLAUDE.md`](CLAUDE.md) | Project context for Claude Code agents (canonical state lives here) |
+| [`thinkorplace/`](thinkorplace/) | The solver package: the corrected post-competition runtime of v1 and v2. |
+| [`submissions/`](submissions/) | Competition entry points (v2: `submissions/thinkorplace-v2/placer.py`), example placers, and archived earlier placers. |
+| [`macro_place/`](macro_place/) | Challenge infrastructure: benchmark loader, proxy cost, the `evaluate` command, and the incremental evaluator. |
+| [`writeup/`](writeup/) | Report source, frozen evidence, study configurations and run records, the explorer, and the website summary. |
+| [`experiments/`](experiments/) | About 150 development experiments, each with a manifest of hypothesis, method, kill gate and outcome, including falsified ones. |
+| [`docs/`](docs/) | Development records from May 2026; competition-era files, including the original challenge README, are in [`docs/competition/`](docs/competition/). |
+| [`scripts/`](scripts/) | Study runner, publication renderers and checks, and development utilities. |
+| [`test/`](test/) | Focused tests for the package, the study runner, and the post-competition repairs. |
 
----
+The root [`placer.py`](placer.py) is the competition launcher; it dispatches to
+the v2 entry.
 
-**Win $20,000 by developing better macro placement algorithms!**
+## Reproduce
 
-Partcl and Hudson River Trading are excited to co-host a competition to solve the macro placement problem. 
-
-## About Macro Placement
-
-Macro placement is the problem of positioning large fixed-size blocks (SRAMs, IPs, analog macros, etc.) on a chip floorplan so that routing congestion, timing, power delivery, and area constraints are balanced. Unlike standard-cell placement, macros have strong geometric and connectivity constraints, so the challenge is to explore a highly discrete design space while minimizing wirelength, avoiding blockages, and preserving downstream routability and timing quality.
-
-For example, the **ibm01** benchmark has:
-- **246 hard macros** of varying sizes (ranging from 0.8 to 27 μm², with 33× size variation)
-- **7,269 nets** connecting macros to each other and to 894 pre-placed standard cell clusters
-- **A 22.9 × 23.0 μm canvas** with 42.8% area utilization
-
-<p align="center">
-  <img src="assets/sa_ibm01.gif" alt="Simulated annealing on ibm01" width="600"><br>
-  <img src="assets/fd_ibm01.gif" alt="Force-directed placement on ibm01" width="600">
-</p>
-
-## About HRT Hardware
-
-Hudson River Trading (HRT) is a leading quantitative trading firm at the forefront of technical innovation in global financial markets.
-
-HRT’s Hardware team builds the high-performance compute systems at the core of our trading infrastructure. We use FPGAs and ASICs to drive low-latency decision-making and power custom solutions across the trading stack, from bespoke circuits to machine learning accelerators.
-
-We’re proud to sponsor this competition because advancing macro placement and low-level hardware optimization directly aligns with the kinds of hard, performance-critical engineering challenges our teams tackle every day.
-
-Joining Hudson River Trading’s hardware team means working alongside leading engineers in one of the most advanced computing environments in global finance. Learn more about open roles at [hudsonrivertrading.com](https://www.hudsonrivertrading.com/).
-
-## About Partcl
-
-Partcl is rebuilding chip design infrastructure from the ground up for the GPU era.
-
-Modern chip design is slow, fragmented, and fundamentally constrained by tools built decades ago. Critical workflows like timing analysis and placement still take hours to days - limiting how much engineers can explore and optimize.
-
-We’re changing that.
-
-Partcl develops GPU-accelerated systems for physical design that run orders of magnitude faster than legacy tools. Our goal is simple: make iteration cheap enough that design space exploration becomes the default, not the exception.
-
-## Background Papers
-[1] [An Updated Assessment of Reinforcement Learning for Macro Placement](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=11300304)
-
-[2] [Assessment of Reinforcement Learning for Macro Placement](https://vlsicad.ucsd.edu/Publications/Conferences/396/c396.pdf)
-
-[3] [Reevaluating Google's Reinforcement Learning for IC Macro Placement](https://cacm.acm.org/research/reevaluating-googles-reinforcement-learning-for-ic-macro-placement/)
-
-[4] [A graph placement methodology for fast chip design](https://www.nature.com/articles/s41586-021-03544-w.epdf?sharing_token=tYaxh2mR5EozfsSL0WHZLdRgN0jAjWel9jnR3ZoTv0PW0K0NmVrRsFPaMa9Y5We9O4Hqf_liatg-lvhiVcYpHL_YQpqkurA31sxqtmA-E1yNUWVMMVSBxWSp7ZFFIWawYQYnEXoBE4esRDSWqubhDFWUPyI5wK_5B_YIO-D_kS8%3D)
-
-## 🏆 Prizes
-
-- **$20,000 — Grand Prize:** The top 7 submissions by proxy score are evaluated through the OpenROAD flow on NG45 designs (including hidden designs). Among those 7, the submission that beats the SA and RePlAce baselines (reported in [An Updated Assessment of Reinforcement Learning for Macro Placement](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=11300304)) by the largest margin on WNS, TNS, and Area wins the Grand Prize. 
-- **$20,000 — First Place (Proxy):** Awarded to the #1 submission by proxy score. Only awarded if no submission qualifies for the Grand Prize.
-- **$5,000 — Second Place:** Awarded to the runner-up of the Grand Prize. If no submission qualifies for the Grand Prize, awarded to the #2 submission by proxy score.
-- **$4,000 — Innovation Award:** Granted to the most creative or technically innovative approach among the top entries, as determined by the judging panel.
-- **Swag:** Every valid submission gets HRT swag!
-- **Note:** An additional score adjustment will be applied based on human-expert analysis of the resulting placement.
-
-For full Grand Prize scoring rules, feasibility gate, tie-breaking, and ORFS-failure handling, see [`SCORING.md`](SCORING.md).
-
-## Submission Format
-
-- All submissions will be via google form. Submissions may be made public or private before the end of judging.
-- Private submissions will be required to share repository with judges so they may clone/evaluate the method.
-- Teams may be up to 5 individuals.
-- The deadline for submissions is May 21, 2026, 11:59 pacific.
-- All teams may only submit one algorithm.
-- **All winning implementations must be made open-source under Apache 2.0 or GPL**
-- All submissions must be registered via this [Submission Link](https://forms.gle/YDRtYV5Vq68SZgKW9).
-- All submissions must be under 1 hour end-to-end runtime (per benchmark) for the macro placement algorithm.
-- All submissions will be evaluated on a AMD EPYC 9655P with 16 cores + 100GB of memory and an NVIDIA RTX 6000 Ada 48GB.
-
-## Additional Rules
-
-### Allowed
-
-- **Any algorithmic approach**: SA, RL, GNN, analytical methods, hybrid approaches, learning-based, etc.
-- **Any framework**: PyTorch, TensorFlow, JAX, or pure Python/C++
-- **Any optimization technique**: Gradient descent, evolutionary algorithms, local search, etc.
-- **Training on public benchmarks**: You can learn from the IBM benchmark data
-- **Hard-macro orientation flips** (Klein-4 only: `N`, `FN`, `FS`, `S`) — carried to Tier 2 via an optional `orientations.pt` sidecar
-
-### Not Allowed
-
-- Modifying the evaluation functions (must use TILOS MacroPlacement evaluator as-is)
-- Hardcoding solutions for specific benchmarks (must be general algorithm)
-- Using external/proprietary placement tools (must be open-source submission)
-- Exceeding runtime limits (1 hour per benchmark hard timeout)
-- Overlaps in resulting placement (strictly zero overlap between hard macros — no tolerance. Participants should add small gaps in their legalization to avoid float-precision edge cases.)
-- 90° rotations of hard macros (`R90`, `R270`, `FE`, `FW`) — the fakeram45 SRAMs in our benchmarks aren't designed for rotation (pin access and internal metal direction assume a fixed orientation)
-- Resizing soft macros — soft-macro size is a proxy-only concept for density/congestion that doesn't translate to Tier 2; sizes are locked to the initial `.plc` values on every `compute_proxy_cost` call
-
-## Evaluation Details
-
-Evaluation is two-tiered:
-
-### Tier 1: Proxy Cost Ranking (All Submissions)
-
-All submissions are ranked by **proxy cost** across the 18 IBM benchmarks. This is the primary qualifying metric. Proxy cost is computed using the TILOS MacroPlacement evaluator:
-
-> **Proxy Cost = 1.0 × Wirelength + 0.5 × Density + 0.5 × Congestion**
-
-Baseline numbers are from: [An Updated Assessment of Reinforcement Learning for Macro Placement](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=11300304)
-
-### Tier 2: OpenROAD Flow Validation (Top Submissions)
-
-The top 7 submissions by proxy score will be evaluated through the full **OpenROAD flow** on NG45 designs to measure real PnR outcomes: **WNS, TNS, and Area**.
-
-- The **Grand Prize ($20K)** is awarded to the highest-scoring submission using a **geometric mean of improvement ratios** across WNS, TNS, and Area vs. the average SA/RePlAce baseline.
-- To qualify, submissions must pass a **feasibility gate** — timing (WNS, TNS) cannot regress below both baselines on any design.
-- To avoid overfitting, we will also evaluate on 1-2 hidden NG45 designs.
-- **Full scoring rules: [`SCORING.md`](SCORING.md)**
-
-## 🚀 Quick Start
-
-### Installation 
+Set up the environment as described in [`SETUP.md`](SETUP.md):
 
 ```bash
-# Clone the repository
-git clone https://github.com/partcleda/partcl-macro-place-challenge.git
-cd partcl-macro-place-challenge
-
-# Initialize TILOS MacroPlacement submodule (required for evaluation)
+git clone https://github.com/brmurrell3/macro-placer.git
+cd macro-placer
 git submodule update --init external/MacroPlacement
-
-# Install the package and all dependencies
 uv sync
-
-# Verify the setup
-uv run evaluate submissions/examples/greedy_row_placer.py -b ibm01
 ```
 
-### Run Your First Example
+Evaluate the v2 entry on one design:
 
 ```bash
-# Run the greedy row placer on ibm01
-uv run evaluate submissions/examples/greedy_row_placer.py
-
-# Run on all 17 IBM benchmarks
-uv run evaluate submissions/examples/greedy_row_placer.py --all
-
-# Run on NG45 commercial designs (ariane133, ariane136, mempool_tile, nvdla)
-uv run evaluate submissions/examples/greedy_row_placer.py --ng45
-
-# Visualize the result
-uv run evaluate submissions/examples/greedy_row_placer.py --vis
-uv run evaluate submissions/examples/greedy_row_placer.py --all --vis
+uv run evaluate submissions/thinkorplace-v2/placer.py -b ibm01
 ```
 
-Running on all benchmarks produces a summary like:
+This uses the entry's current defaults (three lanes, 2,700-second budget), not
+the 720-second configuration inferred to have been ranked.
+
+Rerun the configuration inferred to be the ranked one (single pipeline,
+720-second budget per design, all 17 IBM designs, one design at a time) with the
+study runner:
+
+```bash
+.venv/bin/python scripts/run_publication_study.py \
+  --config writeup/study/ranked_reproduction.json \
+  --output writeup/runs/ranked-reproduction-$(date +%Y%m%d)
 ```
-Benchmark     Proxy        SA   RePlAce     vs SA  vs RePlAce  Overlaps
-   ibm01    2.0463    1.3166    0.9976    -55.4%     -105.1%         0
-   ibm02    2.0431    1.9072    1.8370     -7.1%      -11.2%         0
-   ...
-     AVG    2.2109    2.1251    1.4578     -4.0%      -51.7%         0
+
+Scores depend on host speed, because coordinate descent stops at a wall-clock
+limit. A first run of this configuration (30 September 2026) was stopped after
+it exposed a checkpoint defect in the corrected runtime, which can discard the
+coordinate-descent result when a coordinate rounds past the canvas edge; a fix is
+pending, and the report's Appendix F describes the attempt. The other study
+configurations and the runner's options are documented in
+[`writeup/study/README.md`](writeup/study/README.md).
+
+Build the report and run its release check (requires a TeX distribution with
+`latexmk`, pdfLaTeX and BibTeX; the PDF is written to
+`writeup/latex/build/main.pdf`):
+
+```bash
+make -C writeup/latex
+.venv/bin/python scripts/check_publication_paper.py
 ```
 
-The greedy placer achieves zero overlaps but makes no attempt to optimize wirelength or connectivity — your job is to do better! See [`SETUP.md`](SETUP.md) for the full API reference and [`submissions/examples/`](submissions/examples/) for working examples.
+## About the challenge
 
-## 🎯 IBM Benchmark Suite (ICCAD04)
+The Partcl/HRT Macro Placement Challenge 2026 asked entrants to place the macros
+of 17 public IBM benchmark designs, within one hour per design and with zero
+hard-macro overlaps, scored by a published proxy cost; see the
+[upstream repository](https://github.com/partcleda/macro-place-challenge-2026).
 
-We evaluate on the complete ICCAD04 IBM benchmark suite:
+## Author's note
 
-| Benchmark | Macros | Nets | Canvas (μm) | Area Util. | SA Baseline | RePlAce Baseline |
-|-----------|--------|------|-------------|------------|-------------|------------------|
-| **ibm01** | 246 | 7,269 | 22.9×23.0 | 42.8% | 1.3166 | **0.9976** ⭐ |
-| **ibm02** | 254 | 7,538 | 23.2×23.5 | 43.1% | 1.9072 | **1.8370** ⭐ |
-| **ibm03** | 269 | 8,045 | 24.1×24.3 | 44.2% | 1.7401 | **1.3222** ⭐ |
-| **ibm04** | 285 | 8,654 | 24.8×25.1 | 44.8% | 1.5037 | **1.3024** ⭐ |
-| **ibm06** | 318 | 9,745 | 26.1×26.5 | 46.1% | 2.5057 | **1.6187** ⭐ |
-| **ibm07** | 335 | 10,328 | 26.8×27.2 | 46.8% | 2.0229 | **1.4633** ⭐ |
-| **ibm08** | 352 | 10,901 | 27.5×27.9 | 47.4% | 1.9239 | **1.4285** ⭐ |
-| **ibm09** | 369 | 11,463 | 28.1×28.5 | 48.0% | 1.3875 | **1.1194** ⭐ |
-| **ibm10** | 387 | 12,018 | 28.8×29.2 | 48.6% | 2.1108 | **1.5009** ⭐ |
-| **ibm11** | 405 | 12,568 | 29.4×29.8 | 49.2% | 1.7111 | **1.1774** ⭐ |
-| **ibm12** | 423 | 13,111 | 30.1×30.5 | 49.8% | 2.8261 | **1.7261** ⭐ |
-| **ibm13** | 441 | 13,647 | 30.7×31.1 | 50.4% | 1.9141 | **1.3355** ⭐ |
-| **ibm14** | 460 | 14,178 | 31.4×31.8 | 51.0% | 2.2750 | **1.5436** ⭐ |
-| **ibm15** | 479 | 14,704 | 32.0×32.4 | 51.6% | 2.3000 | **1.5159** ⭐ |
-| **ibm16** | 498 | 15,225 | 32.7×33.1 | 52.2% | 2.2337 | **1.4780** ⭐ |
-| **ibm17** | 517 | 15,741 | 33.3×33.7 | 52.8% | 3.6726 | **1.6446** ⭐ |
-| **ibm18** | 537 | 16,253 | 34.0×34.4 | 53.4% | 2.7755 | **1.7722** ⭐ |
+Thinkorplace was entered in the Partcl/HRT Macro Placement Challenge 2026 as team "thinkorplace"; the organizers' leaderboard lists Brendan Murrell and Xiaofei Zhang. This report and the post-competition analysis are by Brendan Murrell. Development used AI coding agents, including Anthropic's Claude Code, to implement and run most experiments and to draft text. The author proposed the hypotheses, set the evaluation protocol and acceptance thresholds, decided which results to keep, and is responsible for the claims made here.
 
-Each benchmark includes:
-- Hard macros (you place these)
-- Soft macros (you can also place these)
-- Nets connecting all components
-- Initial placement (hand-crafted, serves as reference)
+## Citation
 
-**Baseline Analysis:**
-- RePlAce (⭐) consistently outperforms SA across all benchmarks
-- RePlAce achieves 15-55% lower proxy cost than SA
-- **To qualify for the Grand Prize, your placement must also produce better WNS, TNS, and Area than both baselines when evaluated through the OpenROAD flow on NG45 designs**
-- Both baselines achieve zero overlaps (enforced as hard constraint)
+Citation metadata is in [`CITATION.cff`](CITATION.cff); GitHub's "Cite this
+repository" button reads it.
 
-## 💡 Why This Is Hard
+## License
 
-Despite "only" 246-537 macros, this problem is extremely challenging:
-
-1. **Massive search space**: ~10^800 possible placements (even with constraints)
-2. **Conflicting objectives**: Wirelength wants clustering, density wants spreading, congestion wants routing space
-3. **Non-convex landscape**: Millions of local minima, discontinuities, plateaus
-4. **Long-range dependencies**: Moving one macro affects costs globally through thousands of nets
-5. **Hard constraints**: No overlaps between heterogeneous sizes (33× size variation)
-6. **Tight packing**: 43-53% area utilization leaves little slack
-7. **Runtime matters**: Must be fast enough to be practical (< 5 minutes ideal)
-
-Classical methods (SA, RePlAce) have been refined for decades but still have room for improvement!
-
-## 📖 Documentation
-
-- **Setup & API Reference**: [`SETUP.md`](SETUP.md) - Infrastructure details, benchmark format, cost computation, testing
-- **Example Submissions**: [`submissions/examples/`](submissions/examples/) - Working placer examples
-
-## 📚 References
-
-- **TILOS MacroPlacement**: [GitHub Repository](https://github.com/TILOS-AI-Institute/MacroPlacement)
-  - Source of evaluation infrastructure
-  - ICCAD04 benchmarks
-  - SA and RePlAce baseline implementations
-
-- **ICCAD04 Benchmarks**: Classic macro placement benchmark suite used in academic research
-
-## 🏅 Leaderboard
-
-Submissions are ranked by **average proxy cost** across all 17 IBM benchmarks (lower is better). Zero overlaps required on all benchmarks. Scores are unverified until confirmed by judges.
-
-| Rank | Team | Avg Proxy Cost | Best | Worst | Overlaps | Runtime | Verified | Notes |
-|------|------|---------------|------|-------|----------|---------|----------|-------|
-| 1 | "vmallela" (LSJ) | **1.0109** | 0.7644 | 1.2921 | 0 | 15.5h total | :white_check_mark: | Verified 1.0109 (self-reported 1.1 — 8.1% BETTER than self-reported). Wins all 17 benchmarks vs every other verified entry. Hessian negative-eigenvalue saddle escape (`vmallela_v7` branch). Previous Incremental CD+LNS verified 1.4152. |
-| 2 | "Cezar" (ReFine) | **1.037** | — | — | 0 | 55min/bench | | Resubmitted 5/3; new approach (DREAMPlace-style differentiable refinement, normal .py instead of obfuscated). Previous ReFine variant was verified 1.2224 vs self-reported 1.0666. Re-verification pending. |
-| 3 | "KLA MACH" (ProxCD) | **1.2121** | 0.8527 | 1.6532 | 0 | 2h15min total | :white_check_mark: | Verified 1.2121 (self-reported 1.2355 — 1.9% better than self-report). Phase 20 ProxCD: numpy/Numba proxy + multi-start coordinate descent + LNS. Consolidates all chuanqi.chen submissions (UTDA / Chuanqi Chen / KLA MACH). |
-| 4 | "Hoop Dreams" (DREAMTuna) | **1.2206** | — | — | 0 | 20min/bench | | New 5/1; DREAMPlace + Bayesian optimization (Optuna) hyperparameter sweep |
-| 5 | "Shoom" (MultiDreamPlace v2) | **1.2353** | — | — | 0 | 42min/bench | | Resubmitted 5/1 with multi-start + fine tuning (was 1.3381) |
-| 6 | "ArzunPD" (MacroWeave SA+LNS) | **1.2478** | — | — | 0 | 55min/bench | | Resubmitted 5/1 (was HyperPlace, verified 1.4421 with networkit-disabled Stage 5). Re-verification pending. |
-| 7 | "RoRa" (RoomPlace) | **1.2788** | 0.9577 | 1.6222 | 0 | 2.6h total | :white_check_mark: | Verified 1.2788 (self-reported 1.2723 — 0.5% match); resubmitted 5/1 with canvas-shrink approach (previous RipPlace was blocked on `place(plc=...)` signature) |
-| 8 | "William Zhang" (RePlAce++) | **1.2767** | — | — | 0 | 259s/bench | | Resubmitted 5/2 (was "Convex Optimization", verified 1.4556); blocked on missing `casadi` module in eval container. Re-verification pending fix. |
-| 9 | "MTK" (DreamPlace++) | **1.2818** | 0.9073 | 1.6529 | 0 | 37s/bench (GPU) | :white_check_mark: | Verified better than self-reported 1.317; beats RePlAce on all 17 benchmarks |
-| 10 | "Electric Beatle" (ePlace-Lite) | **1.3253** | — | — | 0 | 2000s/bench (GPU) | | Resubmitted 4/30 (was verified 1.3913); Adam-based stochastic descent + multi-start hyperparameter sweep. Re-verification pending. |
-| 11 | "UToronto Analytical" (MOSAIC) | **1.3323** | 0.9371 | 1.6545 | 0 | 24min total | :white_check_mark: | Verified 1.3323 (self-reported 1.3325 — exact match); gradient-based with smooth surrogates, hard+soft |
-| 12 | "V5" (TierPlace) | **1.3382** | — | — | 0 | 850s/bench | | New 4/23; GPU-based, multi-density-formulation pilot + phased optimization |
-| 13 | "Archgen" (AutoDMP++) | **1.3479** | — | — | 0 | 2404s total | | New 4/24; multi-start + fast proxy screening + bounded refinement |
-| 14 | "Varun's Parallel Worlds" (GRPlace) | **1.4017** | 1.0362 | 1.7298 | 0 | 27s/bench | :white_check_mark: | |
-| 15 | "UT Austin" - AS (DREAMPlace Analytical) | **1.4076** | — | — | 0 | 17s/bench | | |
-| 16 | "ByteDancer" (Incremental CD) | **1.4151** | 1.0236 | 1.7792 | 0 | 38min/bench | :white_check_mark: | |
-| 17 | "TAISPlAce" (ALNS + Thompson Sampling) | **1.4321** | — | — | 0 | 28min/bench | | |
-| 18 | "Two-IIITK-Kids" (Proximal-Gradient Analytical) | **1.436** | — | — | 0 | 38min/bench | | New 5/2, resubmitted 5/4; PyTorch RePlAce-style + native C++ SA seed generation |
-| 19 | "Pragnay" (SweepingBellPlacement) | **1.4427** | — | — | 0 | 632s/bench | | Blocked on `compute_proxy_cost(..., plc=None)` in fallback path |
-| 20 | "No Man's Sky" (ALNS-MOS) | **1.4445** | — | — | 0 | 8.8min/bench | | New 5/4; Adaptive Large Neighborhood Search with multi-operator destroy/repair |
-| 21 | "another Waterloo kid" (Batched Nesterov GP) | **1.4568** | — | — | 0 | 118s/bench | | Blocked on Modal cloud dispatch — can't run air-gapped |
-| — | RePlAce (baseline) | **1.4578** | 0.9976 | 1.8370 | 0 | — | :white_check_mark: | |
-| 22 | "W3 Solutions" (GRACE) | **1.4824** | — | — | 0 | 90s/bench | | HybridPlacer runtime exceeds 1h/bench cap on our hardware |
-| 23 | "Jiangban Ya" (Spectral-Seed + Adaptive Legalizer) | **1.4943** | 1.0891 | 1.8099 | 0 | 49s/bench | :white_check_mark: | |
-| 24 | "UTAUSTIN-CT" (PLC-Exact Congestion-Aware SA) | **1.5062** | 1.1363 | 1.7941 | 0 | 6s/bench | :white_check_mark: | |
-| 25 | "oracleX" (Oracle) | **1.5130** | 1.1340 | 1.7937 | 0 | 11s/bench | :white_check_mark: | |
-| 26 | "SEVmakers" (Hybrid Legalization + SA) | **1.5200** | — | — | 0 | 200s/bench | | Private repo — pending judge access |
-| 27 | "CA" (congestion_aware) | **1.5247** | 1.2226 | 1.7945 | 0 | 2s/bench | :white_check_mark: | Verified 1.5247 vs self-reported 1.5238 |
-| 28 | "#5 ubc cpen student" (Gene Pool Shuffle) | **1.5337** | 1.1411 | 1.8084 | 0 | 13s/bench | :white_check_mark: | |
-| 29 | Will Seed (Partcl) | **1.5338** | 1.1625 | 1.7965 | 0 | 35s total | :white_check_mark: | |
-| 30 | "RUDY Can't Fail" (Fast Proxy CD) | **1.5397** | 1.1927 | 1.8881 | 0 | 6min total | :white_check_mark: | Verified 1.5397 (self-reported 1.3605 — 13% worse than self-report); 0 overlaps but below RePlAce baseline |
-| 31 | "UT Austin" - RH (DREAMPlace) | **1.6037** | — | — | 0 | 4.5s/bench | | |
-| 32 | "UT Austin" - CT (PROXYCost) | **1.8706** | — | — | 0 | 187s/bench | | |
-| 33 | "AS" (Shelf Stacker) | **1.9121** | 1.4614 | 2.3508 | 0 | 0.16s total | :white_check_mark: | |
-| 34 | "Adi's Team" (GNN-ePlace Hybrid) | **2.0025** | — | — | 0 | 3726s/bench | | Blocked on `compute_proxy_cost(skip_congestion=True)` kwarg |
-| 35 | "Sharc #1" (Auction Placer) | **2.0433** | 1.5143 | 2.4336 | 0 | 96s/bench | :white_check_mark: | |
-| — | SA (baseline) | 2.1251 | 1.3166 | 3.6726 | 0 | — | :white_check_mark: | |
-| — | Greedy Row (demo) | 2.2109 | 1.6728 | 2.7696 | 0 | 0.3s total | :white_check_mark: | |
-| — | "Binghamton" (feng shui) | pending | — | — | — | — | | |
-| — | "MacroBio" (Two-Opt Swap) | pending | — | — | — | — | | |
-| DQ | "Mike Gao" (autoresearch) | self-reported 1.3255 | — | — | 1939 | 16min/bench | | DREAMPlace silently fails in eval environment, returns unlegalized placements (47–189 overlaps per benchmark) |
-| DQ | "BakaBobo" (Global Relocation Sweep) | self-reported 1.4044 | — | — | — | 282s/bench | | Imports `macro_place.fast_proxy` which isn't bundled and isn't part of the evaluator — code won't run |
-
-*Submit your results via the [Submission Link](https://forms.gle/YDRtYV5Vq68SZgKW9)!*
-
-## 🤔 FAQ
-
-**Q: What benchmarks are used?**
-A: Tier 1 (proxy cost) uses 17 IBM ICCAD04 benchmarks — the standard academic suite with well-established baselines. Tier 2 (OpenROAD flow) uses NG45 commercial designs (ariane133, ariane136, mempool_tile, nvdla) plus 1-2 hidden designs. You can evaluate on both with `--all` (IBM) and `--ng45` (NG45).
-
-**Q: What if I beat one baseline but not the other?**
-A: You must beat BOTH SA and RePlAce baselines on WNS, TNS, and Area to qualify for the Grand Prize. You can still win the Proxy or Innovation prizes regardless.
-
-**Q: Are there hidden test cases?**
-A: All 17 IBM benchmarks for proxy cost ranking are public. The 4 NG45 designs are also public. For the OpenROAD flow evaluation (Tier 2), we will additionally test on 1-2 hidden NG45 designs to ensure generalization.
-
-**Q: What counts as "beating" the baseline?**
-A: For proxy cost (Tier 1), your aggregate score across all IBM benchmarks must be lower than the baselines. For the Grand Prize (Tier 2), your OpenROAD results for WNS, TNS, and Area must surpass both SA and RePlAce baselines on NG45 designs.
-
-## 📧 Contact
-
-- **Issues**: [GitHub Issues](https://github.com/partcleda/partcl-macro-place-challenge/issues)
-- **Email**: contact@partcl.com
-
-## 📄 License
-
-This project is licensed under the Apache License 2.0 - see [LICENSE.md](LICENSE.md) for details.
-
-## Competition Updates
-
-The organizers may update or clarify rules, evaluation details, timelines, prizes, or infrastructure as needed to ensure fairness, technical accuracy, and smooth operation of the competition. Any updates will be communicated through official channels and will apply going forward.
-
-Participation in the competition constitutes acceptance of the current rules and any subsequent updates. The organizers’ decisions regarding scoring, eligibility, and interpretation of these rules are final.
-
-Submissions & contact information may be shared with sponsors.
+Apache-2.0, inherited from the upstream challenge repository; see
+[`LICENSE.md`](LICENSE.md).

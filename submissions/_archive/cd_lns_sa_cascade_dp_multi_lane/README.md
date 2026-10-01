@@ -55,7 +55,7 @@ Aggregate `--all` lift on top of B-R0' hybrid: estimated **-0.5 to -1.5%**.
 ## How to run (cloud)
 
 ```bash
-ssh ubuntu@129.213.18.245
+ssh ubuntu@<redacted-host>
 cd ~/macro-place-challenge-2026
 
 OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 \\

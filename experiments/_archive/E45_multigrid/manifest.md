@@ -134,5 +134,5 @@ the multigrid init is already near-optimal).
 - Related: E27 basin-cluster diagnostic (motivates the multi-basin
   signature). E29 MIQP joint reinsertion (alternative escape mechanism;
   K=10-20 instead of multi-scale).
-- Discussion: `docs/experiment_index.md`; `writeup/evidence.md` §X if
+- Discussion: `docs/experiment_index.md`; `writeup/archive/2026-05-drafts/evidence.md` §X if
   graduated.

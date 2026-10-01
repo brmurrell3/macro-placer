@@ -53,4 +53,4 @@ Tested on ibm01 + ibm10 with 130 random moves; benchmarked end-to-end via
 ## Pointers
 - Code: graduated to `macro_place/incremental_evaluator.py`.
 - Tests: `test/test_incremental_evaluator.py`, `scripts/bench_incremental.py`.
-- Discussion: `writeup/evidence.md` §7.1; `docs/experiment_index.md` (E1 row).
+- Discussion: `writeup/archive/2026-05-drafts/evidence.md` §7.1; `docs/experiment_index.md` (E1 row).

@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you refer to this work, please cite it as below."
+type: software
+title: "Thinkorplace: Smooth Proposals and Exact Local Search for Chip Macro Placement"
+authors:
+  - family-names: Murrell
+    given-names: Brendan
+repository-code: "https://github.com/brmurrell3/macro-placer"
+license: Apache-2.0
+version: "1.0"
+date-released: 2026-09-30
+preferred-citation:
+  type: report
+  title: "Thinkorplace: Smooth Proposals and Exact Local Search for Chip Macro Placement"
+  authors:
+    - family-names: Murrell
+      given-names: Brendan
+  month: 9
+  year: 2026
+  url: "https://github.com/brmurrell3/macro-placer"

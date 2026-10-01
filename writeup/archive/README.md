@@ -12,6 +12,12 @@ and the `macro_place/` package.
 
 ## Contents
 
+### `2026-05-drafts/`
+
+The May 2026 Markdown drafts (`paper.md`, `STORY.md`, `evidence.md`,
+`contributions.md`, `theory.md`) and the `writeup/` map that described them.
+Technical report 1.0 supersedes their numbers and framings.
+
 ### `planning/`
 
 Stale writeup-planning docs that pre-date the CD pivot and now
@@ -19,7 +25,8 @@ contradict the current narrative.
 
 - `writeup_plan.md` — original plan; presents DPO at 1.4246 as the
   resolution. The current narrative (CDAdaptive at 1.1055) is in
-  `writeup/outline.md`, `writeup/contributions.md`, and
+  `writeup/outline.md`, `writeup/contributions.md` (now
+  `2026-05-drafts/contributions.md`), and
   `writeup/framing.md`.
 - `dpo.md`, `dpo_next.md` — DPO architecture notes and next-steps;
   superseded by the CD line.

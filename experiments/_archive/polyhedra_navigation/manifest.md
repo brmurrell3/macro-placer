@@ -70,7 +70,7 @@ agent is moving it).
 - Code: removed in post-CD cleanup (commit `44efd16`). The polyhedra
   era's Phase-1–5 placers, LP solvers, and 22 overnight experiments were
   archived.
-- Discussion: `writeup/evidence.md` §2.4 (per-bench table), §4 (the
+- Discussion: `writeup/archive/2026-05-drafts/evidence.md` §2.4 (per-bench table), §4 (the
   congestion barrier diagnosis), §6 (hierarchical decomposition
   failures); `docs/experiment_index.md` "Earlier polyhedra-era
   experiments" rows.

@@ -214,4 +214,4 @@ some K-tuple commits feasible) but less.
   `code/analysis/persistence_summary.md`;
   `code/analysis/<bench>_trajectories.png`.
 - Parent: E25 — the candidate this gate evaluates.
-- Discussion: `writeup/evidence.md` §10 (to be written).
+- Discussion: `writeup/archive/2026-05-drafts/evidence.md` §10 (to be written).

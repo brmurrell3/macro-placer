@@ -77,5 +77,5 @@ imported by E41). E42's placer constructs `CDLNSSADPOKJointPlacer` with
 - Parents: E41 (DPO + K=3 K-joint), E39 (K-joint primitive).
 - Related: E29 (MIQP joint reinsertion — the principled escalation if
   K=4 also flat).
-- Discussion: `docs/experiment_index.md`; `writeup/evidence.md` §9.M
+- Discussion: `docs/experiment_index.md`; `writeup/archive/2026-05-drafts/evidence.md` §9.M
   if graduated.

@@ -54,5 +54,5 @@ DPO" to "change the optimizer entirely" (CD).*
   `submissions/dpo/init_strategies.py`,
   `submissions/dpo/e11_sdf_only.py`,
   `submissions/dpo/e11_sdf_random.py`.
-- Discussion: `writeup/evidence.md` §9.3; `docs/experiment_index.md`
+- Discussion: `writeup/archive/2026-05-drafts/evidence.md` §9.3; `docs/experiment_index.md`
   (E11 row).

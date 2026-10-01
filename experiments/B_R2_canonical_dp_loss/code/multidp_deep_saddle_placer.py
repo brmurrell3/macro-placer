@@ -11,7 +11,7 @@ not "structural mismatch" (see `experiments/E91_dp_full_polish/SUMMARY.md`).
 Graceful fallback: if `DREAMPLACE_ROOT` is not set, the placer behaves
 identically to `cd_lns_sa_cascade/placer.py`.
 
-Cloud setup (lambda.ai box 129.213.18.245):
+Cloud setup (lambda.ai box <redacted-host>):
   export DREAMPLACE_ROOT=/home/ubuntu/DREAMPlace_cpu/install
   export DP_DOCKER_IMAGE=dreamplace:custom
   export DP_USE_GPU=0   # CUDA build hit nvcc11.0/compute_86 conflict; CPU works.

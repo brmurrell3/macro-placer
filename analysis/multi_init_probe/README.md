@@ -81,6 +81,6 @@ is durable evidence in the writeup.
 
 `TODO(data)`. The original probe outputs lived in `/tmp/` and were not
 captured. The headline numbers are quoted in
-`writeup/evidence.md` §6.1 and `findings.md`; if a frozen artifact is
+`writeup/archive/2026-05-drafts/evidence.md` §6.1 and `findings.md`; if a frozen artifact is
 needed for the writeup, re-run on ibm09 with the seeds/jitters listed
 above and commit the JSONs to `analysis/multi_init_probe/data/`.

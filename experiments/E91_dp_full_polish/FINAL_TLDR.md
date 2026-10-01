@@ -8,7 +8,7 @@ bridged." I verified the test that was actually run: it was DP-without-
 polish vs cascade-with-polish. The fair comparison (DP + same polish
 budget as cascade gives its SDF/DPO inits) was never done.
 
-I ran the fair test on cloud (lambda.ai 129.213.18.245). Driver:
+I ran the fair test on cloud (lambda.ai <redacted-host>). Driver:
 `experiments/E91_dp_full_polish/code/dp_full_polish.py`.
 
 ## Results (4 of 5 still running mid-pipeline at session end)
@@ -66,7 +66,7 @@ bash experiments/E91_dp_full_polish/check_results.sh  # snapshot status
 When all benches complete, evaluate hybrid:
 
 ```bash
-ssh ubuntu@129.213.18.245
+ssh ubuntu@<redacted-host>
 cd ~/macro-place-challenge-2026
 DP_DOCKER_IMAGE=dreamplace:custom DREAMPLACE_ROOT=/home/ubuntu/DREAMPlace_cpu/install \
   DP_USE_GPU=0 OPENBLAS_NUM_THREADS=8 OMP_NUM_THREADS=8 MKL_NUM_THREADS=8 \

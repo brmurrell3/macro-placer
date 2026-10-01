@@ -69,10 +69,10 @@ not another within-DPO knob. CDAdaptive (E9) dropped ibm02 from 1.6888 to
   `submissions/dpo/placer.py`, `best_of_v2_placer.py`,
   `congestion_refine_placer.py`, `diverse_priors_placer.py`,
   ablation files, and seed variants.
-- Per-bench champion table: `writeup/evidence.md` §2.3.
-- Ablation study: `writeup/evidence.md` §3.
-- DPO version chronology: `writeup/evidence.md` §10.
-- DPO worsening 4 / 17 vs SDF: `writeup/evidence.md` §3.4.
+- Per-bench champion table: `writeup/archive/2026-05-drafts/evidence.md` §2.3.
+- Ablation study: `writeup/archive/2026-05-drafts/evidence.md` §3.
+- DPO version chronology: `writeup/archive/2026-05-drafts/evidence.md` §10.
+- DPO worsening 4 / 17 vs SDF: `writeup/archive/2026-05-drafts/evidence.md` §3.4.
 - Discussion: `docs/experiment_index.md` "DPO line (all superseded by CD)"
   rows.
 - Predecessor: `experiments/polyhedra_navigation/manifest.md`.

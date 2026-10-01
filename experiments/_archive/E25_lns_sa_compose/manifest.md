@@ -183,7 +183,7 @@ headroom under the 17-hr legal cap, and no per-bench cap violation.
 `submissions/cd_lns_sa/placer.py`; functions inlined to make it
 self-contained (matches E12 convention). Champion lineage updated in
 `docs/results.md`, `submissions/README.md`, `CLAUDE.md`,
-`writeup/evidence.md` §1, `docs/experiment_index.md`. Memory updated
+`writeup/archive/2026-05-drafts/evidence.md` §1, `docs/experiment_index.md`. Memory updated
 (`e25_champion.md` new, `e12_champion.md` superseded).
 
 **Source JSON:**

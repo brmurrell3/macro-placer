@@ -6,9 +6,9 @@ context survives across sessions. Newest first.
 
 Handoffs are *operational state at a point in time* — they go stale
 quickly. Treat them as primary sources for "what was running / what was
-decided that day," not as current truth. Canonical state lives in
-`CLAUDE.md`, `docs/results.md`, `docs/experiment_index.md`, and
-`writeup/evidence.md`.
+decided that day," not as current truth. Canonical state at the time lived in
+`CLAUDE.md` (now `docs/competition/CLAUDE.competition-era.md`), `docs/results.md`, `docs/experiment_index.md`, and
+`writeup/archive/2026-05-drafts/evidence.md`.
 
 | Date | File | One-line summary |
 |------|------|------------------|
@@ -24,6 +24,6 @@ decided that day," not as current truth. Canonical state lives in
 | 2026-05-12 | [`2026-05-12_morning_report_2.md`](2026-05-12_morning_report_2.md) | Overnight 8+ cloud experiments, 80+ lane-hours; identified `finegrain` cascade as new winner. |
 | 2026-05-11 | [`2026-05-11_overnight_queue.md`](2026-05-11_overnight_queue.md) | Overnight autonomous queue snapshot: 5 cascade variants × 4 benches ETA ~21:00. |
 
-## Still at repo root (not filed here — operational)
+## Competition-era operational files
 
-- `LEADERBOARD.md` — operational doc tracking every placer run (kept at root alongside `SCORING.md`, `SETUP.md`).
+- `LEADERBOARD.md` — operational doc tracking every placer run; archived in [`../competition/LEADERBOARD.md`](../competition/LEADERBOARD.md).

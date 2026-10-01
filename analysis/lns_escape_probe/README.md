@@ -71,7 +71,7 @@ ROOT == repo root). This is intentionally not fixed in this migration
 
 ## Headline finding
 
-From `findings.md` algorithmic-finding #3 and `writeup/evidence.md` §6.2:
+From `findings.md` algorithmic-finding #3 and `writeup/archive/2026-05-drafts/evidence.md` §6.2:
 
 - **24 random destroy-and-reinsert samples** across ibm09 + ibm12
   (varying K ∈ {16, 32, 64}, jitter sigma ∈ {0, 0.05, 0.10}, destroy
@@ -108,6 +108,6 @@ negative result generalizes to any subset-CD variant: same move type
 
 `TODO(data)`. The 24 sample JSONs lived in `/tmp/` during the
 experiment and were not committed; only summary numbers survive in
-`findings.md` and `writeup/evidence.md`. If the writeup needs raw
+`findings.md` and `writeup/archive/2026-05-drafts/evidence.md`. If the writeup needs raw
 artifacts, regenerate against current CD and commit to
 `analysis/lns_escape_probe/data/`.

@@ -1,17 +1,31 @@
 # Experiments
 
-Per-experiment manifest folders. Every experiment that has produced (or could
-produce) a row in `results/experiment_log.jsonl` lives here so a future reader
-can answer: *what is this, what is its status, why was it killed or promoted?*
+This directory is the development notebook for Thinkorplace. Each experiment
+from the April–May 2026 competition has its own directory, and most hold a
+`manifest.md` that records the hypothesis, the method, the kill gate set before
+the run, and the outcome. Falsified experiments stay next to the successful
+ones, so the record shows what did not work as well as what did. There are 151
+experiment directories, 92 at this level and 59 older ones under `_archive/`;
+141 of them have a manifest. `_template/` is the manifest template.
 
-## Naming
+Start with [`docs/experiment_index.md`](../docs/experiment_index.md), which
+catalogs the experiments with their status and headline result. Scores in the
+manifests are historical development records: they come from different hardware,
+budgets and concurrency, often cover a subset of the 17 IBM designs, and most
+have no saved coordinates. The run log that many manifests cite,
+`results/experiment_log.jsonl`, stayed local and is not in the repository. For
+current results, read the [technical report](../writeup/thinkorplace-report.pdf).
+
+## Conventions used during development
+
+### Naming
 
 `E<NN>_<short_snake_case>/` — e.g. `E12_grid_bin_lns/`, `E16_tight_threshold/`.
 Use the same `E<NN>` id used in `results/experiment_log.jsonl` and
-`writeup/evidence.md`. Generation-level entries that don't have an `E<NN>`
+`writeup/archive/2026-05-drafts/evidence.md`. Generation-level entries that don't have an `E<NN>`
 (polyhedra, the DPO era) use a descriptive snake_case name instead.
 
-## Layout
+### Layout
 
 Every experiment folder contains at minimum:
 
@@ -30,7 +44,7 @@ promoted to (e.g. `macro_place/incremental_evaluator.py`). *Falsified*
 experiments whose code was removed during a cleanup leave `code/` absent and
 the manifest cites the git ref or removal commit.
 
-## Lifecycle
+### Lifecycle
 
 The `status:` field in the manifest's YAML frontmatter is the single source of
 truth. Allowed values:
@@ -48,7 +62,7 @@ Falsified experiments are kept *forever*. The manifest is the historical
 record. Do not delete the folder — even after the code is gone, the manifest
 is what stops the team from re-running the same dead end.
 
-## Running an experiment
+### Running an experiment
 
 ```bash
 # Fast subset (4 benchmarks, ~10 s)
@@ -64,7 +78,7 @@ uv run evaluate experiments/E<NN>_<name>/code/<placer>.py -b ibm10 --hypothesis 
 Always pass `--hypothesis E<NN>` so the row written to
 `results/experiment_log.jsonl` is attributable.
 
-## Lifecycle decisions (mirroring `CLAUDE.md`)
+### Lifecycle decisions (from the competition-era `CLAUDE.md`, now `docs/competition/CLAUDE.competition-era.md`)
 
 - `--fast` fails the gate → tweak parameters, try next variant.
 - `--fast` passes → run `--all`.
@@ -75,7 +89,7 @@ Always pass `--hypothesis E<NN>` so the row written to
 Update the manifest (`status`, `decided`, `outcome`, `champion_delta`) the
 moment a status-changing decision is made.
 
-## Template
+### Template
 
 Copy `_template/manifest.md` for a new experiment. See `_template/README.md`
 for the per-field convention.

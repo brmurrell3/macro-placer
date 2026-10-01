@@ -65,7 +65,7 @@ CD pivot. The architectural conclusion was promoted to ADR-001
   this to `analysis/lp_hpwl_diagnostic/`; reference by concept name and
   let the path resolve at read time).
 - Driver: `scripts/lp_hpwl_lower_bound.py`.
-- Discussion: `writeup/evidence.md` §3.3 (decomposition table) and §4.2
+- Discussion: `writeup/archive/2026-05-drafts/evidence.md` §3.3 (decomposition table) and §4.2
   (Miftari correlation); `docs/experiment_index.md` strategic-update row
   2026-04-26.
 - ADR: ADR-001.

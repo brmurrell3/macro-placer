@@ -52,5 +52,5 @@ basin-changing moves (CD, LNS).*
 ## Pointers
 - Code: removed in post-CD cleanup (commit `44efd16`). Originally at
   `submissions/dpo/batched_seeds_placer.py` and `batched_seeds_b1.py`.
-- Discussion: `writeup/evidence.md` §9.1; `docs/experiment_index.md`
+- Discussion: `writeup/archive/2026-05-drafts/evidence.md` §9.1; `docs/experiment_index.md`
   (E5 row).

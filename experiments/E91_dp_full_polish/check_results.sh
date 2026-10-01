@@ -2,7 +2,7 @@
 # Pull and summarize all E91 B-R0' results.
 set -eo pipefail
 
-CLOUD="ubuntu@129.213.18.245"
+CLOUD="ubuntu@<redacted-host>"
 
 echo "Syncing results from cloud..."
 rsync -az "${CLOUD}:~/macro-place-challenge-2026/experiments/E91_dp_full_polish/results/" \

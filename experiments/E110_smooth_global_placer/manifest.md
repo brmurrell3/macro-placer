@@ -73,4 +73,4 @@ submission.
 - Code: `code/smooth_global_placer.py`, `code/run_ibm01.py`
 - Results: `results/`
 - Discussion: `docs/handoffs/2026-05-18_evening_decision.md` (the pivot
-  decision), `writeup/evidence.md` §TBD.
+  decision), `writeup/archive/2026-05-drafts/evidence.md` §TBD.

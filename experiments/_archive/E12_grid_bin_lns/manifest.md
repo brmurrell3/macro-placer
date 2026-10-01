@@ -90,6 +90,6 @@ Earlier in-flight datapoints (preserved for the lineage):
   `--fast`); `results/partial/CDLNSGridBinPlacer_PARTIAL.json`
   (12-of-17 snapshot, superseded by full result).
 - Decision: `docs/decisions/007_cd_lns_gridbin_promotion.md`.
-- Discussion: `writeup/evidence.md` §7.7; `notes.md` ("Algorithmic findings"
+- Discussion: `writeup/archive/2026-05-drafts/evidence.md` §7.7; `notes.md` ("Algorithmic findings"
   #4–5); `experiments/E12_grid_bin_lns/notes.md`.
 - Parent: `experiments/E3_lns_v1/manifest.md` (subset-CD reinsert, falsified).

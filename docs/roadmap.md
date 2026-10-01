@@ -1,3 +1,5 @@
+> **Historical record (May 2026).** Development-era scores and champion labels below are superseded; see [technical report v1.0](../writeup/thinkorplace-report.pdf) for current results.
+
 # Roadmap — submission day countdown
 
 Last updated: 2026-05-16
@@ -116,10 +118,10 @@ leaderboard #1).
 
 ## See also
 
-- [`../TODO.md`](../TODO.md) — task-level breakdown
+- [`competition/TODO.md`](competition/TODO.md) — task-level breakdown
 - [`results.md`](results.md) — verified per-benchmark tables
 - [`approach.md`](approach.md) — algorithm description
 - [`experiment_index.md`](experiment_index.md) — every experiment run
 - [`handoffs/`](handoffs/) — dated session notes
 - [`../submissions/README.md`](../submissions/README.md) — entry catalog
-- [`../writeup/paper.md`](../writeup/paper.md) — innovation prize draft
+- [`../writeup/archive/2026-05-drafts/paper.md`](../writeup/archive/2026-05-drafts/paper.md) — innovation prize draft

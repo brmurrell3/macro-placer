@@ -47,7 +47,7 @@ This is the verified new submission floor.
 Hybrid expected `--all` aggregate ~1.05-1.07 (vs cascade-adaptive 1.078).
 
 ```bash
-ssh ubuntu@129.213.18.245
+ssh ubuntu@<redacted-host>
 cd ~/macro-place-challenge-2026
 
 # Single-DP hybrid:

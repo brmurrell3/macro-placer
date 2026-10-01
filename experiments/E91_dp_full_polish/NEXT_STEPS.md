@@ -3,7 +3,7 @@
 ## Step 1 (immediately after each B-R0' run completes):
 Sync results from cloud:
 ```bash
-rsync -az ubuntu@129.213.18.245:~/macro-place-challenge-2026/experiments/E91_dp_full_polish/results/ experiments/E91_dp_full_polish/results/
+rsync -az ubuntu@<redacted-host>:~/macro-place-challenge-2026/experiments/E91_dp_full_polish/results/ experiments/E91_dp_full_polish/results/
 ```
 
 ## Step 2 (decide based on B-R0' results):

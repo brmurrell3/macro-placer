@@ -14,14 +14,14 @@ This is the fix to the bug in
 gave DP only 60 s brief CD cleanup. The "DP can't compete" autopsy
 conclusion was based on that unfair comparison.
 
-## Setup (cloud — lambda.ai 129.213.18.245)
+## Setup (cloud — lambda.ai <redacted-host>)
 
 DREAMPlace is built in Docker at `~/DREAMPlace_cpu/install` (image
 `dreamplace:custom`). CPU build (CUDA build hit nvcc11.0/compute_86
 issue; CPU is fast enough — ibm10 DP = 12 s).
 
 ```bash
-ssh ubuntu@129.213.18.245
+ssh ubuntu@<redacted-host>
 cd ~/macro-place-challenge-2026
 
 # Single bench:

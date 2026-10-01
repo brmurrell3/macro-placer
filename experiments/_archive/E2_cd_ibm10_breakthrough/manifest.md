@@ -60,7 +60,7 @@ placer, then superseded by E9 plateau-adaptive CD on 2026-04-27.
 - Code: graduated to `submissions/cd_only/placer.py`. The diagnostic
   driver lives at `scripts/cd_ibm10_diagnostic.py` (kept for reference, not
   moved).
-- Discussion: `writeup/evidence.md` §7.2; `docs/experiment_index.md` (E2 row);
+- Discussion: `writeup/archive/2026-05-drafts/evidence.md` §7.2; `docs/experiment_index.md` (E2 row);
   `writeup/cd_ibm10_results.md` (per-sweep trajectory).
 - Parent: `experiments/E1_incremental_evaluator/manifest.md`.
 - Successor: `experiments/E9_plateau_detection/manifest.md`.

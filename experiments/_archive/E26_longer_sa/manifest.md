@@ -123,4 +123,4 @@ log: `experiments/E26_longer_sa/run.log`. Logged with hypothesis tag
   `experiments/E24_sa_polish_v2/code/cd_sa_polish_v2.py`.
 - Parent: E25 — same pipeline, different budget split.
 - Discussion: emergent from E25's `--fast` phase logs (SA best at
-  t≈599 s). Surface in `writeup/evidence.md` §9.E continuation.
+  t≈599 s). Surface in `writeup/archive/2026-05-drafts/evidence.md` §9.E continuation.

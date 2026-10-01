@@ -1,7 +1,7 @@
 # E91: PATH B B-R0' — Stock DP + Full Polish vs Cascade
 
 **Status:** hybrid `--all` validated 2026-05-13 10:52 UTC.
-**Cloud:** lambda.ai A100 box at 129.213.18.245
+**Cloud:** lambda.ai A100 box at <redacted-host>
 
 ## TL;DR (final)
 

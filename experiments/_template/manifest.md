@@ -32,4 +32,4 @@ superseded_by: null    # E<NN> if status=superseded
 ## Pointers
 - Code: `code/<file>.py` (if local) or removed (`<git ref>`).
 - Results: `results/...` (the JSON or partial snapshots).
-- Discussion: `writeup/evidence.md` §X.Y; `docs/experiment_index.md`; etc.
+- Discussion: `writeup/archive/2026-05-drafts/evidence.md` §X.Y; `docs/experiment_index.md`; etc.

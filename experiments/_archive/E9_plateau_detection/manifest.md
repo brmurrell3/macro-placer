@@ -74,7 +74,7 @@ champion was kept at the conservative defaults.
 ## Pointers
 - Code: graduated to `submissions/cd_adaptive/placer.py`.
 - Result: `results/CDAdaptivePlacer_20260427_132214.json`.
-- Discussion: `writeup/evidence.md` §2.1, §7.5; `docs/experiment_index.md`
+- Discussion: `writeup/archive/2026-05-drafts/evidence.md` §2.1, §7.5; `docs/experiment_index.md`
   (E9 row); ADR-003.
 - Parent: `experiments/E2_cd_ibm10_breakthrough/manifest.md`.
 - Sensitivity follow-up: `experiments/E16_tight_threshold/manifest.md`.

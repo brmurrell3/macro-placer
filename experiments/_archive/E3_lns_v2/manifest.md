@@ -49,6 +49,6 @@ v1's failure mode wasn't a wall-budget problem.*
   `submissions/cd/cd_lns_placer.py`; preserved at
   `writeup/archive/submissions/lns.py`,
   `writeup/archive/submissions/cd_lns_placer.py`.
-- Discussion: `writeup/evidence.md` §9.4; `docs/experiment_index.md` (E3 v2 row).
+- Discussion: `writeup/archive/2026-05-drafts/evidence.md` §9.4; `docs/experiment_index.md` (E3 v2 row).
 - Parent: `experiments/E3_lns_v1/manifest.md`.
 - Successor: `experiments/E12_grid_bin_lns/manifest.md`.

@@ -10,7 +10,7 @@ set -e
 ITYPE="${1:-g5.xlarge}"
 AMI="${2:-}"
 KEY=tier2-key
-SG=sg-0ee1d2f825ff9cfb1
+SG=<redacted-security-group>
 # Use most recent Deep Learning AMI (Ubuntu 22, PyTorch + CUDA preinstalled)
 if [ -z "$AMI" ]; then
   AMI=$(aws ec2 describe-images \
