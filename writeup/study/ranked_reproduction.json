@@ -1,0 +1,47 @@
+{
+  "benchmarks": [
+    "ibm01",
+    "ibm02",
+    "ibm03",
+    "ibm04",
+    "ibm06",
+    "ibm07",
+    "ibm08",
+    "ibm09",
+    "ibm10",
+    "ibm11",
+    "ibm12",
+    "ibm13",
+    "ibm14",
+    "ibm15",
+    "ibm16",
+    "ibm17",
+    "ibm18"
+  ],
+  "budget_seconds": 720,
+  "cd_seconds": 600,
+  "device": "cpu",
+  "jobs": 1,
+  "num_steps": 500,
+  "seeds": [
+    42
+  ],
+  "threads": 3,
+  "timeout_seconds": 3600,
+  "variants": [
+    "v2-a"
+  ],
+  "variant_parameters": {
+    "v2-a": {
+      "cd_plateau_threshold": 0.001,
+      "gamma_end_frac": 5e-05,
+      "gamma_start_frac": 0.005,
+      "init": "sdf",
+      "lr_frac": 0.005,
+      "overlap_lambda_end": 10.0,
+      "overlap_ramp_pct": 0.7
+    }
+  },
+  "study_kind": "post-competition-reproduction-ranked-config",
+  "study_notes": "Post-competition reproduction of the configuration inferred to have earned the official score (ninth, verified mean proxy 0.9974). Inference, not a recorded fact: the upstream leaderboard row lists 12min/bench and 'Resubmitted 5/20 (thinkorplace-v2)', and the 20 May single pipeline at commit 5485310 (budget_seconds=720, cd_polish_s=600) matches that runtime and the self-reported 0.991; the commit the judges cloned was not recorded. Pipeline reproduced as corrected-runtime Lane A alone: SDF initializer (seed 42) -> 500 Adam steps on the smooth proxy (log-sum-exp wirelength, Gaussian density sigma_scale 1.0 top-10%, per-net trace congestion; lr 0.005 x canvas width; gamma 5e-3 -> 5e-5 linear; overlap weight 0 -> 10 over the first 70% of steps; boundary weight 50) -> greedy spiral legalization (80 steps of 2% canvas) with overlap projection; retry ladder overlap_end 10, 50, then 100 with 300 steps; SDF fallback -> exact incremental coordinate descent capped at 600 s (min half the cap, patience 5, plateau 0.001). The listed variant_parameters equal the 20 May defaults and are pinned only against default drift. Host: the author's Apple M3 Max under macOS 27.0.1, CPU device, 3 torch threads (the 20 May program set no thread limit), one benchmark at a time, Python 3.9.6 and torch 2.8.0; not the judges' hardware (stated in the 20 May submission notes as AMD EPYC 9655P plus RTX 6000 Ada in a PyTorch 2.5.1 CUDA container, where the 20 May program would select CUDA for descent). Known differences: (1) CPU descent is slower, and coordinate descent is wall-time capped, so final scores depend on host speed and are not bitwise repeatable; (2) the corrected runtime enforces the 720 s deadline inside descent and retries and gives coordinate descent min(600, remaining) s, where the 20 May program let descent overrun and gave max(30, min(600, remaining - 10)) s; if initialization and descent exhaust the budget, the run now returns its best validated checkpoint; (3) validated checkpoints add canonical evaluations inside the budget and Lane A runs in a spawned subprocess; (4) bounds repair clamps soft clusters into the canvas after SDF initialization (15 of 17 IBM designs start with 1-11 soft clusters outside the canvas by at most 1.11 um; IBM01 and IBM02 start with none) and after legalization (IBM01: two clusters moved at most 0.0102 um, legalized proxy 0.91258532 -> 0.91260284); (5) hierarchy-aware pin ownership and SDF edge extraction give bitwise-identical net data and edge lists on all 17 IBM designs; (6) fixed-macro handling changes are inactive because IBM designs have no fixed macros. On this host, SDF initialization and the 500 raw descent steps for IBM01 are bitwise identical between the 20 May sources and the corrected runtime."
+}
