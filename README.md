@@ -65,7 +65,7 @@ pipeline came from lower routing congestion.
 | [`macro_place/`](macro_place/) | Challenge infrastructure: benchmark loader, proxy cost, the `evaluate` command, and the incremental evaluator. |
 | [`writeup/`](writeup/) | Report source, frozen evidence, study configurations and run records, the explorer, and the website summary. |
 | [`experiments/`](experiments/) | About 150 development experiments, each with a manifest of hypothesis, method, kill gate and outcome, including falsified ones. |
-| [`docs/`](docs/) | Development records from May 2026; competition-era files, including the original challenge README, are in [`docs/competition/`](docs/competition/). |
+| [`docs/`](docs/) | May 2026 development records: experiment index, decision records, and the competition-era agent instructions in [`docs/competition/`](docs/competition/). The original challenge README is [upstream at revision `996193c`](https://github.com/partcleda/macro-place-challenge-2026/blob/996193c83eaad151e5ae3fb166cedbd83372d060/README.md). |
 | [`scripts/`](scripts/) | Study runner, publication renderers and checks, and development utilities. |
 | [`test/`](test/) | Focused tests for the package, the study runner, and the post-competition repairs. |
 

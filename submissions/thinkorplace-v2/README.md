@@ -14,7 +14,6 @@ Use the [publication runner](../../writeup/study/README.md) to select Lane A or
 A+B+C, set an explicit device/thread allocation, enforce an external wall cap,
 and preserve manifests, logs, valid checkpoints, and full legality checks.
 
-The historical 0.98387 figure belongs to a standalone extended-CD run; 0.97745
-is an offline per-design oracle. Neither establishes the final operating ensemble
-mean. See the [source/results audit](../../docs/reviews/2026-09-06-thinkorplace.md)
-and [report](../../writeup/latex/main.tex) for the supported evidence.
+Results are in the [technical report](../../writeup/thinkorplace-report.pdf);
+its evidence ledger (Appendix G) states which historical figures are results and
+which are not.

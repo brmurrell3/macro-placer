@@ -11,7 +11,7 @@ the [technical report](../writeup/thinkorplace-report.pdf) and the
 | [`experiment_index.md`](experiment_index.md) | Catalog of experiments, live and falsified; the manifests are in [`../experiments/`](../experiments/). |
 | [`decisions/`](decisions/) | Architecture decision records, immutable once accepted. |
 | [`gotchas.md`](gotchas.md) | Codebase pitfalls found during development; the solver source cites it. |
-| [`competition/`](competition/) | Competition-era files: the challenge README with local notes, and the agent instructions that set each experiment's kill gate. |
+| [`competition/`](competition/) | The competition-era agent instructions that set each experiment's kill gate. The original challenge README is upstream at revision `996193c`. |
 
 Status reports, handoff notes, plans, the May results and roadmap pages, research
 notes and the publication plan were removed in October 2026; the technical report
