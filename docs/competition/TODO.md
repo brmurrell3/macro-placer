@@ -1,3 +1,5 @@
+> **Archived.** Competition-era task list as of May 2026; superseded by the project README and technical report v1.0.
+
 # TODO — submission day countdown
 
 **Deadline:** May 21, 2026, 11:59 PT (5 days from 2026-05-16)
@@ -75,7 +77,7 @@ CD wall by **5.36×** on ibm10 via `delta_cost` / `delta_cost_axis_batch`
 `avg_iter_wall × 1.2` vs fixed 60s safety) keeps cascade from stopping
 early when one more iter could fit.
 
-See [`docs/approach.md`](docs/approach.md) for the full mechanism
+See [`docs/approach.md`](../approach.md) for the full mechanism
 description.
 
 ## Hardware reference
@@ -107,11 +109,11 @@ MKL_NUM_THREADS=8` (otherwise numpy defaults to 1 thread; ~3-9× slowdown).
 
 ## See also
 
-- [`docs/results.md`](docs/results.md) — verified per-benchmark numbers
-- [`docs/roadmap.md`](docs/roadmap.md) — day-by-day plan
-- [`docs/approach.md`](docs/approach.md) — full mechanism description
-- [`docs/experiment_index.md`](docs/experiment_index.md) — every experiment, post-E84 wave
-- [`docs/handoffs/`](docs/handoffs/) — dated session notes
-- [`writeup/evidence.md`](writeup/evidence.md) §1, §1.1 — frozen-number archive
-- [`writeup/paper.md`](writeup/paper.md) — innovation prize draft
-- [`submissions/README.md`](submissions/README.md) — entry catalog
+- [`docs/results.md`](../results.md) — verified per-benchmark numbers
+- [`docs/roadmap.md`](../roadmap.md) — day-by-day plan
+- [`docs/approach.md`](../approach.md) — full mechanism description
+- [`docs/experiment_index.md`](../experiment_index.md) — every experiment, post-E84 wave
+- [`docs/handoffs/`](../handoffs/) — dated session notes
+- [`writeup/evidence.md`](../../writeup/archive/2026-05-drafts/evidence.md) §1, §1.1 — frozen-number archive
+- [`writeup/paper.md`](../../writeup/archive/2026-05-drafts/paper.md) — innovation prize draft
+- [`submissions/README.md`](../../submissions/README.md) — entry catalog

@@ -1,3 +1,5 @@
+> **Superseded May 2026 draft.** Numbers and framings here (for example 0.98387 'shipped', 'ceiling') are corrected in technical report v1.0.
+
 # Evidence — Experimental Results and Falsification Record
 
 > Single archive for per-benchmark tables, ablations, dead-ends, and
@@ -65,7 +67,7 @@ unverified self-reports with skepticism.
 > drives the current submission options. Per-experiment manifests live
 > at `experiments/E48_*`, `experiments/E74_*`, `experiments/E84_*`,
 > `experiments/E91-E107/`. Per-bench numbers in
-> [`docs/handoffs/2026-05-14_champion_found_dp_lane.md`](../docs/handoffs/2026-05-14_champion_found_dp_lane.md).
+> [`docs/handoffs/2026-05-14_champion_found_dp_lane.md`](../../../docs/handoffs/2026-05-14_champion_found_dp_lane.md).
 
 | Era | Method | Best avg (`--all`) | NG45 `--ng45` | Δ vs RePlAce | ADR | Date |
 |-----|--------|-------------------:|--------------:|-------------:|-----|------|

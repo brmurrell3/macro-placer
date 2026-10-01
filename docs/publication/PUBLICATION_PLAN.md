@@ -1,3 +1,5 @@
+> **Archived.** Planning document for the September 2026 publication work; superseded by report v1.0.
+
 # Thinkorplace publication plan
 
 **Execution status, 6 September 2026:** the LaTeX working report, website summary,
@@ -26,7 +28,7 @@ budget, rather than narrating every experiment in chronological order.
 
 The current draft and research notes provide substantial source material. They
 need a structural rewrite and claim audit, not merely a prose polish. Preserve
-the existing draft during this work. The [post-competition assessment](../docs/reviews/2026-09-06-thinkorplace.md)
+the existing draft during this work. The [post-competition assessment](../reviews/2026-09-06-thinkorplace.md)
 records the known packaging, timing, topology, and score-attribution problems.
 
 **The publication package**

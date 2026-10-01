@@ -1,3 +1,5 @@
+> **Superseded May 2026 draft.** Numbers and framings here (for example 0.98387 'shipped', 'ceiling') are corrected in technical report v1.0.
+
 # Theoretical Foundations
 
 Last updated: 2026-04-13
@@ -303,7 +305,7 @@ The theoretical frameworks in Sections 2-4 identify *what* to do (navigate throu
 > **Empirical status (Apr 16):** Tested on ibm01. Cheap dual signals predict
 > LP-HPWL (rho=0.86, 42700x speedup), but LP-HPWL has **zero correlation with
 > proxy cost** (rho=-0.001). The chain `cheap signal -> LP-HPWL -> proxy`
-> breaks at the second link. See [results.md](results.md) "Miftari" section.
+> breaks at the second link. See [results.md](../../../docs/results.md) "Miftari" section.
 >
 > This invalidates the entire class of LP-value-based cluster elimination:
 > branch-and-bound with LP relaxation, Lagrangian bounds from duals, MCMC
@@ -411,6 +413,6 @@ The most speculative ideas with strong mathematical connections are GCS perspect
 
 ## See Also
 
-- [approach.md](approach.md) -- what we do and why
-- [roadmap.md](roadmap.md) -- implementation plan
-- [problem.md](problem.md) -- formal problem statement
+- [approach.md](../../../docs/approach.md) -- what we do and why
+- [roadmap.md](../../../docs/roadmap.md) -- implementation plan
+- [problem.md](../../../docs/problem.md) -- formal problem statement

@@ -1,3 +1,5 @@
+> **Superseded May 2026 draft.** Numbers and framings here (for example 0.98387 'shipped', 'ceiling') are corrected in technical report v1.0.
+
 # Story Arc — Source-of-Truth Narrative for the Paper
 
 > Purpose: organize the development narrative into the standard formal-paper

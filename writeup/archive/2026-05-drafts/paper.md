@@ -1,3 +1,5 @@
+> **Superseded May 2026 draft.** Numbers and framings here (for example 0.98387 'shipped', 'ceiling') are corrected in technical report v1.0.
+
 # Macro Placement: A Diagnostic-Driven Path from 1.46 to 0.98, with a Hessian Saddle Escape and a 3-Lane Polish Ensemble
 
 > **STATUS:** Working master draft. Source-of-truth for the paper. Section
@@ -2120,7 +2122,7 @@ infeasibility wall identified in §8.7.5.
 
 The full 17-benchmark per-bench results for Option A and Option B
 against RePlAce, the prior champion lineage (E12, E48, E74), and the
-E84 uncapped ceiling are tabulated in [`docs/results.md`](../docs/results.md)
+E84 uncapped ceiling are tabulated in [`docs/results.md`](../../../docs/results.md)
 §Post-2026-05-06. Per-design `--ng45` numbers for Option A vs Option B
 appear in §9.5 above. The complete table is reproduced as Figure 5
 (per-bench bar chart) for visual reference; the underlying JSON is

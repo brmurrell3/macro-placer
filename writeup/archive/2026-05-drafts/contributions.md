@@ -1,3 +1,5 @@
+> **Superseded May 2026 draft.** Numbers and framings here (for example 0.98387 'shipped', 'ceiling') are corrected in technical report v1.0.
+
 # Contributions
 
 Every claim below has corresponding code, data, or experiments that we

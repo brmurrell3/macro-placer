@@ -1,3 +1,5 @@
+> **Archived.** Competition-era run log as of May 2026; superseded by the project README and technical report v1.0. Scores below are development records, not the organizers' leaderboard.
+
 # Leaderboard — Macro Placement Challenge 2026
 
 Auto-updated record of every placer run. **Hierarchy** (cheapest → costliest):

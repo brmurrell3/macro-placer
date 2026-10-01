@@ -1,16 +1,8 @@
-# `writeup/` directory map
+> **Superseded May 2026 draft.** Numbers and framings here (for example 0.98387 'shipped', 'ceiling') are corrected in technical report v1.0.
 
-**September 2026 publication work:** the active technical report is now
-[`latex/main.tex`](latex/main.tex), with a short
-[`website-summary.md`](website-summary.md), a
-[`17-design interactive explorer`](interactive/placement-comparison.html), and
-[`reproducible study configurations`](study/README.md). The
-[`publication plan`](PUBLICATION_PLAN.md) and
-[`source/results audit`](../docs/reviews/2026-09-06-thinkorplace.md) explain the
-evidence boundaries. The Markdown drafts and May-era map below are preserved as
-development history. In particular, their 0.98387, 0.99115, hardware, ranking, and
-"uncapped ceiling" attributions are superseded by the audit; they must not be
-quoted as a verified final three-lane result.
+# `writeup/` directory map (May 2026)
+
+This was the map of `writeup/` while these drafts were active. The drafts now live in this folder; the current map is [`../../README.md`](../../README.md).
 
 Six markdown files. Each has a single, distinct role.
 

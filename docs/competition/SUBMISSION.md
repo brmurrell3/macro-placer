@@ -1,3 +1,5 @@
+> **Archived.** Competition-era submission notes as of May 2026; superseded by the project README and technical report v1.0. Scores and status claims below are development records, not verified results.
+
 # thinkorplace submission
 
 ## TL;DR
@@ -16,7 +18,7 @@ The first run will build the eval Docker image (PyTorch 2.5.1 + CUDA
 
 `placer.py` at the repo root is a thin launcher. It locates the rest
 of the repo on `sys.path` and dispatches to
-[`submissions/thinkorplace-v2/placer.py`](submissions/thinkorplace-v2/placer.py)
+[`submissions/thinkorplace-v2/placer.py`](../../submissions/thinkorplace-v2/placer.py)
 (`Placer`), our **2026-05-22 submission**.
 
 v2 is **self-contained**: every experiment module it imports lives in
@@ -113,13 +115,13 @@ overlaps. M3 smokes on ibm04/09/10/17 all show Lane C lifts in the
 the Hessian + Hungarian basin escape lanes.
 
 See:
-  - [`experiments/E111_per_net_trace_congestion/`](experiments/E111_per_net_trace_congestion/) — per-net trace congestion
-  - [`experiments/E115_triton_kernels/`](experiments/E115_triton_kernels/) — FastDiffProxy backbone
-  - [`experiments/E117_gaussian_density/`](experiments/E117_gaussian_density/) — Gaussian density
-  - [`experiments/E138_bounded_saddle/`](experiments/E138_bounded_saddle/) — Lane B Hessian saddle escape
-  - [`experiments/E159_hungarian_polish/`](experiments/E159_hungarian_polish/) — Lane C K=50 Hungarian permutation
-  - [`experiments/E155_parallel_ensemble/`](experiments/E155_parallel_ensemble/) — multiprocess parallel ensemble framework
-  - [`experiments/E127_v4_gaussian/`](experiments/E127_v4_gaussian/) — V4 + Gaussian composition (what v2 runs)
+  - [`experiments/E111_per_net_trace_congestion/`](../../experiments/E111_per_net_trace_congestion/) — per-net trace congestion
+  - [`experiments/E115_triton_kernels/`](../../experiments/E115_triton_kernels/) — FastDiffProxy backbone
+  - [`experiments/E117_gaussian_density/`](../../experiments/E117_gaussian_density/) — Gaussian density
+  - [`experiments/E138_bounded_saddle/`](../../experiments/E138_bounded_saddle/) — Lane B Hessian saddle escape
+  - [`experiments/E159_hungarian_polish/`](../../experiments/E159_hungarian_polish/) — Lane C K=50 Hungarian permutation
+  - [`experiments/E155_parallel_ensemble/`](../../experiments/E155_parallel_ensemble/) — multiprocess parallel ensemble framework
+  - [`experiments/E127_v4_gaussian/`](../../experiments/E127_v4_gaussian/) — V4 + Gaussian composition (what v2 runs)
 
 ## Outside Docker (development / sanity check)
 

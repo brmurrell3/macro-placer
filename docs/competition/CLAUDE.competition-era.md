@@ -1,3 +1,5 @@
+> **Archived.** Instructions used to direct AI coding agents during the May 2026 competition; archived for transparency.
+
 # CLAUDE.md — Macro Placement Challenge 2026
 
 ## What this project is
@@ -36,7 +38,7 @@ IBM **1.05750** / NG45 **0.68930** / combined **0.987**. Cascade saddle
 cong-focus, density-focus, non-WL) → periphery wrapper (strict-
 conservative). No external dependencies. Beats Option B by −0.85 % IBM
 and −0.6 % combined. See
-[`docs/handoffs/2026-05-17_morning_champion.md`](docs/handoffs/2026-05-17_morning_champion.md)
+[`docs/handoffs/2026-05-17_morning_champion.md`](../handoffs/2026-05-17_morning_champion.md)
 for per-bench numbers, architecture details, and failed parallel attempts.
 
 **Option B — `submissions/cd_lns_sa_cascade_dp_lane/placer.py`** —
@@ -59,7 +61,7 @@ PnR): per-design strategy verified 2026-05-15/16. ariane133 — **ship
 without** `MACRO_PLACEMENT_TCL` (auto-place beats our cascade by 1.2 ns
 of slack). ariane136 — **ship with** cascade (`+0.4935` ns vs
 `+0.0457` ns auto). mempool_tile + nvdla untested. Full report:
-[`docs/handoffs/2026-05-16_tier2_orfs_findings.md`](docs/handoffs/2026-05-16_tier2_orfs_findings.md).
+[`docs/handoffs/2026-05-16_tier2_orfs_findings.md`](../handoffs/2026-05-16_tier2_orfs_findings.md).
 
 ## Prior champion lineage (now superseded by cascade)
 
@@ -120,7 +122,7 @@ the 1-hr/bench partcl cap):
 - `submissions/cd_lns_sa_hessian_dp/placer.py` — E74 + optional
   DREAMPlace lane (subprocess to `$DREAMPLACE_ROOT/dreamplace/Placer.py`
   on cloud GPU; skipped if DREAMPLACE_ROOT not set or insufficient time).
-  Cloud: OCI A100-SXM4-40GB at 132.145.135.39 (ssh alias `mpc-cloud`).
+  Cloud: OCI A100-SXM4-40GB at <redacted-host> (ssh alias `mpc-cloud`).
   Built native at /opt/DREAMPlace/install with _GLIBCXX_USE_CXX11_ABI=1
   (matches system torch 2.7).
 
