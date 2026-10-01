@@ -22,8 +22,9 @@ Each ADR is a short markdown file with five sections:
 ADRs use the template at the top of `001_optimize_full_proxy.md`.
 
 The ADR bodies cite the May 2026 drafts at their original paths
-(`writeup/evidence.md`, `writeup/contributions.md`). Those drafts now live in
-`writeup/archive/2026-05-drafts/`; the ADRs themselves are unchanged.
+(`writeup/evidence.md`, `writeup/contributions.md`). `evidence.md` now lives in
+`writeup/archive/2026-05-drafts/`; `contributions.md` was removed in October 2026
+and can be read with `git show b7de373:<path>`. The ADRs themselves are unchanged.
 
 ## Immutability
 

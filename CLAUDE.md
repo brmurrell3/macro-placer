@@ -14,7 +14,7 @@ no longer apply. Do not run solver experiments unless asked.
 - `thinkorplace/` solver package (corrected v1 and v2 runtime)
 - `submissions/` competition entry points and archived placers; root `placer.py` launches v2
 - `macro_place/` challenge infrastructure: loader, proxy cost, `evaluate`, incremental evaluator
-- `writeup/` report source (`latex/`), frozen evidence (`data/publication/`), study configs (`study/`), run records (`runs/`), explorer (`interactive/`), May drafts (`archive/`)
+- `writeup/` report source (`latex/`), frozen evidence (`data/publication/`), study configs (`study/`), run records (`runs/`), explorer (`interactive/`), May data log and archived code (`archive/`)
 - `experiments/` per-experiment manifests, including falsified ones; index in `docs/experiment_index.md`
 - `docs/` May 2026 development records; `docs/competition/` holds competition-era files
 - `scripts/` study runner, publication renderers and checks; `test/` focused tests

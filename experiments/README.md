@@ -13,8 +13,11 @@ catalogs the experiments with their status and headline result. Scores in the
 manifests are historical development records: they come from different hardware,
 budgets and concurrency, often cover a subset of the 17 IBM designs, and most
 have no saved coordinates. The run log that many manifests cite,
-`results/experiment_log.jsonl`, stayed local and is not in the repository. For
-current results, read the [technical report](../writeup/thinkorplace-report.pdf).
+`results/experiment_log.jsonl`, stayed local and is not in the repository.
+Manifests also cite May 2026 documents that were removed in October 2026 (status
+reports, handoffs, plans and the paper drafts); read them at commit `b7de373`
+with `git show b7de373:<path>`. For current results, read the
+[technical report](../writeup/thinkorplace-report.pdf).
 
 ## Conventions used during development
 

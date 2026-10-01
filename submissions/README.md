@@ -1,34 +1,15 @@
-# thinkorplace submissions
+# Submissions
 
-## `thinkorplace/` — 2026-05-13 submission
+| Path | Contents |
+|---|---|
+| [`thinkorplace-v2/`](thinkorplace-v2/) | The v2 entry point. `placer.py` delegates to `thinkorplace.v2` in the [`thinkorplace/`](../thinkorplace/) package; `lib/` keeps the pre-extraction sources that `thinkorplace/MIGRATION.json` records as origins. The root [`placer.py`](../placer.py) loads this entry. |
+| [`thinkorplace/`](thinkorplace/) | The v1 entry point. `placer.py` delegates to `thinkorplace.v1`. |
+| [`common/`](common/) | Compatibility modules from the competition code: runtime-safety helpers and shared placer modules. `thinkorplace/MIGRATION.json` records which ones the package was extracted from. |
+| [`examples/`](examples/) | Reference placers from the challenge. |
+| [`_archive/`](_archive/) | Earlier placers, cited by the experiment manifests in [`../experiments/`](../experiments/). |
 
-Original cascade placer.
-
-```bash
-uv run evaluate submissions/thinkorplace/placer.py --all --json
-```
-
-Or via Docker:
-
-```bash
-./eval_docker/run_eval.sh thinkorplace submissions/thinkorplace/placer.py
-```
-
-## `thinkorplace-v2/` — 2026-05-22 submission
-
-3-lane parallel ensemble (V4 + Gaussian density base; lane B adds bounded
-Hessian saddle escape; lane C adds K=50 Hungarian joint permutation).
-Master spawns 3 subprocesses per bench and picks the canonical-best.
-
-Self-contained: all our experiment code lives in `submissions/thinkorplace-v2/lib/`.
-Only `macro_place.*` (competition infra) and standard deps are imported.
+Evaluate the v2 entry on one design:
 
 ```bash
-uv run evaluate submissions/thinkorplace-v2/placer.py --all --json
-```
-
-Via Docker (root `placer.py` launcher points here):
-
-```bash
-./eval_docker/run_eval.sh thinkorplace placer.py
+uv run evaluate submissions/thinkorplace-v2/placer.py -b ibm01
 ```

@@ -13,8 +13,4 @@ Exact Local Search for Chip Macro Placement* (technical report 1.0,
 | [`runs/`](runs/) | Run records written by the study runner: manifests, per-run requests, results and logs. See [`runs/README.md`](runs/README.md). |
 | [`interactive/`](interactive/) | The standalone placement explorer, [`placement-comparison.html`](interactive/placement-comparison.html), and its data. Download the page and open it in a browser. |
 | [`website-summary.md`](website-summary.md) | Short summary of the report for the author's website. Its relative links resolve in the packaged site built by `scripts/package_publication.py`, not in this directory. |
-| [`archive/`](archive/) | Superseded material: the May 2026 Markdown drafts in [`archive/2026-05-drafts/`](archive/2026-05-drafts/), earlier run logs, planning notes and placer code. |
-| [`scripts/`](scripts/) | Two early analysis scripts from the April–May 2026 development. |
-
-The September 2026 publication plan is archived in
-[`../docs/publication/PUBLICATION_PLAN.md`](../docs/publication/PUBLICATION_PLAN.md).
+| [`archive/`](archive/) | The May 2026 development data log, [`archive/2026-05-drafts/evidence.md`](archive/2026-05-drafts/evidence.md), which manifests and ADRs cite, and archived placer code that the tests and frozen evidence reference by path. |
