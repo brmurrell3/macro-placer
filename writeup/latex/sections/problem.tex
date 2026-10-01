@@ -1,0 +1,216 @@
+\section{The problem as optimization}\label{sec:problem}
+
+\inbrief{Each pair of hard blocks must sit left of, right of, above or below one
+another, so with $m$ pairs the legal placements form a union of up to $4^m$ convex
+pieces, and a search that moves one block at a time can leave its piece only where
+two pieces touch. The score averages the most crowded grid cells and assigns pins to
+cells, so it has kinks and jumps where gradients fail, and one exact evaluation takes
+seconds.}
+
+\subsection{Variables and constraints}\label{sec:geometry}\label{sec:geometry-analysis}
+
+The canvas is the rectangle $[0,L_x]\times[0,L_y]$. Object $i$, a hard macro or a
+soft cluster, has center $p_i=(x_i,y_i)$, width $w_i$ and height $h_i$; sizes and
+orientations are fixed. A placement $p$ stacks all centers into one vector, of
+2,156--5,536 coordinates on the IBM designs. Every object must lie inside the
+canvas,
+\begin{equation}
+  \tfrac{w_i}{2}\le x_i\le L_x-\tfrac{w_i}{2},\qquad
+  \tfrac{h_i}{2}\le y_i\le L_y-\tfrac{h_i}{2},
+  \label{eq:containment}
+\end{equation}
+and fixed objects keep their positions (no IBM design has any). Soft clusters may
+overlap anything, but two hard macros $i\neq j$ must be separated horizontally or
+vertically: at least one of four linear inequalities must hold,
+\begin{equation}
+\Bigl(x_i+\tfrac{w_i}{2}\le x_j-\tfrac{w_j}{2}\Bigr)\lor
+\Bigl(x_j+\tfrac{w_j}{2}\le x_i-\tfrac{w_i}{2}\Bigr)\lor
+\Bigl(y_i+\tfrac{h_i}{2}\le y_j-\tfrac{h_j}{2}\Bigr)\lor
+\Bigl(y_j+\tfrac{h_j}{2}\le y_i-\tfrac{h_i}{2}\Bigr).
+\label{eq:disjunction}
+\end{equation}
+Touching edges are legal. Choosing one of the four options for every pair turns this
+either-or rule into ordinary linear inequalities, which gives the structure below.
+Let $\mathcal B$ be the set of placements that satisfy
+\eqref{eq:containment} and the fixed positions, $\mathcal E$ the set of unordered
+hard-macro pairs with $m=|\mathcal E|$, and $H_{e,b}$ the closed halfspace given by
+branch $b\in\{1,2,3,4\}$ of \eqref{eq:disjunction} for pair $e$.
+
+\begin{proposition}[Finite polyhedral decomposition]\label{prop:geometry}
+The feasible set is a union of at most $4^m$ compact convex polyhedra:
+\begin{equation}
+ \mathcal F
+ =\mathcal B\cap\bigcap_{e\in\mathcal E}\bigcup_{b=1}^4 H_{e,b}
+ =\bigcup_{\sigma\in\{1,2,3,4\}^{\mathcal E}} P_\sigma,
+ \qquad
+ P_\sigma=\mathcal B\cap\bigcap_{e\in\mathcal E}H_{e,\sigma(e)}.
+ \label{eq:polyhedral-union}
+\end{equation}
+The polyhedra may overlap or be empty.
+\end{proposition}
+\noindent Proof in Appendix~\ref{app:proofs}. Each piece $P_\sigma$ fixes, for every
+pair, which side of the other each macro lies on (\cref{fig:feasible}); IBM01's 246
+hard macros form $m=30{,}135$ pairs, so up to $4^{30{,}135}$ pieces. Inside a piece the constraints are linear and
+convex, so continuous optimization works, but changing a pair's arrangement means
+moving to another piece, which a path that never overlaps can do only where two
+pieces touch. Along one coordinate, with the others fixed, the legal values form a
+finite union of closed intervals (Appendix~\ref{app:proofs}): a one-coordinate
+search sees gaps where other blocks stand in the way.
+
+\subsection{The score}\label{sec:score}\label{sec:tail-analysis}
+
+The competition proxy, introduced with Circuit Training \citep{mirhoseini2021graph}
+and computed by the TILOS MacroPlacement evaluator \citep{macroplacement}, is
+\begin{equation}
+  \proxy(p)=W(p)+\tfrac12 D(p)+\tfrac12 C(p).
+  \label{eq:canonical}
+\end{equation}
+Appendix~\ref{app:objective} gives every constant.
+
+\paragraph{Wirelength.} The half-perimeter wirelength (HPWL) of a net $n$ is half
+the perimeter of the smallest rectangle around its pins, a standard estimate of the
+wire needed to connect them. With each pin $q$ at a fixed offset from its object's
+center and net weights $\omega_n$,
+\[
+ \mathrm{HPWL}_n=\bigl(\max_{q\in n}x_q-\min_{q\in n}x_q\bigr)
+ +\bigl(\max_{q\in n}y_q-\min_{q\in n}y_q\bigr),
+ \qquad
+ W=\frac{\sum_n\omega_n\,\mathrm{HPWL}_n}{(L_x+L_y)\sum_n\omega_n}.
+\]
+
+\paragraph{Tail averages.} Density and congestion use a grid of $G$ cells (810 to
+2,255 per design). For $N$ cell values $z\in\mathbb R^N$, let $A_k(z)$ be the mean of
+the $k$ largest: \emph{the average of the worst $k$ cells}. With $\rho_b$ the total
+object area in cell $b$ divided by the cell area (it exceeds 1 where objects
+overlap), $D=\tfrac12A_{\lfloor0.1G\rfloor}(\rho)$ with $N=G$, so the raw top-decile
+mean enters $\proxy$ with weight $\tfrac14$. \emph{Routing congestion} compares
+wiring demand with the routing tracks available: the evaluator maps each pin to the
+grid cell that contains it, routes each net between those cells with simple L- and
+T-shaped paths, divides each cell's horizontal and vertical demand by its capacity,
+spreads it evenly over the cell and up to two neighbors on each side along one axis,
+and adds a fixed allowance for macros covering the cell. With $u\in\mathbb R^{2G}$
+the horizontal and vertical values, $C=A_{\lfloor0.05\cdot2G\rfloor}(u)$ with
+$N=2G$, the mean of the worst 5\%.
+
+\begin{lemma}[Tail representation and stability]\label{lem:tail}
+For $z\in\mathbb R^N$, an integer $1\le k\le N$ and $(a)_+=\max\{a,0\}$,
+\begin{equation}
+ A_k(z)
+ =\max_{\substack{0\le\beta_j\le1/k\\\sum_j\beta_j=1}}\beta^\top z
+ =\min_{\theta\in\mathbb R}\Bigl\{\theta+
+ \frac1k\sum_{j=1}^N(z_j-\theta)_+\Bigr\}.
+ \label{eq:tail-representation}
+\end{equation}
+$A_k$ is convex and piecewise affine, and for any $\delta\in\mathbb R^N$,
+\begin{equation}
+ |A_k(z+\delta)-A_k(z)|
+ \le\min\Bigl\{\|\delta\|_\infty,\
+          \frac{\|\delta\|_2}{\sqrt{k}},\
+          \frac{\|\delta\|_1}{k}\Bigr\}.
+ \label{eq:tail-stability}
+\end{equation}
+\end{lemma}
+\noindent The threshold form is the conditional value-at-risk formula
+\citep{rockafellar2000cvar}; proof in Appendix~\ref{app:proofs}. For the solver, the
+tails are convex in the cell values but kinked wherever the set of worst cells
+changes, and they are not convex in block positions, because cell values depend on
+positions nonlinearly. A move that changes the cells by $\delta$ moves a tail by at
+most $\|\delta\|_1/k$, so a move that touches few cells shifts the crowding terms
+little: the first sampled IBM01 move changed 12 of 1,845 cells and the density
+component $D=\tfrac12A_k$ by 0.0025, within its bound $\tfrac12\|\delta\|_1/k=0.0153$
+(\measurement). The same locality is what \cref{sec:cheap} exploits.
+
+\subsection{Why it is hard}\label{sec:hard}
+
+\begin{itemize}[leftmargin=1.4em,topsep=0.2em,itemsep=0.2em]
+  \item \textbf{Nonconvex and disconnected:} good placements in different pieces can
+        be separated by overlapping states that no legal path crosses.
+  \item \textbf{Piecewise and discontinuous:} pin extremes, clamps and top-$k$
+        selection leave kinks, and because the congestion estimate assigns pins to
+        grid cells, the score jumps whenever a pin crosses a grid line; its routing
+        part has zero gradient almost everywhere.
+  \item \textbf{Expensive:} a full evaluation with the reference evaluator took
+        1.4\,s on IBM01 and 27\,s on IBM10 (\measurement), so an hour buys about
+        2,600 and 130 of them.
+  \item \textbf{Large and conflicting:} thousands of coordinates interact through
+        7,269--83,132 nets, and packing connected blocks shortens wires but narrows
+        routing channels (\cref{fig:placement-tradeoff}); weighted congestion is
+        about two-thirds of the score in every development record (\historical).
+\end{itemize}
+
+\begin{figure}[tbp]
+\centering
+\begin{subfigure}[b]{0.6\linewidth}
+\centering
+\begin{tikzpicture}[x=0.73cm,y=0.53cm,font=\small,
+  block/.style={draw=blue!65,fill=blue!8,line width=0.6pt},
+  route/.style={draw=orange,line width=0.7pt},
+  connection/.style={draw=blue,line width=1.3pt}]
+  \begin{scope}
+    \node[font=\small\bfseries] at (3,6.55) {Compact};
+    \draw[rulegray] (0,0) rectangle (6,6);
+    \path[fill=orange!10] (0,2.65) rectangle (6,3.35);
+    \draw[block] (0.9,3.35) rectangle (5.1,4.85);
+    \draw[block] (0.9,1.15) rectangle (5.1,2.65);
+    \node at (3,4.1) {Macro A};
+    \node at (3,1.9) {Macro B};
+    \foreach \y in {2.8,3.0,3.2} {\draw[route] (0.15,\y) -- (5.85,\y);}
+    \draw[connection] (3,2.65) -- (3,3.35);
+    \fill[blue] (3,2.65) circle (1.5pt);
+    \fill[blue] (3,3.35) circle (1.5pt);
+    \node[align=center,font=\footnotesize] at (3,-0.72)
+      {Shorter A--B connection;\\narrower channel};
+  \end{scope}
+  \begin{scope}[xshift=5.2cm]
+    \node[font=\small\bfseries] at (3,6.55) {Spread out};
+    \draw[rulegray] (0,0) rectangle (6,6);
+    \path[fill=orange!10] (0,2.0) rectangle (6,4.0);
+    \draw[block] (0.9,4.0) rectangle (5.1,5.5);
+    \draw[block] (0.9,0.5) rectangle (5.1,2.0);
+    \node at (3,4.75) {Macro A};
+    \node at (3,1.25) {Macro B};
+    \foreach \y in {2.4,3.0,3.6} {\draw[route] (0.15,\y) -- (5.85,\y);}
+    \draw[connection] (3,2.0) -- (3,4.0);
+    \fill[blue] (3,2.0) circle (1.5pt);
+    \fill[blue] (3,4.0) circle (1.5pt);
+    \node[align=center,font=\footnotesize] at (3,-0.72)
+      {Longer A--B connection;\\wider channel};
+  \end{scope}
+  \draw[connection] (0,-1.95) -- (0.7,-1.95);
+  \node[anchor=west,font=\footnotesize] at (0.8,-1.95) {A--B connection};
+  \draw[route] (5.2,-1.95) -- (5.9,-1.95);
+  \node[anchor=west,font=\footnotesize] at (6.0,-1.95) {other nets};
+\end{tikzpicture}
+\caption{Why the terms compete (schematic).}
+\label{fig:placement-tradeoff}
+\end{subfigure}\hfill
+\begin{subfigure}[b]{0.38\linewidth}
+\centering
+\begin{tikzpicture}[x=0.86cm,y=0.92cm,font=\footnotesize]
+  \fill[blue!14] (0,0) rectangle (1.8,4.2);
+  \fill[blue!14] (4.2,0) rectangle (6,4.2);
+  \fill[orange!22,opacity=0.75] (0,3.0) rectangle (6,4.2);
+  \fill[orange!22,opacity=0.75] (0,0) rectangle (6,1.2);
+  \draw[rulegray] (0,0) rectangle (6,4.2);
+  \draw[dashed,ink,line width=0.6pt,fill=white] (1.8,1.2) rectangle (4.2,3.0);
+  \draw[ink,fill=rulegray!80,line width=0.6pt] (2.3,1.6) rectangle (3.7,2.6);
+  \node at (3.0,2.1) {$j$};
+  \draw[blue!70!black,fill=blue!30,line width=0.6pt] (0.4,3.2) rectangle (1.4,4.0);
+  \node at (0.9,3.6) {$i$};
+  \node at (0.9,2.1) {left};
+  \node at (5.1,2.1) {right};
+  \node at (3.0,3.6) {above};
+  \node at (3.0,0.6) {below};
+  \draw[<->,muted] (1.8,-0.22) -- node[below]{$w_i+w_j$} (4.2,-0.22);
+  \draw[<->,muted] (6.22,1.2) -- node[below,rotate=90]{$h_i+h_j$} (6.22,3.0);
+\end{tikzpicture}
+\caption{Where $i$'s center may go ($j$ fixed).}
+\label{fig:feasible}
+\end{subfigure}
+\caption{(a)~More separation leaves room for wires crossing between two blocks but
+lengthens their connection (schematic; macro interiors obstruct routing). (b)~Each
+branch of \eqref{eq:disjunction} confines $i$'s center to a halfplane left of, right
+of, below or above $j$; their union, the plane minus the dashed box, is not convex,
+and corners satisfy two branches ($i$ is drawn in the upper-left corner).}
+\label{fig:problem-pictures}
+\end{figure}

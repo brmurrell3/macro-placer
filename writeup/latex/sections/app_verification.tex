@@ -1,0 +1,178 @@
+\section{Post-competition verification}\label{app:verification}
+
+In September 2026 we audited the competition code against the challenge rules and
+our own runtime assumptions, repaired what we found in a separate post-competition
+runtime, and exercised the repairs in short engineering runs on an Apple M3 Max.
+This appendix lists the defects with their bearing on the judged entry, gives the
+evaluator microbenchmarks behind the main text's speed and agreement figures, and
+condenses the engineering runs, including a first reproduction attempt that was
+stopped.
+
+\subsection{Defects and their scope}\label{app:defects}
+
+\begin{table}[htbp]
+\centering\footnotesize
+\setlength{\tabcolsep}{3pt}
+\caption{Defects found by the post-competition audit. ``Judged entry'' answers whether
+the defect could have affected the 20 May IBM entry: \emph{no}, \emph{unknown}, or
+\emph{note} for an item that is not a defect. Tests are those of
+Appendix~\ref{app:repro}; ``IBM input record'' is
+\texttt{ibm\_repair\_equivalence.json}.}
+\label{tab:defects}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.16\linewidth}
+                >{\raggedright\arraybackslash}p{0.17\linewidth}
+                Y
+                >{\raggedright\arraybackslash}p{0.17\linewidth}
+                >{\raggedright\arraybackslash}p{0.20\linewidth}@{}}
+\toprule
+Defect & Where & Judged entry & Fix & Evidence \\
+\midrule
+Lane join became \path{timeout=None} after the deadline & Three-lane supervisor &
+No: the single pipeline has no lanes to join & Shared monotonic deadline; zero join
+timeout after expiry; external process-group timeout & Join and termination tests;
+IBM17 runs stopped at 240.0--240.1\,s (limit 240\,s) \\
+\addlinespace
+Stage polish caps exceed the stage budget & Curvature stage; v1 cascade and portfolio
+& No: neither stage is in the single pipeline & Caps charged for eigensolver and
+legalizer time; deadline checked between HVPs & Three budget tests \\
+\addlinespace
+Lane result written only on normal completion & Lane worker & No: the single
+pipeline returns its placement directly & Atomic, validated checkpoint per phase; best
+valid one recovered & Checkpoint tests; three recoveries in each 12-run batch \\
+\addlinespace
+Temporary lane directories not removed & Three-lane supervisor & No: no lane
+directories, and disk residue cannot change a placement & Cleanup on every exit path &
+Cleanup tests \\
+\addlinespace
+Pin owner taken from the pin name before its first ``/'' & Surrogate net extraction
+(\path{_extract_net_data}) & No: IBM names are flat, verified on 17 of 17 designs
+(0 owner mismatches over 411,642 macro pins; identical net tensors); IBM01 keeps
+2,978 hard-pin occurrences and 5,993 retained nets & Owner from the parser's pin
+object & IBM input record; ariane133: all 5,498 used hard-pin occurrences restored;
+four tests \\
+\addlinespace
+Same split in the initializer's macro graph & \path{sdf_init.py} & No: IBM names are
+flat; edge lists identical on 17 of 17 designs (IBM01: 644 edges) & Map from the
+parser's hard-macro pins & IBM input record; ariane133: 0 to 859 edges; replayable
+record; four tests \\
+\addlinespace
+\texttt{qualified} set from the overlap count alone & Local result writer & No: the
+organizers scored with their own harness & Validity and eligibility recorded
+separately & 22 of 34 overlap-free historical endpoints pass strict containment \\
+\addlinespace
+Input soft clusters outside the canvas not repaired & Initializer; push-apart &
+Unknown: no judged coordinates survive; 15 of 17 IBM inputs have 1 to 11 such
+clusters, which the descent pushes inward without guaranteeing containment; the
+organizers verified the entry & Every movable center projected into the canvas &
+IBM input record; v1 failed on IBM10 and IBM17 in the pilot and passed on IBM10 after
+repair; soft-bound tests \\
+\addlinespace
+Float32 export can round past the upper canvas edge & Final conversion after clipping &
+Unknown: the single pipeline also exports float32; the organizers verified the entry &
+Step one representable value inward & 12 of 34 historical endpoints exceed by one step;
+one test \\
+\addlinespace
+NG45 lookup failed on the \path{_ng45} name suffix & \path{find_benchmark_dir} & No:
+IBM names have no suffix & Explicit aliases, exact name first & Pilot ariane133
+failures; later batches valid; three tests \\
+\addlinespace
+Golden-section search unreachable & CD axis search & Note: it never runs & None
+needed & At most ten candidates; list capped at 12 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Table~\ref{tab:defects} lists each defect, where it lived in the competition code,
+whether it could have affected the judged 20 May IBM entry, the repair and the
+evidence that the repair works. The judged entry is inferred to be the single
+pipeline of Appendix~\ref{app:alg-supervisor}; its listed runtime of about 12 minutes
+per design matches its 720\,s budget. Two facts settle most rows: that pipeline runs
+in one process without lane workers, and every hard-macro name in the 17 IBM netlists
+is flat, so the first ``/'' of a pin name always separates the owning macro. A
+frozen record checks this on all 17 pinned IBM inputs
+(\path{writeup/data/publication/ibm_repair_equivalence.json}, written by
+\path{scripts/measure_publication_ibm_repair_equivalence.py}; \measurement). It
+compares the extraction code of 20 May (commit \texttt{5485310}) with the corrected
+runtime without optimizing or scoring: the two ownership rules agree on all 411,642
+macro pins, and the smooth net tensors and the initializer's hard-macro edge lists
+are identical on 17 of 17 designs. The same record finds no fixed macros, and soft
+clusters outside the canvas in the inputs of 15 designs (1 to 11 per design), which
+the corrected runtime's initial clamp moves. The ``Evidence'' column refers to the
+focused tests of Appendix~\ref{app:repro} and to the frozen diagnostics.
+
+
+\input{generated/evaluator_results.tex}
+
+\subsection{Engineering runs}\label{app:engineering}
+
+Three batches exercised the repaired runtime with the corrected runner. They are short
+engineering checks: the solver budgets are 60 to 180\,s, far below the competition's
+hour, and their purpose is execution, recording and legality, not quality. All ran on
+an Apple M3 Max (14 logical CPUs, 36\,GiB) under macOS 26.6.2 with CPython 3.9.6 and
+PyTorch 2.8.0, nominal seed 42, and every planned run is reported. Each batch froze its
+source as a runtime archive before execution: \texttt{5730d13762ce} for the pilot,
+\texttt{ca4343aaefda} for the repair batch and \texttt{5aa4c719cf18} for the NG45
+integration check.
+
+\paragraph{Pilot.} The predeclared designs were IBM01 (small), IBM10 (large), IBM17
+(historically hardest) and ariane133, a hierarchical NG45 design. Each configuration
+used 500 analytical steps and a 30\,s CD phase cap, and runs went one at a time.
+Table~\ref{tab:pilot-results} gives the outcomes. The seven errors have three causes.
+The v1 runs on IBM10 and IBM17 failed canvas containment after local refinement,
+because their inputs contain movable soft clusters outside the canvas that the
+original initializer does not repair. On IBM17 both v2 configurations exhausted their
+budget without a valid checkpoint. All three ariane133 runs failed to locate the
+design directory, before any optimization. No run reached the external limit. Two
+recoveries show how the checkpoints behave: on IBM01 the three-lane run returned
+Lane~B's checkpoint after its curvature step (0.827866) when the lanes were stopped at
+the solver budget, and on IBM10 the standalone and three-lane runs returned the same
+legalized-descent state (1.166864). Final validation and export took 26.5--28.2\,s on
+IBM10 against about 1.5\,s on IBM01.
+
+\input{generated/pilot_results.tex}
+
+\paragraph{Repair batch.} The second batch adds the all-movable bounds repair,
+fixed-reference preservation, the NG45 aliases and retained phase diagnostics, and runs
+the same 12 cells three at a time, still with three CPU threads per run
+(Table~\ref{tab:repair-validation-results}). Standalone A used all three threads in
+its one lane; the three-lane runs gave one thread to each lane. That allocation, and
+the phase each run reached, explain the IBM10 contrast: A returned its legalized
+descent (1.14944) while the three-lane run returned its initializer (1.41116), so the
+two values measure progress under different resources, not the value of the extra
+lanes. The ariane133 rows still use the original soft-rectangle edge extractor; its
+repair came after this batch.
+
+\input{generated/repair_results.tex}
+
+\paragraph{NG45 integration.}
+\input{generated/final_ng45_integration.tex}
+
+\paragraph{IBM17 timeouts and finalization cost.} The three IBM17 runs of the repair
+batch are the only runs that reached the external limit, and the saved artifacts show
+where the time went. Both v2 configurations logged lane selection before the limit, so
+the remaining time was spent after the placer returned, where the worker validates the
+placement and calls the canonical scorer once more before saving it. The v1 run wrote
+its first checkpoint at 192.7\,s, although its inner log reports 66.4\,s of search; the
+gap covers differing timer origins and the canonical scoring that precedes every
+checkpoint write. One canonical score of IBM17 takes
+about 73\,s on this host with one thread (72.8 and 73.3\,s for the two IBM17 endpoints
+rescored in Appendix~\ref{app:curvature}), against 1.3\,s for IBM01. That single call
+is longer than the 60\,s between the 180\,s solver budget and the 240\,s limit. For the
+planned one-hour runs, the study configuration therefore stops the solver at 3,300\,s
+and reserves the last five minutes for validation and export.
+
+\paragraph{First reproduction attempt (engineering record).}\label{app:repro-attempt}
+A reproduction of the ranked configuration (single pipeline, 720\,s per design, all
+17 IBM designs, one design at a time on the CPU with three threads) was started on
+30 September 2026 on the same M3 Max, by then under macOS 27.0.1, and stopped by the
+operator during IBM06, which has no result. IBM03 had exposed a defect in the
+corrected runtime: its per-phase checkpoint validates canvas bounds strictly, without
+the one-step inward projection applied at export, so any bounds excess at that
+point, such as a float32 rounding overshoot at the upper canvas edge, discards the
+coordinate-descent result. On IBM03 coordinate descent completed, its final
+checkpoint failed strict validation, and the run returned its checkpoint from before
+coordinate descent (proxy 1.10002); the rejected candidate was not saved, so its
+excess is unknown. IBM01, IBM02 and IBM04 completed the pipeline (0.82996, 1.00200 and
+0.91909). These four designs are not a suite result, are not a \reproduction{}
+result and are not compared with any other record; a fix is pending. The records are
+under \path{writeup/runs/ranked-reproduction-20260930/}.

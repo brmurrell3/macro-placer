@@ -1,0 +1,31 @@
+\begin{table}[htbp]
+\centering
+\footnotesize
+\caption{Benchmark statistics of the 17 IBM designs, parsed from the challenge inputs with the canonical evaluator's loader. Nets is the evaluator's net count; the grid is the density and congestion grid.}
+\label{tab:benchmarks}
+\begin{tabular}{lrrrcc}
+\toprule
+Design & \shortstack{Movable\\hard macros} & \shortstack{Soft\\clusters} & Nets & \shortstack{Canvas $W \times H$\\($\mu$m)} & \shortstack{Grid\\columns $\times$ rows} \\
+\midrule
+IBM01 & 246 & 894 & 7{,}269 & 22.95 $\times$ 23.04 & 45 $\times$ 41 \\
+IBM02 & 271 & 1{,}075 & 10{,}944 & 32.56 $\times$ 32.48 & 30 $\times$ 27 \\
+IBM03 & 290 & 1{,}148 & 10{,}247 & 35.12 $\times$ 35.04 & 32 $\times$ 29 \\
+IBM04 & 295 & 1{,}085 & 13{,}555 & 34.09 $\times$ 34.08 & 31 $\times$ 30 \\
+IBM06 & 178 & 900 & 14{,}085 & 32.65 $\times$ 32.64 & 31 $\times$ 28 \\
+IBM07 & 291 & 1{,}040 & 19{,}920 & 38.51 $\times$ 38.40 & 35 $\times$ 32 \\
+IBM08 & 301 & 1{,}030 & 20{,}694 & 41.05 $\times$ 40.96 & 38 $\times$ 34 \\
+IBM09 & 253 & 1{,}048 & 18{,}341 & 46.74 $\times$ 46.88 & 36 $\times$ 38 \\
+IBM10 & 786 & 1{,}982 & 39{,}140 & 77.05 $\times$ 77.12 & 55 $\times$ 41 \\
+IBM11 & 373 & 1{,}195 & 25{,}273 & 51.53 $\times$ 51.52 & 39 $\times$ 45 \\
+IBM12 & 651 & 1{,}985 & 40{,}996 & 67.97 $\times$ 68.00 & 47 $\times$ 47 \\
+IBM13 & 424 & 1{,}301 & 28{,}201 & 55.94 $\times$ 56.00 & 43 $\times$ 43 \\
+IBM14 & 614 & 1{,}529 & 57{,}333 & 59.85 $\times$ 60.00 & 49 $\times$ 44 \\
+IBM15 & 393 & 1{,}138 & 46{,}467 & 67.64 $\times$ 67.52 & 57 $\times$ 38 \\
+IBM16 & 458 & 1{,}315 & 67{,}118 & 81.03 $\times$ 81.12 & 45 $\times$ 48 \\
+IBM17 & 760 & 1{,}844 & 83{,}132 & 72.60 $\times$ 72.64 & 51 $\times$ 44 \\
+IBM18 & 285 & 1{,}029 & 53{,}763 & 64.82 $\times$ 64.96 & 55 $\times$ 39 \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{0.92\linewidth}\footnotesize No design has fixed hard macros. IBM05 is excluded because it has no macros; the benchmark set used by the challenge omits it. The macro and net counts summarized in the challenge README agree with these parsed values only for IBM01.\end{minipage}
+\end{table}

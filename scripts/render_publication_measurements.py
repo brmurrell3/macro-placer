@@ -11,6 +11,28 @@ GENERATED = ROOT / 'writeup/latex/generated'
 FILES = ['evaluator_ibm01_mac.json', 'evaluator_ibm10_mac.json', 'evaluator_ibm10_hard_mac.json']
 
 
+def grouped(value, digits=0):
+    """Thousands separator as elsewhere in the report (10,944); braces keep it safe in math mode."""
+    return f"{value:,.{digits}f}".replace(',', '{,}')
+
+
+def batch_counts(records):
+    counts = {}
+    for record in records:
+        counts.setdefault(record['name'].upper(), set()).add(record['repetitions'])
+    words = {2: 'two', 3: 'three'}
+    parts = []
+    for name, values in counts.items():
+        if len(values) != 1:
+            raise SystemExit(f'inconsistent batch counts for {name}')
+        n = next(iter(values))
+        samples = sum(record['name'].upper() == name for record in records)
+        scope = f'the {name} sample' if samples == 1 else f'each {name} sample'
+        parts.append(f"{words.get(n, str(n))} paired batches for {scope}")
+    note = ' (the median of two batches is their mean)' if any(2 in v for v in counts.values()) else ''
+    return ' and '.join(parts) + note
+
+
 def main():
     records = []
     for filename in FILES:
@@ -37,7 +59,7 @@ def main():
              'on the Mac CPU with one PyTorch thread. The order of the two engines alternates '
              'between repetitions; initialization and a warm-up component evaluation precede each batch.',
              '', r'\begin{table}[htbp]\centering\footnotesize',
-             r'\caption{CPU component-kernel microbenchmarks. Times are means per move; each ratio is computed for a paired batch, then summarized by its median and range. These are not end-to-end placer speedups.}',
+             r'\caption{CPU component-kernel microbenchmarks. Times are means per move. Each ratio is the full-recomputation time divided by the incremental time for one paired batch; the table gives the median and range over ' + batch_counts(records) + r'. Setup and overlap checks are excluded; these are kernel measurements, not end-to-end placer speedups.}',
              r'\label{tab:incremental-measurements}',
              r'\begin{tabular}{llrrrr}', r'\toprule',
              r'Design / sample & Moves $\times$ repeats & Inc. time (ms) & Full time (ms) & Median ratio & Range \\', r'\midrule']
@@ -45,8 +67,9 @@ def main():
         s = record['summary']
         lines.append(f"{record['name'].upper()} / {record['macro_kind_observed']} & "
                      f"${record['moves_per_repetition']} \\times {record['repetitions']}$ & "
-                     f"{s['mean_incremental_ms_per_move']:.2f} & {s['mean_canonical_ms_per_move']:.1f} & "
-                     f"{s['median_speedup']:.0f}$\\times$ & {s['min_speedup']:.0f}--{s['max_speedup']:.0f}" + r" \\")
+                     f"{s['mean_incremental_ms_per_move']:.2f} & {grouped(s['mean_canonical_ms_per_move'], 1)} & "
+                     f"{grouped(s['median_speedup'])}$\\times$ & "
+                     f"{grouped(s['min_speedup'])}--{grouped(s['max_speedup'])}" + r" \\")
     lines += [r'\bottomrule\end{tabular}\end{table}', '']
     worst = max(r['maximum_relative_component_error'] for r in records)
     mantissa, exponent = f'{worst:.1e}'.split('e')
@@ -55,11 +78,12 @@ def main():
                  r'$|a-b|/\max(|a|,|b|,10^{-30})$; '
                  f'the largest observed relative discrepancy was ${scientific_error}$. '
                  'Evaluator setup is excluded from the ratios and retained in the raw records. '
-                 'The selected sequences are small: IBM01 includes three hard-macro moves and five '
-                 'soft-cluster moves per repetition; the first IBM10 sequence happened to select only '
-                 'soft clusters, so a separate hard-only sequence was measured. Moves may create overlaps. '
-                 'These samples show the potential savings from localized cache updates, but do not '
-                 'estimate a suite-wide throughput distribution or the gain of replacing another optimized evaluator.')
+                 'The sequences are small: IBM01 has three hard-macro moves and five soft-cluster moves '
+                 'per repetition; the first IBM10 sequence happened to select only soft clusters, so a '
+                 'separate hard-only sequence was measured. Moves may create overlaps. The ratios compare '
+                 'localized cache updates with full recomputation in the reference Python evaluator, so '
+                 'they reflect both the update strategy and the implementation, and they exclude the rest '
+                 'of the placer.')
     setups = ', '.join(f"{r['name'].upper()} {r['macro_kind_observed']}: {r['summary']['mean_incremental_setup_seconds']:.2f} s" for r in records)
     lines.extend(['', f'Mean incremental setup times were {setups}. '
                   'A separate overlap-metrics call on each final state is also timed in the raw data; '

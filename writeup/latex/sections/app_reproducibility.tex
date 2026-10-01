@@ -1,0 +1,133 @@
+\section{Reproducibility}\label{app:repro}
+
+The code, frozen evidence and report sources are in the public repository
+\url{https://github.com/brmurrell3/macro-placer}. Commands below run from the
+repository root with the project's virtual environment.
+
+\paragraph{Source revisions.} Three revisions anchor the work. The competition
+snapshot \texttt{2ab92a33d352} (22 May 2026) is the last competition-era commit; its
+Python source closure is frozen as \path{writeup/data/publication/competition-source.tar},
+described by \path{source_snapshot.json} with the archive digest and file list. The
+upstream challenge revision \texttt{996193c83eaa} (14 August 2026) carries the final
+leaderboard. The TILOS MacroPlacement submodule is pinned at \texttt{45a721d01dfe};
+six canonical evaluator, loader and validation files are byte-identical between the
+local base and the final challenge revision. The ranked single pipeline is most
+likely commit \texttt{5485310}; Appendix~\ref{app:records} gives the basis for that
+inference.
+
+\paragraph{Package extraction.} The competition entries imported code from the
+experiment tree, so copying a submission directory onto a clean checkout of the
+challenge was not enough to run it. The post-competition cleanup extracts the active
+dependency closure into the package \path{thinkorplace/} with three parts,
+\path{thinkorplace.common}, \path{thinkorplace.v1} and \path{thinkorplace.v2}, using
+relative imports; the submission entry points remain as thin adapters. Runtime
+imports no longer touch \path{experiments/} or \path{writeup/}.
+\path{thinkorplace/MIGRATION.json} records the origin and source digest of every
+module. The package keeps the optimization formulas and adds the repairs of
+Appendix~\ref{app:verification}; a test checks that the extracted primitives
+preserve the original algorithms' syntax trees.
+
+\paragraph{Frozen evidence and generators.} \path{writeup/data/publication/} holds
+the evidence, and its \path{README.md} states the scope of each record:
+\begin{itemize}
+  \item \path{raw/}: the three historical suite records, the 34 curvature-stage
+        records and the 34 saved placement tensors, with SHA-256 values in
+        \path{historical_summary.json};
+  \item the evaluator microbenchmarks, curvature diagnostic and follow-up,
+        rescoring and geometry records, topology diagnostics, tail-bound and
+        error-margin arithmetic, and the frozen leaderboard;
+  \item \path{ibm_repair_equivalence.json}, written by
+        \path{scripts/measure_publication_ibm_repair_equivalence.py}: on all 17 IBM
+        inputs, the 20 May extraction code (commit \texttt{5485310}) and the
+        corrected runtime agree on pin ownership, smooth net tensors and initializer
+        edges, and the record counts the input soft clusters that the initial clamp
+        moves; no optimization or scoring is run;
+  \item summaries of the three engineering batches, whose primary run records
+        (manifests, requests, results, logs, placements and checkpoint hashes) are
+        under \path{writeup/runs/}, as are those of the stopped first reproduction
+        attempt (\path{writeup/runs/ranked-reproduction-20260930/});
+  \item \path{corrected-runtime-*.tar.gz}: deterministic archives of each
+        post-competition runtime, with per-file digests in the matching
+        \path{corrected_runtime_snapshot_*.json}.
+\end{itemize}
+Generators read these records and write only derived summaries, tables and figures;
+the historical freezer refuses to replace a frozen raw record with different bytes.
+No generator runs a solver, and the scripts that produced the diagnostics are separate
+from the generators.
+
+\paragraph{Runner.} The study runner (\path{scripts/run_publication_study.py} with
+\path{scripts/publication_worker.py}) implements the following workflow:
+\begin{enumerate}
+  \item create an immutable run manifest before any solver is constructed;
+  \item record input and initialization hashes and the explicit device choice;
+  \item save canonical incumbents atomically at every meaningful phase;
+  \item propagate one monotonic solver deadline and enforce an external
+        process-group timeout;
+  \item validate the final candidate independently and retain every failure;
+  \item preserve final coordinates and phase metadata for deterministic
+        post-processing.
+\end{enumerate}
+A run's identity covers executable source, dependencies, inputs and constructor
+settings, so editing the paper does not invalidate a run while any runtime change
+does. Source is hashed again after execution. Validity (shape, finite values,
+containment, fixed objects, zero hard overlaps), study eligibility (return within the
+external limit with matching source and environment) and pipeline completion are
+separate fields: a valid recovered checkpoint can be an eligible anytime result
+without a completed pipeline.
+
+\paragraph{Tests.} Runtime archive \texttt{5aa4c719cf18} passed 64 focused tests in
+five modules; the receipt \path{verification/final-tests-20260906.json} binds the
+archive to the test log:
+\begin{itemize}
+  \item \path{test_submission_safety.py} (30): deadline propagation, zero join
+        timeouts after expiry, child termination and cleanup, rejection of invalid
+        lanes, checkpoint retention and atomic replacement, phase-outcome
+        reporting, hierarchical pin ownership in four code copies, and budget guards
+        for the curvature stages and the eigensolver;
+  \item \path{test_thinkorplace_package.py} (7): imports against a pristine
+        upstream without the research tree, legalizer clamping of soft clusters,
+        parity of runtime validation with the canonical check on float32 endpoints
+        and randomized geometry, and preservation of the extracted algorithms;
+  \item \path{test_postpilot_repairs.py} (12): soft-cluster bounds, fixed obstacles,
+        float32 export, infeasible fixed references, unresolved hard geometry, NG45
+        directory aliases, and retained diagnostics for rejected initializers and
+        fatal results;
+  \item \path{test_sdf_topology.py} (4): initializer edge extraction for flat and
+        hierarchical netlists in both code copies;
+  \item \path{test_publication_runner.py} (11): explicit parameters, worker
+        validation, checkpoint-recovery semantics, process-group timeouts, resume
+        identity, dry runs and checkpoint inventories.
+\end{itemize}
+These are engineering checks of execution and validation, not measurements of
+placement quality.
+
+\paragraph{Commands.} Regenerate the tables and figures from the frozen records:
+\begin{verbatim}
+.venv/bin/python scripts/freeze_publication_evidence.py
+.venv/bin/python scripts/render_publication_measurements.py
+.venv/bin/python scripts/render_publication_curvature.py
+.venv/bin/python scripts/render_publication_pilot.py
+.venv/bin/python scripts/render_publication_pilot.py --profile repair
+.venv/bin/python scripts/render_publication_integration.py
+.venv/bin/python scripts/render_publication_devrecords.py
+.venv/bin/python scripts/render_publication_v1.py
+\end{verbatim}
+Build and check the report:
+\begin{verbatim}
+make -C writeup/latex
+.venv/bin/python scripts/check_publication_paper.py
+\end{verbatim}
+Run the focused tests:
+\begin{verbatim}
+.venv/bin/python -m pytest test/test_submission_safety.py \
+  test/test_thinkorplace_package.py test/test_postpilot_repairs.py \
+  test/test_sdf_topology.py test/test_publication_runner.py
+\end{verbatim}
+Run a study from a configuration under \path{writeup/study/}, for example the pilot,
+or \path{writeup/study/ranked_reproduction.json} for the ranked configuration:
+\begin{verbatim}
+.venv/bin/python scripts/run_publication_study.py \
+  --config writeup/study/pilot.json
+\end{verbatim}
+Benchmark inputs and the evaluator come from the pinned submodule; every run records
+their hashes.

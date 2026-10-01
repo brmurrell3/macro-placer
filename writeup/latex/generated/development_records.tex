@@ -1,0 +1,31 @@
+\begin{table}[htbp]
+\centering
+\footnotesize
+\caption{What we tried during development (\historical). Each row summarizes single-run development records from April--May 2026. The runs are uncontrolled: hardware, time budget and concurrency varied, and most comparisons are against a separate reference run. Scores are proxy scores; lower is better. Row 1 gives the September re-measurement (\measurement) in place of the May figure. Verdict records the development decision at the time: \emph{kept}, adopted into a later pipeline; \emph{dropped}, abandoned after a negative result. Appendix~\ref{app:glossary} maps each numbered row to its record.}
+\label{tab:development}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash\hsize=0.9\hsize}X>{\raggedright\arraybackslash\hsize=1.1\hsize}Xl@{}}
+\toprule
+Idea (plain words) & What happened & Verdict \\
+\midrule
+1.~Rescore only what a one-block move changes, instead of recomputing the whole score & September re-measurement on two designs: 1.3--3.7 ms per move versus 1.4--26.9 s for a full rescore; largest relative difference $2.6\times10^{-15}$. & kept \\
+\addlinespace[2pt]
+2.~Move one block at a time along one axis to its best legal position; stop when gains level off rather than at a fixed time & Mean over 17 designs 1.1055, versus 1.1193 with a fixed 600 s stop, using 69\% more total time; hard designs gained 1.7--3.6\%, and all 17 stopped before the one-hour cap. & kept \\
+\addlinespace[2pt]
+3.~After local search stalls, accept some uphill moves at random (simulated annealing) & The first version was worse on 4 of 4 designs (by 5.7\% on average) because it returned its last state rather than its best. Fixed, it gained 0.63\% and became one stage of the earlier serial pipeline. & kept \\
+\addlinespace[2pt]
+4.~After local search converges, take GPU gradient steps on a smooth approximation of the score to find a better nearby arrangement & 0 of 350 attempts accepted on 4 designs at full budgets; a 2.16\% gain seen with shortened budgets did not reappear. & dropped \\
+\addlinespace[2pt]
+5.~Choose which blocks to remove and re-place by how much they add to routing congestion & Lower on 2 of 4 IBM designs (by 1.12\% and 0.15\%), but 1.45\% worse on four open industrial-style designs (5.14\% on one) and 0.39\% worse over all 17 IBM designs. & dropped \\
+\addlinespace[2pt]
+6.~Blend two good but different placements by moving every block partway along a straight line between them & On 2 designs, none of the 9 intermediate blends could be made overlap-free by the 50-iteration repair step; before repair, blends scored up to 61\% worse. & dropped \\
+\addlinespace[2pt]
+7.~Drive a mature open-source placer's optimizer (DREAMPlace) with the challenge score as its objective & On IBM01, 0.918 after repair and local search versus 0.852 for the existing pipeline (7.7\% worse); the optimizer left 118 overlaps for repair to fix. & dropped \\
+\addlinespace[2pt]
+8.~Make the smooth routing-congestion model agree more closely with the official scorer & On IBM17 the model's error fell from 14.4\% to 8.0\%, yet the final score was 0.98\% worse; a separate bug fix that also reduced the error changed it by 0.12\%, within noise. & dropped \\
+\addlinespace[2pt]
+9.~Spread each block's area as a smooth bell-shaped (Gaussian) blur when estimating crowding, so the gradient changes smoothly & Lower on 4 of 4 crowded designs (by 2.71\% on average) than the same pipeline with grid density. A later 17-design run averaged 0.98199, versus 1.05750 for the earlier serial pipeline, lower on 16 of 17. & kept \\
+\addlinespace[2pt]
+10.~Jointly reassign up to 50 highly connected blocks to candidate slots with an optimal matching (the Hungarian method), then rerun local search & Lower in 5 of 5 single-design trials (0.35--1.25\% against separate reference runs); part of the gain may come from the extra local-search pass. It went into an optional lane that is inferred never to have been scored. & kept \\
+\bottomrule
+\end{tabularx}
+\end{table}

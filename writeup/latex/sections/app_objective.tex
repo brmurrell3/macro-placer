@@ -1,0 +1,143 @@
+\section{The canonical proxy cost}\label{app:objective}
+
+This appendix states the score exactly as the pinned evaluator computes it. The
+formulation follows Circuit Training \citep{mirhoseini2021graph}; the evaluator is the
+open TILOS \texttt{PlacementCost} class in \path{plc_client_os.py}
+(MacroPlacement revision \texttt{45a721d}); the challenge harness wraps it in
+\path{compute_proxy_cost} (\path{objective.py}). Function names below refer
+to those two files. Every rule was checked against that source for this report.
+
+\paragraph{Notation.} The canvas is $[0,L_x]\times[0,L_y]$, divided into a grid of
+$n_c$ columns and $n_r$ rows with $G=n_cn_r$ cells of width $\Delta_x=L_x/n_c$ and
+height $\Delta_y=L_y/n_r$. Object $i$ (hard macro or soft cluster) has center
+$p_i=(x_i,y_i)$, width $w_i$ and height $h_i$. A hard-macro pin sits at its
+macro's center plus a fixed offset; a soft-cluster pin sits at the cluster center;
+a port (an I/O terminal on the canvas edge) has a fixed position. The grid
+dimensions, the canvas size and the routing constants are read from the header of
+each design's \path{initial.plc} (\path{restore_placement} with comment
+parsing). All 17 IBM headers carry the same constants: horizontal and vertical
+routing capacities $r_H=65.957$ and $r_V=106.957$ routes per $\mu$m, macro routing
+allocations $a_H=30.304$ and $a_V=71.304$ per $\mu$m, and smoothing range $s=2$
+cells. The header's overlap threshold (0.004) does not enter the score.
+
+\input{generated/benchmark_stats.tex}
+
+\paragraph{Weights.} The score is
+\begin{equation}
+  J(p)=W(p)+\tfrac12\,D(p)+\tfrac12\,C(p),
+  \label{eq:app-proxy}
+\end{equation}
+with the three components defined below (\path{compute_proxy_cost}). The density
+component already contains a factor $\tfrac12$, so the raw density tail enters $J$
+with coefficient $\tfrac14$.
+
+\paragraph{Wirelength.} Each pin or port with a non-empty list of sinks is the
+driver of one net $n$, whose pins are the driver and its sinks. The net weight
+$\omega_n$ is the driver's weight attribute (default~1; ports count with weight~1).
+With the half-perimeter wirelength
+\[
+ \mathrm{HPWL}_n=\bigl(\max_{q\in n}x_q-\min_{q\in n}x_q\bigr)
+ +\bigl(\max_{q\in n}y_q-\min_{q\in n}y_q\bigr),
+\]
+the component is
+\begin{equation}
+  W(p)=\frac{\sum_n\omega_n\,\mathrm{HPWL}_n(p)}{(L_x+L_y)\,N_\omega},
+  \qquad N_\omega=\sum_n\omega_n
+\end{equation}
+(\path{get_cost} and \path{get_wirelength}). The normalizer $N_\omega$ is the
+evaluator's weighted net counter \path{net_cnt}, accumulated while the netlist is
+parsed; it is not the number of entries in the net dictionary.
+
+\paragraph{Density.} Let $R_i$ be the rectangle of object $i$ and $B_b$ cell $b$.
+Hard macros and soft clusters both contribute, through exact intersection areas:
+\begin{equation}
+  \rho_b(p)=\frac{1}{\Delta_x\Delta_y}\sum_i\bigl|R_i\cap B_b\bigr|
+\end{equation}
+(\path{get_grid_cells_density}). For $G\ge10$, let $k=\lfloor0.1\,G\rfloor$.
+The evaluator sorts the nonzero loads in decreasing order, sums the largest $k$ of
+them (or all of them, if fewer than $k$ are nonzero) and divides by $k$:
+\begin{equation}
+  D(p)=\frac12\cdot\frac1k\sum_{j=1}^{\min(k,n_{\mathrm{occ}})}\rho_{(j)},
+\end{equation}
+where $n_{\mathrm{occ}}$ counts nonzero cells. Dropping zeros while keeping the
+denominator $k$ is the same as padding with zero loads. For a grid with $G<10$
+cells the rule changes: $D$ is half the mean over the occupied cells
+only (\path{get_density_cost}). Every IBM grid has between 810 and 2,255 cells,
+so the small-grid rule never applies to the challenge designs.
+
+\paragraph{Congestion: net routing.} Congestion uses a pattern-routing estimate on
+the same grid (\path{get_routing}). Each pin is mapped to the cell containing it,
+$(\lfloor y/\Delta_y\rfloor,\lfloor x/\Delta_x\rfloor)$; the challenge harness patches
+this lookup to clamp indices into the grid, so off-canvas pins land in border cells.
+For net $n$, let $S_n$ be the set of distinct cells of its pins and $s_n$ the
+driver's cell. Each cell along a route segment gains demand $\bar\omega_n$, equal to
+the driver weight when it exceeds~1 and to~1 otherwise:
+\begin{itemize}
+  \item $|S_n|=1$: no demand.
+  \item $|S_n|=2$: an L-shaped route. Horizontal demand runs along the driver's row
+        from the smaller to the larger column, excluding the last; vertical demand
+        runs along the sink's column from the smaller to the larger row, excluding
+        the last (\path{__two_pin_net_routing}).
+  \item $|S_n|=3$: an L- or T-shaped Steiner route chosen from the relative order of
+        the three cells (\path{__three_pin_net_routing}).
+  \item $|S_n|>3$: a star of two-pin routes from $s_n$ to every other cell of
+        $S_n$ (\path{__split_net}).
+\end{itemize}
+The accumulated vertical and horizontal counts are divided by the per-cell
+capacities $c_V=\Delta_x r_V$ and $c_H=\Delta_y r_H$.
+
+\paragraph{Congestion: smoothing and macro blockage.} The normalized net demand is
+smoothed along one axis only (\path{__smooth_routing_cong}). Each vertical
+value is spread uniformly over the cells within $\pm s$ columns of the same row, and
+each horizontal value over the cells within $\pm s$ rows of the same column; at the
+grid boundary the window is clipped and the value is divided by the clipped window
+size, so smoothing conserves demand. Hard macros then add routing blockage
+(\path{__macro_route_over_grid_cell}). For each cell a hard macro covers,
+the vertical map gains (horizontal overlap length)$\times a_V$ and the horizontal
+map gains (vertical overlap length)$\times a_H$, both divided by the same capacities.
+A macro that fully covers a cell therefore adds $a_V/r_V=0.667$ to its vertical
+value and $a_H/r_H=0.459$ to its horizontal value. One edge correction applies: if a
+macro spans several rows and covers its lowest or highest row only partly, the
+vertical blockage of its entire top row is removed; if it spans several columns and
+covers its first or last column only partly, the horizontal blockage of its entire
+rightmost column is removed. The blockage is added after smoothing, so it is not
+smoothed:
+\begin{equation}
+  V=\mathcal S_{\mathrm{col}}(V_{\mathrm{net}})+V_{\mathrm{mac}},\qquad
+  H=\mathcal S_{\mathrm{row}}(H_{\mathrm{net}})+H_{\mathrm{mac}}.
+\end{equation}
+
+\paragraph{Congestion: tail statistic.} The score treats the two maps as one list of
+$2G$ values, all vertical values followed by all horizontal ones, and takes the mean of
+its largest $\lfloor0.05\cdot2G\rfloor$ entries, zeros included (\texttt{abu} with fraction
+0.05, called by \path{get_congestion_cost}). If that count is zero, the maximum
+is used. The evaluator's separate per-direction functions
+(\path{get_V_congestion_cost}, \path{get_H_congestion_cost}) do not enter
+the score.
+
+\paragraph{What the definition implies for search.} All three components are
+piecewise: HPWL through pin extrema, density through rectangle--cell
+intersections, congestion through cell indices, routing patterns and the two tail
+selections. A move of one object changes the pins, nets and cells it touches, but
+both tails are recomputed over the whole grid, so the cost of scoring a move remains
+linear in $G$ (Remark~\ref{rem:move-cost}). Congestion depends on cell indices
+rather than exact coordinates; a small move that keeps every pin in its cell leaves
+the net-routing demand unchanged, and the score jumps when a pin crosses a grid line,
+so the routing part is piecewise constant rather than merely kinked.
+
+
+\paragraph{The benchmarks.} The 17 designs are the ICCAD04 IBM mixed-size
+benchmarks \citep{adya2004unification} as converted by the TILOS MacroPlacement
+project \citep{macroplacement}; Table~\ref{tab:benchmarks} lists their statistics,
+parsed from the pinned inputs. The conversion groups each design's standard cells
+into \emph{soft clusters} with the Circuit Training grouping flow
+\citep{mirhoseini2021graph}, starting from a RePlAce initial placement
+\citep{cheng2019replace}. A soft cluster is a fixed-size rectangle that may
+overlap other clusters and macros; it carries pins and so contributes to all three
+components. The score therefore depends on where the soft clusters sit, and
+Thinkorplace moves them together with the hard macros. They exist only inside the
+proxy: the organizers lock their sizes and state that the soft-macro abstraction
+does not carry over to place-and-route. No IBM design has fixed hard macros, and
+hard macros and soft clusters together occupy 80\% of the canvas area in every
+design. The suite skips IBM05 because, as the TILOS ICCAD04 testcase notes state,
+that design has no macros.

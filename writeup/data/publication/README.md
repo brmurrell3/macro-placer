@@ -177,16 +177,14 @@ data and embeddable fragment with:
 .venv/bin/python scripts/build_publication_explorer.py
 ```
 
-This writes `../../interactive/placement-data.json` and
-`placement-comparison.fragment.html`. The checked-in
-`placement-comparison.html` is the standalone exported wrapper around the
-fragment. The repository has no separate deploy command or deterministic script
-for rebuilding that outer wrapper. Open the checked-in export directly or serve
-it as an iframe; no website deployment is part of this evidence. With Playwright
-and Chromium installed, verify the standalone export with:
+This writes `../../interactive/placement-data.json`,
+`placement-comparison.fragment.html`, and the standalone
+`placement-comparison.html`. No website deployment is part of this evidence.
+With Google Chrome installed (no other dependency), verify the standalone page
+with:
 
 ```sh
-PLAYWRIGHT_CHANNEL=chrome node scripts/check_publication_explorer.cjs
+.venv/bin/python scripts/check_publication_explorer.py
 ```
 
 The browser check writes screenshots and `checks.json` under
@@ -282,3 +280,45 @@ records and their hashes. This is bounded integration evidence, not a quality
 comparison, and it is not pooled with either 12-cell matrix. The predeclared
 full study remains incomplete and no complete publication-budget result is
 claimed.
+
+## Report v1.0 figures
+
+`scripts/render_publication_v1.py` renders the report v1.0 figures and four
+generated tables from frozen evidence only. It first freezes the official final
+leaderboard from the pinned upstream README (`git show 996193c83eaa:README.md`)
+into `leaderboard_996193c.json`, with parsed rows, README line numbers, and the
+README's Git blob and SHA-256 hashes. If the upstream commit is not in the local
+object store, the script reads the frozen copy; it refuses to overwrite that
+copy with different content. The IBM01 congestion underlay is recomputed with
+the canonical evaluator from `raw/placements/cascade_ibm01.pt` after checking
+the evaluator sources and IBM01 inputs against the hashes recorded in
+`e74_e84_canonical_rescore_20260907.json`; the recomputed proxy must match that
+record. Regenerate from the repository root:
+
+```sh
+.venv/bin/python scripts/render_publication_v1.py
+```
+
+Outputs:
+
+- `../../latex/figures/result_context.pdf`, `placement_ibm01.pdf`,
+  `per_design_vs_replace.pdf`, `component_deltas.pdf`, `time_vs_quality.pdf`,
+  `curvature_attempts.pdf`, and `ibm01_displacement.pdf`;
+- `../../latex/generated/competition_context.tex`,
+  `historical_vs_baselines.tex`, `benchmark_stats.tex`, and
+  `curvature_stages.tex`;
+- `../../interactive/result-context.svg` and `result-context.png`, the
+  website copies of the result-context chart;
+- `leaderboard_996193c.json` and `v1_figures_summary.json`. The summary lists
+  every number the figures and tables display, with source paths and SHA-256
+  values, and the hashes of all rendered outputs.
+
+Repeated runs produce byte-identical outputs with the same Python environment.
+Figures use Latin Modern Roman to match the report text, so the script needs a
+TeX Live installation that `kpsewhich` can locate `lmroman10-regular.otf` in.
+
+`scripts/measure_publication_ibm_repair_equivalence.py` writes
+`ibm_repair_equivalence.json`. It compares the 20 May 2026 extraction code
+(commit `5485310`, read with `git show`) with the corrected runtime on all 17
+IBM designs: hard-macro pin ownership, smooth net tensors, SDF hard-macro edges,
+and the initial canvas clamp. It runs no optimization or scoring.

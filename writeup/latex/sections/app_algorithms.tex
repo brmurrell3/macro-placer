@@ -1,0 +1,390 @@
+\section{Algorithm details}\label{app:algorithms}
+
+This appendix specifies the competition-era programs at the level needed to
+reimplement them. Three programs matter (Figure~\ref{fig:architecture}):
+\begin{itemize}
+  \item the \emph{ranked single pipeline} of 20 May, inferred to be the entry the
+        organizers scored: soft-rectangle initialization, Gaussian smooth descent,
+        legalization and coordinate descent (CD) under a 720\,s budget;
+  \item the \emph{three-lane system} committed on 21--22 May and, by the same
+        inference, never scored:
+        Lane~A repeats the ranked pipeline with longer budgets, Lane~B adds a
+        curvature perturbation and Lane~C an assignment step;
+  \item the \emph{v1 serial pipeline}, the lineage of the 13 May entry.
+\end{itemize}
+The modules that implement initialization, descent, legalization, incremental
+scoring and CD are identical between the inferred ranked commit \texttt{5485310}
+and the three-lane snapshot \texttt{2ab92a3} apart from import paths, so
+Sections~\ref{app:alg-sdf}--\ref{app:alg-cd} describe both. Constants are the
+constructor defaults of the snapshot; Table~\ref{tab:defaults} collects them.
+
+\begin{table}[htbp]
+\centering\footnotesize
+\caption{Competition-era defaults of the ranked single pipeline (most likely commit
+\texttt{5485310}; inferred) and the three-lane system (snapshot \texttt{2ab92a3}). An
+em dash marks a stage the program does not have.}
+\label{tab:defaults}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.22\linewidth}
+                >{\raggedright\arraybackslash}p{0.21\linewidth}
+                >{\raggedright\arraybackslash}p{0.21\linewidth}
+                Y@{}}
+\toprule
+Parameter & Ranked pipeline & Three-lane system & Notes \\
+\midrule
+Global budget & 720\,s & 2,700\,s & Three-lane: join timeout, unbounded after expiry \\
+Descent steps & 500 & 500 & Third retry uses 300 \\
+Learning rate & $0.005\,L_x$ & $0.005\,L_x$ & Adam, no schedule \\
+Wirelength smoothing & $5\times10^{-3}L_x\to5\times10^{-5}L_x$ & same & Linear in step index \\
+Overlap weight & $0\to10$; retries 50, 100 & same & Ramp over first 70\% of steps \\
+Boundary weight $\mu$ & 50 & 50 & After canvas-area normalization \\
+Gaussian width & $\max(\text{half size},\text{half cell})$ & same & Per axis \\
+Legalizer & 2\% steps, 80 rings & same & Then push-apart, at most 50 sweeps \\
+CD budget & cap 600\,s, minimum 300\,s & CD1: 900/450\,s; CD2: 360/180\,s & Plateau: five sweeps below 0.001 \\
+CD candidates & at most 10 per axis & same & Acceptance $10^{-9}$ \\
+Curvature stage & --- & 120\,s, two iterations & $t\in\{0.3,1,3\}\,\mu$m; polish 30--180\,s \\
+Eigensolver & --- & $k=1$, SA, tol.\ $10^{-2}$, 50 iterations & Iteration cap, not a time cap \\
+Assignment & --- & 300\,s, $K=50$ of top 150, 100 slots & Patience 15; acceptance $10^{-7}$ \\
+Seeds & 42 & lanes 42, 142, 242 & See Table~\ref{tab:seeds} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Soft-rectangle initializer (``SDF'')}\label{app:alg-sdf}
+
+The initializer (\texttt{SDFPlacer}, called through \path{sdf_init}) places hard
+macros only; in the competition code soft clusters keep their input coordinates. The
+name comes from the occupancy model, which uses distances to rectangle edges; the
+model is a product of logistic functions, not a signed distance field. Starting from
+the input coordinates clamped into the canvas, it runs 500 Adam steps (learning rate
+$3.0\,\mu$m, cosine-annealed to 3\% of that) on
+\begin{equation}
+  L=\frac{E(p)}{E(p^0)}+d_t\,\overline{r}_{10\%}+o_t\,\frac{O(p)}{L_xL_y},
+  \qquad
+  r(u,v)=\sum_i\sigma\!\Bigl(\frac{w_i/2-|u-x_i|}{\tau_t}\Bigr)\,
+              \sigma\!\Bigl(\frac{h_i/2-|v-y_i|}{\tau_t}\Bigr).
+\end{equation}
+Here $E$ is a clique wirelength $\sum_{(i,j)}c_{ij}\lVert p_i-p_j\rVert_1$ over pairs of
+hard macros that share a net, where a net touching $m$ hard macros adds $1/(m-1)$
+to each of its pairs; $p^0$ is the starting placement. The density term
+$\overline{r}_{10\%}$ is the mean of the largest 10\% of the occupancy values $r$ at a
+$32\times32$ lattice of points spanning the canvas, and $\sigma$ is the logistic
+function. $O$ is the total pairwise overlap area of hard macros. With progress
+$t\in[0,1]$, the temperature $\tau_t$ decays geometrically from 0.05 to 0.002 of the
+canvas diagonal, $d_t=0.4(1.5-0.8t)$ and $o_t=80(0.05+0.95\sqrt t)$. Every 20 steps
+the state with the lowest $E/E(p^0)+0.1\,O/(L_xL_y)$ is retained. A greedy pass then
+places macros in decreasing order of area: a macro that clears every placed macro
+by $0.05\,\mu$m stays; otherwise the pass searches square rings of step
+$0.2\max(w_i,h_i)$ around its position (up to 249 rings) and takes the nearest
+clearing point of the first ring that has one. The macro-pair list came from
+splitting pin names at the first ``/''; Appendix~\ref{app:verification} records
+what that did on hierarchical designs.
+
+\subsection{Smooth proposal surrogate}\label{app:alg-surrogate}
+
+The descent optimizes the centers of all movable objects, hard and soft, with
+fixed objects' gradients set to zero. Every term is evaluated on positions clamped
+into the canvas, so a coordinate outside the canvas feels only the boundary penalty.
+The loss at step $t$ of $N$ is
+\begin{equation}
+  \widetilde J_t=\widetilde W_{\gamma_t}+\tfrac12\widetilde D+\tfrac12\widetilde C
+  +\lambda_tP_{\mathrm{ov}}+\mu P_{\mathrm{out}}.
+\end{equation}
+\begin{itemize}
+  \item \emph{Wirelength.} Each net's pin extrema are replaced by log-sum-exp
+        terms \citep{naylor2001lse}, $\gamma\log\sum_q e^{x_q/\gamma}$ for the
+        maximum and the mirrored form for the minimum, weighted by the net weight and normalized by
+        $(L_x+L_y)N_\omega$ exactly as in Appendix~\ref{app:objective}. The smoothing
+        length is $\gamma_t=g_tL_x$, with $g_t$ linear in the step index from
+        $5\times10^{-3}$ to $5\times10^{-5}$.
+  \item \emph{Density.} Object $i$ becomes a separable Gaussian with
+        $\sigma_{x,i}=\max(w_i/2,\Delta_x/2)$ and
+        $\sigma_{y,i}=\max(h_i/2,\Delta_y/2)$; its mass in a cell is $w_ih_i$ times the
+        product of the two normal-CDF differences over the cell's extent. Cell
+        density is total mass over cell area, and
+        $\widetilde D=\tfrac12$ of the mean of the largest
+        $\max(1,\lfloor0.1G\rfloor)$ cells. Because the evaluator's density
+        component also carries the factor $\tfrac12$, the raw Gaussian tail enters
+        $\widetilde J$ with coefficient $\tfrac14$, matching
+        Equation~\eqref{eq:app-proxy}. Mass falling outside the canvas is not
+        renormalized.
+  \item \emph{Congestion.} A differentiable trace of the evaluator's routing
+        (Appendix~\ref{app:objective}). Every net is a star from its driver to each
+        sink; each pair contributes horizontal demand on the driver's row and
+        vertical demand on the sink's column. A pin's row and column are soft
+        assignments, a softmax over cells of $-((u-c_k)/(0.5\Delta))^2$ with cell
+        centers $c_k$; the endpoints of each segment are their expected indices,
+        combined by a log-sum-exp minimum and maximum with sharpness 6 per cell;
+        and cell $k$ lies on the segment with weight
+        $\sigma(4(k-k_{\min}+\tfrac12))-\sigma(4(k-k_{\max}+\tfrac12))$. Demand is
+        divided by the cell capacities, smoothed over $\pm s$ cells along one axis
+        as in the evaluator, and added to a macro-blockage map built from clamped
+        rectangle--cell overlaps. The score is the mean of the top 5\% of the
+        concatenated vertical and horizontal maps. Three simplifications remain:
+        three-cell nets are star-routed rather than given L- or T-shapes; stars run
+        to every sink pin rather than to distinct cells, with the raw net weight;
+        and the evaluator's partial-overlap correction at macro edges is omitted.
+  \item \emph{Penalties.} $P_{\mathrm{ov}}$ is the total pairwise penetration area
+        $\sum_{i<j}(\bar w_{ij}-|x_i-x_j|)_+(\bar h_{ij}-|y_i-y_j|)_+$ over hard
+        macros, with required separations $\bar w_{ij}=(w_i+w_j)/2$ and
+        $\bar h_{ij}=(h_i+h_j)/2$, divided by the canvas area $L_xL_y$. Its weight
+        $\lambda_t$ rises linearly from 0 to $\lambda_{\mathrm{end}}$ over the first
+        70\% of the steps, then stays constant. $P_{\mathrm{out}}$ is the sum of
+        squared distances of centers outside their legal box, also divided by
+        $L_xL_y$, with $\mu=50$.
+\end{itemize}
+The optimizer is Adam \citep{kingma2015adam} with learning rate $0.005\,L_x$,
+default moment parameters and no schedule, for $N=500$ steps in single precision on
+CUDA, Apple MPS or CPU, in that order of preference. The trajectory therefore depends
+on the device, and GPU reductions need not be bitwise deterministic. A retry ladder guards feasibility. Each attempt runs the descent and the
+legalizer of Section~\ref{app:alg-legal}; if hard overlaps remain, it applies the
+push-apart pass; if they still remain, the next attempt starts. The attempts use
+$\lambda_{\mathrm{end}}=10$, 50 and 100, the last with 300 steps. If all three fail,
+the lane falls back to the soft-rectangle placement plus push-apart. The ranked
+pipeline stops retrying once fewer than 60\,s of its budget remain.
+
+\subsection{Legalization}\label{app:alg-legal}
+
+The legalizer (\path{greedy_macro_legalize}) treats hard macros only. Fixed
+macros are placed first. Movable macros follow in decreasing order of area; each
+tries its descent position, then offsets on square rings of step 2\% of the canvas
+width and height, up to 80 rings, clamped into the canvas. The first candidate whose
+penetration with every placed macro is at most $10^{-4}\,\mu$m on some axis is
+accepted. A macro with no such candidate keeps its position. If the canonical
+overlap check, the challenge's \path{compute_overlap_metrics}, which counts a pair as
+overlapping when its penetration is positive on both axes with no tolerance, still
+finds overlaps, the push-apart pass (\path{project_overlaps})
+runs up to 50 sweeps: for each overlapping pair it removes the penetration along the
+axis where it is smaller, splitting the move equally when both macros are movable,
+and clamps centers to the canvas.
+
+\subsection{Coordinate descent}\label{app:alg-cd}
+
+CD (\path{run_cd_adaptive}) visits every movable object, hard or soft, in an
+order reshuffled at each sweep, and optimizes $x$ and then $y$.
+\begin{itemize}
+  \item \emph{Legal interval.} For a soft cluster it is the canvas interval. For a
+        hard macro, the blockers are the hard macros whose perpendicular separation
+        is less than the required separation plus $10^{-4}\,\mu$m; the nearest
+        blocker on each side bounds the interval with a clearance of
+        $10^{-4}\,\mu$m. If the bounds cross, the coordinate is pinned. This is a
+        subinterval of the component of the slice in Remark~\ref{rem:slice} that
+        contains the current value (blockers taken with a $10^{-4}\,\mu$m tolerance,
+        ends pulled in by the clearance).
+  \item \emph{Candidates.} The interval ends and midpoint; the current value; the
+        25\%, 50\% and 75\% quantiles of pin targets, where each incident net with
+        pins outside the object supplies the low end, high end and midpoint of those
+        pins' extent, shifted by the object's pin offset; and the three cell-aligned
+        positions (an edge of the object on a grid line) nearest to the current
+        value. Values are clipped to the interval and deduplicated at $10^{-6}$.
+  \item \emph{Scoring and acceptance.} All candidates for one axis are scored in a
+        single batched call to the incremental evaluator
+        (\path{delta_cost_axis_batch}). The best is applied if it lowers the
+        incremental score by more than $10^{-9}$ and moves the coordinate by more
+        than $10^{-7}\,\mu$m.
+  \item \emph{Unreachable branch.} A golden-section line search runs only when the
+        candidate list exceeds 12 entries. The generator produces at most ten values
+        and truncates its output to 12, so the branch never executes; it is noted
+        here only because it appears in the source.
+  \item \emph{Stopping.} After each sweep the decrease of the incremental score is
+        recorded. CD stops at its hard cap, or once it has run for half the cap and
+        the last five sweeps each lowered the score by less than 0.001. The cap is
+        checked between objects, so a sweep can be cut short.
+\end{itemize}
+The incremental evaluator caches pin positions, per-net extrema, density loads, raw
+net-routing demand per direction and macro blockage. A move updates the structures
+the object touches, then recomputes smoothing and both tails over the grid
+(Remark~\ref{rem:move-cost}); a one-step revert restores the previous state.
+
+\subsection{Lane B: curvature perturbation}\label{app:alg-laneb}
+
+Lane~B runs CD1 (the Lane~A phase), then a bounded curvature stage if CD1 is free of
+overlaps, then CD2 with cap $\max(60,0.4\times900)=360\,$s. The stage endpoint
+replaces the CD1 placement only if its canonical score is no higher.
+
+\paragraph{Operator.} The curvature stage uses the legacy surrogate $J_B$ of the v1
+lineage, not the Gaussian surrogate. $J_B$ is the sum of log-sum-exp HPWL with fixed
+$\gamma=5\times10^{-4}L_x$, normalized by $(L_x+L_y)$ times the unweighted number of nets;
+$\tfrac12$ of half the top-10\% mean of exact rectangle--cell density; and $\tfrac12$
+of a bounding-box RUDY estimate \citep{spindler2007rudy}, which spreads each net's
+weight uniformly over its smoothed bounding box, sums horizontal and vertical demand
+per cell and averages the top 5\% of the $G$ cells, without macro blockage or
+smoothing. Positions are clamped into the canvas and arithmetic is float32. The
+Hessian-vector product \citep{pearlmutter1994hvp} is
+\path{torch.autograd.functional.hvp} of $J_B$ restricted to movable coordinates.
+
+\paragraph{Eigensolver.} SciPy's interface to ARPACK \citep{lehoucq1998arpack}
+(\texttt{eigsh}) seeks one
+eigenvector with \path{which="SA"} (smallest algebraic), tolerance $10^{-2}$, at
+most 50 iterations and 22 Lanczos vectors, without a user starting vector. If it
+returns nothing, a shifted power iteration on $\alpha I-H$ takes over, with
+$\alpha=2\lVert Hv\rVert+1$ estimated over five products and 50 further iterations
+from a NumPy random start. The stage stops when the smallest eigenvalue is at
+least $-10^{-3}$.
+
+\paragraph{Steps.} The eigenvector $v$ is normalized over all coordinates. Six
+candidates $p+stv$, with $s\in\{+1,-1\}$ and step length $t\in\{0.3,1,3\}\,\mu$m,
+are formed from the iteration's starting placement, so $t$ is the Euclidean length
+of the whole displacement, not a per-macro step: spread evenly over IBM01's 2,280
+movable coordinates, $t=0.3\,\mu$m would move each by about $0.006\,\mu$m. Each candidate is clipped to
+the canvas, has fixed objects restored, receives the push-apart pass, is discarded
+if overlaps remain, and is otherwise polished by CD (at least 30\,s, cap 180\,s,
+patience 3, threshold 0.001). A polished candidate is accepted when it is free of
+overlaps and its canonical score is below the best so far by more than $10^{-7}$; the
+stage state moves to it at once.
+
+\paragraph{Cascade.} The stage repeats for at most two iterations within 120\,s. A
+new iteration starts only if at least $\max(60,1.2\bar t)$ seconds remain, where
+$\bar t$ is an exponentially weighted average of iteration time; no new candidate starts in the last
+30\,s; and the stage stops when an iteration improves the best score by less than
+$10^{-5}$. One candidate polish may last 180\,s, longer than the whole stage
+budget, so the stage is not bounded in wall-clock time.
+
+\subsection{Lane C: assignment}\label{app:alg-lanec}
+
+Lane~C runs CD1, then repeated assignment steps on the incremental evaluator for at
+most 300\,s or until 15 consecutive steps are rejected, then CD2. One step is:
+\begin{enumerate}
+  \item \emph{Cluster.} Score every movable hard macro by
+        $\sum_{n\ni i}1/\max(1,|n|-1)$ over its nets, where $|n|$ counts pins, and
+        draw $K=50$ macros without replacement from the 150 highest-scoring ones,
+        with NumPy generator seed $42+k$ at step $k$.
+  \item \emph{Slots.} Take the 50 macros' current centers, then grid-cell centers
+        inside the cluster's bounding box padded by $\max(\text{cell size},
+        10\%\text{ of its span})$, skipping cells too close to the canvas edge for the
+        cluster's median macro, until 100 slots exist; the whole canvas is used if the
+        box is too small.
+  \item \emph{Cost matrix.} Entry $(i,j)$ is the incremental score change from
+        moving macro $i$ alone to slot $j$ against the current background, computed
+        by move, score and revert; it is 0 if the macro already sits there, and
+        $+\infty$ if the slot overlaps a hard macro outside the cluster.
+  \item \emph{Solve.} Rows with no finite entry are set to zero; every other
+        infinite entry becomes $10^6$ times the larger of 1 and the largest finite
+        entry; and SciPy's
+        \path{linear_sum_assignment} solves the rectangular $50\times100$
+        problem with the Hungarian method's guarantees \citep{kuhn1955hungarian}.
+  \item \emph{Sequential commit.} Moves whose original entry is finite are applied
+        in order of predicted gain, each after a legality check against the
+        current placement, including cluster macros already moved. An illegal move
+        is skipped, so an assigned swap into a slot still occupied is dropped.
+  \item \emph{Batch acceptance.} The batch stays if at least one macro moved, the
+        canonical overlap check finds no overlap, and the incremental score fell by
+        more than $10^{-7}$; otherwise every move is reverted.
+\end{enumerate}
+After the loop, the best state is rescored canonically. If it is no more than
+0.5\% worse than the CD1 score it initializes CD2 (cap 360\,s); otherwise CD2 starts
+from CD1. The lane returns the overlap-free candidate with the lowest canonical score
+among CD1, the assignment endpoint and CD2. The competition worker logged only
+accept or reject per step, not the rejection reason.
+
+\subsection{Supervisor and the ranked pipeline}\label{app:alg-supervisor}
+
+The three-lane supervisor spawns one process per lane. Each process sets
+OpenMP, MKL and OpenBLAS thread counts to one third of the host's logical CPUs,
+unless the environment already sets them. The supervisor joins the lanes in order
+with timeout equal to the time left before its 2,700\,s deadline minus 15\,s;
+a non-positive remainder becomes \path{timeout=None}, an unbounded wait
+(Appendix~\ref{app:verification}). A lane still alive after its join is terminated.
+Completed lanes write one result file each at normal completion. The supervisor
+sorts successful lanes by their recorded canonical score, rechecks hard overlaps
+and returns the best overlap-free placement; if every lane fails it returns the
+soft-rectangle placement after push-apart.
+
+The ranked pipeline has no subprocesses. It runs the descent ladder, then CD with
+the cap
+\begin{equation*}
+ T_{\mathrm{CD}}=\max\bigl(30,\ \min(T_{\mathrm{rem}}-10,\ 600)\bigr)\ \text{s},
+\end{equation*}
+where $T_{\mathrm{rem}}$ is the time left in its 720\,s budget, and it raises an error
+if the final placement has overlaps.
+Its listed runtime on the leaderboard, about 12 minutes per design, matches that
+budget.
+
+\subsection{The v1 serial pipeline}\label{app:alg-v1}
+
+V1 is the serial pipeline family that preceded the smooth descent. The 13 May
+entry was one variant of it, the adaptive wall-safe cascade; the snapshot holds the
+final stacked-periphery configuration, whose 17 May run is the ``v1 (17 May)''
+record of Table~\ref{tab:historical-baselines} (mean 1.05750). With the default
+budget of 3,300\,s, 210\,s are reserved for the periphery stage and the remaining
+$B=3{,}090\,$s are split as follows.
+\begin{enumerate}
+  \item \emph{E25 branch.} Soft-rectangle initialization and push-apart; CD over all
+        movable objects (cap $0.2B=618\,$s, minimum 300\,s, patience 3, threshold
+        0.001); grid-cell large-neighborhood search (LNS, $0.06B$), which removes the
+        $\max(1,\min(30,\lfloor0.05\,n_{\mathrm{hard}}\rfloor))$ hard macros whose
+        trial move to the canvas center scores best and reinserts each at the
+        best legal grid-cell center; and simulated annealing \citep{kirkpatrick1983sa}
+($0.06B$) on hard
+        macros with random breakpoint moves, Metropolis acceptance, temperature
+        decaying exponentially from $5\times10^{-4}$ to $10^{-6}$ over the budget, and
+        best-state tracking.
+  \item \emph{E41 branch}, skipped if fewer than 300\,s remain. A differentiable
+        proxy optimization (DPO) initializer runs three Adam phases on log-sum-exp
+        wirelength, density and RUDY with growing overlap weights from the
+        soft-rectangle start, and keeps the lower-scoring of the two. CD, LNS and
+        annealing follow ($0.05B$ each for the last two), then joint reinsertion of
+        three macros at a time: triples of high-adjacency macros, five
+        single-move-ranked grid-cell candidates each, and all of the up to 125
+        combinations checked for legality and scored ($0.05B$).
+  \item \emph{Plateau.} The branch with the lower canonical score is kept (ties go
+        to E25).
+  \item \emph{Curvature cascade} (target $0.2B$). The Lane~B procedure with an
+        unbounded eigensolver (tolerance $10^{-4}$, up to 500 iterations), up to
+        five iterations, and the same six steps per iteration.
+  \item \emph{Portfolio} (the remaining time, skipped below 90\,s). The same
+        procedure with the curvature operator built from three non-canonical
+        component weightings, $(1,0,1)$, $(1,1,0)$ and $(0,1,1)$ in the order
+        wirelength, density, congestion; step lengths drawn from a half-Cauchy
+        distribution; CD polishes of 20--60\,s. Polishing and acceptance always use
+        the canonical score.
+  \item \emph{Periphery.} Each movable object moves 1\% of its gap toward its
+        nearest canvas edge, along that axis only; push-apart and CD (cap 180\,s)
+        follow; the result is kept only if it is free of overlaps and strictly
+        better.
+\end{enumerate}
+The lowest-scoring overlap-free candidate among the branch, cascade and portfolio
+results enters the periphery stage. Initialization, canonical scoring and the
+eigensolves are not charged to any stage budget, and per-candidate polish caps are
+not clipped to the stage budget, so the 3,300\,s budget is advisory.
+
+\subsection{Seeds}\label{app:alg-seeds}
+
+\begin{table}[htbp]
+\centering\footnotesize
+\caption{Sources of randomness in the competition snapshot and the effect of the
+nominal lane seed. ``Global'' means the process-wide Torch, Python and NumPy
+generators.}
+\label{tab:seeds}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.24\linewidth}
+                Y
+                >{\raggedright\arraybackslash}p{0.22\linewidth}@{}}
+\toprule
+Component & Seed actually used & Lane seed effect \\
+\midrule
+Soft-rectangle initializer & 42; also resets the global generators to 42 & None \\
+Smooth descent & Lane seed $+100\times$attempt, consumed only by non-default initializers & None \\
+Legalizer, push-apart & Deterministic & None \\
+CD sweep order & NumPy generator seeded with the sweep index & None \\
+Lane~B eigensolver & ARPACK's own start vector; fallback uses the global NumPy generator & None \\
+Lane~C cluster draw & NumPy generator seeded with $42+k$ at step $k$ & None \\
+Ranked pipeline & Seed 42; same components as Lane~A & --- \\
+v1 & Initializer 42; DPO 42; annealing, joint reinsertion and portfolio steps 42; LNS deterministic & --- \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Table~\ref{tab:seeds} traces every random choice in the snapshot. The lane seeds
+42, 142 and 242 reach the descent constructor, which uses a seed only for the DPO
+or random initializers; the default soft-rectangle path ignores it and fixes its own
+seed at 42. Adam, the legalizer and push-apart are deterministic given their input,
+and the CD sweep order depends only on the sweep index. The three lanes therefore
+share one initialization and descent, and their CD1 phases follow the same sweep
+sequence, differing only where wall-clock stopping cuts them at different points. The engineering runs confirm
+this: wherever initializer and legalized-descent checkpoints survive for all three
+lanes, their coordinates are bit-identical to each other and to standalone Lane~A
+(Appendix~\ref{app:verification}). Lane~C's sampling is seeded from a separate base
+of 42, and Lane~B's eigensolver start is not set by any seed. Repeated runs of the
+default configuration are repeatability trials, not independent starts. An
+independent-start protocol would vary an initializer that consumes the seed and
+seed the eigensolver start vector and the Lane~C base explicitly.
+

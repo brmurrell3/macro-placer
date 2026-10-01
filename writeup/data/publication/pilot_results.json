@@ -82,7 +82,7 @@
     "valid_run_count": 5
   },
   "evidence_classification": "limited_budget_engineering_pilot",
-  "generated_at": "2026-09-08T02:29:00.824862+00:00",
+  "generated_at": "2026-10-01T00:46:58.352730+00:00",
   "interpretation": "Finite 180-second solver-budget evidence only. Results include every planned run, including errors, timeouts, partial phases, and checkpoint recoveries. No extrapolation to the predeclared publication budget is made.",
   "latex_label_prefix": "pilot",
   "manifest": "writeup/runs/pilot-20260906-final/manifest.json",
@@ -528,6 +528,10 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/pilot-20260906-final/runs/ibm01__v1__seed42__35e91d781fe5/result.json",
       "result_record_sha256": "76bb76a0d214faf5a82aa09d05813db506a1b1c566d4b6902aa297dcd13cd3c5",
+      "returned_state": {
+        "lanes": [],
+        "phase": "e25"
+      },
       "run_id": "ibm01__v1__seed42__35e91d781fe5",
       "seed_provenance": {
         "constructor_seeds": {
@@ -548,6 +552,7 @@
       "source_sha256": "d80194b7024a32b81907f1120da8d8712ee1b186808fcf1ac918562e02acfbf6",
       "status": "completed",
       "study_eligible": true,
+      "threads_per_lane": 3,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": 180.0,
@@ -687,6 +692,12 @@
       "pipeline_completed": true,
       "result_record": "writeup/runs/pilot-20260906-final/runs/ibm01__v2-a__seed42__e0d3cab82af9/result.json",
       "result_record_sha256": "33e8f68f170f9e24b2d0c23c2923eb1765a18a23b7e8a0cf33cfff22caf5116c",
+      "returned_state": {
+        "lanes": [
+          "A"
+        ],
+        "phase": "final"
+      },
       "run_id": "ibm01__v2-a__seed42__e0d3cab82af9",
       "seed_provenance": {
         "constructor_seeds": {
@@ -713,6 +724,7 @@
       "source_sha256": "122762450117bdf7be2e3eaae6c84c304fc4ea8584c3a9e97a3c92f54cd00371",
       "status": "completed",
       "study_eligible": true,
+      "threads_per_lane": 3,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": 180.0,
@@ -1099,6 +1111,12 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/pilot-20260906-final/runs/ibm01__v2-abc__seed42__9d66ef78d6a6/result.json",
       "result_record_sha256": "39b9ba9401dd0d7dc9c765d4b17d7b0e5b1069e01f5d55e919ed91471c538e84",
+      "returned_state": {
+        "lanes": [
+          "B"
+        ],
+        "phase": "post_saddle"
+      },
       "run_id": "ibm01__v2-abc__seed42__9d66ef78d6a6",
       "seed_provenance": {
         "constructor_seeds": {
@@ -1127,6 +1145,7 @@
       "source_sha256": "122762450117bdf7be2e3eaae6c84c304fc4ea8584c3a9e97a3c92f54cd00371",
       "status": "completed",
       "study_eligible": true,
+      "threads_per_lane": 1,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": 180.0,
@@ -1173,12 +1192,14 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/pilot-20260906-final/runs/ibm10__v1__seed42__8c5b4ff5c291/result.json",
       "result_record_sha256": "fa57aa14bd269e3bd333e164ce1056c5367338e5a0b11706c2746861c9530db5",
+      "returned_state": null,
       "run_id": "ibm10__v1__seed42__8c5b4ff5c291",
       "seed_provenance": null,
       "solver_outcome": "worker_did_not_complete",
       "source_sha256": "d80194b7024a32b81907f1120da8d8712ee1b186808fcf1ac918562e02acfbf6",
       "status": "error",
       "study_eligible": false,
+      "threads_per_lane": 3,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": null,
@@ -1306,6 +1327,12 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/pilot-20260906-final/runs/ibm10__v2-a__seed42__092ef5a92391/result.json",
       "result_record_sha256": "70f480d3be1ee9bf8e4ff7e4cc4a6f850d705e6bebb374403d5864d75956e27b",
+      "returned_state": {
+        "lanes": [
+          "A"
+        ],
+        "phase": "descent_legalized"
+      },
       "run_id": "ibm10__v2-a__seed42__092ef5a92391",
       "seed_provenance": {
         "constructor_seeds": {
@@ -1332,6 +1359,7 @@
       "source_sha256": "122762450117bdf7be2e3eaae6c84c304fc4ea8584c3a9e97a3c92f54cd00371",
       "status": "completed",
       "study_eligible": true,
+      "threads_per_lane": 3,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": 180.0,
@@ -1632,6 +1660,14 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/pilot-20260906-final/runs/ibm10__v2-abc__seed42__7198ce733fe2/result.json",
       "result_record_sha256": "a9a850d6c4ef3c0f7b4bc9b2d048bf965c203808141336ef1d957b248862a893",
+      "returned_state": {
+        "lanes": [
+          "A",
+          "B",
+          "C"
+        ],
+        "phase": "descent_legalized"
+      },
       "run_id": "ibm10__v2-abc__seed42__7198ce733fe2",
       "seed_provenance": {
         "constructor_seeds": {
@@ -1660,6 +1696,7 @@
       "source_sha256": "122762450117bdf7be2e3eaae6c84c304fc4ea8584c3a9e97a3c92f54cd00371",
       "status": "completed",
       "study_eligible": true,
+      "threads_per_lane": 1,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": 180.0,
@@ -1706,12 +1743,14 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/pilot-20260906-final/runs/ibm17__v1__seed42__65ca7e671ea3/result.json",
       "result_record_sha256": "64ec2824705ff7e43f81396b830831fc8b682f49833898d0a3b0bb00ebac6cdd",
+      "returned_state": null,
       "run_id": "ibm17__v1__seed42__65ca7e671ea3",
       "seed_provenance": null,
       "solver_outcome": "worker_did_not_complete",
       "source_sha256": "d80194b7024a32b81907f1120da8d8712ee1b186808fcf1ac918562e02acfbf6",
       "status": "error",
       "study_eligible": false,
+      "threads_per_lane": 3,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": null,
@@ -1766,12 +1805,14 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/pilot-20260906-final/runs/ibm17__v2-a__seed42__60f27cf83f13/result.json",
       "result_record_sha256": "01c646da621ce3a111ec263c7176824cc74ca3e8c08b2e21057920a7096b62ae",
+      "returned_state": null,
       "run_id": "ibm17__v2-a__seed42__60f27cf83f13",
       "seed_provenance": null,
       "solver_outcome": "worker_did_not_complete",
       "source_sha256": "122762450117bdf7be2e3eaae6c84c304fc4ea8584c3a9e97a3c92f54cd00371",
       "status": "error",
       "study_eligible": false,
+      "threads_per_lane": null,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": null,
@@ -1826,12 +1867,14 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/pilot-20260906-final/runs/ibm17__v2-abc__seed42__05a0010d5105/result.json",
       "result_record_sha256": "4c092886f0f382787d1dc33b8f46ddeda402200b6e1b24f3b86b8fdda18fe612",
+      "returned_state": null,
       "run_id": "ibm17__v2-abc__seed42__05a0010d5105",
       "seed_provenance": null,
       "solver_outcome": "worker_did_not_complete",
       "source_sha256": "122762450117bdf7be2e3eaae6c84c304fc4ea8584c3a9e97a3c92f54cd00371",
       "status": "error",
       "study_eligible": false,
+      "threads_per_lane": null,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": null,
@@ -1881,12 +1924,14 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/pilot-20260906-final/runs/ariane133_ng45__v1__seed42__07ce7f88a8b3/result.json",
       "result_record_sha256": "a6bcf9e6f8cdb2e646fac7649ae128d656d3d035014eec8a30701c0b0c62ef25",
+      "returned_state": null,
       "run_id": "ariane133_ng45__v1__seed42__07ce7f88a8b3",
       "seed_provenance": null,
       "solver_outcome": "worker_did_not_complete",
       "source_sha256": "d80194b7024a32b81907f1120da8d8712ee1b186808fcf1ac918562e02acfbf6",
       "status": "error",
       "study_eligible": false,
+      "threads_per_lane": 3,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": null,
@@ -1941,12 +1986,14 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/pilot-20260906-final/runs/ariane133_ng45__v2-a__seed42__940f55b712ef/result.json",
       "result_record_sha256": "1cc548cbf4d575f47cf0eb21a35bf4ddd6b29ed9f8a3c4048565a1e950e5d759",
+      "returned_state": null,
       "run_id": "ariane133_ng45__v2-a__seed42__940f55b712ef",
       "seed_provenance": null,
       "solver_outcome": "worker_did_not_complete",
       "source_sha256": "122762450117bdf7be2e3eaae6c84c304fc4ea8584c3a9e97a3c92f54cd00371",
       "status": "error",
       "study_eligible": false,
+      "threads_per_lane": null,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": null,
@@ -2001,12 +2048,14 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/pilot-20260906-final/runs/ariane133_ng45__v2-abc__seed42__a2e74642dcad/result.json",
       "result_record_sha256": "f3bafdef50284a781decd653ec06e82efec26af0bbfc3f36e507866a4d557543",
+      "returned_state": null,
       "run_id": "ariane133_ng45__v2-abc__seed42__a2e74642dcad",
       "seed_provenance": null,
       "solver_outcome": "worker_did_not_complete",
       "source_sha256": "122762450117bdf7be2e3eaae6c84c304fc4ea8584c3a9e97a3c92f54cd00371",
       "status": "error",
       "study_eligible": false,
+      "threads_per_lane": null,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": null,

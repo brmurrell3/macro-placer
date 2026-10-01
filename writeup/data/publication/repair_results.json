@@ -82,7 +82,7 @@
     "valid_run_count": 9
   },
   "evidence_classification": "post_pilot_repair_validation_engineering_evidence",
-  "generated_at": "2026-09-08T02:29:00.863956+00:00",
+  "generated_at": "2026-10-01T00:46:58.394275+00:00",
   "interpretation": "Finite 180-second solver-budget evidence only. Results include every planned run, including errors, timeouts, partial phases, and checkpoint recoveries. No extrapolation to the predeclared publication budget is made. This post-fix validation used three concurrent jobs and remains separate from the primary pilot; it is not a causal quality comparison.",
   "latex_label_prefix": "repair-validation",
   "manifest": "writeup/runs/repair-20260906/manifest.json",
@@ -528,6 +528,10 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/repair-20260906/runs/ibm01__v1__seed42__a1228671b0f4/result.json",
       "result_record_sha256": "456d6c3dfcfca1e3ad8bd5c9d4e84cc29d8ee342a835bb9d87ee6fd4a4cb4de2",
+      "returned_state": {
+        "lanes": [],
+        "phase": "e25"
+      },
       "run_id": "ibm01__v1__seed42__a1228671b0f4",
       "seed_provenance": {
         "constructor_seeds": {
@@ -548,6 +552,7 @@
       "source_sha256": "b713f9aeaddd35dc4ecf2de9de6972ddc7ced91b3e84577a23367b0ac075b801",
       "status": "completed",
       "study_eligible": true,
+      "threads_per_lane": 3,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": 180.0,
@@ -687,6 +692,12 @@
       "pipeline_completed": true,
       "result_record": "writeup/runs/repair-20260906/runs/ibm01__v2-a__seed42__0ef735100bed/result.json",
       "result_record_sha256": "8f2b8b1d0860686a1d168d2705a159399ee2800c363fc7ca30eafe276ad7d420",
+      "returned_state": {
+        "lanes": [
+          "A"
+        ],
+        "phase": "final"
+      },
       "run_id": "ibm01__v2-a__seed42__0ef735100bed",
       "seed_provenance": {
         "constructor_seeds": {
@@ -713,6 +724,7 @@
       "source_sha256": "0e14f393303b3951b46c63799cf913f7c7019395f064e9003b2696da66e36bdc",
       "status": "completed",
       "study_eligible": true,
+      "threads_per_lane": 3,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": 180.0,
@@ -1099,6 +1111,12 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/repair-20260906/runs/ibm01__v2-abc__seed42__e3608bf15a9f/result.json",
       "result_record_sha256": "7954e0e533b1be22f1ec4b79cd4f0b6f90fbf66ab48063e0e5299671ad0d714c",
+      "returned_state": {
+        "lanes": [
+          "B"
+        ],
+        "phase": "post_saddle"
+      },
       "run_id": "ibm01__v2-abc__seed42__e3608bf15a9f",
       "seed_provenance": {
         "constructor_seeds": {
@@ -1127,6 +1145,7 @@
       "source_sha256": "0e14f393303b3951b46c63799cf913f7c7019395f064e9003b2696da66e36bdc",
       "status": "completed",
       "study_eligible": true,
+      "threads_per_lane": 1,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": 180.0,
@@ -1249,6 +1268,10 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/repair-20260906/runs/ibm10__v1__seed42__eb5deeca46ef/result.json",
       "result_record_sha256": "0d8b75494bc852a62d6e47298ccc708296471df9e09e2e7c21e626bf123e593f",
+      "returned_state": {
+        "lanes": [],
+        "phase": "e25"
+      },
       "run_id": "ibm10__v1__seed42__eb5deeca46ef",
       "seed_provenance": {
         "constructor_seeds": {
@@ -1269,6 +1292,7 @@
       "source_sha256": "b713f9aeaddd35dc4ecf2de9de6972ddc7ced91b3e84577a23367b0ac075b801",
       "status": "completed",
       "study_eligible": true,
+      "threads_per_lane": 3,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": 180.0,
@@ -1405,6 +1429,12 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/repair-20260906/runs/ibm10__v2-a__seed42__74a46cf7aa81/result.json",
       "result_record_sha256": "b58b9623c506ec4ebdee53e36daf0ae6c234ef3bcf8d92de13de2c8f76a74721",
+      "returned_state": {
+        "lanes": [
+          "A"
+        ],
+        "phase": "descent_legalized"
+      },
       "run_id": "ibm10__v2-a__seed42__74a46cf7aa81",
       "seed_provenance": {
         "constructor_seeds": {
@@ -1431,6 +1461,7 @@
       "source_sha256": "0e14f393303b3951b46c63799cf913f7c7019395f064e9003b2696da66e36bdc",
       "status": "completed",
       "study_eligible": true,
+      "threads_per_lane": 3,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": 180.0,
@@ -1734,6 +1765,14 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/repair-20260906/runs/ibm10__v2-abc__seed42__876d7adcaf5b/result.json",
       "result_record_sha256": "4dc456de3d92cf8c22a874a785621bdd3ee87858468f055724d06a1c68272428",
+      "returned_state": {
+        "lanes": [
+          "A",
+          "B",
+          "C"
+        ],
+        "phase": "initializer"
+      },
       "run_id": "ibm10__v2-abc__seed42__876d7adcaf5b",
       "seed_provenance": {
         "constructor_seeds": {
@@ -1762,6 +1801,7 @@
       "source_sha256": "0e14f393303b3951b46c63799cf913f7c7019395f064e9003b2696da66e36bdc",
       "status": "completed",
       "study_eligible": true,
+      "threads_per_lane": 1,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": 180.0,
@@ -1808,12 +1848,14 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/repair-20260906/runs/ibm17__v1__seed42__40d097ba6d1e/result.json",
       "result_record_sha256": "4a89a863eb8ad441d9c30d030d7f241329918ac870a4538652c04c1059c0d1a7",
+      "returned_state": null,
       "run_id": "ibm17__v1__seed42__40d097ba6d1e",
       "seed_provenance": null,
       "solver_outcome": "worker_did_not_complete",
       "source_sha256": "b713f9aeaddd35dc4ecf2de9de6972ddc7ced91b3e84577a23367b0ac075b801",
       "status": "timeout",
       "study_eligible": false,
+      "threads_per_lane": 3,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": null,
@@ -1865,12 +1907,14 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/repair-20260906/runs/ibm17__v2-a__seed42__fd62caf417c2/result.json",
       "result_record_sha256": "d4eb151505f5a483f9ecd5caa721ccf799b995fdab88386f3faa354ae5bc8cf8",
+      "returned_state": null,
       "run_id": "ibm17__v2-a__seed42__fd62caf417c2",
       "seed_provenance": null,
       "solver_outcome": "worker_did_not_complete",
       "source_sha256": "0e14f393303b3951b46c63799cf913f7c7019395f064e9003b2696da66e36bdc",
       "status": "timeout",
       "study_eligible": false,
+      "threads_per_lane": null,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": null,
@@ -1922,12 +1966,14 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/repair-20260906/runs/ibm17__v2-abc__seed42__c47c3c6a1d36/result.json",
       "result_record_sha256": "3a19b06b0db8763d7ed59eaaf477ca1ed70a9ed77e551202a8ca4cb7a1fa3050",
+      "returned_state": null,
       "run_id": "ibm17__v2-abc__seed42__c47c3c6a1d36",
       "seed_provenance": null,
       "solver_outcome": "worker_did_not_complete",
       "source_sha256": "0e14f393303b3951b46c63799cf913f7c7019395f064e9003b2696da66e36bdc",
       "status": "timeout",
       "study_eligible": false,
+      "threads_per_lane": null,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": null,
@@ -2061,6 +2107,10 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/repair-20260906/runs/ariane133_ng45__v1__seed42__d6e797cabea5/result.json",
       "result_record_sha256": "e34dab0127ceb814118187c49a0eab154afaeebf499d7e13615200121012421b",
+      "returned_state": {
+        "lanes": [],
+        "phase": "periphery"
+      },
       "run_id": "ariane133_ng45__v1__seed42__d6e797cabea5",
       "seed_provenance": {
         "constructor_seeds": {
@@ -2081,6 +2131,7 @@
       "source_sha256": "b713f9aeaddd35dc4ecf2de9de6972ddc7ced91b3e84577a23367b0ac075b801",
       "status": "completed",
       "study_eligible": true,
+      "threads_per_lane": 3,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": 180.0,
@@ -2220,6 +2271,12 @@
       "pipeline_completed": true,
       "result_record": "writeup/runs/repair-20260906/runs/ariane133_ng45__v2-a__seed42__1033bc6deb5d/result.json",
       "result_record_sha256": "1f141fa0f6fbb0d82489e6fce7c56b95ce0b47c4fa54b3ed87e3deb45beb357d",
+      "returned_state": {
+        "lanes": [
+          "A"
+        ],
+        "phase": "final"
+      },
       "run_id": "ariane133_ng45__v2-a__seed42__1033bc6deb5d",
       "seed_provenance": {
         "constructor_seeds": {
@@ -2246,6 +2303,7 @@
       "source_sha256": "0e14f393303b3951b46c63799cf913f7c7019395f064e9003b2696da66e36bdc",
       "status": "completed",
       "study_eligible": true,
+      "threads_per_lane": 3,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": 180.0,
@@ -2610,6 +2668,12 @@
       "pipeline_completed": false,
       "result_record": "writeup/runs/repair-20260906/runs/ariane133_ng45__v2-abc__seed42__f72bf9fbafdb/result.json",
       "result_record_sha256": "23fa3bd3f5cb48dde0238ce38b38231386992d456d74f650f54263ba25b18426",
+      "returned_state": {
+        "lanes": [
+          "A"
+        ],
+        "phase": "final"
+      },
       "run_id": "ariane133_ng45__v2-abc__seed42__f72bf9fbafdb",
       "seed_provenance": {
         "constructor_seeds": {
@@ -2638,6 +2702,7 @@
       "source_sha256": "0e14f393303b3951b46c63799cf913f7c7019395f064e9003b2696da66e36bdc",
       "status": "completed",
       "study_eligible": true,
+      "threads_per_lane": 1,
       "timing": {
         "external_timeout_seconds": 240.0,
         "solver_budget_seconds": 180.0,

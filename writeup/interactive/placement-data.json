@@ -6,7 +6,22 @@
     "n": 246,
     "before": 0.8552724123001099,
     "after": 0.8452833890914917,
-    "overlaps": 0,
+    "validity": {
+      "before": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      },
+      "after": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      }
+    },
     "macros": [
       [
         "a22",
@@ -2485,6 +2500,14 @@
       {
         "path": "experiments/E84_cascading_saddle/results/cascade_ibm01.json",
         "sha256": "f45b46cd60fca1f4568651216878b31cc8343c304b556606d4fbc870cc87464b"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+        "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_geometry_crosscheck_20260907.json",
+        "sha256": "34707a7ce353779de92e83c7f2e77f27f2340b6819e0774849d3d328c65c36b7"
       }
     ]
   },
@@ -2495,7 +2518,22 @@
     "n": 271,
     "before": 1.0390732288360596,
     "after": 1.0210378170013428,
-    "overlaps": 0,
+    "validity": {
+      "before": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      },
+      "after": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      }
+    },
     "macros": [
       [
         "a65",
@@ -5224,6 +5262,14 @@
       {
         "path": "experiments/E84_cascading_saddle/results/cascade_ibm02.json",
         "sha256": "689f563861b4ddce8b3d42dbb82e1d61b02ae8e5488b3a4a4c0c7e2bf6b7e966"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+        "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_geometry_crosscheck_20260907.json",
+        "sha256": "34707a7ce353779de92e83c7f2e77f27f2340b6819e0774849d3d328c65c36b7"
       }
     ]
   },
@@ -5234,7 +5280,22 @@
     "n": 290,
     "before": 0.9521355032920837,
     "after": 0.9463424682617188,
-    "overlaps": 0,
+    "validity": {
+      "before": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      },
+      "after": {
+        "hard_overlaps": 0,
+        "strict_bounds": false,
+        "boundary_excess": 3.814697265625e-06,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 1
+      }
+    },
     "macros": [
       [
         "a73",
@@ -8153,6 +8214,14 @@
       {
         "path": "experiments/E84_cascading_saddle/results/cascade_ibm03.json",
         "sha256": "3de3705961750f936dc458050876e7639dfaf0235921b82424085c4de9a97f8b"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+        "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_geometry_crosscheck_20260907.json",
+        "sha256": "34707a7ce353779de92e83c7f2e77f27f2340b6819e0774849d3d328c65c36b7"
       }
     ]
   },
@@ -8163,7 +8232,22 @@
     "n": 295,
     "before": 0.9922513961791992,
     "after": 0.9906584620475769,
-    "overlaps": 0,
+    "validity": {
+      "before": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      },
+      "after": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      }
+    },
     "macros": [
       [
         "a31",
@@ -11132,6 +11216,14 @@
       {
         "path": "experiments/E84_cascading_saddle/results/cascade_ibm04.json",
         "sha256": "afa3dfdd563cb6a9589fd1a708a7dbe77de3a14ccf09b2e2f98af1a005a6242f"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+        "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_geometry_crosscheck_20260907.json",
+        "sha256": "34707a7ce353779de92e83c7f2e77f27f2340b6819e0774849d3d328c65c36b7"
       }
     ]
   },
@@ -11142,7 +11234,22 @@
     "n": 178,
     "before": 1.1312695741653442,
     "after": 1.1179163455963135,
-    "overlaps": 0,
+    "validity": {
+      "before": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      },
+      "after": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      }
+    },
     "macros": [
       [
         "a112",
@@ -12941,6 +13048,14 @@
       {
         "path": "experiments/E84_cascading_saddle/results/cascade_ibm06.json",
         "sha256": "8f83fcf417a9c9a73975e556bea6d1b1e464c54dc1d3b27482d64f8341949368"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+        "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_geometry_crosscheck_20260907.json",
+        "sha256": "34707a7ce353779de92e83c7f2e77f27f2340b6819e0774849d3d328c65c36b7"
       }
     ]
   },
@@ -12951,7 +13066,22 @@
     "n": 291,
     "before": 1.075741171836853,
     "after": 1.0644912719726562,
-    "overlaps": 0,
+    "validity": {
+      "before": {
+        "hard_overlaps": 0,
+        "strict_bounds": false,
+        "boundary_excess": 3.814697265625e-06,
+        "out_of_bounds_hard": 1,
+        "out_of_bounds_soft": 5
+      },
+      "after": {
+        "hard_overlaps": 0,
+        "strict_bounds": false,
+        "boundary_excess": 3.814697265625e-06,
+        "out_of_bounds_hard": 1,
+        "out_of_bounds_soft": 0
+      }
+    },
     "macros": [
       [
         "a38",
@@ -15880,6 +16010,14 @@
       {
         "path": "experiments/E84_cascading_saddle/results/cascade_ibm07.json",
         "sha256": "17880caf391351f0395bfa7bb13abaff34986645104933a27537d1ab76387804"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+        "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_geometry_crosscheck_20260907.json",
+        "sha256": "34707a7ce353779de92e83c7f2e77f27f2340b6819e0774849d3d328c65c36b7"
       }
     ]
   },
@@ -15890,7 +16028,22 @@
     "n": 301,
     "before": 1.106062412261963,
     "after": 1.1006910800933838,
-    "overlaps": 0,
+    "validity": {
+      "before": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      },
+      "after": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      }
+    },
     "macros": [
       [
         "a7",
@@ -18919,6 +19072,14 @@
       {
         "path": "experiments/E84_cascading_saddle/results/cascade_ibm08.json",
         "sha256": "e2fd597d8d94c20731438d977185b90584cae59575747ad1b323cbd8dd9c60fa"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+        "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_geometry_crosscheck_20260907.json",
+        "sha256": "34707a7ce353779de92e83c7f2e77f27f2340b6819e0774849d3d328c65c36b7"
       }
     ]
   },
@@ -18929,7 +19090,22 @@
     "n": 253,
     "before": 0.8273468017578125,
     "after": 0.8226866722106934,
-    "overlaps": 0,
+    "validity": {
+      "before": {
+        "hard_overlaps": 0,
+        "strict_bounds": false,
+        "boundary_excess": 3.814697265625e-06,
+        "out_of_bounds_hard": 1,
+        "out_of_bounds_soft": 0
+      },
+      "after": {
+        "hard_overlaps": 0,
+        "strict_bounds": false,
+        "boundary_excess": 3.814697265625e-06,
+        "out_of_bounds_hard": 1,
+        "out_of_bounds_soft": 0
+      }
+    },
     "macros": [
       [
         "a101",
@@ -21478,6 +21654,14 @@
       {
         "path": "experiments/E84_cascading_saddle/results/cascade_ibm09.json",
         "sha256": "0a49039e22b803029b2034d82eeb326419fbcefbda29d0330c96752882ae7389"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+        "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_geometry_crosscheck_20260907.json",
+        "sha256": "34707a7ce353779de92e83c7f2e77f27f2340b6819e0774849d3d328c65c36b7"
       }
     ]
   },
@@ -21488,7 +21672,22 @@
     "n": 786,
     "before": 0.991546630859375,
     "after": 0.9894043207168579,
-    "overlaps": 0,
+    "validity": {
+      "before": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      },
+      "after": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      }
+    },
     "macros": [
       [
         "a71",
@@ -29367,6 +29566,14 @@
       {
         "path": "experiments/E84_cascading_saddle/results/cascade_ibm10.json",
         "sha256": "0c1e5aeaac7fb5e0f0d300453e2cf789b2ec6a9375ecf6da7c3775deacb81aa0"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+        "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_geometry_crosscheck_20260907.json",
+        "sha256": "34707a7ce353779de92e83c7f2e77f27f2340b6819e0774849d3d328c65c36b7"
       }
     ]
   },
@@ -29377,7 +29584,22 @@
     "n": 373,
     "before": 0.8729335069656372,
     "after": 0.8680754899978638,
-    "overlaps": 0,
+    "validity": {
+      "before": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      },
+      "after": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      }
+    },
     "macros": [
       [
         "a9",
@@ -33126,6 +33348,14 @@
       {
         "path": "experiments/E84_cascading_saddle/results/cascade_ibm11.json",
         "sha256": "6ef4bcc097772bc0874dc3ebb403b617a1a1ed5cffd2de31b0dc81c066c40bf3"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+        "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_geometry_crosscheck_20260907.json",
+        "sha256": "34707a7ce353779de92e83c7f2e77f27f2340b6819e0774849d3d328c65c36b7"
       }
     ]
   },
@@ -33136,7 +33366,22 @@
     "n": 651,
     "before": 1.2005802392959595,
     "after": 1.1976633071899414,
-    "overlaps": 0,
+    "validity": {
+      "before": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      },
+      "after": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      }
+    },
     "macros": [
       [
         "a239",
@@ -39665,6 +39910,14 @@
       {
         "path": "experiments/E84_cascading_saddle/results/cascade_ibm12.json",
         "sha256": "f4128bb81811acf098c3b7fc76ed8ebbd2227c6d64502fedaebad4625ea2521a"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+        "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_geometry_crosscheck_20260907.json",
+        "sha256": "34707a7ce353779de92e83c7f2e77f27f2340b6819e0774849d3d328c65c36b7"
       }
     ]
   },
@@ -39675,7 +39928,22 @@
     "n": 424,
     "before": 0.9488269686698914,
     "after": 0.9345810413360596,
-    "overlaps": 0,
+    "validity": {
+      "before": {
+        "hard_overlaps": 0,
+        "strict_bounds": false,
+        "boundary_excess": 3.814697265625e-06,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 2
+      },
+      "after": {
+        "hard_overlaps": 0,
+        "strict_bounds": false,
+        "boundary_excess": 3.814697265625e-06,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 1
+      }
+    },
     "macros": [
       [
         "a678",
@@ -43934,6 +44202,14 @@
       {
         "path": "experiments/E84_cascading_saddle/results/cascade_ibm13.json",
         "sha256": "5ad5adb5efc294021242f4944a24789cec256abbd00b737fabc6a794a603c84e"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+        "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_geometry_crosscheck_20260907.json",
+        "sha256": "34707a7ce353779de92e83c7f2e77f27f2340b6819e0774849d3d328c65c36b7"
       }
     ]
   },
@@ -43944,7 +44220,22 @@
     "n": 614,
     "before": 1.2094016075134277,
     "after": 1.2062981128692627,
-    "overlaps": 0,
+    "validity": {
+      "before": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      },
+      "after": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      }
+    },
     "macros": [
       [
         "a214",
@@ -50103,6 +50394,14 @@
       {
         "path": "experiments/E84_cascading_saddle/results/cascade_ibm14.json",
         "sha256": "28755a12adfc6227da844ee59c7e688af380c8406ddbd13e5f1b0128ccdb4cdd"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+        "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_geometry_crosscheck_20260907.json",
+        "sha256": "34707a7ce353779de92e83c7f2e77f27f2340b6819e0774849d3d328c65c36b7"
       }
     ]
   },
@@ -50113,7 +50412,22 @@
     "n": 393,
     "before": 1.156118392944336,
     "after": 1.1550953388214111,
-    "overlaps": 0,
+    "validity": {
+      "before": {
+        "hard_overlaps": 0,
+        "strict_bounds": false,
+        "boundary_excess": 7.62939453125e-06,
+        "out_of_bounds_hard": 1,
+        "out_of_bounds_soft": 1
+      },
+      "after": {
+        "hard_overlaps": 0,
+        "strict_bounds": false,
+        "boundary_excess": 7.62939453125e-06,
+        "out_of_bounds_hard": 1,
+        "out_of_bounds_soft": 0
+      }
+    },
     "macros": [
       [
         "a33",
@@ -54062,6 +54376,14 @@
       {
         "path": "experiments/E84_cascading_saddle/results/cascade_ibm15.json",
         "sha256": "1db063601d1f2d07d9de99a3ca4a7a416934b78270f1a36d0237ce9dd2ea65a6"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+        "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_geometry_crosscheck_20260907.json",
+        "sha256": "34707a7ce353779de92e83c7f2e77f27f2340b6819e0774849d3d328c65c36b7"
       }
     ]
   },
@@ -54072,7 +54394,22 @@
     "n": 458,
     "before": 1.113197922706604,
     "after": 1.1084659099578857,
-    "overlaps": 0,
+    "validity": {
+      "before": {
+        "hard_overlaps": 0,
+        "strict_bounds": false,
+        "boundary_excess": 7.62939453125e-06,
+        "out_of_bounds_hard": 1,
+        "out_of_bounds_soft": 0
+      },
+      "after": {
+        "hard_overlaps": 0,
+        "strict_bounds": false,
+        "boundary_excess": 7.62939453125e-06,
+        "out_of_bounds_hard": 1,
+        "out_of_bounds_soft": 0
+      }
+    },
     "macros": [
       [
         "a588",
@@ -58671,6 +59008,14 @@
       {
         "path": "experiments/E84_cascading_saddle/results/cascade_ibm16.json",
         "sha256": "89ca9b747c7b8c172410ae4c1e20caa9a055bae7233dd128138bccabd01b3674"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+        "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_geometry_crosscheck_20260907.json",
+        "sha256": "34707a7ce353779de92e83c7f2e77f27f2340b6819e0774849d3d328c65c36b7"
       }
     ]
   },
@@ -58681,7 +59026,22 @@
     "n": 760,
     "before": 1.3332306146621704,
     "after": 1.3316220045089722,
-    "overlaps": 0,
+    "validity": {
+      "before": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      },
+      "after": {
+        "hard_overlaps": 0,
+        "strict_bounds": false,
+        "boundary_excess": 7.62939453125e-06,
+        "out_of_bounds_hard": 1,
+        "out_of_bounds_soft": 1
+      }
+    },
     "macros": [
       [
         "a48",
@@ -66300,6 +66660,14 @@
       {
         "path": "experiments/E84_cascading_saddle/results/cascade_ibm17.json",
         "sha256": "6aba0e79bd3443b2e2b5f2fa2793f554120dfcb465c72e779457e7b501fe58f4"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+        "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_geometry_crosscheck_20260907.json",
+        "sha256": "34707a7ce353779de92e83c7f2e77f27f2340b6819e0774849d3d328c65c36b7"
       }
     ]
   },
@@ -66310,7 +66678,22 @@
     "n": 285,
     "before": 1.3441908359527588,
     "after": 1.3399391174316406,
-    "overlaps": 0,
+    "validity": {
+      "before": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      },
+      "after": {
+        "hard_overlaps": 0,
+        "strict_bounds": true,
+        "boundary_excess": 0.0,
+        "out_of_bounds_hard": 0,
+        "out_of_bounds_soft": 0
+      }
+    },
     "macros": [
       [
         "a1355",
@@ -69179,6 +69562,14 @@
       {
         "path": "experiments/E84_cascading_saddle/results/cascade_ibm18.json",
         "sha256": "5f592a9e0d6b360615f93ec6eee4db4e0484c67dd319c28f51d2edb0e1770747"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+        "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+      },
+      {
+        "path": "writeup/data/publication/e74_e84_geometry_crosscheck_20260907.json",
+        "sha256": "34707a7ce353779de92e83c7f2e77f27f2340b6819e0774849d3d328c65c36b7"
       }
     ]
   }

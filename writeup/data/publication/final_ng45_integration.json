@@ -157,7 +157,12 @@
           "reason": "budget_exhausted",
           "skipped": true
         }
-      }
+      },
+      "returned_state": {
+        "lanes": [],
+        "phase": "e25"
+      },
+      "threads_per_lane": 3
     },
     {
       "result_record": "writeup/runs/final-ng45-integration-20260906/runs/ariane133_ng45__v2-a__seed42__7cd2ba1d3e18/result.json",
@@ -307,7 +312,14 @@
             "skipped": false
           }
         }
-      }
+      },
+      "returned_state": {
+        "lanes": [
+          "A"
+        ],
+        "phase": "final"
+      },
+      "threads_per_lane": 3
     },
     {
       "result_record": "writeup/runs/final-ng45-integration-20260906/runs/ariane133_ng45__v2-abc__seed42__1428d1916fba/result.json",
@@ -569,7 +581,14 @@
             "skipped": false
           }
         }
-      }
+      },
+      "returned_state": {
+        "lanes": [
+          "A"
+        ],
+        "phase": "final"
+      },
+      "threads_per_lane": 1
     }
   ]
 }

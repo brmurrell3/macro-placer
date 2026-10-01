@@ -1,0 +1,1633 @@
+{
+  "kind": "report_v1_figure_and_table_values",
+  "producer": {
+    "path": "scripts/render_publication_v1.py",
+    "sha256": "2e1697fa50e0dcbde25221ec9d1cf8586d293453d128d55ef09a52f86236d421"
+  },
+  "evidence_labels": {
+    "Official": "organizers' final leaderboard",
+    "Historical": "May 2026 development records; unmatched hardware, budgets and concurrency",
+    "Measurement": "post-competition rescoring and parsing of frozen inputs"
+  },
+  "display_names": {
+    "v1": "v1 (17 May)",
+    "early_v2": "early v2",
+    "single": "single pipeline (20 May lineage)"
+  },
+  "display_name_note": "The v1 record is the 17 May full-suite run of the v1 family (raw file timestamp 2026-05-17T10:24:36Z). It is not the 13 May leaderboard entry, which the leaderboard lists only as 'Was 1.0771'.",
+  "font": "Latin Modern Roman (TeX Live lm package, lmroman10-*.otf); mathtext Computer Modern",
+  "palette": {
+    "context_grey": "#9a9a9a",
+    "baseline_grey": "#7a7a7a",
+    "records": {
+      "v1": "#1769AA",
+      "early_v2": "#0E8796",
+      "single": "#C26816"
+    },
+    "components": {
+      "wirelength": "#c4c4c4",
+      "half_density": "#8c8c8c",
+      "half_congestion": "#5e4fa2"
+    }
+  },
+  "outputs": [
+    {
+      "path": "writeup/latex/figures/result_context.pdf",
+      "sha256": "fd356d4c404cd19bbe2f9130e63313044c573c87f2b3c8e1c3bb55c755c53860"
+    },
+    {
+      "path": "writeup/interactive/result-context.svg",
+      "sha256": "dcd65e51845c543a8f09c77c718cf83a2f6bf58779795326f2cb52f75391d0d9"
+    },
+    {
+      "path": "writeup/interactive/result-context.png",
+      "sha256": "6d9afac2492df2be65745ce3bbd494ff5597c4305997849cbf48d5f14ca8eaad"
+    },
+    {
+      "path": "writeup/latex/figures/placement_ibm01.pdf",
+      "sha256": "0374051c0d8479e0f5c4014a5ced19104d335ac56412fb10db39a07ec6aa0671"
+    },
+    {
+      "path": "writeup/latex/figures/per_design_vs_replace.pdf",
+      "sha256": "5dbb13371c50f094a89c2062933190a0a287440eb0f8dd5bb7a6f7bb62c1a4a1"
+    },
+    {
+      "path": "writeup/latex/figures/component_deltas.pdf",
+      "sha256": "ce2933849c1b3c54cec83ca70be41a60292495acca946d4836a00317b8b84ab1"
+    },
+    {
+      "path": "writeup/latex/figures/time_vs_quality.pdf",
+      "sha256": "247f9898f7a9605fe0de3794d410c7ac54af9766753cebe6419d73b96bd42fc0"
+    },
+    {
+      "path": "writeup/latex/figures/curvature_attempts.pdf",
+      "sha256": "c90abd5ff23321a40ed1f7732281ff14ed3162c0d08708ebfaeac6a5aceb6c72"
+    },
+    {
+      "path": "writeup/latex/figures/ibm01_displacement.pdf",
+      "sha256": "d3b718a7dd4e43c7d7d4ab22b5cd32d5243ef50a50f9155be0f3cafe102541f4"
+    },
+    {
+      "path": "writeup/latex/generated/competition_context.tex",
+      "sha256": "946433c091e7b29ec2a97a67d3a8dcb9fac945ae019d6058995d785523f84937"
+    },
+    {
+      "path": "writeup/latex/generated/historical_vs_baselines.tex",
+      "sha256": "fa9fe650ae740d6b2c8afb5d4c0f6ce2ac1972094639f6b415125612ebfd1c5e"
+    },
+    {
+      "path": "writeup/latex/generated/benchmark_stats.tex",
+      "sha256": "ce0b2c8a738b7a2ed482187175208cd95dc54bc100cbe54d550290c3debe04bc"
+    },
+    {
+      "path": "writeup/latex/generated/curvature_stages.tex",
+      "sha256": "52a47a84a06b472ab96994df749bf7e501e23f30e80cb23945369fa718aa861b"
+    }
+  ],
+  "figures": {
+    "result_context": {
+      "files": [
+        "writeup/latex/figures/result_context.pdf",
+        "writeup/interactive/result-context.svg",
+        "writeup/interactive/result-context.png"
+      ],
+      "evidence_label": "Official",
+      "top_ten": [
+        {
+          "rank": 1,
+          "team": "Archgen",
+          "mean_proxy": 0.9507,
+          "readme_line": 278
+        },
+        {
+          "rank": 2,
+          "team": "Carrotato",
+          "mean_proxy": 0.9522,
+          "readme_line": 279
+        },
+        {
+          "rank": 3,
+          "team": "JaneRT",
+          "mean_proxy": 0.9694,
+          "readme_line": 280
+        },
+        {
+          "rank": 4,
+          "team": "Shoom",
+          "mean_proxy": 0.9842,
+          "readme_line": 281
+        },
+        {
+          "rank": 5,
+          "team": "Klein-4",
+          "mean_proxy": 0.9846,
+          "readme_line": 282
+        },
+        {
+          "rank": 6,
+          "team": "tobias-x",
+          "mean_proxy": 0.9884,
+          "readme_line": 283
+        },
+        {
+          "rank": 7,
+          "team": "Vibe",
+          "mean_proxy": 0.9939,
+          "readme_line": 284
+        },
+        {
+          "rank": 8,
+          "team": "Macro Polo",
+          "mean_proxy": 0.9965,
+          "readme_line": 285
+        },
+        {
+          "rank": 9,
+          "team": "thinkorplace",
+          "mean_proxy": 0.9974,
+          "readme_line": 286
+        },
+        {
+          "rank": 10,
+          "team": "vmallela",
+          "mean_proxy": 1.0109,
+          "readme_line": 287
+        }
+      ],
+      "labelled": {
+        "Archgen": 0.9507,
+        "Carrotato": 0.9522,
+        "Thinkorplace": 0.9974
+      },
+      "baselines": {
+        "RePlAce": 1.4578,
+        "SA": 2.1251
+      },
+      "verified_eligible_submissions": 132,
+      "ranked_rows": 129,
+      "thinkorplace_vs_replace_percent": -31.581835642749358,
+      "thinkorplace_vs_winner_percent": 4.912169980014713,
+      "sources": [
+        {
+          "path": "writeup/data/publication/leaderboard_996193c.json",
+          "sha256": "106e3b0821893698ee8d6a76d5bf2ebebc65edbaf2a0c43449a5d0d31cef6cf7",
+          "upstream_repository": "partcleda/macro-place-challenge-2026",
+          "upstream_revision": "996193c83eaad151e5ae3fb166cedbd83372d060",
+          "upstream_revision_date": "14 August 2026",
+          "upstream_readme_sha256": "d7a991492c949840d40036d29d52e2357ae5b2bdf713826c8e290ea6d0c8da96",
+          "upstream_readme_git_blob_sha1": "39847b2541502857ea8ea3e559afa7d8277cca1e"
+        }
+      ]
+    },
+    "placement_ibm01": {
+      "file": "writeup/latex/figures/placement_ibm01.pdf",
+      "evidence_label": "Measurement (canonical evaluator on the frozen historical endpoint)",
+      "placement": "after-cascade IBM01 endpoint (raw/placements/cascade_ibm01.pt)",
+      "underlay": "routing_congestion",
+      "underlay_definition": "per grid cell, max(H, V) of the canonical evaluator's smoothed routing congestion (routing demand / capacity, macro blockage included) after get_congestion_cost(); the congestion cost is the mean of the top 5% of the pooled H and V cell values",
+      "grid_rows": 41,
+      "grid_cols": 45,
+      "canvas_um": [
+        22.95,
+        23.04
+      ],
+      "congestion_cell_max": 1.1871160166640558,
+      "congestion_cell_mean": 0.7285316127191419,
+      "colorbar_max": 1.2,
+      "recomputed_components": {
+        "wirelength": 0.08611800521612167,
+        "density": 0.5564828515052795,
+        "congestion": 0.9618478267701495,
+        "proxy": 0.8452833443538361
+      },
+      "recorded_rescore_proxy": 0.8452833443538361,
+      "hard_macros": 246,
+      "fixed_hard_macros": 0,
+      "soft_clusters": 894,
+      "strict_validation": true,
+      "sources": [
+        {
+          "path": "writeup/data/publication/raw/placements/hessian_ibm01.pt",
+          "sha256": "27af4f140326827e21ac2201a1b089c71b1d6bb7bbd84273c9b73e53e8ddc8c4"
+        },
+        {
+          "path": "writeup/data/publication/raw/placements/cascade_ibm01.pt",
+          "sha256": "7c3cf87b6fa5c6985593862b476c1ac0372aa0a554793527501402fce12949e1"
+        },
+        {
+          "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+          "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+        },
+        {
+          "path": "external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt",
+          "sha256": "ca97cee4652966bc0afc16562ccc9aec224de31de1cfb317b61972a4ba1a4c96"
+        },
+        {
+          "path": "external/MacroPlacement/Testcases/ICCAD04/ibm01/initial.plc",
+          "sha256": "f5202ce7295ba2ae38781a6a658b5affaa0ee933110ec071f41dd14961b133ad"
+        },
+        {
+          "path": "macro_place/_plc.py",
+          "sha256": "dd7a1dddd48ef6dde0075e1670962533d659dafdb8da711ef2314b318986847a"
+        },
+        {
+          "path": "macro_place/loader.py",
+          "sha256": "7ac77a987d8cae97126e17589568afa17a21b6ddb2ce914b3785f94bc82c5380"
+        },
+        {
+          "path": "macro_place/objective.py",
+          "sha256": "ea83e02277f39525226f4f2a167907f89f45383a80af7a07e078c81ddcc2ebab"
+        },
+        {
+          "path": "external/MacroPlacement/CodeElements/Plc_client/plc_client_os.py",
+          "sha256": "49e5d0bb58fcb8e9ae4666bf1e11f8ba69baa49c2aa314cad82de8874237b29c"
+        }
+      ]
+    },
+    "per_design_vs_replace": {
+      "file": "writeup/latex/figures/per_design_vs_replace.pdf",
+      "evidence_label": "Historical (records) and Official (published baselines)",
+      "ratios": {
+        "v1": {
+          "ibm01": 0.8617023658828918,
+          "ibm02": 0.5479519563196272,
+          "ibm03": 0.7014194986063239,
+          "ibm04": 0.7469687583405497,
+          "ibm06": 0.7003187477798541,
+          "ibm07": 0.7195652920215851,
+          "ibm08": 0.7571798544227137,
+          "ibm09": 0.7369479090268216,
+          "ibm10": 0.6634362319442034,
+          "ibm11": 0.730769093987977,
+          "ibm12": 0.6905510779031009,
+          "ibm13": 0.7011070986983037,
+          "ibm14": 0.7714523834155365,
+          "ibm15": 0.7640337973913689,
+          "ibm16": 0.7594045508698295,
+          "ibm17": 0.8042317069998973,
+          "ibm18": 0.7557358406505148
+        },
+        "early_v2": {
+          "ibm01": 0.848619457044502,
+          "ibm02": 0.5415566407537487,
+          "ibm03": 0.6868465190899569,
+          "ibm04": 0.7255114065780687,
+          "ibm06": 0.6645696588993337,
+          "ibm07": 0.7061613548610929,
+          "ibm08": 0.7301028641863306,
+          "ibm09": 0.6982434407204033,
+          "ibm10": 0.6593994459215381,
+          "ibm11": 0.6842825840826409,
+          "ibm12": 0.6660911770451491,
+          "ibm13": 0.6398141986642693,
+          "ibm14": 0.7190242367230663,
+          "ibm15": 0.7188738520899253,
+          "ibm16": 0.6987623497339643,
+          "ibm17": 0.7554873140945815,
+          "ibm18": 0.6993219715493377
+        },
+        "single": {
+          "ibm01": 0.823492060304166,
+          "ibm02": 0.5512495824806575,
+          "ibm03": 0.6718787748826972,
+          "ibm04": 0.707391530495018,
+          "ibm06": 0.6504980726990889,
+          "ibm07": 0.6935398992328465,
+          "ibm08": 0.7174627573122124,
+          "ibm09": 0.6881591058403589,
+          "ibm10": 0.6525017640299813,
+          "ibm11": 0.6695324341469595,
+          "ibm12": 0.6314157148161974,
+          "ibm13": 0.6310683607117865,
+          "ibm14": 0.6953230111763927,
+          "ibm15": 0.6963340247933268,
+          "ibm16": 0.6739299578014988,
+          "ibm17": 0.7124172137860151,
+          "ibm18": 0.6714727926733208
+        }
+      },
+      "ratio_ranges": {
+        "v1": [
+          0.5479519563196272,
+          0.8617023658828918
+        ],
+        "early_v2": [
+          0.5415566407537487,
+          0.848619457044502
+        ],
+        "single": [
+          0.5512495824806575,
+          0.823492060304166
+        ]
+      },
+      "sa_over_replace_range": [
+        1.0382144801306479,
+        2.233126596132798
+      ],
+      "sources": [
+        {
+          "path": "writeup/data/publication/raw/CDLNSSACascadeStackedPeripheryPlacer_20260517_062436.json",
+          "sha256": "d9010f72f68683317ff34ff27343b69f633f77366e196ba03c8100c33c226ab9"
+        },
+        {
+          "path": "writeup/data/publication/raw/EPYC_thinkorplace_v2_validation_20260520.json",
+          "sha256": "0bef0502d32aeb9de1bf94c1d9ab11a13f78f69f660983338864dc44d7ac6c9c"
+        },
+        {
+          "path": "writeup/data/publication/raw/E111MinimalGaussianPlacer_20260520_135149.json",
+          "sha256": "8ca72354a75bab11e8c831b525fc063da59907e929dc7f6ec8e3d015d0e48f16"
+        },
+        {
+          "path": "writeup/data/publication/leaderboard_996193c.json",
+          "sha256": "106e3b0821893698ee8d6a76d5bf2ebebc65edbaf2a0c43449a5d0d31cef6cf7",
+          "upstream_repository": "partcleda/macro-place-challenge-2026",
+          "upstream_revision": "996193c83eaad151e5ae3fb166cedbd83372d060",
+          "upstream_revision_date": "14 August 2026",
+          "upstream_readme_sha256": "d7a991492c949840d40036d29d52e2357ae5b2bdf713826c8e290ea6d0c8da96",
+          "upstream_readme_git_blob_sha1": "39847b2541502857ea8ea3e559afa7d8277cca1e"
+        }
+      ]
+    },
+    "component_deltas": {
+      "file": "writeup/latex/figures/component_deltas.pdf",
+      "evidence_label": "Historical",
+      "definition": "single pipeline minus v1 (17 May), per design; negative is an improvement",
+      "per_design": {
+        "ibm01": {
+          "wirelength": -0.0024873316287994385,
+          "half_density": -0.022175908088684082,
+          "half_congestion": -0.013455433251006121,
+          "net": -0.03811867296848964
+        },
+        "ibm02": {
+          "wirelength": 0.004785560071468353,
+          "half_density": -0.01832878589630127,
+          "half_congestion": 0.019600860957967092,
+          "net": 0.006057635133134176
+        },
+        "ibm03": {
+          "wirelength": -0.004234246909618378,
+          "half_density": 0.0009872019290924072,
+          "half_congestion": -0.035811677380938156,
+          "net": -0.03905872236146413
+        },
+        "ibm04": {
+          "wirelength": 0.003843255341053009,
+          "half_density": 0.00165480375289917,
+          "half_congestion": -0.05704349504053863,
+          "net": -0.05154543594658645
+        },
+        "ibm06": {
+          "wirelength": -0.009098730981349945,
+          "half_density": -0.0006282031536102295,
+          "half_congestion": -0.07091779712754231,
+          "net": -0.08064473126250249
+        },
+        "ibm07": {
+          "wirelength": 0.00019787997007369995,
+          "half_density": -0.018539875745773315,
+          "half_congestion": -0.019740873336559273,
+          "net": -0.03808286911225889
+        },
+        "ibm08": {
+          "wirelength": -0.0006622150540351868,
+          "half_density": -0.004513174295425415,
+          "half_congestion": -0.05156051254885985,
+          "net": -0.05673590189832045
+        },
+        "ibm09": {
+          "wirelength": -0.003158651292324066,
+          "half_density": 0.004342138767242432,
+          "half_congestion": -0.05579761479578099,
+          "net": -0.05461412732086263
+        },
+        "ibm10": {
+          "wirelength": 0.003056176006793976,
+          "half_density": 0.0002224445343017578,
+          "half_congestion": -0.01969018218941232,
+          "net": -0.016411561648316586
+        },
+        "ibm11": {
+          "wirelength": -0.006368383765220642,
+          "half_density": 0.00021120905876159668,
+          "half_congestion": -0.06594289826832328,
+          "net": -0.07210007297478233
+        },
+        "ibm12": {
+          "wirelength": 0.00018762797117233276,
+          "half_density": -0.023726075887680054,
+          "half_congestion": -0.07853513434022952,
+          "net": -0.10207358225673724
+        },
+        "ibm13": {
+          "wirelength": -0.006699003279209137,
+          "half_density": -0.00026732683181762695,
+          "half_congestion": -0.0865703985987808,
+          "net": -0.09353672870980756
+        },
+        "ibm14": {
+          "wirelength": -0.005804821848869324,
+          "half_density": 0.005223780870437622,
+          "half_congestion": -0.11693215342356555,
+          "net": -0.11751319440199726
+        },
+        "ibm15": {
+          "wirelength": -0.007813967764377594,
+          "half_density": 0.02429378032684326,
+          "half_congestion": -0.11910592715539092,
+          "net": -0.10262611459292525
+        },
+        "ibm16": {
+          "wirelength": -0.007901772856712341,
+          "half_density": 0.006662487983703613,
+          "half_congestion": -0.12509219951191297,
+          "net": -0.1263314843849217
+        },
+        "ibm17": {
+          "wirelength": -0.003576934337615967,
+          "half_density": -0.03653305768966675,
+          "half_congestion": -0.11088810722021158,
+          "net": -0.1509980992474943
+        },
+        "ibm18": {
+          "wirelength": -0.004205435514450073,
+          "half_density": -0.06819051504135132,
+          "half_congestion": -0.0769350236354105,
+          "net": -0.14933097419121188
+        }
+      },
+      "mean": {
+        "wirelength": -0.002937705639530631,
+        "half_density": -0.008782651494531071,
+        "half_congestion": -0.06378932746273504,
+        "net": -0.07550968459679674
+      },
+      "congestion_share_of_mean_decrease": 0.8447833917378208,
+      "designs_lower": 16,
+      "designs_higher": [
+        "ibm02"
+      ],
+      "mean_change_percent": -7.140425795266559,
+      "sources": [
+        {
+          "path": "writeup/data/publication/raw/CDLNSSACascadeStackedPeripheryPlacer_20260517_062436.json",
+          "sha256": "d9010f72f68683317ff34ff27343b69f633f77366e196ba03c8100c33c226ab9"
+        },
+        {
+          "path": "writeup/data/publication/raw/E111MinimalGaussianPlacer_20260520_135149.json",
+          "sha256": "8ca72354a75bab11e8c831b525fc063da59907e929dc7f6ec8e3d015d0e48f16"
+        }
+      ]
+    },
+    "time_vs_quality": {
+      "file": "writeup/latex/figures/time_vs_quality.pdf",
+      "evidence_label": "Historical; hosts and timing boundaries differ",
+      "records": {
+        "v1": {
+          "mean_proxy": 1.0574954502722795,
+          "mean_seconds": 3192.2051588235295,
+          "min_seconds": 2502.9023,
+          "max_seconds": 3325.2026,
+          "per_design_seconds": {
+            "ibm01": 2502.9023,
+            "ibm02": 3171.7578,
+            "ibm03": 3141.8907,
+            "ibm04": 3123.4194,
+            "ibm06": 3162.7029,
+            "ibm07": 3198.7965,
+            "ibm08": 3212.7033,
+            "ibm09": 3168.909,
+            "ibm10": 3310.2076,
+            "ibm11": 3231.7086,
+            "ibm12": 3309.5408,
+            "ibm13": 3266.9778,
+            "ibm14": 3315.6395,
+            "ibm15": 3279.4056,
+            "ibm16": 3325.2026,
+            "ibm17": 3242.662,
+            "ibm18": 3303.0613
+          },
+          "per_design_proxy": {
+            "ibm01": 0.859634280204773,
+            "ibm02": 1.0065877437591553,
+            "ibm03": 0.9274168610572815,
+            "ibm04": 0.9728521108627319,
+            "ibm06": 1.13360595703125,
+            "ibm07": 1.0529398918151855,
+            "ibm08": 1.0816314220428467,
+            "ibm09": 0.824939489364624,
+            "ibm10": 0.9957514405250549,
+            "ibm11": 0.8604075312614441,
+            "ibm12": 1.1919602155685425,
+            "ibm13": 0.9363285303115845,
+            "ibm14": 1.1908138990402222,
+            "ibm15": 1.1581988334655762,
+            "ibm16": 1.122399926185608,
+            "ibm17": 1.3226394653320312,
+            "ibm18": 1.3393150568008423
+          },
+          "proxy_range": [
+            0.824939489364624,
+            1.3393150568008423
+          ]
+        },
+        "early_v2": {
+          "mean_proxy": 1.0083468451219446,
+          "mean_seconds": 696.7994705882353,
+          "min_seconds": 412.5805,
+          "max_seconds": 883.7875,
+          "per_design_seconds": {
+            "ibm01": 412.5805,
+            "ibm02": 690.5943,
+            "ibm03": 523.7888,
+            "ibm04": 563.2988,
+            "ibm06": 679.8633,
+            "ibm07": 690.8089,
+            "ibm08": 723.2741,
+            "ibm09": 654.9255,
+            "ibm10": 752.2274,
+            "ibm11": 724.4559,
+            "ibm12": 759.9864,
+            "ibm13": 728.3425,
+            "ibm14": 777.5287,
+            "ibm15": 743.8998,
+            "ibm16": 788.977,
+            "ibm17": 883.7875,
+            "ibm18": 747.2516
+          },
+          "per_design_proxy": {
+            "ibm01": 0.8465827703475952,
+            "ibm02": 0.9948395490646362,
+            "ibm03": 0.908148467540741,
+            "ibm04": 0.9449060559272766,
+            "ibm06": 1.0757389068603516,
+            "ibm07": 1.0333259105682373,
+            "ibm08": 1.0429519414901733,
+            "ibm09": 0.7816137075424194,
+            "ibm10": 0.9896926283836365,
+            "ibm11": 0.8056743144989014,
+            "ibm12": 1.1497399806976318,
+            "ibm13": 0.8544718623161316,
+            "ibm14": 1.109885811805725,
+            "ibm15": 1.0897408723831177,
+            "ibm16": 1.0327707529067993,
+            "ibm17": 1.2424744367599487,
+            "ibm18": 1.2393383979797363
+          },
+          "proxy_range": [
+            0.7816137075424194,
+            1.2424744367599487
+          ]
+        },
+        "single": {
+          "mean_proxy": 0.9819857723572675,
+          "mean_seconds": 524.3267352941175,
+          "min_seconds": 331.5162,
+          "max_seconds": 804.4529,
+          "per_design_seconds": {
+            "ibm01": 331.5162,
+            "ibm02": 381.4262,
+            "ibm03": 337.3109,
+            "ibm04": 348.3905,
+            "ibm06": 345.8788,
+            "ibm07": 363.1203,
+            "ibm08": 387.9288,
+            "ibm09": 353.7091,
+            "ibm10": 749.827,
+            "ibm11": 387.1111,
+            "ibm12": 757.087,
+            "ibm13": 460.1581,
+            "ibm14": 769.6686,
+            "ibm15": 741.195,
+            "ibm16": 759.3444,
+            "ibm17": 804.4529,
+            "ibm18": 635.4296
+          },
+          "per_design_proxy": {
+            "ibm01": 0.821515679359436,
+            "ibm02": 1.0126454830169678,
+            "ibm03": 0.8883581161499023,
+            "ibm04": 0.9213067293167114,
+            "ibm06": 1.0529612302780151,
+            "ibm07": 1.0148569345474243,
+            "ibm08": 1.0248955488204956,
+            "ibm09": 0.7703253030776978,
+            "ibm10": 0.9793398976325989,
+            "ibm11": 0.7883074879646301,
+            "ibm12": 1.0898866653442383,
+            "ibm13": 0.8427917957305908,
+            "ibm14": 1.0733006000518799,
+            "ibm15": 1.055572748184204,
+            "ibm16": 0.9960684776306152,
+            "ibm17": 1.1716413497924805,
+            "ibm18": 1.1899840831756592
+          },
+          "proxy_range": [
+            0.7703253030776978,
+            1.1899840831756592
+          ]
+        }
+      },
+      "reference_line_seconds": 3600,
+      "sources": [
+        {
+          "path": "writeup/data/publication/raw/CDLNSSACascadeStackedPeripheryPlacer_20260517_062436.json",
+          "sha256": "d9010f72f68683317ff34ff27343b69f633f77366e196ba03c8100c33c226ab9"
+        },
+        {
+          "path": "writeup/data/publication/raw/EPYC_thinkorplace_v2_validation_20260520.json",
+          "sha256": "0bef0502d32aeb9de1bf94c1d9ab11a13f78f69f660983338864dc44d7ac6c9c"
+        },
+        {
+          "path": "writeup/data/publication/raw/E111MinimalGaussianPlacer_20260520_135149.json",
+          "sha256": "8ca72354a75bab11e8c831b525fc063da59907e929dc7f6ec8e3d015d0e48f16"
+        }
+      ]
+    },
+    "curvature_attempts": {
+      "file": "writeup/latex/figures/curvature_attempts.pdf",
+      "evidence_label": "Historical (uncapped research runs)",
+      "stage_means": {
+        "plateau": 1.081282987314112,
+        "first_stage": 1.0675987776587992,
+        "cascade": 1.0611913028885336
+      },
+      "mean_change_from_plateau_percent": {
+        "plateau": 0.0,
+        "first_stage": -1.2655530342990273,
+        "cascade": -1.8581337782337504
+      },
+      "per_design": [
+        {
+          "name": "ibm01",
+          "plateau": 0.8896034955978394,
+          "first_stage": 0.8552724123001099,
+          "cascade": 0.8452833890914917,
+          "first_stage_seconds": 1465.8317997455597,
+          "cascade_seconds": 2912.917037963867,
+          "first_stage_strict_valid": true,
+          "cascade_strict_valid": true,
+          "first_stage_overlaps": 0,
+          "cascade_overlaps": 0
+        },
+        {
+          "name": "ibm02",
+          "plateau": 1.1188983917236328,
+          "first_stage": 1.0390732288360596,
+          "cascade": 1.0210378170013428,
+          "first_stage_seconds": 2963.0118131637573,
+          "cascade_seconds": 3284.5584988594055,
+          "first_stage_strict_valid": true,
+          "cascade_strict_valid": true,
+          "first_stage_overlaps": 0,
+          "cascade_overlaps": 0
+        },
+        {
+          "name": "ibm03",
+          "plateau": 0.95848548412323,
+          "first_stage": 0.9521355032920837,
+          "cascade": 0.9463424682617188,
+          "first_stage_seconds": 2942.560646057129,
+          "cascade_seconds": 3430.9960420131683,
+          "first_stage_strict_valid": true,
+          "cascade_strict_valid": false,
+          "first_stage_overlaps": 0,
+          "cascade_overlaps": 0
+        },
+        {
+          "name": "ibm04",
+          "plateau": 1.0015555620193481,
+          "first_stage": 0.9922513961791992,
+          "cascade": 0.9906584620475769,
+          "first_stage_seconds": 2036.454579114914,
+          "cascade_seconds": 375.00767993927,
+          "first_stage_strict_valid": true,
+          "cascade_strict_valid": true,
+          "first_stage_overlaps": 0,
+          "cascade_overlaps": 0
+        },
+        {
+          "name": "ibm06",
+          "plateau": 1.1527613401412964,
+          "first_stage": 1.1312695741653442,
+          "cascade": 1.1179163455963135,
+          "first_stage_seconds": 3084.500198841095,
+          "cascade_seconds": 3297.990497112274,
+          "first_stage_strict_valid": true,
+          "cascade_strict_valid": true,
+          "first_stage_overlaps": 0,
+          "cascade_overlaps": 0
+        },
+        {
+          "name": "ibm07",
+          "plateau": 1.0939724445343018,
+          "first_stage": 1.075741171836853,
+          "cascade": 1.0644912719726562,
+          "first_stage_seconds": 2543.613161802292,
+          "cascade_seconds": 3381.221298933029,
+          "first_stage_strict_valid": false,
+          "cascade_strict_valid": false,
+          "first_stage_overlaps": 0,
+          "cascade_overlaps": 0
+        },
+        {
+          "name": "ibm08",
+          "plateau": 1.1110585927963257,
+          "first_stage": 1.106062412261963,
+          "cascade": 1.1006910800933838,
+          "first_stage_seconds": 3040.4328961372375,
+          "cascade_seconds": 3319.173211336136,
+          "first_stage_strict_valid": true,
+          "cascade_strict_valid": true,
+          "first_stage_overlaps": 0,
+          "cascade_overlaps": 0
+        },
+        {
+          "name": "ibm09",
+          "plateau": 0.828282356262207,
+          "first_stage": 0.8273468017578125,
+          "cascade": 0.8226866722106934,
+          "first_stage_seconds": 2248.0947749614716,
+          "cascade_seconds": 3360.1742560863495,
+          "first_stage_strict_valid": false,
+          "cascade_strict_valid": false,
+          "first_stage_overlaps": 0,
+          "cascade_overlaps": 0
+        },
+        {
+          "name": "ibm10",
+          "plateau": 1.0005111694335938,
+          "first_stage": 0.991546630859375,
+          "cascade": 0.9894043207168579,
+          "first_stage_seconds": 3293.4541120529175,
+          "cascade_seconds": 2879.9419901371,
+          "first_stage_strict_valid": true,
+          "cascade_strict_valid": true,
+          "first_stage_overlaps": 0,
+          "cascade_overlaps": 0
+        },
+        {
+          "name": "ibm11",
+          "plateau": 0.8782442808151245,
+          "first_stage": 0.8729335069656372,
+          "cascade": 0.8680754899978638,
+          "first_stage_seconds": 3063.8368570804596,
+          "cascade_seconds": 3453.9781398773193,
+          "first_stage_strict_valid": true,
+          "cascade_strict_valid": true,
+          "first_stage_overlaps": 0,
+          "cascade_overlaps": 0
+        },
+        {
+          "name": "ibm12",
+          "plateau": 1.2053414583206177,
+          "first_stage": 1.2005802392959595,
+          "cascade": 1.1976633071899414,
+          "first_stage_seconds": 4007.4351489543915,
+          "cascade_seconds": 3431.5785579681396,
+          "first_stage_strict_valid": true,
+          "cascade_strict_valid": true,
+          "first_stage_overlaps": 0,
+          "cascade_overlaps": 0
+        },
+        {
+          "name": "ibm13",
+          "plateau": 0.9553952217102051,
+          "first_stage": 0.9488269686698914,
+          "cascade": 0.9345810413360596,
+          "first_stage_seconds": 3058.908868074417,
+          "cascade_seconds": 3412.5852570533752,
+          "first_stage_strict_valid": false,
+          "cascade_strict_valid": false,
+          "first_stage_overlaps": 0,
+          "cascade_overlaps": 0
+        },
+        {
+          "name": "ibm14",
+          "plateau": 1.2160868644714355,
+          "first_stage": 1.2094016075134277,
+          "cascade": 1.2062981128692627,
+          "first_stage_seconds": 3446.862781763077,
+          "cascade_seconds": 3284.034415960312,
+          "first_stage_strict_valid": true,
+          "cascade_strict_valid": true,
+          "first_stage_overlaps": 0,
+          "cascade_overlaps": 0
+        },
+        {
+          "name": "ibm15",
+          "plateau": 1.1617205142974854,
+          "first_stage": 1.156118392944336,
+          "cascade": 1.1550953388214111,
+          "first_stage_seconds": 3210.183099269867,
+          "cascade_seconds": 2733.1142189502716,
+          "first_stage_strict_valid": false,
+          "cascade_strict_valid": false,
+          "first_stage_overlaps": 0,
+          "cascade_overlaps": 0
+        },
+        {
+          "name": "ibm16",
+          "plateau": 1.1234748363494873,
+          "first_stage": 1.113197922706604,
+          "cascade": 1.1084659099578857,
+          "first_stage_seconds": 3518.887576818466,
+          "cascade_seconds": 3286.9117226600647,
+          "first_stage_strict_valid": false,
+          "cascade_strict_valid": false,
+          "first_stage_overlaps": 0,
+          "cascade_overlaps": 0
+        },
+        {
+          "name": "ibm17",
+          "plateau": 1.337078332901001,
+          "first_stage": 1.3332306146621704,
+          "cascade": 1.3316220045089722,
+          "first_stage_seconds": 3886.8104441165924,
+          "cascade_seconds": 3422.7382168769836,
+          "first_stage_strict_valid": true,
+          "cascade_strict_valid": false,
+          "first_stage_overlaps": 0,
+          "cascade_overlaps": 0
+        },
+        {
+          "name": "ibm18",
+          "plateau": 1.3493404388427734,
+          "first_stage": 1.3441908359527588,
+          "cascade": 1.3399391174316406,
+          "first_stage_seconds": 3257.4575939178467,
+          "cascade_seconds": 3340.0126032829285,
+          "first_stage_strict_valid": true,
+          "cascade_strict_valid": true,
+          "first_stage_overlaps": 0,
+          "cascade_overlaps": 0
+        }
+      ],
+      "attempt_totals": {
+        "attempts": 204,
+        "feasible": 201,
+        "successes": 190
+      },
+      "success_definition": "feasible, polished overlap 0, polished proxy below the plateau",
+      "step_definition": "groups['epsilon'] keys are the total step norm in µm: the Euclidean norm of the whole displacement over all movable coordinates, not a per-block step",
+      "groups": {
+        "eigenvector": {
+          "1": {
+            "successes": 94,
+            "attempts": 102
+          },
+          "2": {
+            "successes": 96,
+            "attempts": 102
+          }
+        },
+        "epsilon": {
+          "0.3": {
+            "successes": 64,
+            "attempts": 68
+          },
+          "1.0": {
+            "successes": 65,
+            "attempts": 68
+          },
+          "3.0": {
+            "successes": 61,
+            "attempts": 68
+          }
+        }
+      },
+      "sources": [
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm01.json",
+          "sha256": "19b59d8b5d505f959b850eebd64a50f904bb9a6e2efab46dd63cc11520ee5930"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm01.json",
+          "sha256": "f45b46cd60fca1f4568651216878b31cc8343c304b556606d4fbc870cc87464b"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm02.json",
+          "sha256": "32096acdb7aae2f625227bdb58311a14cd9ee00477294b3787b4bea8eac55bf0"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm02.json",
+          "sha256": "689f563861b4ddce8b3d42dbb82e1d61b02ae8e5488b3a4a4c0c7e2bf6b7e966"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm03.json",
+          "sha256": "09c05e9934426ffb2557393fe3304d57858dcbb785fbc88889c729afb21d36b5"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm03.json",
+          "sha256": "3de3705961750f936dc458050876e7639dfaf0235921b82424085c4de9a97f8b"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm04.json",
+          "sha256": "2f0581d5edf49d6d30f5c09e53bb77302336d219a9476f276bceb8d426b6fece"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm04.json",
+          "sha256": "afa3dfdd563cb6a9589fd1a708a7dbe77de3a14ccf09b2e2f98af1a005a6242f"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm06.json",
+          "sha256": "1c6461d9b8983f5123062c7672f4008f17f5102a7559873bd596e9adcc13a307"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm06.json",
+          "sha256": "8f83fcf417a9c9a73975e556bea6d1b1e464c54dc1d3b27482d64f8341949368"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm07.json",
+          "sha256": "5a7ee6d0948af38afee4f8641807bc1116d0ff1b209d9be1eaf2246df7948481"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm07.json",
+          "sha256": "17880caf391351f0395bfa7bb13abaff34986645104933a27537d1ab76387804"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm08.json",
+          "sha256": "fb135e0df0cc81d43426bb83baf5e19fecd465036a317b195d8927d1d97170be"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm08.json",
+          "sha256": "e2fd597d8d94c20731438d977185b90584cae59575747ad1b323cbd8dd9c60fa"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm09.json",
+          "sha256": "845f7577e5594e5d81d5aa0f6ca4451c7db2148b95ba066aabb6c9d8c4a620dd"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm09.json",
+          "sha256": "0a49039e22b803029b2034d82eeb326419fbcefbda29d0330c96752882ae7389"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm10.json",
+          "sha256": "36892e8e14ebb8ffb9c9f960b7ca3bc48db35754796ce194388aeb65f25d0ae0"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm10.json",
+          "sha256": "0c1e5aeaac7fb5e0f0d300453e2cf789b2ec6a9375ecf6da7c3775deacb81aa0"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm11.json",
+          "sha256": "093b5d0a88e1a0e2904bc667434778635738832c073870c94daaf646db15cd18"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm11.json",
+          "sha256": "6ef4bcc097772bc0874dc3ebb403b617a1a1ed5cffd2de31b0dc81c066c40bf3"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm12.json",
+          "sha256": "0b28b74367d4bed66dd4c98a89dd65b92c6dad3e34b6d3774b426b6d780e8417"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm12.json",
+          "sha256": "f4128bb81811acf098c3b7fc76ed8ebbd2227c6d64502fedaebad4625ea2521a"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm13.json",
+          "sha256": "b8435e09d22a45b1ed03ccc92a8a0fc5dfc24e532b2fb71cb464536eaa600acc"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm13.json",
+          "sha256": "5ad5adb5efc294021242f4944a24789cec256abbd00b737fabc6a794a603c84e"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm14.json",
+          "sha256": "cf17b334a5c5aa9ba94fa0c3166fb3877354985cd2cc3d350e047223d20f848a"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm14.json",
+          "sha256": "28755a12adfc6227da844ee59c7e688af380c8406ddbd13e5f1b0128ccdb4cdd"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm15.json",
+          "sha256": "44983df6e5a8c19ab8175c2d3e39118e27db474f39ab2d09e722fba272f6a35f"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm15.json",
+          "sha256": "1db063601d1f2d07d9de99a3ca4a7a416934b78270f1a36d0237ce9dd2ea65a6"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm16.json",
+          "sha256": "16420de7816710c067356da18d8fbc5399b1190f10a046038df10a2d23cd2814"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm16.json",
+          "sha256": "89ca9b747c7b8c172410ae4c1e20caa9a055bae7233dd128138bccabd01b3674"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm17.json",
+          "sha256": "4c3e95b336c473cdcf473ba2e8fbe52850f81f0ffaa118bee04d2b3f4c2c4273"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm17.json",
+          "sha256": "6aba0e79bd3443b2e2b5f2fa2793f554120dfcb465c72e779457e7b501fe58f4"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm18.json",
+          "sha256": "044197fff2c1b7ca7d585b157f31c88a35e23b6584592c2f658ee5c9853bfea5"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm18.json",
+          "sha256": "5f592a9e0d6b360615f93ec6eee4db4e0484c67dd319c28f51d2edb0e1770747"
+        }
+      ]
+    },
+    "ibm01_displacement": {
+      "file": "writeup/latex/figures/ibm01_displacement.pdf",
+      "evidence_label": "Historical (frozen endpoints of an uncapped research run)",
+      "before_proxy": 0.8552724529809601,
+      "after_proxy": 0.8452833443538361,
+      "hard_macros_moved": 104,
+      "hard_macros": 246,
+      "hard_displacement_um": {
+        "max": 1.009700059890747,
+        "median_of_moved": 0.0849643349647522,
+        "mean_all": 0.06605728585763539
+      },
+      "colorbar_max_um": 1.1,
+      "arrows": "from the before position along the displacement, lengthened by arrow_scale and not clipped at the canvas edge; moves shorter than dots_below_um are drawn as dots",
+      "arrow_scale": 4,
+      "dots_below_um": 0.05,
+      "hard_macros_drawn_as_dots": 32,
+      "soft_clusters_moved_not_drawn": 407,
+      "soft_displacement_max_um": 8.44505927751628,
+      "sources": [
+        {
+          "path": "writeup/data/publication/raw/placements/hessian_ibm01.pt",
+          "sha256": "27af4f140326827e21ac2201a1b089c71b1d6bb7bbd84273c9b73e53e8ddc8c4"
+        },
+        {
+          "path": "writeup/data/publication/raw/placements/cascade_ibm01.pt",
+          "sha256": "7c3cf87b6fa5c6985593862b476c1ac0372aa0a554793527501402fce12949e1"
+        }
+      ]
+    }
+  },
+  "tables": {
+    "competition_context": {
+      "file": "writeup/latex/generated/competition_context.tex",
+      "label": "tab:competition",
+      "rows": [
+        {
+          "rank": 1,
+          "entry": "Archgen",
+          "mean_proxy": 0.9507,
+          "listed_runtime": null,
+          "vs_replace_percent": -34.8,
+          "readme_line": 278
+        },
+        {
+          "rank": 2,
+          "entry": "Carrotato",
+          "mean_proxy": 0.9522,
+          "listed_runtime": "~12.4min/bench",
+          "vs_replace_percent": -34.7,
+          "readme_line": 279
+        },
+        {
+          "rank": 9,
+          "entry": "Thinkorplace",
+          "mean_proxy": 0.9974,
+          "listed_runtime": "12min/bench",
+          "vs_replace_percent": -31.6,
+          "readme_line": 286
+        },
+        {
+          "rank": null,
+          "entry": "RePlAce baseline",
+          "mean_proxy": 1.4578,
+          "readme_line": 355
+        },
+        {
+          "rank": null,
+          "entry": "SA baseline",
+          "mean_proxy": 2.1251,
+          "vs_replace_percent": 45.8,
+          "readme_line": 402
+        }
+      ],
+      "sources": [
+        {
+          "path": "writeup/data/publication/leaderboard_996193c.json",
+          "sha256": "106e3b0821893698ee8d6a76d5bf2ebebc65edbaf2a0c43449a5d0d31cef6cf7",
+          "upstream_repository": "partcleda/macro-place-challenge-2026",
+          "upstream_revision": "996193c83eaad151e5ae3fb166cedbd83372d060",
+          "upstream_revision_date": "14 August 2026",
+          "upstream_readme_sha256": "d7a991492c949840d40036d29d52e2357ae5b2bdf713826c8e290ea6d0c8da96",
+          "upstream_readme_git_blob_sha1": "39847b2541502857ea8ea3e559afa7d8277cca1e"
+        }
+      ]
+    },
+    "historical_vs_baselines": {
+      "file": "writeup/latex/generated/historical_vs_baselines.tex",
+      "label": "tab:historical-baselines",
+      "record_means": {
+        "v1": 1.0574954502722795,
+        "early_v2": 1.0083468451219446,
+        "single": 0.9819857723572675
+      },
+      "baseline_means": {
+        "sa_mean": 2.125088235294118,
+        "replace_mean": 1.4578411764705885
+      },
+      "per_design": {
+        "ibm01": {
+          "sa": 1.3166,
+          "replace": 0.9976,
+          "v1": 0.859634280204773,
+          "early_v2": 0.8465827703475952,
+          "single": 0.821515679359436
+        },
+        "ibm02": {
+          "sa": 1.9072,
+          "replace": 1.837,
+          "v1": 1.0065877437591553,
+          "early_v2": 0.9948395490646362,
+          "single": 1.0126454830169678
+        },
+        "ibm03": {
+          "sa": 1.7401,
+          "replace": 1.3222,
+          "v1": 0.9274168610572815,
+          "early_v2": 0.908148467540741,
+          "single": 0.8883581161499023
+        },
+        "ibm04": {
+          "sa": 1.5037,
+          "replace": 1.3024,
+          "v1": 0.9728521108627319,
+          "early_v2": 0.9449060559272766,
+          "single": 0.9213067293167114
+        },
+        "ibm06": {
+          "sa": 2.5057,
+          "replace": 1.6187,
+          "v1": 1.13360595703125,
+          "early_v2": 1.0757389068603516,
+          "single": 1.0529612302780151
+        },
+        "ibm07": {
+          "sa": 2.0229,
+          "replace": 1.4633,
+          "v1": 1.0529398918151855,
+          "early_v2": 1.0333259105682373,
+          "single": 1.0148569345474243
+        },
+        "ibm08": {
+          "sa": 1.9239,
+          "replace": 1.4285,
+          "v1": 1.0816314220428467,
+          "early_v2": 1.0429519414901733,
+          "single": 1.0248955488204956
+        },
+        "ibm09": {
+          "sa": 1.3875,
+          "replace": 1.1194,
+          "v1": 0.824939489364624,
+          "early_v2": 0.7816137075424194,
+          "single": 0.7703253030776978
+        },
+        "ibm10": {
+          "sa": 2.1108,
+          "replace": 1.5009,
+          "v1": 0.9957514405250549,
+          "early_v2": 0.9896926283836365,
+          "single": 0.9793398976325989
+        },
+        "ibm11": {
+          "sa": 1.7111,
+          "replace": 1.1774,
+          "v1": 0.8604075312614441,
+          "early_v2": 0.8056743144989014,
+          "single": 0.7883074879646301
+        },
+        "ibm12": {
+          "sa": 2.8261,
+          "replace": 1.7261,
+          "v1": 1.1919602155685425,
+          "early_v2": 1.1497399806976318,
+          "single": 1.0898866653442383
+        },
+        "ibm13": {
+          "sa": 1.9141,
+          "replace": 1.3355,
+          "v1": 0.9363285303115845,
+          "early_v2": 0.8544718623161316,
+          "single": 0.8427917957305908
+        },
+        "ibm14": {
+          "sa": 2.275,
+          "replace": 1.5436,
+          "v1": 1.1908138990402222,
+          "early_v2": 1.109885811805725,
+          "single": 1.0733006000518799
+        },
+        "ibm15": {
+          "sa": 2.3,
+          "replace": 1.5159,
+          "v1": 1.1581988334655762,
+          "early_v2": 1.0897408723831177,
+          "single": 1.055572748184204
+        },
+        "ibm16": {
+          "sa": 2.2337,
+          "replace": 1.478,
+          "v1": 1.122399926185608,
+          "early_v2": 1.0327707529067993,
+          "single": 0.9960684776306152
+        },
+        "ibm17": {
+          "sa": 3.6726,
+          "replace": 1.6446,
+          "v1": 1.3226394653320312,
+          "early_v2": 1.2424744367599487,
+          "single": 1.1716413497924805
+        },
+        "ibm18": {
+          "sa": 2.7755,
+          "replace": 1.7722,
+          "v1": 1.3393150568008423,
+          "early_v2": 1.2393383979797363,
+          "single": 1.1899840831756592
+        }
+      },
+      "sources": [
+        {
+          "path": "writeup/data/publication/raw/CDLNSSACascadeStackedPeripheryPlacer_20260517_062436.json",
+          "sha256": "d9010f72f68683317ff34ff27343b69f633f77366e196ba03c8100c33c226ab9"
+        },
+        {
+          "path": "writeup/data/publication/raw/EPYC_thinkorplace_v2_validation_20260520.json",
+          "sha256": "0bef0502d32aeb9de1bf94c1d9ab11a13f78f69f660983338864dc44d7ac6c9c"
+        },
+        {
+          "path": "writeup/data/publication/raw/E111MinimalGaussianPlacer_20260520_135149.json",
+          "sha256": "8ca72354a75bab11e8c831b525fc063da59907e929dc7f6ec8e3d015d0e48f16"
+        },
+        {
+          "path": "writeup/data/publication/leaderboard_996193c.json",
+          "sha256": "106e3b0821893698ee8d6a76d5bf2ebebc65edbaf2a0c43449a5d0d31cef6cf7",
+          "upstream_repository": "partcleda/macro-place-challenge-2026",
+          "upstream_revision": "996193c83eaad151e5ae3fb166cedbd83372d060",
+          "upstream_revision_date": "14 August 2026",
+          "upstream_readme_sha256": "d7a991492c949840d40036d29d52e2357ae5b2bdf713826c8e290ea6d0c8da96",
+          "upstream_readme_git_blob_sha1": "39847b2541502857ea8ea3e559afa7d8277cca1e"
+        }
+      ]
+    },
+    "benchmark_stats": {
+      "file": "writeup/latex/generated/benchmark_stats.tex",
+      "label": "tab:benchmarks",
+      "per_design": {
+        "ibm01": {
+          "movable_hard_macros": 246,
+          "fixed_hard_macros": 0,
+          "soft_clusters": 894,
+          "nets": 7269,
+          "canvas_width_um": 22.95,
+          "canvas_height_um": 23.04,
+          "grid_cols": 45,
+          "grid_rows": 41
+        },
+        "ibm02": {
+          "movable_hard_macros": 271,
+          "fixed_hard_macros": 0,
+          "soft_clusters": 1075,
+          "nets": 10944,
+          "canvas_width_um": 32.56,
+          "canvas_height_um": 32.48,
+          "grid_cols": 30,
+          "grid_rows": 27
+        },
+        "ibm03": {
+          "movable_hard_macros": 290,
+          "fixed_hard_macros": 0,
+          "soft_clusters": 1148,
+          "nets": 10247,
+          "canvas_width_um": 35.12,
+          "canvas_height_um": 35.04,
+          "grid_cols": 32,
+          "grid_rows": 29
+        },
+        "ibm04": {
+          "movable_hard_macros": 295,
+          "fixed_hard_macros": 0,
+          "soft_clusters": 1085,
+          "nets": 13555,
+          "canvas_width_um": 34.09,
+          "canvas_height_um": 34.08,
+          "grid_cols": 31,
+          "grid_rows": 30
+        },
+        "ibm06": {
+          "movable_hard_macros": 178,
+          "fixed_hard_macros": 0,
+          "soft_clusters": 900,
+          "nets": 14085,
+          "canvas_width_um": 32.65,
+          "canvas_height_um": 32.64,
+          "grid_cols": 31,
+          "grid_rows": 28
+        },
+        "ibm07": {
+          "movable_hard_macros": 291,
+          "fixed_hard_macros": 0,
+          "soft_clusters": 1040,
+          "nets": 19920,
+          "canvas_width_um": 38.51,
+          "canvas_height_um": 38.4,
+          "grid_cols": 35,
+          "grid_rows": 32
+        },
+        "ibm08": {
+          "movable_hard_macros": 301,
+          "fixed_hard_macros": 0,
+          "soft_clusters": 1030,
+          "nets": 20694,
+          "canvas_width_um": 41.05,
+          "canvas_height_um": 40.96,
+          "grid_cols": 38,
+          "grid_rows": 34
+        },
+        "ibm09": {
+          "movable_hard_macros": 253,
+          "fixed_hard_macros": 0,
+          "soft_clusters": 1048,
+          "nets": 18341,
+          "canvas_width_um": 46.74,
+          "canvas_height_um": 46.88,
+          "grid_cols": 36,
+          "grid_rows": 38
+        },
+        "ibm10": {
+          "movable_hard_macros": 786,
+          "fixed_hard_macros": 0,
+          "soft_clusters": 1982,
+          "nets": 39140,
+          "canvas_width_um": 77.05,
+          "canvas_height_um": 77.12,
+          "grid_cols": 55,
+          "grid_rows": 41
+        },
+        "ibm11": {
+          "movable_hard_macros": 373,
+          "fixed_hard_macros": 0,
+          "soft_clusters": 1195,
+          "nets": 25273,
+          "canvas_width_um": 51.53,
+          "canvas_height_um": 51.52,
+          "grid_cols": 39,
+          "grid_rows": 45
+        },
+        "ibm12": {
+          "movable_hard_macros": 651,
+          "fixed_hard_macros": 0,
+          "soft_clusters": 1985,
+          "nets": 40996,
+          "canvas_width_um": 67.97,
+          "canvas_height_um": 68.0,
+          "grid_cols": 47,
+          "grid_rows": 47
+        },
+        "ibm13": {
+          "movable_hard_macros": 424,
+          "fixed_hard_macros": 0,
+          "soft_clusters": 1301,
+          "nets": 28201,
+          "canvas_width_um": 55.94,
+          "canvas_height_um": 56.0,
+          "grid_cols": 43,
+          "grid_rows": 43
+        },
+        "ibm14": {
+          "movable_hard_macros": 614,
+          "fixed_hard_macros": 0,
+          "soft_clusters": 1529,
+          "nets": 57333,
+          "canvas_width_um": 59.85,
+          "canvas_height_um": 60.0,
+          "grid_cols": 49,
+          "grid_rows": 44
+        },
+        "ibm15": {
+          "movable_hard_macros": 393,
+          "fixed_hard_macros": 0,
+          "soft_clusters": 1138,
+          "nets": 46467,
+          "canvas_width_um": 67.64,
+          "canvas_height_um": 67.52,
+          "grid_cols": 57,
+          "grid_rows": 38
+        },
+        "ibm16": {
+          "movable_hard_macros": 458,
+          "fixed_hard_macros": 0,
+          "soft_clusters": 1315,
+          "nets": 67118,
+          "canvas_width_um": 81.03,
+          "canvas_height_um": 81.12,
+          "grid_cols": 45,
+          "grid_rows": 48
+        },
+        "ibm17": {
+          "movable_hard_macros": 760,
+          "fixed_hard_macros": 0,
+          "soft_clusters": 1844,
+          "nets": 83132,
+          "canvas_width_um": 72.6,
+          "canvas_height_um": 72.64,
+          "grid_cols": 51,
+          "grid_rows": 44
+        },
+        "ibm18": {
+          "movable_hard_macros": 285,
+          "fixed_hard_macros": 0,
+          "soft_clusters": 1029,
+          "nets": 53763,
+          "canvas_width_um": 64.82,
+          "canvas_height_um": 64.96,
+          "grid_cols": 55,
+          "grid_rows": 39
+        }
+      },
+      "readme_macro_and_net_counts_agree_for": [
+        "ibm01"
+      ],
+      "net_count_field": "plc_net_count",
+      "ibm05_exclusion_source": "external/MacroPlacement/Testcases/ICCAD04/README.md: 'We do not include the ibm05 testcase as it does not have any macros.'",
+      "sources": [
+        {
+          "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+          "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+        },
+        {
+          "path": "writeup/data/publication/leaderboard_996193c.json",
+          "sha256": "106e3b0821893698ee8d6a76d5bf2ebebc65edbaf2a0c43449a5d0d31cef6cf7",
+          "upstream_repository": "partcleda/macro-place-challenge-2026",
+          "upstream_revision": "996193c83eaad151e5ae3fb166cedbd83372d060",
+          "upstream_revision_date": "14 August 2026",
+          "upstream_readme_sha256": "d7a991492c949840d40036d29d52e2357ae5b2bdf713826c8e290ea6d0c8da96",
+          "upstream_readme_git_blob_sha1": "39847b2541502857ea8ea3e559afa7d8277cca1e"
+        }
+      ]
+    },
+    "curvature_stages": {
+      "file": "writeup/latex/generated/curvature_stages.tex",
+      "label": "tab:curvature-stages",
+      "valid_first_stage": 12,
+      "valid_cascade": 10,
+      "mean_cascade_seconds": 3094.5255085299996,
+      "maximum_boundary_excess_um": 7.62939453125e-06,
+      "means": {
+        "plateau": 1.081282987314112,
+        "first_stage": 1.0675987776587992,
+        "cascade": 1.0611913028885336
+      },
+      "sources": [
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm01.json",
+          "sha256": "19b59d8b5d505f959b850eebd64a50f904bb9a6e2efab46dd63cc11520ee5930"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm01.json",
+          "sha256": "f45b46cd60fca1f4568651216878b31cc8343c304b556606d4fbc870cc87464b"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm02.json",
+          "sha256": "32096acdb7aae2f625227bdb58311a14cd9ee00477294b3787b4bea8eac55bf0"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm02.json",
+          "sha256": "689f563861b4ddce8b3d42dbb82e1d61b02ae8e5488b3a4a4c0c7e2bf6b7e966"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm03.json",
+          "sha256": "09c05e9934426ffb2557393fe3304d57858dcbb785fbc88889c729afb21d36b5"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm03.json",
+          "sha256": "3de3705961750f936dc458050876e7639dfaf0235921b82424085c4de9a97f8b"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm04.json",
+          "sha256": "2f0581d5edf49d6d30f5c09e53bb77302336d219a9476f276bceb8d426b6fece"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm04.json",
+          "sha256": "afa3dfdd563cb6a9589fd1a708a7dbe77de3a14ccf09b2e2f98af1a005a6242f"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm06.json",
+          "sha256": "1c6461d9b8983f5123062c7672f4008f17f5102a7559873bd596e9adcc13a307"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm06.json",
+          "sha256": "8f83fcf417a9c9a73975e556bea6d1b1e464c54dc1d3b27482d64f8341949368"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm07.json",
+          "sha256": "5a7ee6d0948af38afee4f8641807bc1116d0ff1b209d9be1eaf2246df7948481"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm07.json",
+          "sha256": "17880caf391351f0395bfa7bb13abaff34986645104933a27537d1ab76387804"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm08.json",
+          "sha256": "fb135e0df0cc81d43426bb83baf5e19fecd465036a317b195d8927d1d97170be"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm08.json",
+          "sha256": "e2fd597d8d94c20731438d977185b90584cae59575747ad1b323cbd8dd9c60fa"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm09.json",
+          "sha256": "845f7577e5594e5d81d5aa0f6ca4451c7db2148b95ba066aabb6c9d8c4a620dd"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm09.json",
+          "sha256": "0a49039e22b803029b2034d82eeb326419fbcefbda29d0330c96752882ae7389"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm10.json",
+          "sha256": "36892e8e14ebb8ffb9c9f960b7ca3bc48db35754796ce194388aeb65f25d0ae0"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm10.json",
+          "sha256": "0c1e5aeaac7fb5e0f0d300453e2cf789b2ec6a9375ecf6da7c3775deacb81aa0"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm11.json",
+          "sha256": "093b5d0a88e1a0e2904bc667434778635738832c073870c94daaf646db15cd18"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm11.json",
+          "sha256": "6ef4bcc097772bc0874dc3ebb403b617a1a1ed5cffd2de31b0dc81c066c40bf3"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm12.json",
+          "sha256": "0b28b74367d4bed66dd4c98a89dd65b92c6dad3e34b6d3774b426b6d780e8417"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm12.json",
+          "sha256": "f4128bb81811acf098c3b7fc76ed8ebbd2227c6d64502fedaebad4625ea2521a"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm13.json",
+          "sha256": "b8435e09d22a45b1ed03ccc92a8a0fc5dfc24e532b2fb71cb464536eaa600acc"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm13.json",
+          "sha256": "5ad5adb5efc294021242f4944a24789cec256abbd00b737fabc6a794a603c84e"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm14.json",
+          "sha256": "cf17b334a5c5aa9ba94fa0c3166fb3877354985cd2cc3d350e047223d20f848a"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm14.json",
+          "sha256": "28755a12adfc6227da844ee59c7e688af380c8406ddbd13e5f1b0128ccdb4cdd"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm15.json",
+          "sha256": "44983df6e5a8c19ab8175c2d3e39118e27db474f39ab2d09e722fba272f6a35f"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm15.json",
+          "sha256": "1db063601d1f2d07d9de99a3ca4a7a416934b78270f1a36d0237ce9dd2ea65a6"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm16.json",
+          "sha256": "16420de7816710c067356da18d8fbc5399b1190f10a046038df10a2d23cd2814"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm16.json",
+          "sha256": "89ca9b747c7b8c172410ae4c1e20caa9a055bae7233dd128138bccabd01b3674"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm17.json",
+          "sha256": "4c3e95b336c473cdcf473ba2e8fbe52850f81f0ffaa118bee04d2b3f4c2c4273"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm17.json",
+          "sha256": "6aba0e79bd3443b2e2b5f2fa2793f554120dfcb465c72e779457e7b501fe58f4"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/hessian_ibm18.json",
+          "sha256": "044197fff2c1b7ca7d585b157f31c88a35e23b6584592c2f658ee5c9853bfea5"
+        },
+        {
+          "path": "writeup/data/publication/raw/cascade/cascade_ibm18.json",
+          "sha256": "5f592a9e0d6b360615f93ec6eee4db4e0484c67dd319c28f51d2edb0e1770747"
+        },
+        {
+          "path": "writeup/data/publication/e74_e84_canonical_rescore_20260907.json",
+          "sha256": "ef7822a06b1912d2e32afb438b2cc3edfa434202158a6049cfa3efeeccf0f5d7"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,120 @@
+\section{Development records and evidence ledger}\label{app:records}
+
+% Evidence-label macros; the main preamble normally defines them.
+\providecommand{\official}{\textsc{Official}}
+\providecommand{\historical}{\textsc{Historical}}
+\providecommand{\measurement}{\textsc{Measurement}}
+\providecommand{\reproduction}{\textsc{Reproduction}}
+
+\subsection{Historical suite records}\label{app:records-historical}
+
+Three complete 17-design records survive from May 2026
+(Table~\ref{tab:historical-baselines}). Each is an evaluator output with per-design
+components, overlap counts, runtimes, a timestamp, four concurrent jobs and one Torch
+thread; none stores coordinates, a source revision or host details, so the scores can
+be recomputed from their components but not from placements. Contemporaneous notes
+place the 17 May v1 run on the M3 Max and the early v2 run on an AWS EPYC instance;
+the single-pipeline record names no host. The records differ in program, hardware and
+time budget, so differences between columns describe the records, not the effect of
+any one change.
+
+\input{generated/historical_vs_baselines.tex}
+
+Against the published baselines, the margin below RePlAce ranges from 13.8\% (v1,
+IBM01) to 45.8\% (early v2, IBM02). The single-pipeline record is lower than the v1
+record on 16 of 17 designs. The exception is IBM02: density falls from 0.61156 to
+0.57491, but wirelength rises from 0.08418 to 0.08897 and congestion from 1.23324 to
+1.27245, so the total rises from 1.00659 to 1.01265. The largest change is on IBM17,
+where congestion falls from 1.88679 to 1.66501 and density from 0.60911 to 0.53604, a
+total decrease of 0.15100; IBM17 nevertheless remains among the costliest designs.
+
+\paragraph{Repeatability.} One direct repeatability observation survives, as a
+\historical{} note rather than a frozen record: a development note (commit
+\texttt{4a202de}) records an identical rerun of the 17 May v1 configuration on the same
+M3 Max over a four-design subset. The subset mean moved from 0.89844 to 0.89517
+($-0.36\%$); IBM01 moved from 0.85963 to 0.84691 ($-1.48\%$), IBM04 was unchanged, and
+IBM09 and IBM13 moved by $-0.20\%$ and $+0.14\%$. This is one repeat pair of a
+different pipeline from the ranked one. It shows that run-to-run differences of a few
+tenths of a percent in a subset mean, and over 1\% on one design, occur without any
+code change; it is not a confidence interval.
+
+\paragraph{Lineage of the judged entry.} The final leaderboard row reads
+``Resubmitted 5/20 (thinkorplace-v2). Was 1.0771'' and names no commit, archive or
+result digest. We infer that the judged program was the 20 May single pipeline, most
+likely commit \texttt{5485310}, from three premises: the resubmission
+date; the listed runtime of about 12 minutes per design, which matches that pipeline's
+720\,s budget rather than the three-lane system's 2,700\,s; and the upstream leaderboard
+of 21 May, which listed the pending resubmission with a self-reported score consistent
+with the single-pipeline lineage and not with the early-v2 record at 1.00835 (the
+provenance note in Appendix~\ref{app:records-ledger} gives the figure). The exact
+judged commit was not recorded, and the three-lane commits of 22 May (Eastern time)
+still preceded the Pacific-time deadline, so chronology alone cannot exclude them; the
+inference rests on the listed 12-minute runtime and the 20 May resubmission date.
+
+\subsection{Evidence ledger}\label{app:records-ledger}
+
+Table~\ref{tab:evidence-ledger} maps each quantitative claim of the report to its
+evidence label and record.
+
+\begin{table}[htbp]
+\centering\footnotesize
+\caption{Claim-to-evidence map. \official: the organizers' final leaderboard.
+\historical: May 2026 development records. \measurement: post-competition diagnostics
+on frozen inputs. \reproduction: the post-competition run of the ranked
+configuration.}
+\label{tab:evidence-ledger}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.30\linewidth}
+                >{\raggedright\arraybackslash}p{0.13\linewidth}
+                >{\raggedright\arraybackslash}p{0.22\linewidth}
+                >{\raggedright\arraybackslash}p{0.27\linewidth}@{}}
+\toprule
+Claim & Label & Record & Scope \\
+\midrule
+Ninth on the final leaderboard, verified mean 0.9974; best 0.7829, worst 1.2602 &
+\official & Upstream README at \texttt{996193c} & Inferred to be the 20 May single
+pipeline; judged commit not recorded \\
+Winner 0.9507; SA and RePlAce baseline means 2.1251 and 1.4578 & \official &
+Same README; baselines from \citet{cheng2025updated} & Organizers' numbers, not
+reruns \\
+v1 (17 May) mean 1.05750 & \historical & Frozen evaluator JSON & Components only; no
+coordinates \\
+Early v2 mean 1.00835 & \historical & Frozen evaluator JSON & Earlier smooth placer
+(V3); different host \\
+Single-pipeline record mean 0.98199; lower than v1 on 16 of 17 & \historical &
+Frozen evaluator JSON & Closest surviving full-suite record of the ranked lineage;
+unmatched conditions \\
+Congestion supplies 84.5\% of the v1-to-single-pipeline decrease & \historical &
+Component fields of the two records & Arithmetic attribution, not a mechanism \\
+Plateau 1.08128, first curvature stage 1.06760, cascade 1.06119 & \historical &
+Frozen stage records and 34 placements & Uncapped research runs \\
+Rescoring within $9.87\times10^{-8}$; 22 of 34 endpoints strictly valid &
+\measurement & Rescore and geometry records & Coordinates left unrepaired \\
+190 of 204 first-stage attempts below the plateau & \historical & Frozen stage
+records & No random-direction or zero-step control; 12 attempts per design \\
+Incremental update 1.29--3.67\,ms versus 1.40--26.87\,s; largest error
+$4.44\times10^{-16}$ & \measurement & Frozen microbenchmarks & 14 sampled moves on
+IBM01 and IBM10, single-move path only; not a uniform bound \\
+IBM01 curvature: active-branch eigenvalue $-0.442458$; wirelength HVPs agree to
+$4\times10^{-9}$ & \measurement & Frozen diagnostic and follow-up & One surrogate, one
+endpoint \\
+Ten defects and repairs (5,498 pin occurrences, 859 edges) & \measurement &
+Topology records; focused tests & Extraction and execution, not placement quality \\
+Repairs leave all 17 IBM inputs unchanged; 15 have soft clusters outside the canvas
+& \measurement & IBM repair-equivalence record & Input extraction only; no
+optimization or scoring \\
+Engineering batches & \measurement & Frozen run records & 60--180\,s budgets; no suite
+mean \\
+Repeatability $-0.36\%$ (subset), $-1.48\%$ (IBM01) & \historical & Development note,
+not frozen & One repeat pair of v1 \\
+Run of the ranked configuration & \reproduction & Its own run records & Not yet
+reported; a first attempt was stopped (Appendix~\ref{app:repro-attempt}) \\
+Full-suite score of the three-lane system & --- & None & Never scored (inferred) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Provenance only: three further numbers appear in May-era notes and listings. The
+upstream leaderboard of 21 May showed the pending resubmission with a self-reported
+0.991; 0.98387 is an extended-CD standalone run; and 0.97745 is an offline per-design
+minimum across component runs. None has a frozen record or is a result of this
+report.

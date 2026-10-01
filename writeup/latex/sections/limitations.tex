@@ -1,0 +1,38 @@
+\section{Limitations}\label{sec:limitations}
+
+\inbrief{The result is official; most explanations of it rest on unmatched
+development records. These caveats apply throughout.}
+
+\begin{itemize}[leftmargin=1.4em,topsep=0.2em,itemsep=0.2em]
+  \item \textbf{Which program was judged.} The ranked configuration is inferred from
+        its listed runtime and resubmission date; the judged commit, its coordinates
+        and the device that ran its single-precision descent were not recorded.
+  \item \textbf{Not yet reproduced.} The ranked configuration has not yet been
+        reproduced end to end on the author's machine; a first attempt was stopped
+        when it exposed a defect in the corrected runtime
+        (Appendix~\ref{app:repro-attempt}).
+  \item \textbf{Unmatched records.} \historical{} records differ in code, hardware,
+        budget and concurrency, and most have no saved coordinates. Component shares
+        are arithmetic, not causal, and no controlled ablation separates the changes
+        to the smooth stage.
+  \item \textbf{Unscored extensions.} On that inference, Lanes B and C were never
+        scored, and no matched-compute comparison exists. The curvature evidence
+        comes from uncapped runs without random-direction or polish-only controls,
+        and 12 of its 34 saved endpoints extend past a canvas edge by one
+        single-precision rounding step, at most $7.63\times10^{-6}\,\mu$m
+        (\measurement).
+  \item \textbf{Sampled numerics.} Speed and error figures come from 14 moves on two
+        designs through the single-move path; the acceptance margin holds only on
+        sampled states, and the batched path that coordinate descent uses was not
+        sampled.
+  \item \textbf{Surrogate limits.} The smooth score keeps kinks from top-$k$
+        selection and clamps, undercounts density at the canvas edge because its
+        Gaussian tails are not renormalized there, and star-routes three-pin nets;
+        the older curvature surrogate has no classical Hessian at the diagnosed
+        endpoint.
+  \item \textbf{One public suite, one proxy.} Development reused the same 17 public
+        designs, each competition design ran once, and the initializer's fixed seed
+        makes repeats test repeatability rather than independent starts. We report no
+        place-and-route results (timing, power, area), and soft clusters, placed to
+        lower the proxy, are discarded by real flows.
+\end{itemize}

@@ -3,63 +3,26 @@
 \begin{table}[htbp]
 \centering
 \footnotesize
-\caption{Limited-budget pilot results. C: completed pipeline; P: valid partial-phase result; R: valid checkpoint recovery; E: error. Every planned run is shown.}
+\caption{Limited-budget pilot on four designs (180\,s solver budget, 240\,s external limit, 1 concurrent job, 3 CPU threads per run). C: completed pipeline; P: valid result after partial phases; R: valid checkpoint recovery; E: error. Returned: lane and phase whose saved coordinates equal the returned placement. Threads: CPU threads per solver process as recorded. Every planned run is shown.}
 \label{tab:pilot-results}
-\begin{tabular}{llrrrc}
+\begin{tabular}{@{}llrrrclr@{}}
 \toprule
-Design & Variant & Proxy & Solver time (s) & Wall time (s) & Outcome \\
+Design & Variant & Proxy & Solver (s) & Wall (s) & Outcome & Returned & Threads \\
 \midrule
-ibm01 & v1 & 0.92786 & 140.8 & 145.1 & P \\
-ibm01 & A & 0.83617 & 51.3 & 54.4 & C \\
-ibm01 & A+B+C & 0.82787 & 180.0 & 183.0 & R \\
-ibm10 & v1 & -- & -- & 70.1 & E \\
-ibm10 & A & 1.16686 & 180.0 & 209.5 & R \\
-ibm10 & A+B+C & 1.16686 & 180.0 & 211.0 & R \\
-ibm17 & v1 & -- & -- & 71.0 & E \\
-ibm17 & A & -- & -- & 183.8 & E \\
-ibm17 & A+B+C & -- & -- & 183.6 & E \\
-ariane133\_ng45 & v1 & -- & -- & 2.1 & E \\
-ariane133\_ng45 & A & -- & -- & 3.1 & E \\
-ariane133\_ng45 & A+B+C & -- & -- & 3.0 & E \\
+IBM01 & v1 & 0.92786 & 140.8 & 145.1 & P & E25 & 3 \\
+IBM01 & A & 0.83617 & 51.3 & 54.4 & C & A/final & 3 \\
+IBM01 & A+B+C & 0.82787 & 180.0 & 183.0 & R & B/curvature & 1 \\
+IBM10 & v1 & --- & --- & 70.1 & E & --- & 3 \\
+IBM10 & A & 1.16686 & 180.0 & 209.5 & R & A/descent & 3 \\
+IBM10 & A+B+C & 1.16686 & 180.0 & 211.0 & R & ABC/descent & 1 \\
+IBM17 & v1 & --- & --- & 71.0 & E & --- & 3 \\
+IBM17 & A & --- & --- & 183.8 & E & --- & --- \\
+IBM17 & A+B+C & --- & --- & 183.6 & E & --- & --- \\
+ariane133 & v1 & --- & --- & 2.1 & E & --- & 3 \\
+ariane133 & A & --- & --- & 3.1 & E & --- & --- \\
+ariane133 & A+B+C & --- & --- & 3.0 & E & --- & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{table}[htbp]
-\centering
-\small
-\caption{Limited-budget pilot coverage. A mean requires an eligible finite proxy for every planned design; outcome codes follow Table~\ref{tab:pilot-results}.}
-\label{tab:pilot-coverage}
-\begin{tabular}{lrrrrr}
-\toprule
-Variant & Recorded & Eligible & Pipeline & Error/TO & Mean proxy \\
-\midrule
-v1 & 4/4 & 1/4 & 0/4 & 3 & -- \\
-A & 4/4 & 2/4 & 1/4 & 2 & -- \\
-A+B+C & 4/4 & 2/4 & 0/4 & 2 & -- \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[htbp]
-\centering
-\small
-\caption{Recorded coordinate-hash prefixes for A+B+C. I and D denote initializer and legalized-descent checkpoints; full SHA-256 values remain in the JSON artifact. Distinct requires all three lanes, and a double dash denotes unavailable metadata.}
-\label{tab:pilot-prefix-diversity}
-\begin{tabular}{llcccrl}
-\toprule
-Design & Phase & A hash & B hash & C hash & Distinct & vs standalone A \\
-\midrule
-ibm01 & I & \texttt{d8fc4aa3} & \texttt{d8fc4aa3} & \texttt{d8fc4aa3} & 1 & all= \\
-ibm01 & D & \texttt{857303c2} & \texttt{857303c2} & \texttt{857303c2} & 1 & all= \\
-ibm10 & I & -- & -- & -- & -- & -- \\
-ibm10 & D & \texttt{3531f2fe} & \texttt{3531f2fe} & \texttt{3531f2fe} & 1 & all= \\
-ibm17 & I & -- & -- & -- & -- & -- \\
-ibm17 & D & -- & -- & -- & -- & -- \\
-ariane133 & I & -- & -- & -- & -- & -- \\
-ariane133 & D & -- & -- & -- & -- & -- \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Equality in Table~\ref{tab:pilot-prefix-diversity} refers only to finalized checkpoint inventories; missing metadata does not show that no checkpoint was saved. Nominal lane seeds do not establish independent basin starts; effective initializer seeds are retained in JSON. The equality motivates future shared-prefix evaluation, but this validation measures no speedup.
+Coverage by variant: v1 1/4 eligible, 0/4 completed; A 2/4 eligible, 1/4 completed; A+B+C 2/4 eligible, 0/4 completed. No variant has an eligible result on every planned design, so no mean is reported. Where initializer or legalized-descent checkpoints survive for all three A+B+C lanes and for standalone A (IBM01 initializer, IBM01 legalized descent, IBM10 legalized descent), the four coordinate tensors are bit-identical; the nominal lane seeds therefore did not diversify the shared prefix. Full SHA-256 values are in the JSON summary.

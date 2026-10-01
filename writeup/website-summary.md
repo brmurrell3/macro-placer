@@ -1,57 +1,62 @@
-# Thinkorplace: smooth exploration, exact scoring
+# Thinkorplace: Smooth Proposals and Exact Local Search for Chip Macro Placement
 
-Brendan Murrell · 8 September 2026 · Technical report 0.4
+Brendan Murrell · 30 September 2026 · Technical report 1.0
 
-Macro placement chooses where a chip's largest blocks sit. Connections should
-stay short without concentrating too much area or routing demand, and hard macros
-must remain inside the canvas without overlap. Thinkorplace was built for the
-2026 Macro Placement Challenge to search these continuous coordinates and
-discrete geometric arrangements.
+![Dot plot of the top ten entries on the final leaderboard by mean proxy cost over the 17 IBM designs, where lower is better: Archgen first at 0.9507, Carrotato second at 0.9522, and Thinkorplace, highlighted, ninth at 0.9974. A broken axis marks the published RePlAce baseline at 1.4578 and the simulated-annealing baseline at 2.1251.](interactive/result-context.svg)
 
-The difficulty is that each choice affects the others. Bringing two connected
-blocks closer can shorten their wires while narrowing a channel needed by
-other connections. Exchanging crowded blocks may require several to move
-together. The report introduces these physical tradeoffs with a diagram before
-formalizing the geometry and objective.
+Thinkorplace placed ninth on the final leaderboard of the Partcl/HRT Macro
+Placement Challenge 2026 (verified mean proxy 0.9974; the organizers report 132
+verified eligible submissions). Lower is better: the winner, Archgen, scored
+0.9507 and the published RePlAce baseline 1.4578, so our entry sits 31.6% below
+RePlAce and 4.9% above the winner. The ranked entry was most likely a single
+pipeline, listed at 12 minutes per design; the judged commit was not recorded,
+so we infer it from that runtime and the 20 May resubmission date.
 
-The system uses a differentiable model to move many macros together, restores
-geometric feasibility, then improves that basin with an incremental implementation
-of the competition proxy. Its final competition-era program runs three parallel
-pipelines: canonical coordinate descent alone;
-coordinate descent with a bounded curvature-guided perturbation; and coordinate
-descent with a Hungarian macro-to-slot reassignment. Each pipeline legalizes and polishes its smooth starting basin. Coordinate moves and assignment batches use incremental component scores.
-Curvature candidates and phase endpoints receive full evaluator checks, and the
-supervisor returns the lowest-scoring completed lane with no hard overlaps.
+A chip layout starts with its macros: hundreds of large rectangular blocks,
+such as memories, among thousands of small standard cells. Nets (groups of
+pins that must be wired together) join pins on these blocks; shorter nets mean less delay and power.
+Wirelength alone is not enough: pulling connected blocks together crowds the
+area and the routing channels the wires share, so the proxy score adds density
+and congestion penalties. Hard macros must not overlap; each design gets one
+hour.
 
-Surviving historical records cover all 17 IBM designs. A v1 ancestor recorded a
-1.05750 mean proxy, an earlier v2 lineage 1.00835, and a Gaussian-descent ancestor
-0.98199, each with zero recorded hard overlaps. The leaderboard separately
-verified a May 20 submission at 0.9974. Different code, hardware, budgets, and
-concurrency prevent attributing these differences to one mechanism.
+We combined three ideas. Make the exact score cheap: an incremental evaluator
+recomputes only what a move touches, about 1,000–18,000× faster per sampled
+move than full recomputation by the reference Python evaluator (Measurement),
+and agreeing with it within a relative 3×10⁻¹⁵ on the sampled moves. Use a smooth model for coordinated moves: gradient descent on a
+differentiable approximation moves hundreds of macros at once, and legalization
+then removes overlaps. Accept only by the exact score: a final pass moves one
+macro at a time, keeping only moves that lower the exact proxy.
 
-The post-competition package adds an enforced deadline, atomic phase checkpoints,
-explicit resource settings, full placement validation, and process cleanup. A
-hierarchy-aware topology repair restored all 5,498 hard-pin occurrences used by
-the ariane133 net traversal; IBM01 was
-unchanged. A second fix restores 859 hard-macro edges in the SDF initializer.
-These checks verify connectivity, not an NG45 quality gain.
+Lessons:
 
-In small CPU samples on IBM01 and IBM10, incremental component updates took
-1.3–3.7 milliseconds per move, while full recomputation took 1.4–26.9 seconds.
-The component values agreed to floating-point tolerance. These measurements
-exclude setup and overlap validation and do not measure whole-solver speedup. A frozen IBM01 endpoint
-diagnostic found an automatic-differentiation Rayleigh quotient of -0.442458,
-alongside a nonzero raw gradient and poor finite-difference agreement. It supplies
-a candidate direction, not evidence of a stationary saddle.
+- **The simpler, faster pipeline beat the elaborate one.** In May development
+  records (Historical), an ancestor of the ranked pipeline took 524 s per design
+  against 3,192 s for the multi-stage v1 pipeline, and scored lower on 16 of 17
+  designs; lower congestion supplied 84.5% of the gain.
+- **Curvature-guided moves helped, but the record cannot credit the
+  curvature.** In May research runs (Historical), nudging a stalled placement
+  along a negative-curvature direction of the smooth model and re-polishing
+  lowered the score in 190 of 204 attempts, with nearly equal success along both
+  directions and every step size tried. Random-direction and zero-step
+  (polish-only) controls of equal cost are the next tests.
+- **An optimal linear assignment can still worsen the real objective.**
+  Hungarian reassignment prices each macro-to-slot move with the others held
+  fixed, but moves interact: in a two-macro example, a predicted wirelength
+  change of −18 is actually +14.
 
-The report derives the feasible coordinate slices, a score-error bound for
-reliable move acceptance, and the conditions for curvature descent. A concrete
-HPWL counterexample shows why an optimal assignment proposal can still worsen
-the joint placement.
+The results are proxy scores only, without full place-and-route; the 17
+public designs that set the ranking were also used in development; and the
+ranked configuration has not yet been reproduced end to end.
 
-A separate 12-run engineering batch returned nine valid results; all three
-IBM17 runs hit the external time limit. After both connectivity repairs, all
-three entry points returned valid ariane133 placements in a short integration
-check. A controlled full-suite comparison of
-corrected v1, Lane A, and A+B+C remains open. Read the [technical report](../output/pdf/thinkorplace-technical-report.pdf)
-or explore the [interactive placement comparison](interactive/placement-comparison.html).
+**Author's note.** The organizers' leaderboard lists team "thinkorplace" as
+Brendan Murrell and Xiaofei Zhang; this report and the post-competition
+analysis are by Brendan Murrell. AI coding agents, including Anthropic's
+Claude Code, implemented and ran most experiments and drafted text; the author
+proposed the hypotheses, set the evaluation protocol, decided which results to
+keep, and is responsible for the claims.
+
+[Read the technical report](thinkorplace-technical-report.pdf) ·
+[View source](https://github.com/brmurrell3/macro-placer) ·
+[Explore the placements](placement-comparison.html) ·
+[Cite](https://github.com/brmurrell3/macro-placer/blob/main/CITATION.cff)

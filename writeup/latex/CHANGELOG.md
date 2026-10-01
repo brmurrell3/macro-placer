@@ -1,5 +1,86 @@
 # Report revisions
 
+## 1.0 — 30 September 2026
+
+Audience-led rewrite for readers outside chip design; no new solver runs. A
+reproduction of the ranked configuration was started on 30 September and stopped
+after it exposed a checkpoint defect in the corrected runtime; it is reported only
+as an engineering record (Appendix F), and no Reproduction result is given.
+
+- New title, result subtitle, code link and version line. The abstract (at most
+  180 words) leads with the official result: ninth on the final leaderboard,
+  verified mean proxy 0.9974, with the organizers' count of 132 verified eligible
+  submissions, the published RePlAce and SA baselines and the winner. An "At a
+  glance" box (Problem, Why hard, Approach, Result, Lessons) and an "In brief"
+  opener on every main section after the introduction summarize the report for
+  skimmers.
+- The method section describes the ranked 20 May single pipeline (smooth descent,
+  legalization, exact incremental coordinate descent; 720 s budget). The judged
+  commit was not recorded, so the ranked program, and by the same inference the
+  never-scored status of Lanes B and C (committed on 21–22 May), are stated as
+  inferences throughout; the basis is in Appendix G. v1 is the predecessor. The
+  smooth descent's device dependence is stated.
+- Domain terms are defined at first use. Mathematics follows intuition, equation,
+  consequence: log-sum-exp smoothing, Gaussian density, the top-k tail and its
+  variational form, a Taylor view of negative curvature, Lanczos with
+  Hessian-vector products, and the Hungarian assignment with its counterexample.
+  Proposition and lemma content is unchanged from 0.4; Lemma 2.2 is now stated for
+  any z in R^N with weights named beta, Proposition 3.2 drops a redundant
+  smoothness hypothesis, and nets are indexed by n. All proofs are in an appendix
+  and match the main-text statements.
+- Corrections from review: the score is discontinuous as well as kinked (pins
+  snap to grid cells); coordinate descent scores at most ten candidates per axis
+  in one batched incremental call; the tail example compares the density
+  component D = A_k/2 (0.0025) with its bound ||delta||_1/(2k) = 0.0153; the
+  acceptance margin covers the internal float64 state, the batched path was not
+  sampled, and saved endpoints rescore only to about 1e-7; the speedup range is
+  10^3 to 2x10^4; ranks four to nine lie within 1.4%.
+- The acceptance margin uses the sampled absolute proxy error (4.44e-16 over 36
+  endpoints, so the 1e-9 threshold is about 1.1e6 times twice the error).
+- Curvature kicks: the heading, abstract and summary no longer credit or
+  discredit the curvature itself; step sizes are total displacement norms; the
+  missing random-direction and zero-step (polish-only) controls are named in the
+  lessons, limitations and conclusion.
+- The post-competition audit is counted as ten defects. Most sit in parts that
+  were never scored or in hierarchical-design parsing; the two that could touch
+  the single pipeline (float32 export at the upper canvas edge, input soft
+  clusters outside the canvas) are stated as not excludable. A new frozen record,
+  `ibm_repair_equivalence.json`, shows the repaired parsing leaves all 17 IBM
+  inputs unchanged.
+- Evidence labels: Official, Historical and Measurement in the main text;
+  Reproduction is defined, and the evidence ledger marks it "Not yet reported".
+  The official score is no longer compared with a historical record. Caveats are
+  collected in one Limitations section, which now includes the missing
+  reproduction. Experiment codenames, hashes and repository paths are confined to
+  the appendices and their glossary, which maps the main text's record names to
+  them.
+- New main-text figures: result in context, an IBM01 placement over the
+  evaluator's congestion map, per-design component deltas and curvature attempts
+  (rendered from frozen data), plus TikZ drawings of the architecture, one pair's
+  non-overlap branches and the assignment counterexample. The
+  wirelength-versus-channel schematic is kept as a panel.
+- New tables: competition context; representative development records with
+  verdicts. Appendix tables add a glossary and a single chronology table,
+  benchmark statistics, records against the published baselines and the
+  curvature stages.
+- Moved to appendices: the exact proxy definition, algorithm settings and seeds,
+  proofs, the curvature diagnostic, the post-competition audit with an
+  impact-on-judged-entry column and the condensed engineering runs, historical
+  per-design records and the evidence ledger, and the reproducibility index.
+- Corrected record attributions: the 1.05750 record is a 17 May run of a later v1
+  variant, not the 13 May entry; the 1.0771 listing is an earlier, unverified
+  submission; curvature stage times reach 4,007 s (first stage) and 3,454 s
+  (cascade).
+- New sections: what worked and what did not (141 recorded experiments, 39
+  falsified), related work grouped by topic with an expanded bibliography, an
+  author's note on team credit and AI-assisted development, and acknowledgments.
+- Layout: 14-page main text; floats kept inside their appendix; the chronology
+  and glossary are page-breaking tables; bibliography in small type with linked
+  DOIs; identifiers break only at punctuation; the title page has no running
+  header.
+- `sections/problem_background.tex` is merged into Sections 1–2 and removed;
+  `sections/mathematical_analysis.tex` is no longer part of the build.
+
 ## 0.4 — 8 September 2026
 
 Problem background and integration of the completed referee follow-up checks;

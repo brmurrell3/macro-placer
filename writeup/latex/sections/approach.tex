@@ -1,0 +1,321 @@
+\section{Approach}\label{sec:approach}\label{sec:system}
+
+\inbrief{A smooth surrogate moves all blocks together, a legalizer removes overlaps,
+and coordinate descent keeps a change only if the exact score drops, at milliseconds
+per check. Two add-on lanes for escaping stalls, kicks along negative-curvature
+directions and optimal reassignment of blocks to slots, were committed on
+21--22 May; we infer they were never scored.}
+
+The surrogate proposes and the exact score accepts (\cref{fig:architecture}); this
+section describes each stage, then what was scored.
+
+\begin{figure}[tbp]
+\centering
+\begin{tikzpicture}[font=\small,
+  stage/.style={draw=blue!65!black,fill=white,rounded corners=2pt,line width=0.6pt,
+    text width=29mm,minimum height=15mm,align=center,inner sep=3pt},
+  exact/.style={stage,draw=orange!85!black},
+  ext/.style={draw=muted,dashed,fill=white,rounded corners=2pt,line width=0.6pt,
+    text width=36mm,minimum height=12mm,align=center,inner sep=2pt},
+  arr/.style={-{Latex[length=2mm]},thick,color=muted},
+  darr/.style={-{Latex[length=2mm]},thick,dashed,color=muted}]
+  \node[stage] (init) {\textbf{Initialize}\\soft rectangles,\\spread apart};
+  \node[stage,right=5mm of init] (smooth) {\textbf{Smooth descent}\\Adam on a\\differentiable score};
+  \node[stage,right=5mm of smooth] (legal) {\textbf{Legalize}\\largest first,\\zero overlap};
+  \node[exact,right=5mm of legal,text width=34mm] (cd) {\textbf{Coordinate descent}\\keep a move only if\\the exact score drops};
+  \node[right=3.5mm of cd,align=center,inner sep=1pt] (out) {placement};
+  \node[exact,below=6mm of cd,text width=42mm,minimum height=11mm] (eval)
+    {\textbf{Incremental evaluator}\\touched nets and cells};
+  \draw[arr] (init) -- (smooth);
+  \draw[arr] (smooth) -- (legal);
+  \draw[arr] (legal) -- (cd);
+  \draw[arr] (cd) -- (out);
+  \draw[{Latex[length=2mm]}-{Latex[length=2mm]},thick,color=orange!85!black] (cd) -- (eval);
+  \node[ext,above=8mm of cd] (lanec) {\textbf{Lane C}: Hungarian\\reassignment, re-polish};
+  \node[ext,left=4mm of lanec] (laneb) {\textbf{Lane B}: curvature\\kick, re-polish};
+  \coordinate (j) at ($(cd.north)+(0,4mm)$);
+  \draw[dashed,thick,muted] (cd.north) -- (j);
+  \draw[darr] (j) -| (laneb.south);
+  \draw[darr] (j) -- (lanec.south);
+  \node[left=3mm of laneb,align=right,font=\footnotesize\itshape,color=muted]
+    {added 21--22 May;\\never scored};
+  \begin{scope}[on background layer]
+    \node[fit=(init)(smooth),fill=blue!7,rounded corners=3pt,inner sep=2mm,
+      label={[font=\footnotesize,text=blue!65!black]below:smooth surrogate proposes}] {};
+    \node[fit=(cd)(eval),fill=orange!9,rounded corners=3pt,inner sep=2mm,
+      label={[font=\footnotesize,text=orange!85!black]below:exact score accepts}] {};
+  \end{scope}
+\end{tikzpicture}
+\caption{Architecture. The ranked entry is inferred to have run the solid pipeline:
+the smooth surrogate proposes (blue) and the exact, incrementally computed score
+accepts (orange). Dashed lanes B and C were committed before the deadline but, by the
+same inference, never scored; the predecessor v1 (\cref{sec:scored}) is not shown.}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{Make the exact score cheap}\label{sec:cheap}\label{sec:incremental-analysis}
+
+The evaluator caches pin positions, net bounding boxes, cell densities, net routing
+contributions and macro allowances. Moving object $i$ changes only its pins, its
+nets, and the cells under its footprint and along those nets' routes, so the
+evaluator subtracts old contributions, adds new ones, re-reads the tails, and can
+revert. On 14 distinct moves from IBM01 and IBM10, repeated in two or three batches,
+an update took 1.29--3.67\,ms against 1.40--26.87\,s for full recomputation with the
+reference Python evaluator, excluding setup and overlap checks (\measurement):
+roughly $10^3$--$2\times10^4$ times faster per sampled move. This is what makes
+exact search affordable: a 600\,s pass can try about $10^5$ candidates instead of
+22--430 with full recomputation. The ratio reflects both the local-update strategy
+and a faster implementation, and re-selecting the top $k$ of $G$ cells still costs
+time linear in the grid size. Floating-point updates need not cancel exactly, so the
+incremental score $\widehat J$ can drift from $\proxy$; the largest relative
+component discrepancy was $2.6\times10^{-15}$.
+
+\begin{proposition}[Acceptance under bounded score error]\label{prop:acceptance}
+Let $S_p$ and $S_q$ be the incremental states at candidate endpoints $p$ and $q$,
+and suppose $|\widehat J(S_p)-\proxy(p)|\le\epsilon$ and
+$|\widehat J(S_q)-\proxy(q)|\le\epsilon$. If $\widehat J(S_q)\le\widehat J(S_p)-\tau$,
+then
+\begin{equation}
+ \proxy(q)-\proxy(p)\le-\tau+2\epsilon.
+ \label{eq:acceptance-error}
+\end{equation}
+In particular, $\tau>2\epsilon$ guarantees a strict decrease of the true score.
+\end{proposition}
+\noindent Proof in Appendix~\ref{app:proofs}. Coordinate descent uses
+$\tau=10^{-9}$, and the largest absolute proxy discrepancy over 36 sampled endpoints
+was $\epsilon=4.44\times10^{-16}$, so $\tau/2\epsilon\approx1.1\times10^6$
+(\measurement): on those states the error would have to be a million times larger
+before an accepted move could raise the true score. This is a sampled margin, not a
+uniform bound. The sample exercises the single-move path; coordinate descent scores
+candidates through a batched float64 path that was not sampled separately, and
+rescoring 34 saved endpoints reproduced their recorded scores only to about
+$10^{-7}$.
+
+\subsection{Smooth proposals}\label{sec:smooth}
+
+The smooth stage minimizes a differentiable surrogate of \eqref{eq:canonical},
+\begin{equation}
+\surrogate(p)=\widetilde W_\gamma(p)+\tfrac12\widetilde D(p)+\tfrac12\widetilde C(p)
+ +\lambda_t P_{\mathrm{ov}}(p)+\mu P_{\mathrm{out}}(p),
+\label{eq:surrogate}
+\end{equation}
+which replaces each kink of the score by a smooth approximation and adds penalties
+for hard-macro overlap ($P_{\mathrm{ov}}$) and for leaving the canvas
+($P_{\mathrm{out}}$). It starts from a soft-rectangle initializer that spreads the
+hard macros apart by gradient steps; soft clusters start from the benchmark's input
+coordinates, which derive from a RePlAce placement (Appendix~\ref{app:objective}).
+
+\paragraph{Wirelength: a smooth maximum.} HPWL uses $\max$ and $\min$, which have no
+gradient where the extreme pin changes. Log-sum-exp replaces the maximum by a smooth
+one \citep{naylor2001lse}: for values $x_1,\dots,x_r$ and smoothing length
+$\gamma>0$,
+\begin{equation}
+ \max_j x_j\ \le\ \gamma\log\sum_{j=1}^r e^{x_j/\gamma}\ \le\ \max_j x_j+\gamma\log r,
+ \label{eq:lse}
+\end{equation}
+because the sum contains $e^{\max_j x_j/\gamma}$ and is at most $r$ times it; as
+$\gamma\to0$ it converges to the true maximum, and $\min_j x_j=-\max_j(-x_j)$. A
+large $\gamma$ is smooth but biased, a small one accurate but stiff, so we anneal
+$\gamma$ from $5\times10^{-3}$ to $5\times10^{-5}$ of the canvas scale.
+
+\paragraph{Density: Gaussian smearing.} A rectangle's share of a cell changes at a
+rate that jumps when its edge crosses the cell boundary. We instead spread each
+object $i$, hard macro or soft cluster, of area $A_i=w_ih_i$, as a separable Gaussian
+with spreads $\sigma_{xi}=\max(w_i/2,\Delta_x/2)$ and
+$\sigma_{yi}=\max(h_i/2,\Delta_y/2)$, where $\Delta_x\times\Delta_y$ is the cell size.
+With $\Phi$ the standard normal distribution function, its mass in cell
+$b=[x_b^-,x_b^+]\times[y_b^-,y_b^+]$ is
+\begin{equation}
+m_{ib}=A_i
+\Bigl[\Phi\Bigl(\tfrac{x_b^+-x_i}{\sigma_{xi}}\Bigr)-
+      \Phi\Bigl(\tfrac{x_b^--x_i}{\sigma_{xi}}\Bigr)\Bigr]
+\Bigl[\Phi\Bigl(\tfrac{y_b^+-y_i}{\sigma_{yi}}\Bigr)-
+      \Phi\Bigl(\tfrac{y_b^--y_i}{\sigma_{yi}}\Bigr)\Bigr],
+\label{eq:gaussian-density}
+\end{equation}
+a smooth function of position; $\widetilde D$ applies the top-decile rule to the cell
+densities $\tilde\rho_b=\sum_im_{ib}/(\Delta_x\Delta_y)$. Top-$k$ selection and
+canvas clamps keep some kinks. This smoother density is the surrogate change the
+development records credit (\cref{tab:development}, row~9).
+
+\paragraph{Congestion: a routing trace.} RUDY spreads a net's demand uniformly over
+its bounding box \citep{spindler2007rudy}; the evaluator routes along rows and
+columns, and our surrogate follows it. Each source--sink pin pair adds a horizontal
+stripe along the source's row and a vertical stripe along the sink's column, with
+soft (sigmoid) cell membership so the stripes move smoothly with the pins; the macro
+allowance, smoothing and top-5\% tail follow the evaluator.
+
+\paragraph{Overlap, optimizer and legalization.} $P_{\mathrm{ov}}$ sums hard-macro
+penetration areas, with a weight $\lambda_t$ that rises over the first 70\% of the
+steps, so the surrogate first finds an arrangement and then pushes blocks apart;
+$P_{\mathrm{out}}$ penalizes positions outside the canvas, with weight $\mu$. Adam, a
+standard gradient optimizer \citep{kingma2015adam}, takes 500 steps.
+\emph{Legalization} then turns the almost-legal result into one with zero overlap
+while moving blocks as little as possible: in order of decreasing area, each hard
+macro keeps its position if free or moves to the first free spot, in a fixed scan
+order, on the nearest ring that has one; a push-apart pass and, if needed, a retry
+with a stronger overlap weight remove the rest.
+
+\subsection{Exact local search}\label{sec:cd}
+
+Coordinate descent \citep{wright2015coordinate} visits every movable object, hard
+macros and soft clusters alike, in random order. For each coordinate it takes the
+legal interval around the current position, bounded by the nearest blocking macros
+(within one of the intervals of \cref{sec:geometry}), and scores at most ten
+candidates there in one batched incremental call: the ends and midpoint, the current
+position, the nearest grid-line crossings, and targets suggested by the object's
+nets. The best is kept if it lowers the score by more than $\tau=10^{-9}$. A pass
+stops at its time cap or, after half of it, once five consecutive sweeps each gain
+less than 0.001. Every accepted step lowers the incremental score and, by
+\cref{prop:acceptance} with the sampled margin, the exact score of the internal
+float64 state. The price is reach: a one-coordinate move changes a pair's
+arrangement only at a point of contact, so coordinate descent stays near the
+arrangement it starts from, and the smooth start matters (\cref{sec:simpler}).
+
+\subsection{Escaping plateaus}\label{sec:escape}\label{sec:curvature}\label{sec:assignment-analysis}
+
+When coordinate descent stalls, further gains need many blocks to move at once. We
+tried two such \emph{proposals}; every candidate is legalized, re-polished by
+coordinate descent and kept only if the exact score drops.
+
+\paragraph{(a) Negative curvature.} Near a placement $p$, a smooth function $f$
+behaves like its second-order Taylor expansion along a unit direction $v$:
+\begin{equation}
+ f(p+tv)\approx f(p)+t\,\nabla f(p)^\top v+\tfrac12t^2\,v^\top \mathbf H v,
+ \qquad \mathbf H=\nabla^2 f(p).
+ \label{eq:taylor}
+\end{equation}
+Where small moves stop helping, the gradient term is small; if the curvature
+$v^\top\mathbf Hv$ is negative, the surface bends down along $v$, and a step of
+moderate length lowers $f$. The most negative curvature is the smallest eigenvalue
+of $\mathbf H$, a matrix with about 5.2 million entries on IBM01. We never build
+it: automatic differentiation gives a Hessian-vector product $\mathbf Hv$ at a small
+multiple of the cost of a gradient \citep{pearlmutter1994hvp}, and the Lanczos
+method \citep{lehoucq1998arpack} turns a few dozen such products into a small
+subspace whose extreme eigenvalues approximate those of $\mathbf H$. That finds the
+most negative curvature direction without ever building the matrix.
+
+\begin{proposition}[Signed curvature decrease]\label{prop:curvature}
+Let $f$ be twice continuously differentiable on an open set $U$ containing $p$, and
+let $v$ be a unit vector with $v^\top\nabla^2 f(p)v\le-\eta<0$. Choose
+$s\in\{-1,1\}$ with $s\,\nabla f(p)^\top v\le0$. Fix $t>0$, and suppose the segment
+$\{p+usv:0\le u\le t\}$ lies in $U$ and the Hessian is $L$-Lipschitz on it
+(Euclidean norm for vectors, induced norm for matrices). Then
+\begin{equation}
+ f(p+tsv)-f(p)\le-\frac{\eta}{2}t^2+\frac{L}{6}t^3.
+ \label{eq:curvature-taylor}
+\end{equation}
+For $L>0$ and $0<t\le3\eta/(2L)$ this is at most $-\eta t^2/4$; for $L=0$ the bound is
+$-\eta t^2/2$ throughout the segment.
+\end{proposition}
+\noindent Proof in Appendix~\ref{app:proofs}. In words: step along a direction of
+negative curvature, with the sign chosen so the slope does not hurt, and $f$ falls by
+at least $\eta t^2/4$ as long as the step is too short for the curvature to change
+much; the gradient need not vanish. The guarantee does not carry over to the kicks we
+ran. Legalization moves the endpoint after the step. The function $f$ was not the
+exact score or the surrogate of \cref{sec:smooth} but an older surrogate kept for the
+kicks, whose density and congestion terms multiply horizontal by vertical overlap
+lengths; such products have negative-curvature directions built in, so finding one
+says nothing by itself about the true score. And at the diagnosed IBM01 endpoint that
+surrogate changes branch within $10^{-7}\,\mu$m, while the steps are
+0.3--3\,$\mu$m long, so the Lipschitz hypothesis fails at the step length used.
+
+\paragraph{(b) Assignment.} Some gains need two blocks to trade places, which
+coordinate descent cannot do without passing through an overlap. The assignment move
+draws $K=50$ macros at random from the 150 with the highest connectivity scores,
+takes 100 candidate slots that include the macros' current centers, so staying put is
+always possible, and scores each single move against a frozen background,
+$\Delta_{ij}=\proxy(p^{i\leftarrow j})-\proxy(p^0)$, where $p^{i\leftarrow j}$ moves
+only macro $i$ to slot $j$. The Hungarian method \citep{kuhn1955hungarian} then
+solves
+\begin{equation}
+ \min_z\sum_{i,j}\Delta_{ij}z_{ij}
+ \quad\text{subject to}\quad
+ \sum_jz_{ij}=1,\quad\sum_iz_{ij}\le1,\quad z_{ij}\in\{0,1\}
+ \label{eq:assignment-model}
+\end{equation}
+exactly, in time cubic in $K$. The moves are applied in order of predicted gain,
+skipping any that would overlap, and the batch is kept only if the incremental score
+falls by more than $10^{-7}$ (a sampled margin of $1.1\times10^8$ by
+\cref{prop:acceptance}; \measurement).
+
+\begin{figure}[tbp]
+\centering
+\begin{tikzpicture}[x=0.62cm,y=0.62cm,font=\footnotesize,
+  mac/.style={draw=blue!70!black,fill=blue!12,line width=0.6pt,minimum size=4.2mm,inner sep=0pt},
+  term/.style={draw=ink,fill=ink,regular polygon,regular polygon sides=3,minimum size=2.6mm,inner sep=0pt},
+  shared/.style={draw=orange!85!black,line width=1.6pt},
+  tether/.style={draw=muted,line width=0.7pt}]
+  \foreach \yy in {2.2,0} {
+    \draw[rulegray] (0,\yy-0.55) -- (14,\yy-0.55);
+    \foreach \t in {0,2,...,14} {\draw[rulegray] (\t,\yy-0.65) -- (\t,\yy-0.45);}
+    \foreach \s in {3,11} {\draw[dashed,muted] (\s,\yy-0.55) -- (\s,\yy+0.45);}
+  }
+  \foreach \t in {0,2,...,14} {\node[muted,font=\scriptsize] at (\t,-0.95) {\t};}
+  \node[muted,font=\scriptsize] at (14.5,-0.55) {$x$};
+  \node[anchor=east,align=right] at (-0.4,2.2) {start\\$F=20$};
+  \draw[shared] (2,2.35) -- (12,2.35);
+  \node[mac] at (2,2.2) {1}; \node[mac] at (12,2.2) {2};
+  \node[term] at (2,1.55) {}; \node[term] at (12,1.55) {};
+  \node[anchor=east,align=right] at (-0.4,0) {after swap\\$F=34$};
+  \draw[shared] (3,0.15) -- (11,0.15);
+  \draw[tether] (11,0.3) |- (2,0.62) -- (2,-0.5);
+  \draw[tether] (3,0.3) |- (12,0.92) -- (12,-0.5);
+  \node[mac] at (11,0) {1}; \node[mac] at (3,0) {2};
+  \node[term] at (2,-0.65) {}; \node[term] at (12,-0.65) {};
+  \node[muted,font=\scriptsize] at (3,3.0) {slot $3$};
+  \node[muted,font=\scriptsize] at (11,3.0) {slot $11$};
+  \node[anchor=west,align=left] at (14.9,1.1)
+    {$\Delta=\begin{pmatrix}-1&-9\\-9&-1\end{pmatrix}$\\[2pt]
+     rows: macros 1, 2\\ columns: slots 3, 11\\[2pt]
+     predicted: $-18$\\ actual: $+14$};
+  \draw[shared] (0.2,-1.75) -- (1.0,-1.75);
+  \node[anchor=west] at (1.1,-1.75) {shared net, weight 2};
+  \draw[tether] (6.8,-1.75) -- (7.6,-1.75);
+  \node[anchor=west] at (7.7,-1.75) {net to fixed terminal};
+  \node[term] at (13.9,-1.75) {};
+  \node[anchor=west] at (14.2,-1.75) {terminal};
+\end{tikzpicture}
+\caption{An optimal assignment can make things worse: each of the two crossing moves
+saves 9 on its own, so the matrix $\Delta$ predicts $-18$ for the swap, but done
+together the moves cross and wirelength rises from 20 to 34.}
+\label{fig:assignment}
+\end{figure}
+
+The matrix sees each move alone, but moves interact (\cref{fig:assignment}). Two
+macros at $x_1=2$ and $x_2=12$ share a weight-2 net, and each has a unit-weight net to
+a fixed terminal at its start, so up to normalization their wirelength is
+\begin{equation}
+ F(x_1,x_2)=2|x_1-x_2|+|x_1-2|+|x_2-12|.
+ \label{eq:assignment-example}
+\end{equation}
+For slots 3 and 11, the Hungarian method picks $(x_1,x_2)=(11,3)$ with predicted
+change $-18$, yet $F(2,12)=20$ and $F(11,3)=34$: the real change is $+14$, an
+interaction residual of $+32$, with every placement legal for macros narrower than
+one unit. Single-move gains ignore shared nets and, in the full score, the coupling
+of all moves through the top-$k$ tails. Independent-set matching avoids the
+wirelength part of this error by matching only cells that share no nets
+\citep{chen2008ntuplace3}; our lane picks connected macros on purpose and relies on
+the exact recheck.
+
+\subsection{What was scored and what was added later}\label{sec:scored}
+
+\paragraph{The ranked pipeline.} We infer that the entry verified at 0.9974,
+resubmitted on 20 May, ran the solid pipeline of \cref{fig:architecture}, which we
+call the \emph{single pipeline}, with a 720\,s budget, up to 600\,s of it for
+coordinate descent. We did not record which commit the organizers ran; we infer the
+configuration from the listed 12 minutes per design and the resubmission date
+(Appendix~\ref{app:records}). Its smooth descent runs in single precision on a CUDA
+GPU, an Apple GPU or the CPU, whichever is available, so the trajectory depends on
+the device, and we have no record of the device used for the judged run.
+
+\paragraph{Lanes B and C.} On 21--22 May, before the deadline, we committed a
+three-lane system: Lane A is the same pipeline with a longer budget (2,700\,s, up to
+900\,s of coordinate descent), Lanes B and C add the curvature kicks and assignment
+batches, and the lowest exact score with zero overlaps wins. By the same inference it
+was never scored, so 0.9974 says nothing about it.
+
+\paragraph{The predecessor, v1.} Our 13 May entry, v1, polished two initial
+placements serially with coordinate descent, large-neighborhood search and simulated
+annealing \citep{kirkpatrick1983sa}, then ran a curvature cascade; a 17 May run of a
+later v1 variant took about 53 minutes per design.

@@ -3,17 +3,17 @@
 We measured identical prescribed move sequences through two evaluation paths: incremental updates returning wirelength, density, congestion, and proxy; and the canonical placement setter followed by the three full component computations. Neither timed path includes hard-overlap validation. Both use float64 positions on the Mac CPU with one PyTorch thread. The order of the two engines alternates between repetitions; initialization and a warm-up component evaluation precede each batch.
 
 \begin{table}[htbp]\centering\footnotesize
-\caption{CPU component-kernel microbenchmarks. Times are means per move; each ratio is computed for a paired batch, then summarized by its median and range. These are not end-to-end placer speedups.}
+\caption{CPU component-kernel microbenchmarks. Times are means per move. Each ratio is the full-recomputation time divided by the incremental time for one paired batch; the table gives the median and range over three paired batches for the IBM01 sample and two paired batches for each IBM10 sample (the median of two batches is their mean). Setup and overlap checks are excluded; these are kernel measurements, not end-to-end placer speedups.}
 \label{tab:incremental-measurements}
 \begin{tabular}{llrrrr}
 \toprule
 Design / sample & Moves $\times$ repeats & Inc. time (ms) & Full time (ms) & Median ratio & Range \\
 \midrule
-IBM01 / mixed & $8 \times 3$ & 1.29 & 1401.6 & 1040$\times$ & 1035--1197 \\
-IBM10 / soft & $3 \times 2$ & 3.67 & 26682.1 & 7269$\times$ & 7055--7483 \\
-IBM10 / hard & $3 \times 2$ & 1.49 & 26865.4 & 18023$\times$ & 17250--18795 \\
+IBM01 / mixed & $8 \times 3$ & 1.29 & 1{,}401.6 & 1{,}040$\times$ & 1{,}035--1{,}197 \\
+IBM10 / soft & $3 \times 2$ & 3.67 & 26{,}682.1 & 7{,}269$\times$ & 7{,}055--7{,}483 \\
+IBM10 / hard & $3 \times 2$ & 1.49 & 26{,}865.4 & 18{,}023$\times$ & 17{,}250--18{,}795 \\
 \bottomrule\end{tabular}\end{table}
 
-Every measured component agreed within relative tolerance $10^{-5}$, using $|a-b|/\max(|a|,|b|,10^{-30})$; the largest observed relative discrepancy was $2.6\times 10^{-15}$. Evaluator setup is excluded from the ratios and retained in the raw records. The selected sequences are small: IBM01 includes three hard-macro moves and five soft-cluster moves per repetition; the first IBM10 sequence happened to select only soft clusters, so a separate hard-only sequence was measured. Moves may create overlaps. These samples show the potential savings from localized cache updates, but do not estimate a suite-wide throughput distribution or the gain of replacing another optimized evaluator.
+Every measured component agreed within relative tolerance $10^{-5}$, using $|a-b|/\max(|a|,|b|,10^{-30})$; the largest observed relative discrepancy was $2.6\times 10^{-15}$. Evaluator setup is excluded from the ratios and retained in the raw records. The sequences are small: IBM01 has three hard-macro moves and five soft-cluster moves per repetition; the first IBM10 sequence happened to select only soft clusters, so a separate hard-only sequence was measured. Moves may create overlaps. The ratios compare localized cache updates with full recomputation in the reference Python evaluator, so they reflect both the update strategy and the implementation, and they exclude the rest of the placer.
 
 Mean incremental setup times were IBM01 mixed: 0.33 s, IBM10 soft: 1.48 s, IBM10 hard: 1.45 s. A separate overlap-metrics call on each final state is also timed in the raw data; it is excluded from both component paths and is not the full geometry-validation cost. Repetitions share the same seed and moves, so their spread measures timing repeatability, not independent placement outcomes.

@@ -1,0 +1,1197 @@
+{
+  "schema_version": 1,
+  "classification": "historical_development_records",
+  "evidence_label": "Historical",
+  "description": "Ten representative development records (April-May 2026) selected from the experiment manifests, with every quoted outcome tied to a git blob at the recorded commit. Rows describe single, uncontrolled runs; they are not controlled comparisons. Row 1 reports the September Measurement in place of the May figure, and row 9 adds the frozen 17-design record.",
+  "source": {
+    "repository": "https://github.com/brmurrell3/macro-placer",
+    "commit": "8fc58ba0ab7af1d6eb9a9bd32d045898e8226f87",
+    "commit_date": "2026-09-30T19:47:24-04:00",
+    "note": "Manifests are read from git objects at this commit, so later working-tree edits do not change the record. Frozen data files are identified by SHA-256 under frozen_checks."
+  },
+  "method": {
+    "manifest_selection": "Every tracked file matching experiments/<dir>/manifest.md or experiments/_archive/<dir>/manifest.md at the recorded commit, excluding experiments/_template/manifest.md.",
+    "status_rule": "The first line beginning 'status:' inside the leading '---' YAML block; text after '#' is removed and whitespace stripped. The value is counted literally.",
+    "buckets": "graduated, falsified, marginal and in_progress are counted as named; every other literal value is counted under other, with other_breakdown listing each value.",
+    "directory_rule": "Experiment directories are the git tree directories directly under experiments/ and experiments/_archive/, excluding the _archive container and _template. experiments/_variance_check is untracked and therefore not counted.",
+    "hash_rule": "manifest_blob is the git blob SHA-1 at the recorded commit; it equals `git hash-object` of an unmodified working-tree file.",
+    "status_caveat": "The status field records the last value someone wrote. Development stopped on 22 May 2026, so many manifests were never closed: for example E84 (verified 17-design cascade, 11 May) and E117 (17-design record, 20 May) are still in_progress, and E65 (a negative structural finding) is graduated. Verdicts in rows therefore come from each manifest's outcome text, not from the status field.",
+    "selection_rule": "Rows were chosen to tell the development story to a non-specialist and to mix kept and dropped ideas. Each candidate was checked against its manifest; candidates without a verifiable manifest were excluded (see excluded_candidates).",
+    "commands": [
+      ".venv/bin/python scripts/render_publication_devrecords.py",
+      ".venv/bin/python scripts/render_publication_devrecords.py --freeze 8fc58ba0ab7af1d6eb9a9bd32d045898e8226f87"
+    ],
+    "command_notes": "The default command verifies every computed field against git objects and the frozen data files, then renders. --freeze COMMIT recomputes those fields from the git objects at COMMIT (default HEAD); working-tree edits are reported but never read."
+  },
+  "status_counts": {
+    "graduated": 11,
+    "falsified": 39,
+    "marginal": 24,
+    "in_progress": 49,
+    "other": 18,
+    "total": 141,
+    "other_breakdown": {
+      "blocked": 2,
+      "champion_candidate": 3,
+      "deferred": 1,
+      "dropped": 1,
+      "graduated_candidate": 1,
+      "partial": 1,
+      "proposed": 1,
+      "scaffolded": 1,
+      "scoped": 3,
+      "superseded": 3,
+      "validated": 1
+    }
+  },
+  "directory_counts": {
+    "experiment_directories": 151,
+    "with_manifest": 141,
+    "without_manifest": [
+      "experiments/B_R2_canonical_dp_loss",
+      "experiments/E107_periphery_bias",
+      "experiments/E127_v4_gaussian",
+      "experiments/E128_cascade_on_v4gauss",
+      "experiments/E129_multirestart",
+      "experiments/E131_fp64",
+      "experiments/E153_cong_weighted_cd",
+      "experiments/E87_gpu_cd",
+      "experiments/Xplace_integration",
+      "experiments/_archive/E52_e41_seed1"
+    ]
+  },
+  "table_caption": "What we tried during development (Historical). Each row summarizes single-run development records from April–May 2026. The runs are uncontrolled: hardware, time budget and concurrency varied, and most comparisons are against a separate reference run. Scores are proxy scores; lower is better. Row 1 gives the September re-measurement (Measurement) in place of the May figure.",
+  "rows": [
+    {
+      "row": 1,
+      "plain_idea": "Rescore only what a one-block move changes, instead of recomputing the whole score",
+      "what_happened": "September re-measurement on two designs: 1.3–3.7 ms per move versus 1.4–26.9 s for a full rescore; largest relative difference $2.6\\times10^{-15}$.",
+      "verdict": "kept",
+      "scope": {
+        "designs": "May: IBM01 and IBM10, 130 random moves. September Measurement: IBM01 and IBM10, 14 distinct moves repeated in 2-3 batches.",
+        "budget": "Component evaluation only; setup and overlap checks excluded in the September measurement.",
+        "runs": "May: one benchmark run. September: paired batches."
+      },
+      "frozen_checks": [
+        "evaluator_microbenchmarks"
+      ],
+      "discrepancy": "The May manifest reports a 4,657x speedup on IBM10 (6.5 ms per move versus 30 s). The frozen September microbenchmarks give 1.29-3.67 ms per move versus 1.40-26.87 s, median paired ratios of about 1,040x (IBM01), 7,269x (IBM10 soft-cluster moves) and 18,023x (IBM10 hard-macro moves). The table uses the frozen measurement. The May parity figure (worst absolute difference 1.1e-15 on 130 moves) is consistent with the frozen maximum relative component difference of 2.6e-15.",
+      "records": [
+        {
+          "id": "E1",
+          "role": "primary",
+          "manifest_path": "experiments/_archive/E1_incremental_evaluator/manifest.md",
+          "quote_lines": [
+            44,
+            45,
+            46
+          ],
+          "outcome_verbatim": "**4 657 × speedup** on ibm10 (6.5 ms / move vs 30 s full eval).",
+          "manifest_blob": "478c9af6b0951f3789d1aa8b8231e6389a3fac69",
+          "status": "graduated",
+          "quoted_outcome_lines": [
+            {
+              "line": 44,
+              "text": "- **4 657 × speedup** on ibm10 (6.5 ms / move vs 30 s full eval)."
+            },
+            {
+              "line": 45,
+              "text": "- **Bit-for-bit parity** with `compute_proxy_cost` (worst absolute diff"
+            },
+            {
+              "line": 46,
+              "text": "  1.1 × 10⁻¹⁵ on 130 random moves; ibm01 + ibm10)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "row": 2,
+      "plain_idea": "Move one block at a time along one axis to its best legal position; stop when gains level off rather than at a fixed time",
+      "what_happened": "Mean over 17 designs 1.1055, versus 1.1193 with a fixed 600 s stop, using 69% more total time; hard designs gained 1.7–3.6%, and all 17 stopped before the one-hour cap.",
+      "verdict": "kept",
+      "scope": {
+        "designs": "All 17 IBM designs.",
+        "budget": "Minimum 300 s, cap 3,600 s per design; plateau rule: three successive sweeps each improving by less than 0.005. Total wall 17,480 s versus 10,316 s for the fixed 600 s reference.",
+        "runs": "One run per design; no frozen per-design record."
+      },
+      "notes": "The 69% figure is 17,480 s / 10,316 s from the manifest table. Part of the gain is therefore extra time on hard designs, which was the point of the stopping rule.",
+      "records": [
+        {
+          "id": "E9",
+          "role": "primary",
+          "manifest_path": "experiments/_archive/E9_plateau_detection/manifest.md",
+          "quote_lines": [
+            9,
+            55,
+            59,
+            62
+          ],
+          "outcome_verbatim": "| Avg `--all` | 1.1193 | **1.1055** |",
+          "manifest_blob": "9da7ae00b5549597e65dc771dc10a31c9f2bfc96",
+          "status": "graduated",
+          "quoted_outcome_lines": [
+            {
+              "line": 9,
+              "text": "outcome: 1.1055"
+            },
+            {
+              "line": 55,
+              "text": "| Avg `--all` | 1.1193 | **1.1055** |"
+            },
+            {
+              "line": 59,
+              "text": "| Plateau exits | n/a | **17 / 17** |"
+            },
+            {
+              "line": 62,
+              "text": "Hard benchmarks (ibm10/12–18) gained 1.7–3.6 % from extra time. Easy"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "row": 3,
+      "plain_idea": "After local search stalls, accept some uphill moves at random (simulated annealing)",
+      "what_happened": "The first version was worse on 4 of 4 designs (by 5.7% on average) because it returned its last state rather than its best. Fixed, it gained 0.63% and became one stage of the earlier serial pipeline.",
+      "verdict": "kept",
+      "scope": {
+        "designs": "Four IBM designs (IBM01, IBM04, IBM09, IBM13).",
+        "budget": "Local search up to 3,000 s, then 600 s of annealing per design.",
+        "runs": "One run per design for each version."
+      },
+      "notes": "The corrected version (E24) was marginal on its own: its 0.63% gain tied a random rip-up-and-reinsert alternative within noise. It was kept as one stage of the composed branch E25, which became branch 1 of v1.",
+      "records": [
+        {
+          "id": "E14",
+          "role": "primary",
+          "manifest_path": "experiments/_archive/E14_sa_polish/manifest.md",
+          "quote_lines": [
+            9
+          ],
+          "outcome_verbatim": "0.9962 avg (--fast); +5.7% WORSE than E16 baseline 0.9425 on every benchmark",
+          "manifest_blob": "fd7f50dd2550691ae86c6ba00fb8c6510f94df43",
+          "status": "falsified",
+          "quoted_outcome_lines": [
+            {
+              "line": 9,
+              "text": "outcome: 0.9962 avg (--fast); +5.7% WORSE than E16 baseline 0.9425 on every benchmark; SA actively destroyed CD's progress"
+            }
+          ]
+        },
+        {
+          "id": "E24",
+          "role": "corrected rerun",
+          "manifest_path": "experiments/_archive/E24_sa_polish_v2/manifest.md",
+          "quote_lines": [
+            9
+          ],
+          "outcome_verbatim": "0.9366 (--fast); +0.63 % lift over E16 baseline 0.9426",
+          "manifest_blob": "fa322219453e7d4307735a109f3d22f11461e99a",
+          "status": "marginal",
+          "quoted_outcome_lines": [
+            {
+              "line": 9,
+              "text": "outcome: 0.9366 (--fast); +0.63 % lift over E16 baseline 0.9426 — passes gen-check; ties E12 random-destroy ablation 0.9372 within noise; ibm13 saw zero SA lift (best == CD plateau)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "row": 4,
+      "plain_idea": "After local search converges, take GPU gradient steps on a smooth approximation of the score to find a better nearby arrangement",
+      "what_happened": "0 of 350 attempts accepted on 4 designs at full budgets; a 2.16% gain seen with shortened budgets did not reappear.",
+      "verdict": "dropped",
+      "scope": {
+        "designs": "Four IBM designs (IBM01, IBM04, IBM09, IBM13).",
+        "budget": "Local search 2,400 s, neighborhood search 600 s, annealing 600 s, then the GPU phase 600 s per design.",
+        "runs": "One run per design; the 2.16% gain came from a single IBM01 run with 40 s of earlier phases."
+      },
+      "records": [
+        {
+          "id": "E53",
+          "role": "primary",
+          "manifest_path": "experiments/_archive/E53_dpo_basin_eval/manifest.md",
+          "quote_lines": [
+            9,
+            10
+          ],
+          "outcome_verbatim": "**DPO-basin phase contributed 0 accepts in 350 total restarts**",
+          "manifest_blob": "0fa976e22ed391311da7374b6932159c67189bdd",
+          "status": "falsified",
+          "quoted_outcome_lines": [
+            {
+              "line": 9,
+              "text": "fast_outcome: 0.9254 (--fast); +0.36 % vs E41 fast 0.92178; +0.56 % vs E48 fast 0.9202. Per-bench ibm01=0.9143, ibm04=0.9912, ibm09=0.8451, ibm13=0.9511. Across 4 benches, **DPO-basin phase contributed 0 accepts in 350 total restarts** (ibm01 0/121, ibm04 0/104, ibm09 0/72, ibm13 0/53). 600 s/bench × 4 of GPU MPS work (76 % of phase 7 wall) returned exactly zero proxy improvement. The −2.16 % lift seen on shortened-budget smoke (40 s CD/LNS/SA budgets, ibm01 1.0361 → 1.0137) does not reproduce at production budgets."
+            },
+            {
+              "line": 10,
+              "text": "outcome: falsified — the basin-hopping mechanism (LNS-destroy + GPU-DPO-settler) does NOT find lift on top of fully-converged CD-LNS-SA. Smooth-proxy gradient cannot escape the local optimum that breakpoint enumeration + grid-bin LNS + breakpoint Metropolis already reach."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "row": 5,
+      "plain_idea": "Choose which blocks to remove and re-place by how much they add to routing congestion",
+      "what_happened": "Lower on 2 of 4 IBM designs (by 1.12% and 0.15%), but 1.45% worse on four open industrial-style designs (5.14% on one) and 0.39% worse over all 17 IBM designs.",
+      "verdict": "dropped",
+      "scope": {
+        "designs": "Four IBM designs, then four NG45 designs (ariane133, ariane136, mempool_tile, nvdla), then all 17 IBM designs.",
+        "budget": "Same per-phase budgets as the second v1 branch (E41).",
+        "runs": "One run per design; the 17-design run took 52,334 s under heavy contention."
+      },
+      "notes": "The per-design IBM gains are against the best-of-two reference (E48) on the same four designs; the standalone four-design mean was 0.20% worse. The NG45 scores are canonical. A September audit found that some competition-era smooth components ignored hard-macro pins on ariane133; whether this pipeline's initializer was affected was not checked, and the reference used the same components.",
+      "records": [
+        {
+          "id": "E54",
+          "role": "primary",
+          "manifest_path": "experiments/_archive/E54_congestion_destroy/manifest.md",
+          "quote_lines": [
+            9,
+            10,
+            11
+          ],
+          "outcome_verbatim": "**0.7022 (--ng45); +1.45 % REGRESSION vs E48 NG45 0.6922; ariane133 +5.14 % catastrophic loss (0.7214 vs E48 0.6861, E41 0.6733)**",
+          "manifest_blob": "871381bc232029bc74d9122f43edbe4b98fc3d39",
+          "status": "falsified",
+          "quoted_outcome_lines": [
+            {
+              "line": 9,
+              "text": "fast_outcome: 0.9222 (--fast); tied with E41 0.92178 and E48 0.9202 within run noise. Compositional best-of-{E25,E41,E54} = 0.91708 (-0.31% vs E48), but best-of-{E48, E52 E41-seed1, E53_multiseed, E54} only -0.04% better than E53_multiseed alone — E54 contributes near-zero on top of multiseed."
+            },
+            {
+              "line": 10,
+              "text": "ng45_outcome: **0.7022 (--ng45); +1.45 % REGRESSION vs E48 NG45 0.6922; ariane133 +5.14 % catastrophic loss (0.7214 vs E48 0.6861, E41 0.6733)**. Same NG45 failure pattern as E42 K=4 and E43 longer-K-joint. ariane136/mempool_tile/nvdla tied or near-tied; ariane133 alone dominates the regression. Congestion-targeted destroy is IBM-aware and NG45-blind on ariane-class designs."
+            },
+            {
+              "line": 11,
+              "text": "all_outcome: **1.08568 (--all); +0.39 % vs E48 1.08151; +0.40 % vs E53_multiseed 1.08128.** Wall 52334 s = 14.5 hr (under heavy contention). E48 wins per-bench on 7 (ibm01, ibm03, ibm04, ibm06, ibm07, ibm10, ibm17 — biggest gap ibm01 −2.04 %); E54 wins on 3 (ibm02, ibm12, ibm16 by −0.10 to −0.13 %); 7 tied. Best-of-{E48, E54} = 1.08126 (only −0.023 % vs E48 — trivial). Confirms standalone E54 --all is slightly worse than E48 and adds nearly zero as a 3rd hybrid lane. Combined with NG45 +1.45 % regression, E54 is comprehensively falsified."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "row": 6,
+      "plain_idea": "Blend two good but different placements by moving every block partway along a straight line between them",
+      "what_happened": "On 2 designs, none of the 9 intermediate blends could be made overlap-free by the 50-iteration repair step; before repair, blends scored up to 61% worse.",
+      "verdict": "dropped",
+      "scope": {
+        "designs": "IBM01 and IBM12.",
+        "budget": "Eleven evenly spaced points from one endpoint to the other; overlap projection capped at 50 iterations.",
+        "runs": "One cross-section per design."
+      },
+      "notes": "The manifest status is graduated because the result was filed as a structural finding; the verdict here refers to blending as a search method. The manifest's broad 'RULES OUT' wording rests on two cross-sections and a 50-iteration repair cap, so the table states only what was measured.",
+      "records": [
+        {
+          "id": "E65",
+          "role": "primary",
+          "manifest_path": "experiments/_archive/E65_neb_cross_section/manifest.md",
+          "quote_lines": [
+            9,
+            133,
+            134,
+            135,
+            136,
+            140,
+            208
+          ],
+          "outcome_verbatim": "Two cross-sections (ibm01, ibm12) both deliver MONOTONE-UP verdict with 0/9 feasible interpolations.",
+          "manifest_blob": "1586365d636a097626f48acb2ffabf8b47d310e4",
+          "status": "graduated",
+          "quoted_outcome_lines": [
+            {
+              "line": 9,
+              "text": "outcome: **STRUCTURAL FINDING graduated 2026-05-03 02:01 EDT — INFEASIBILITY WALL between SDF and DPO basins is universal.** Two cross-sections (ibm01, ibm12) both deliver MONOTONE-UP verdict with 0/9 feasible interpolations. Wall is a function of spatial-configuration distance, not proxy distance — ibm12 endpoints differ by only 0.2 % in proxy yet are separated by a 233-residual wall. Confirms E61 V1 50/50 crossover failure (136 residuals) was geometric. **RULES OUT**: interpolation/crossover/local-move bridging of basins. **LEAVES AS BREAKTHROUGH OPTIONS**: (1) constructing structurally new third basin from scratch (E63 spectral, E40 BP, E43 diffusion sampling) — bypass the wall by not starting from either basin; (2) non-local feasibility-respecting moves like K=50 Hungarian re-pack — orders of magnitude beyond E41 K=3; (3) constrained NEB on the feasible manifold — active-set or barrier methods on the no-overlap-respecting region."
+            },
+            {
+              "line": 133,
+              "text": "**Verdict: MONOTONE-UP with infeasibility wall.** 9 of 11 interpolation"
+            },
+            {
+              "line": 134,
+              "text": "points are *infeasible* (88-155 residual overlaps each) — they are not"
+            },
+            {
+              "line": 135,
+              "text": "just higher proxy, they are not feasible placements at all under the"
+            },
+            {
+              "line": 136,
+              "text": "50-iter legalization budget. The 2 feasible points are exactly the"
+            },
+            {
+              "line": 140,
+              "text": "- Pre-legal proxy peaks at k=0.5: **1.44** (61 % above endpoint min 0.89)."
+            },
+            {
+              "line": 208,
+              "text": "| Endpoints feasible | 2/11 | 2/11 |"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "row": 7,
+      "plain_idea": "Drive a mature open-source placer's optimizer (DREAMPlace) with the challenge score as its objective",
+      "what_happened": "On IBM01, 0.918 after repair and local search versus 0.852 for the existing pipeline (7.7% worse); the optimizer left 118 overlaps for repair to fix.",
+      "verdict": "dropped",
+      "scope": {
+        "designs": "IBM01.",
+        "budget": "100 optimizer iterations, then legalization and local search; a 200-iteration run diverged (1.358 after polish).",
+        "runs": "One run per setting."
+      },
+      "notes": "The same record shows a pure-PyTorch port of the optimizer's recipe matching the existing Adam pipeline within noise (0.855 versus 0.852).",
+      "records": [
+        {
+          "id": "E116",
+          "role": "primary",
+          "manifest_path": "experiments/E116_dreamplace_patched/manifest.md",
+          "quote_lines": [
+            9,
+            140,
+            144
+          ],
+          "outcome_verbatim": "0.918 ibm01 polished (vs V3 0.852 baseline) — patch works but loses to V3 by 7.7%",
+          "manifest_blob": "db11cc2fba97c5cc88d52788f917d6f854ce1d22",
+          "status": "falsified",
+          "quoted_outcome_lines": [
+            {
+              "line": 9,
+              "text": "outcome: 0.918 ibm01 polished (vs V3 0.852 baseline) — patch works but loses to V3 by 7.7%"
+            },
+            {
+              "line": 140,
+              "text": "- CD polish: **0.918** (WORSE than thinkorplace-v2 0.852)"
+            },
+            {
+              "line": 144,
+              "text": "overlaps** (118 overlaps before legalize). Without DP's eDensity term"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "row": 8,
+      "plain_idea": "Make the smooth routing-congestion model agree more closely with the official scorer",
+      "what_happened": "On IBM17 the model's error fell from 14.4% to 8.0%, yet the final score was 0.98% worse; a separate bug fix that also reduced the error changed it by 0.12%, within noise.",
+      "verdict": "dropped",
+      "scope": {
+        "designs": "Model error: IBM01, IBM10, IBM12, IBM17. Final score: IBM17 only.",
+        "budget": "720 s per design (600 s of local search).",
+        "runs": "One run per variant."
+      },
+      "notes": "Neither change was adopted. Related records with the same pattern are E88 (rank correlation 0.929 with the scorer, yet descent from a good placement ended 81% worse after repair) and E114 (a smoother electrostatic density, 22.6% worse before polish).",
+      "records": [
+        {
+          "id": "E122",
+          "role": "primary",
+          "manifest_path": "experiments/E122_3pin_steiner/manifest.md",
+          "quote_lines": [
+            9,
+            95
+          ],
+          "outcome_verbatim": "ibm17 E111 baseline 1.2003 → E122 1.2121 (+0.98% WORSE, despite +6.4pp scalar bias closure).",
+          "manifest_blob": "06f88384fb875af0a38267f70140bcdbfa37bf73",
+          "status": "marginal",
+          "quoted_outcome_lines": [
+            {
+              "line": 9,
+              "text": "outcome: ibm17 E111 baseline 1.2003 → E122 1.2121 (+0.98% WORSE, despite +6.4pp scalar bias closure). Fidelity vs basin disconnect."
+            },
+            {
+              "line": 95,
+              "text": "| ibm17 | +14.4% | +8.0% | **+6.4 pp** | 36.9% |"
+            }
+          ]
+        },
+        {
+          "id": "E124",
+          "role": "second fidelity change",
+          "manifest_path": "experiments/E124_phantom_fix/manifest.md",
+          "quote_lines": [
+            9
+          ],
+          "outcome_verbatim": "ibm17 V3 fixed CD600s 1.20315 vs V3 baseline 1.20169 = +0.12% (within ~0.5% noise floor).",
+          "manifest_blob": "d9dc97df706da33b4e9d46de3e48b04fa1d13c87",
+          "status": "marginal",
+          "quoted_outcome_lines": [
+            {
+              "line": 9,
+              "text": "outcome: ibm17 V3 fixed CD600s 1.20315 vs V3 baseline 1.20169 = +0.12% (within ~0.5% noise floor). Spec V3Min ovl10 720s baseline 1.20032; baseline re-run matches at 1.20169 (+0.07%). Fixed RAW 1.28126 is +0.95% WORSE than baseline RAW 1.26916 — phantom gradient actually helped smooth descent. CD polish absorbs most of the gap. Zero overlaps both versions. Verdict: bug fix is roughly neutral after CD polish."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "row": 9,
+      "plain_idea": "Spread each block's area as a smooth bell-shaped (Gaussian) blur when estimating crowding, so the gradient changes smoothly",
+      "what_happened": "Lower on 4 of 4 crowded designs (by 2.71% on average) than the same pipeline with grid density. A later 17-design run averaged 0.98199, versus 1.05750 for the earlier serial pipeline, lower on 16 of 17.",
+      "verdict": "kept",
+      "scope": {
+        "designs": "Four dense IBM designs (IBM12, IBM14, IBM17, IBM18); later all 17 IBM designs.",
+        "budget": "720 s per design (600 s of local search).",
+        "runs": "One run per design; the 17-design run is a separate frozen record."
+      },
+      "frozen_checks": [
+        "gaussian_record",
+        "v1_record",
+        "gaussian_vs_v1"
+      ],
+      "discrepancy": "The manifest's four dense-design values come from a separate run and differ from the frozen 17-design record by up to 0.0089 (IBM17: 1.1805 in the manifest, 1.17164 frozen). The manifest status was never updated from in_progress. The 17-design comparison against v1 is unmatched in hardware and budget (v1 mean 3,192 s per design versus 524 s).",
+      "records": [
+        {
+          "id": "E117",
+          "role": "primary",
+          "manifest_path": "experiments/E117_gaussian_density/manifest.md",
+          "quote_lines": [
+            66,
+            68
+          ],
+          "outcome_verbatim": "| **avg (4 dense)** | **1.1644** | **1.1329** | **-2.71 %** |",
+          "manifest_blob": "b7bab520a9fb776d3efe8de12347bc596e248d76",
+          "status": "in_progress",
+          "quoted_outcome_lines": [
+            {
+              "line": 66,
+              "text": "| **avg (4 dense)** | **1.1644** | **1.1329** | **-2.71 %** |"
+            },
+            {
+              "line": 68,
+              "text": "4/4 dense benches improved. All zero overlaps, qualified."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "row": 10,
+      "plain_idea": "Jointly reassign up to 50 highly connected blocks to candidate slots with an optimal matching (the Hungarian method), then rerun local search",
+      "what_happened": "Lower in 5 of 5 single-design trials (0.35–1.25% against separate reference runs); part of the gain may come from the extra local-search pass. It went into an optional lane that is inferred never to have been scored.",
+      "verdict": "kept",
+      "scope": {
+        "designs": "IBM04, IBM09, IBM10, IBM17 on the M3 Max; IBM17 on a shared EPYC host.",
+        "budget": "1,500 s per design: first local search, about 300 s of reassignment, second local search.",
+        "runs": "One run per design; the EPYC run shared the host with about seven other jobs."
+      },
+      "notes": "References were separate earlier runs of the pipeline with a longer local-search budget; one reference is approximate (about 0.92) and the M3 IBM17 trial is compared with an EPYC reference. Within-run gains over the first local-search pass were 0.11-2.33%, which mixes reassignment with additional search time.",
+      "discrepancy": "The manifest attributes the disagreement between incremental and full rescoring after reassignment to float drift. The September microbenchmark found agreement within 2.6e-15 (relative) on its sampled moves, so that explanation is unverified; the sample did not include reassignment batches.",
+      "records": [
+        {
+          "id": "E159",
+          "role": "primary",
+          "manifest_path": "experiments/E159_hungarian_polish/manifest.md",
+          "quote_lines": [
+            9,
+            85,
+            86,
+            117
+          ],
+          "outcome_verbatim": "4/4 M3 smokes (ibm04/09/10/17) also show -0.35% to -1.25% lift over v2-extCD M3 baselines.",
+          "manifest_blob": "cab75cd349ba1e2ea69a68035fbbb81b66d32c78",
+          "status": "graduated_candidate",
+          "quoted_outcome_lines": [
+            {
+              "line": 9,
+              "text": "outcome: EPYC ibm17 1.17408 vs v2-extCD 1.18269 = -0.73% lift (zero overlaps). 4/4 M3 smokes (ibm04/09/10/17) also show -0.35% to -1.25% lift over v2-extCD M3 baselines."
+            },
+            {
+              "line": 85,
+              "text": "**Critical finding**: the Hungarian phase improves the placement *positionally*"
+            },
+            {
+              "line": 86,
+              "text": "but improvements in the IncrementalProxyEvaluator's view do NOT survive"
+            },
+            {
+              "line": 117,
+              "text": "**5 of 5 NEW-code benches show lift, including EPYC ibm17 confirmation.**"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "related_records": [
+    {
+      "id": "E12",
+      "use": "Chronology; random rip-up matched cost-ranked rip-up within noise.",
+      "manifest_path": "experiments/_archive/E12_grid_bin_lns/manifest.md",
+      "quote_lines": [
+        9,
+        55,
+        66
+      ],
+      "outcome_verbatim": "Beats CDAdaptive (E9, 1.1055) by **−0.0065 (−0.59 %)**",
+      "manifest_blob": "97c4a47303eb160fc5b31175bc606b5f9fb12f34",
+      "status": "graduated",
+      "quoted_outcome_lines": [
+        {
+          "line": 9,
+          "text": "outcome: 1.0990"
+        },
+        {
+          "line": 55,
+          "text": "Beats CDAdaptive (E9, 1.1055) by **−0.0065 (−0.59 %)**, beats leaderboard"
+        },
+        {
+          "line": 66,
+          "text": "load-bearing**: random destroy on `--fast` matched cost-aware within noise"
+        }
+      ]
+    },
+    {
+      "id": "E69",
+      "use": "Chronology; a representation in which every point is legal found only small gains.",
+      "manifest_path": "experiments/_archive/E69_sequence_pair_search/manifest.md",
+      "quote_lines": [
+        9
+      ],
+      "outcome_verbatim": "aggregate --fast lift (~-0.10%) is BELOW the 0.30% promotion threshold",
+      "manifest_blob": "ceee9da2626fb8e711598057f5003afafac6e038",
+      "status": "marginal",
+      "quoted_outcome_lines": [
+        {
+          "line": 9,
+          "text": "outcome: **MARGINAL 2026-05-03 23:00 EDT.** SP encoder works (Murata-Fujiyoshi adjacency rule, after fixing initial pair-by-pair over-constraint). Topology distance probe quantifies basin separation: 17-30% of pairs disagree across 4 IBM benches; most disagreements are axis-rotating (LEFT↔BELOW etc.) with only 7-15% axis-preserving. SP-guided directed swap on axis-preserving disagreements ALWAYS finds genuine lift over starting basin (-0.04% to -0.19%) but aggregate --fast lift (~-0.10%) is BELOW the 0.30% promotion threshold. Per-pair operations are too local to escape basin; block-level operations (E61 V2 quadrant crossover, -0.07% --all) outperform per-pair (E69) on tied-basin benches. **Validates the topology framing as REAL** but **falsifies per-pair swap as a breakthrough mechanism**. Real escape requires operations that scale (block-level, Hungarian K=50, BP/diffusion)."
+        }
+      ]
+    },
+    {
+      "id": "E88",
+      "use": "Lessons; good rank agreement with the scorer did not make smooth descent safe.",
+      "manifest_path": "experiments/E88_diff_proxy/manifest.md",
+      "quote_lines": [
+        9,
+        77
+      ],
+      "outcome_verbatim": "Run A from cascade-cached (canon 0.84528) → post-leg 1.534 (+81%).",
+      "manifest_blob": "61122dc198111e6b9cdea352b3540d36f023e581",
+      "status": "falsified",
+      "quoted_outcome_lines": [
+        {
+          "line": 9,
+          "text": "outcome: \"AdamW on smooth proxy WORSENS both inits on ibm01. Run A from cascade-cached (canon 0.84528) → post-leg 1.534 (+81%). Run B from SDF (canon 1.195) → post-leg 2.284 (+91%). Spike gate 0.898 not met by any descent trajectory.\""
+        },
+        {
+          "line": 77,
+          "text": "- Spearman ρ = 0.929 across 16 placements (gate >0.7)."
+        }
+      ]
+    },
+    {
+      "id": "E114",
+      "use": "Lessons; a smoother density model optimized the wrong target.",
+      "manifest_path": "experiments/E114_edensity/manifest.md",
+      "quote_lines": [
+        9
+      ],
+      "outcome_verbatim": "1.59930",
+      "manifest_blob": "0a1ea6d70d0942cbb31d92dc0e6041f071ee02c1",
+      "status": "falsified",
+      "quoted_outcome_lines": [
+        {
+          "line": 9,
+          "text": "outcome: 1.59930"
+        }
+      ]
+    },
+    {
+      "id": "E125",
+      "use": "Lessons; combining two individually useful ideas under one budget was worse than the better one alone.",
+      "manifest_path": "experiments/E125_gaussian_hessian/manifest.md",
+      "quote_lines": [
+        9
+      ],
+      "outcome_verbatim": "ibm17 = 1.2247 (worse than E117 alone 1.181, worse than V3Min 1.200, fails kill gate <1.16)",
+      "manifest_blob": "6f7067b3f4e269551be05081102fea6efce62fdc",
+      "status": "falsified",
+      "quoted_outcome_lines": [
+        {
+          "line": 9,
+          "text": "outcome: ibm17 = 1.2247 (worse than E117 alone 1.181, worse than V3Min 1.200, fails kill gate <1.16)"
+        }
+      ]
+    }
+  ],
+  "excluded_candidates": [
+    {
+      "candidate": "Extended local-search budget",
+      "reason": "No manifest of its own. Its single-design IBM17 values appear only as baselines inside later manifests (E148, E159) and in uncommitted notes, and its 17-design figure is not used as a result in the report. Row 2 carries the related lesson that hard designs benefit from more local-search time."
+    },
+    {
+      "candidate": "Xplace integration",
+      "reason": "experiments/Xplace_integration has no manifest. Row 7 (patched DREAMPlace, E116) represents external analytical placers."
+    },
+    {
+      "candidate": "E12 grid-bin large-neighborhood search",
+      "reason": "Verified (1.0990 versus 1.1055, -0.59%) but omitted for space; listed in the chronology."
+    },
+    {
+      "candidate": "E69 sequence-pair search",
+      "reason": "Verified (marginal, about -0.10% on four designs) but overlaps row 6; listed in the chronology."
+    },
+    {
+      "candidate": "E88, E114, E125",
+      "reason": "Verified; kept as related_records supporting the lesson of row 8 rather than as separate rows."
+    },
+    {
+      "candidate": "DREAMPlace as a third starting lane (E76, Option B)",
+      "reason": "Manifest E76 is in_progress with no outcome; not verifiable from a manifest."
+    }
+  ],
+  "discrepancies": [
+    {
+      "subject": "E74 first curvature stage",
+      "may_value": "1.0666",
+      "frozen_value": "1.06760",
+      "explanation": "The May figure included layered reruns on two designs (IBM12, IBM15). The frozen stage records give a 17-design mean of 1.06760 (see frozen_checks.curvature_stages). The report uses 1.06760.",
+      "manifest_path": "experiments/E74_hessian_saddle/manifest.md"
+    },
+    {
+      "subject": "E48 plateau before the curvature stages",
+      "may_value": "1.08151",
+      "frozen_value": "1.08128",
+      "explanation": "The frozen curvature records start from cached best-of-two placements (3 from branch 1, 14 from branch 2) with mean 1.08128. The May best-of-two record reported 1.08151 and chose branch 1 on five designs, so the starting placements come from different runs. 1.08128 also equals the May multi-seed record (E53_multiseed_hybrid); whether those are the same placements is not established. The report uses 1.08128 for the plateau.",
+      "manifest_path": "experiments/_archive/E48_hybrid_e25_e41/manifest.md"
+    },
+    {
+      "subject": "E84 cascade",
+      "may_value": "1.0612",
+      "frozen_value": "1.06119",
+      "explanation": "Consistent: the May figure is the frozen mean rounded to four decimals.",
+      "manifest_path": "experiments/E84_cascading_saddle/manifest.md"
+    },
+    {
+      "subject": "E1 incremental evaluator speedup",
+      "may_value": "4,657x on IBM10 (6.5 ms vs 30 s)",
+      "frozen_value": "1.29-3.67 ms vs 1.40-26.87 s per move; median paired ratios 1,040x-18,023x",
+      "explanation": "Different protocol and sample. The report uses the September Measurement.",
+      "manifest_path": "experiments/_archive/E1_incremental_evaluator/manifest.md"
+    },
+    {
+      "subject": "E117 dense-design values",
+      "may_value": "IBM12 1.0869, IBM14 1.0771, IBM17 1.1805, IBM18 1.1871",
+      "frozen_value": "IBM12 1.08989, IBM14 1.07330, IBM17 1.17164, IBM18 1.18998",
+      "explanation": "Separate runs. The table cites the manifest's within-run comparison for the four designs and the frozen record for the 17-design mean.",
+      "manifest_path": "experiments/E117_gaussian_density/manifest.md"
+    },
+    {
+      "subject": "v1 frozen record tag",
+      "may_value": "manifest E109 (stacked_cascade_portfolio)",
+      "frozen_value": "hypothesis tag E108_stacked_periphery_all",
+      "explanation": "The frozen 17 May record carries the tag E108 although its manifest is E109 (experiment numbers overlapped and were later renumbered; commit 80a555b). Same run: mean 1.05750, timestamp 2026-05-17T10:24:36Z.",
+      "manifest_path": "experiments/E109_stacked_cascade_portfolio/manifest.md"
+    },
+    {
+      "subject": "E159 rescoring disagreement",
+      "may_value": "float drift between incremental and full rescoring",
+      "frozen_value": "maximum relative component difference 2.6e-15 on sampled moves",
+      "explanation": "Unverified May explanation; the September sample did not include reassignment batches.",
+      "manifest_path": "experiments/E159_hungarian_polish/manifest.md"
+    }
+  ],
+  "frozen_checks": [
+    {
+      "id": "evaluator_microbenchmarks",
+      "kind": "evaluator_ranges",
+      "files": [
+        "evaluator_ibm01_mac.json",
+        "evaluator_ibm10_mac.json",
+        "evaluator_ibm10_hard_mac.json"
+      ],
+      "sha256": {
+        "evaluator_ibm01_mac.json": "2c39ce3dba8c6d71c8934a0a1b499ed5c8f813b9d0e3282993554d0039b1efed",
+        "evaluator_ibm10_mac.json": "4bc56dbc085de6cc93b6c10b2c5f8f70986777b1b6a6826175654401e7ac8dcd",
+        "evaluator_ibm10_hard_mac.json": "cf34c85a7b35e9bbcbb5a083ec79960bc0be581313d8884005a405142f637126"
+      },
+      "values": {
+        "incremental_ms_min": 1.2869670833334235,
+        "incremental_ms_max": 3.671729166657182,
+        "full_ms_min": 1401.5996163333336,
+        "full_ms_max": 26865.39403466666,
+        "median_ratio_min": 1040.1859519274346,
+        "median_ratio_max": 18022.548503718324,
+        "max_relative_component_error": 2.561729937666251e-15
+      }
+    },
+    {
+      "id": "gaussian_record",
+      "kind": "record_mean",
+      "files": [
+        "raw/E111MinimalGaussianPlacer_20260520_135149.json"
+      ],
+      "sha256": {
+        "raw/E111MinimalGaussianPlacer_20260520_135149.json": "8ca72354a75bab11e8c831b525fc063da59907e929dc7f6ec8e3d015d0e48f16"
+      },
+      "values": {
+        "designs": 17,
+        "mean_proxy": 0.9819857723572675,
+        "total_overlaps": 0
+      }
+    },
+    {
+      "id": "v1_record",
+      "kind": "record_mean",
+      "files": [
+        "raw/CDLNSSACascadeStackedPeripheryPlacer_20260517_062436.json"
+      ],
+      "sha256": {
+        "raw/CDLNSSACascadeStackedPeripheryPlacer_20260517_062436.json": "d9010f72f68683317ff34ff27343b69f633f77366e196ba03c8100c33c226ab9"
+      },
+      "values": {
+        "designs": 17,
+        "mean_proxy": 1.0574954502722795,
+        "total_overlaps": 0
+      }
+    },
+    {
+      "id": "v3_record",
+      "kind": "record_mean",
+      "files": [
+        "raw/EPYC_thinkorplace_v2_validation_20260520.json"
+      ],
+      "sha256": {
+        "raw/EPYC_thinkorplace_v2_validation_20260520.json": "0bef0502d32aeb9de1bf94c1d9ab11a13f78f69f660983338864dc44d7ac6c9c"
+      },
+      "values": {
+        "designs": 17,
+        "mean_proxy": 1.0083468451219446,
+        "total_overlaps": 0
+      }
+    },
+    {
+      "id": "gaussian_vs_v1",
+      "kind": "designs_lower",
+      "files": [
+        "raw/CDLNSSACascadeStackedPeripheryPlacer_20260517_062436.json",
+        "raw/E111MinimalGaussianPlacer_20260520_135149.json"
+      ],
+      "sha256": {
+        "raw/CDLNSSACascadeStackedPeripheryPlacer_20260517_062436.json": "d9010f72f68683317ff34ff27343b69f633f77366e196ba03c8100c33c226ab9",
+        "raw/E111MinimalGaussianPlacer_20260520_135149.json": "8ca72354a75bab11e8c831b525fc063da59907e929dc7f6ec8e3d015d0e48f16"
+      },
+      "values": {
+        "designs": 17,
+        "designs_lower": 16,
+        "mean_change_percent": -7.140425795266559
+      }
+    },
+    {
+      "id": "curvature_stages",
+      "kind": "cascade_stages",
+      "files": [
+        "raw/cascade/hessian_ibm*.json",
+        "raw/cascade/cascade_ibm*.json"
+      ],
+      "sha256": {
+        "raw/cascade/hessian_ibm01.json": "19b59d8b5d505f959b850eebd64a50f904bb9a6e2efab46dd63cc11520ee5930",
+        "raw/cascade/hessian_ibm02.json": "32096acdb7aae2f625227bdb58311a14cd9ee00477294b3787b4bea8eac55bf0",
+        "raw/cascade/hessian_ibm03.json": "09c05e9934426ffb2557393fe3304d57858dcbb785fbc88889c729afb21d36b5",
+        "raw/cascade/hessian_ibm04.json": "2f0581d5edf49d6d30f5c09e53bb77302336d219a9476f276bceb8d426b6fece",
+        "raw/cascade/hessian_ibm06.json": "1c6461d9b8983f5123062c7672f4008f17f5102a7559873bd596e9adcc13a307",
+        "raw/cascade/hessian_ibm07.json": "5a7ee6d0948af38afee4f8641807bc1116d0ff1b209d9be1eaf2246df7948481",
+        "raw/cascade/hessian_ibm08.json": "fb135e0df0cc81d43426bb83baf5e19fecd465036a317b195d8927d1d97170be",
+        "raw/cascade/hessian_ibm09.json": "845f7577e5594e5d81d5aa0f6ca4451c7db2148b95ba066aabb6c9d8c4a620dd",
+        "raw/cascade/hessian_ibm10.json": "36892e8e14ebb8ffb9c9f960b7ca3bc48db35754796ce194388aeb65f25d0ae0",
+        "raw/cascade/hessian_ibm11.json": "093b5d0a88e1a0e2904bc667434778635738832c073870c94daaf646db15cd18",
+        "raw/cascade/hessian_ibm12.json": "0b28b74367d4bed66dd4c98a89dd65b92c6dad3e34b6d3774b426b6d780e8417",
+        "raw/cascade/hessian_ibm13.json": "b8435e09d22a45b1ed03ccc92a8a0fc5dfc24e532b2fb71cb464536eaa600acc",
+        "raw/cascade/hessian_ibm14.json": "cf17b334a5c5aa9ba94fa0c3166fb3877354985cd2cc3d350e047223d20f848a",
+        "raw/cascade/hessian_ibm15.json": "44983df6e5a8c19ab8175c2d3e39118e27db474f39ab2d09e722fba272f6a35f",
+        "raw/cascade/hessian_ibm16.json": "16420de7816710c067356da18d8fbc5399b1190f10a046038df10a2d23cd2814",
+        "raw/cascade/hessian_ibm17.json": "4c3e95b336c473cdcf473ba2e8fbe52850f81f0ffaa118bee04d2b3f4c2c4273",
+        "raw/cascade/hessian_ibm18.json": "044197fff2c1b7ca7d585b157f31c88a35e23b6584592c2f658ee5c9853bfea5",
+        "raw/cascade/cascade_ibm01.json": "f45b46cd60fca1f4568651216878b31cc8343c304b556606d4fbc870cc87464b",
+        "raw/cascade/cascade_ibm02.json": "689f563861b4ddce8b3d42dbb82e1d61b02ae8e5488b3a4a4c0c7e2bf6b7e966",
+        "raw/cascade/cascade_ibm03.json": "3de3705961750f936dc458050876e7639dfaf0235921b82424085c4de9a97f8b",
+        "raw/cascade/cascade_ibm04.json": "afa3dfdd563cb6a9589fd1a708a7dbe77de3a14ccf09b2e2f98af1a005a6242f",
+        "raw/cascade/cascade_ibm06.json": "8f83fcf417a9c9a73975e556bea6d1b1e464c54dc1d3b27482d64f8341949368",
+        "raw/cascade/cascade_ibm07.json": "17880caf391351f0395bfa7bb13abaff34986645104933a27537d1ab76387804",
+        "raw/cascade/cascade_ibm08.json": "e2fd597d8d94c20731438d977185b90584cae59575747ad1b323cbd8dd9c60fa",
+        "raw/cascade/cascade_ibm09.json": "0a49039e22b803029b2034d82eeb326419fbcefbda29d0330c96752882ae7389",
+        "raw/cascade/cascade_ibm10.json": "0c1e5aeaac7fb5e0f0d300453e2cf789b2ec6a9375ecf6da7c3775deacb81aa0",
+        "raw/cascade/cascade_ibm11.json": "6ef4bcc097772bc0874dc3ebb403b617a1a1ed5cffd2de31b0dc81c066c40bf3",
+        "raw/cascade/cascade_ibm12.json": "f4128bb81811acf098c3b7fc76ed8ebbd2227c6d64502fedaebad4625ea2521a",
+        "raw/cascade/cascade_ibm13.json": "5ad5adb5efc294021242f4944a24789cec256abbd00b737fabc6a794a603c84e",
+        "raw/cascade/cascade_ibm14.json": "28755a12adfc6227da844ee59c7e688af380c8406ddbd13e5f1b0128ccdb4cdd",
+        "raw/cascade/cascade_ibm15.json": "1db063601d1f2d07d9de99a3ca4a7a416934b78270f1a36d0237ce9dd2ea65a6",
+        "raw/cascade/cascade_ibm16.json": "89ca9b747c7b8c172410ae4c1e20caa9a055bae7233dd128138bccabd01b3674",
+        "raw/cascade/cascade_ibm17.json": "6aba0e79bd3443b2e2b5f2fa2793f554120dfcb465c72e779457e7b501fe58f4",
+        "raw/cascade/cascade_ibm18.json": "5f592a9e0d6b360615f93ec6eee4db4e0484c67dd319c28f51d2edb0e1770747"
+      },
+      "values": {
+        "designs": 17,
+        "start_mean": 1.081282987314112,
+        "first_stage_mean": 1.0675987776587992,
+        "cascade_mean": 1.0611913028885336
+      }
+    }
+  ],
+  "chronology_table": {
+    "label": "tab:chronology",
+    "caption": "Glossary and development chronology (Historical). Dates (2026) are decision or commit dates; manifest gives the first seven characters of the experiment manifest's git blob, and runtime archive names are prefixes of each archive's source-identity SHA-256. Scores are mean proxy over the 17 IBM designs unless stated (lower is better); frozen values are recomputed from the saved records in the publication data. The judged commit was not recorded: from the listed 12-minute runtime and the 20 May resubmission date, the single pipeline (V4+Gaussian) is inferred to be the ranked entry, so Lanes A, B and C and the three-lane system, all committed before the deadline, are inferred never to have been scored.",
+    "groups": [
+      {
+        "group": "early",
+        "heading": "April to early May 2026"
+      },
+      {
+        "group": "late",
+        "heading": "May 2026"
+      },
+      {
+        "group": "sources",
+        "heading": "Implementation names, source revisions and runtime archives"
+      }
+    ]
+  },
+  "chronology": [
+    {
+      "group": "early",
+      "name": "E1",
+      "date": "26 Apr",
+      "description": "Incremental evaluator: after a one-block move, update wirelength, density and congestion from cached state instead of rescoring.",
+      "dev_row": 1,
+      "manifest_path": "experiments/_archive/E1_incremental_evaluator/manifest.md",
+      "record": "re-measured in September",
+      "manifest_blob": "478c9af6b0951f3789d1aa8b8231e6389a3fac69",
+      "status": "graduated"
+    },
+    {
+      "group": "early",
+      "name": "E9",
+      "date": "27 Apr",
+      "description": "Coordinate descent (CD), one block and one axis at a time, stopped by a plateau rule.",
+      "dev_row": 2,
+      "manifest_path": "experiments/_archive/E9_plateau_detection/manifest.md",
+      "manifest_blob": "9da7ae00b5549597e65dc771dc10a31c9f2bfc96",
+      "status": "graduated"
+    },
+    {
+      "group": "early",
+      "name": "E12",
+      "date": "28 Apr",
+      "description": "Large-neighborhood search after CD: remove a few blocks and try every grid cell for each.",
+      "manifest_path": "experiments/_archive/E12_grid_bin_lns/manifest.md",
+      "record": "mean 1.0990 vs 1.1055",
+      "manifest_blob": "97c4a47303eb160fc5b31175bc606b5f9fb12f34",
+      "status": "graduated"
+    },
+    {
+      "group": "early",
+      "name": "E14",
+      "date": "29 Apr",
+      "description": "Annealing polish that returned its last state rather than its best.",
+      "dev_row": 3,
+      "manifest_path": "experiments/_archive/E14_sa_polish/manifest.md",
+      "manifest_blob": "fd7f50dd2550691ae86c6ba00fb8c6510f94df43",
+      "status": "falsified"
+    },
+    {
+      "group": "early",
+      "name": "E24",
+      "date": "29 Apr",
+      "description": "The same annealing polish with best-so-far tracking and a lower temperature.",
+      "dev_row": 3,
+      "manifest_path": "experiments/_archive/E24_sa_polish_v2/manifest.md",
+      "manifest_blob": "fa322219453e7d4307735a109f3d22f11461e99a",
+      "status": "marginal"
+    },
+    {
+      "group": "early",
+      "name": "E25",
+      "date": "29 Apr",
+      "description": "Branch 1 of v1: soft-rectangle start (SDF), then CD, neighborhood search and annealing.",
+      "manifest_path": "experiments/_archive/E25_lns_sa_compose/manifest.md",
+      "record": "mean 1.0954",
+      "manifest_blob": "84d69da671a6324ee1dace68727b0c5a6aa8cae2",
+      "status": "champion_candidate"
+    },
+    {
+      "group": "early",
+      "name": "E41",
+      "date": "30 Apr",
+      "description": "Branch 2 of v1: smooth-score start (DPO), then CD, neighborhood search, annealing and three-block joint moves.",
+      "manifest_path": "experiments/E41_dpo_kjoint/manifest.md",
+      "record": "mean 1.0848",
+      "manifest_blob": "4a930aa2cce769c3a1326067d72e57f1ebf74b58",
+      "status": "champion_candidate"
+    },
+    {
+      "group": "early",
+      "name": "E48",
+      "date": "1 May",
+      "description": "Best of branches 1 and 2 for each design: the plateau before the curvature stages.",
+      "manifest_path": "experiments/_archive/E48_hybrid_e25_e41/manifest.md",
+      "record": "May 1.08151; frozen start points 1.08128",
+      "manifest_blob": "8bb8dc82a89092ab2986026f30400e812f00d409",
+      "status": "graduated"
+    },
+    {
+      "group": "early",
+      "name": "E53",
+      "date": "2 May",
+      "description": "GPU smooth-score polish after converged local search.",
+      "dev_row": 4,
+      "manifest_path": "experiments/_archive/E53_dpo_basin_eval/manifest.md",
+      "manifest_blob": "0fa976e22ed391311da7374b6932159c67189bdd",
+      "status": "falsified"
+    },
+    {
+      "group": "early",
+      "name": "E54",
+      "date": "2 May",
+      "description": "Neighborhood search that removes the blocks contributing most to congestion.",
+      "dev_row": 5,
+      "manifest_path": "experiments/_archive/E54_congestion_destroy/manifest.md",
+      "manifest_blob": "871381bc232029bc74d9122f43edbe4b98fc3d39",
+      "status": "falsified"
+    },
+    {
+      "group": "early",
+      "name": "E62",
+      "date": "2 May",
+      "description": "The challenge's reference starter placer as a third starting branch.",
+      "manifest_path": "experiments/_archive/E62_will_seed_init/manifest.md",
+      "record": "1.44% worse on 4 designs",
+      "manifest_blob": "505095edbecd4d4596f6944d780a856df5eb9831",
+      "status": "falsified"
+    },
+    {
+      "group": "early",
+      "name": "E65",
+      "date": "3 May",
+      "description": "Straight-line blends between the placements of branches 1 and 2.",
+      "dev_row": 6,
+      "manifest_path": "experiments/_archive/E65_neb_cross_section/manifest.md",
+      "manifest_blob": "1586365d636a097626f48acb2ffabf8b47d310e4",
+      "status": "graduated"
+    },
+    {
+      "group": "early",
+      "name": "E69",
+      "date": "3 May",
+      "description": "Pair swaps guided by a sequence-pair encoding (left/right and above/below order of every pair).",
+      "manifest_path": "experiments/_archive/E69_sequence_pair_search/manifest.md",
+      "record": "about 0.10% gain on 4 designs, below threshold",
+      "manifest_blob": "ceee9da2626fb8e711598057f5003afafac6e038",
+      "status": "marginal"
+    },
+    {
+      "group": "early",
+      "name": "E74",
+      "date": "4–5 May",
+      "description": "First curvature stage: step both ways along negative-curvature directions of a smooth surrogate, then re-polish with CD.",
+      "manifest_path": "experiments/E74_hessian_saddle/manifest.md",
+      "record": "frozen mean 1.06760 (May note 1.0666)",
+      "manifest_blob": "6f75879ff952e2b2458f642f47f50c583b06d2d5",
+      "status": "graduated"
+    },
+    {
+      "group": "late",
+      "name": "E84",
+      "date": "10–11 May",
+      "description": "Repeated curvature stages starting from the first stage's results (the cascade).",
+      "manifest_path": "experiments/E84_cascading_saddle/manifest.md",
+      "record": "frozen mean 1.06119",
+      "manifest_blob": "5794d746bf52221190c8c86585366f85139d68fe",
+      "status": "in_progress"
+    },
+    {
+      "group": "late",
+      "name": "v1",
+      "date": "13 May",
+      "description": "Serial pipeline: two starting branches, each with CD, neighborhood search and annealing, then the curvature cascade. Entered on 13 May (the earlier submission).",
+      "record": "frozen 17 May run of its final configuration: mean 1.05750"
+    },
+    {
+      "group": "late",
+      "name": "stacked periphery",
+      "date": "16–17 May",
+      "description": "Final v1 configuration: adds curvature searches under three reweighted scores and a last step nudging blocks toward the canvas edge.",
+      "manifest_path": "experiments/E109_stacked_cascade_portfolio/manifest.md",
+      "record": "frozen mean 1.05750",
+      "manifest_blob": "848218d7997035f67f71191dcde129852d75cb4b",
+      "status": "graduated"
+    },
+    {
+      "group": "late",
+      "name": "V3",
+      "date": "19–20 May",
+      "description": "Smooth placer: smooth wirelength, grid density and per-net routing-trace congestion optimized with Adam, then legalization and CD.",
+      "record": "frozen EPYC run of v2 with V3: mean 1.00835"
+    },
+    {
+      "group": "late",
+      "name": "E116",
+      "date": "20 May",
+      "description": "DREAMPlace's optimizer driven by the challenge score.",
+      "dev_row": 7,
+      "manifest_path": "experiments/E116_dreamplace_patched/manifest.md",
+      "manifest_blob": "db11cc2fba97c5cc88d52788f917d6f854ce1d22",
+      "status": "falsified"
+    },
+    {
+      "group": "late",
+      "name": "E122",
+      "date": "20 May",
+      "description": "Three-pin routing shapes in the smooth congestion model.",
+      "dev_row": 8,
+      "manifest_path": "experiments/E122_3pin_steiner/manifest.md",
+      "manifest_blob": "06f88384fb875af0a38267f70140bcdbfa37bf73",
+      "status": "marginal"
+    },
+    {
+      "group": "late",
+      "name": "E124",
+      "date": "20 May",
+      "description": "Fix for spurious demand on degenerate routes in the smooth congestion model.",
+      "dev_row": 8,
+      "manifest_path": "experiments/E124_phantom_fix/manifest.md",
+      "manifest_blob": "d9dc97df706da33b4e9d46de3e48b04fa1d13c87",
+      "status": "marginal"
+    },
+    {
+      "group": "late",
+      "name": "E117",
+      "date": "20 May",
+      "description": "Gaussian density in the smooth placer.",
+      "dev_row": 9,
+      "manifest_path": "experiments/E117_gaussian_density/manifest.md",
+      "record": "frozen mean 0.98199",
+      "manifest_blob": "b7bab520a9fb776d3efe8de12347bc596e248d76",
+      "status": "in_progress"
+    },
+    {
+      "group": "late",
+      "name": "V4+Gaussian",
+      "date": "20 May",
+      "description": "V3 with faster smooth-score kernels (V4) and Gaussian density, then legalization and CD; 720 s budget, 600 s of CD.",
+      "record": "commit 5485310; inferred to be the ranked entry"
+    },
+    {
+      "group": "late",
+      "name": "v2",
+      "date": "20–22 May",
+      "description": "Entry name of the 20 May resubmission, ranked ninth (0.9974); the name was reused on 22 May for the three-lane system.",
+      "record": "Official leaderboard"
+    },
+    {
+      "group": "late",
+      "name": "E159",
+      "date": "21 May",
+      "description": "Hungarian reassignment of up to 50 blocks, then a second CD pass.",
+      "dev_row": 10,
+      "manifest_path": "experiments/E159_hungarian_polish/manifest.md",
+      "manifest_blob": "cab75cd349ba1e2ea69a68035fbbb81b66d32c78",
+      "status": "graduated_candidate"
+    },
+    {
+      "group": "late",
+      "name": "Lane A",
+      "date": "21–22 May",
+      "description": "The single pipeline (smooth descent, legalization, CD) run as one lane of the three-lane system.",
+      "record": "never scored as a lane (inferred)"
+    },
+    {
+      "group": "late",
+      "name": "Lane B",
+      "date": "21–22 May",
+      "description": "Lane A followed by curvature proposals and a second CD pass.",
+      "record": "never scored (inferred)"
+    },
+    {
+      "group": "late",
+      "name": "Lane C",
+      "date": "21–22 May",
+      "description": "Lane A followed by Hungarian reassignment and a second CD pass.",
+      "record": "never scored (inferred)"
+    },
+    {
+      "group": "late",
+      "name": "A+B+C",
+      "date": "22 May",
+      "description": "Runs the three lanes in parallel and returns the lowest full score; committed before the deadline.",
+      "record": "commit 456f94f; never scored (inferred)"
+    },
+    {
+      "group": "sources",
+      "name": "SDF",
+      "date": "—",
+      "description": "Implementation name of the soft-rectangle initializer used by branch 1 of v1 and by v2.",
+      "record": ""
+    },
+    {
+      "group": "sources",
+      "name": "DPO",
+      "date": "—",
+      "description": "Implementation name of the smooth-score initializer used by branch 2 of v1.",
+      "record": ""
+    },
+    {
+      "group": "sources",
+      "name": "5485310",
+      "monospace": true,
+      "date": "20 May",
+      "description": "Commit that made V4+Gaussian the v2 entry; the judged commit was not recorded.",
+      "record": "git history"
+    },
+    {
+      "group": "sources",
+      "name": "2ab92a33d352",
+      "monospace": true,
+      "date": "22 May",
+      "description": "Last competition-era commit; its source closure is the frozen competition archive.",
+      "record": "competition-source.tar"
+    },
+    {
+      "group": "sources",
+      "name": "45a721d01dfe",
+      "monospace": true,
+      "date": "11 Jan",
+      "description": "Pinned revision of the TILOS MacroPlacement evaluator (git submodule).",
+      "record": "submodule pin"
+    },
+    {
+      "group": "sources",
+      "name": "996193c83eaa",
+      "monospace": true,
+      "date": "14 Aug",
+      "description": "Upstream challenge revision carrying the final leaderboard.",
+      "record": "upstream README"
+    },
+    {
+      "group": "sources",
+      "name": "5730d13762ce",
+      "monospace": true,
+      "date": "6 Sep",
+      "description": "Runtime archive for the 12-run pilot.",
+      "record": "frozen snapshot and archive"
+    },
+    {
+      "group": "sources",
+      "name": "ca4343aaefda",
+      "monospace": true,
+      "date": "6 Sep",
+      "description": "Runtime archive for the post-pilot repair batch.",
+      "record": "frozen snapshot and archive"
+    },
+    {
+      "group": "sources",
+      "name": "5aa4c719cf18",
+      "monospace": true,
+      "date": "6 Sep",
+      "description": "Runtime archive with the final repairs, used for the NG45 integration check.",
+      "record": "frozen snapshot and archive"
+    }
+  ]
+}

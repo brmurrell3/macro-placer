@@ -1,0 +1,334 @@
+\section{Proofs}\label{app:proofs}
+
+% A numbered remark environment local to the appendices; defined only once.
+\ifcsname appremark\endcsname\else
+  \theoremstyle{remark}
+  \newtheorem{appremark}{Remark}[section]
+  \theoremstyle{plain}
+\fi
+
+This appendix proves the results stated in the main text and adds five remarks,
+each with its proof, that the main text uses informally. Coordinates are real
+numbers, sizes and orientations are fixed, and touching rectangles are legal.
+Hard macro $i$ has center $(x_i,y_i)$, width $w_i$ and height $h_i$ on a
+$L_x\times L_y$ canvas; for a pair $i\ne j$ write
+$\bar w_{ij}=(w_i+w_j)/2$ and $\bar h_{ij}=(h_i+h_j)/2$.
+
+\subsection{Feasible set and coordinate slices}
+
+\begin{proof}[Proof of Proposition~\ref{prop:geometry}]
+Let $\mathcal B$ be the set of placements that satisfy every canvas-containment
+inequality $w_i/2\le x_i\le L_x-w_i/2$, $h_i/2\le y_i\le L_y-h_i/2$ and every
+fixed-coordinate equality. For an unordered pair $e=\{i,j\}$ of hard macros, the
+pair does not overlap exactly when one of four closed halfspaces contains the
+placement:
+\begin{equation*}
+ H_{e,1}=\{x_j-x_i\ge\bar w_{ij}\},\quad
+ H_{e,2}=\{x_i-x_j\ge\bar w_{ij}\},\quad
+ H_{e,3}=\{y_j-y_i\ge\bar h_{ij}\},\quad
+ H_{e,4}=\{y_i-y_j\ge\bar h_{ij}\}.
+\end{equation*}
+With $\mathcal E$ the set of pairs and $m=|\mathcal E|$, the feasible set is
+$\mathcal F=\mathcal B\cap\bigcap_{e\in\mathcal E}\bigcup_{b=1}^4H_{e,b}$. A finite
+intersection of finite unions equals the union, over all ways of choosing one member
+from each union, of the intersections of the chosen members. Choosing branch
+$\sigma(e)$ for every pair gives
+\begin{equation*}
+ \mathcal F=\bigcup_{\sigma\in\{1,2,3,4\}^{\mathcal E}}P_\sigma,\qquad
+ P_\sigma=\mathcal B\cap\bigcap_{e\in\mathcal E}H_{e,\sigma(e)}.
+\end{equation*}
+Each $P_\sigma$ is the intersection of finitely many closed halfspaces and
+hyperplanes, hence a closed convex polyhedron. The containment inequalities bound
+every coordinate, so $P_\sigma$ is bounded and therefore compact. There are $4^m$
+choices of $\sigma$; different choices may give overlapping, identical or empty
+polyhedra, so $4^m$ is an upper bound on the number of distinct pieces.
+\end{proof}
+
+\begin{appremark}[Legal coordinate slices]\label{rem:slice}
+Fix a legal placement and vary only $x_i$ for a movable hard macro $i$. Let
+\begin{equation*}
+ S_i=\bigl\{j\ne i\text{ hard}:\ |y_i-y_j|<\bar h_{ij}\bigr\}
+\end{equation*}
+be the macros that overlap $i$'s horizontal band. The legal values of $x_i$ form
+\begin{equation}
+ I_i=\Bigl[\tfrac{w_i}{2},\,L_x-\tfrac{w_i}{2}\Bigr]\setminus
+     \bigcup_{j\in S_i}\bigl(x_j-\bar w_{ij},\,x_j+\bar w_{ij}\bigr),
+ \label{eq:app-slice}
+\end{equation}
+a finite union of closed intervals, possibly including single points.
+\end{appremark}
+\begin{proof}
+Only the pairs that contain $i$ change. For $j\notin S_i$, the placement already
+satisfies $H_{e,3}$ or $H_{e,4}$, which does not involve $x_i$, so $j$ imposes no
+constraint. For $j\in S_i$ both vertical branches fail, so the pair is legal exactly
+when $|x_i-x_j|\ge\bar w_{ij}$, which removes the open interval in
+Equation~\eqref{eq:app-slice}. Removing finitely many open intervals from a closed
+interval leaves finitely many closed intervals; endpoints are legal because contact
+is allowed. The $y_i$ slice follows by exchanging axes. A soft cluster has no
+overlap constraint, so its slice is the canvas interval, and a fixed object's slice
+is a single point.
+\end{proof}
+The CD search of Appendix~\ref{app:alg-cd} does not enumerate $I_i$. It keeps the
+component that contains the current value, bounded by the nearest blocker on each
+side and shrunk by a clearance of $10^{-4}\,\mu$m; a move across a blocker is left to
+the proposal stages. Successive moves of other macros change $S_i$, so CD sweeps can
+pass between polyhedra $P_\sigma$ even though each single move stays in one interval.
+
+\subsection{Incremental scoring}
+
+Let $\Psi(p)$ be the cache obtained by computing everything from scratch at
+placement $p$: pin positions, per-net extrema and, for each net $n$ and object $i$,
+the weighted HPWL term $a_n(p)$, the density-load vector $d_i(p)$ of object $i$,
+the raw routing vectors $r_n^o(p)$ of net $n$ and the macro-blockage vectors
+$b_i^o(p)$ for orientation $o\in\{H,V\}$, with $b_i^o=0$ for soft clusters. The cache
+stores the aggregates
+\begin{equation}
+ T=\sum_na_n(p),\qquad \Lambda=\sum_id_i(p),\qquad R^o=\sum_nr_n^o(p),\qquad M^o=\sum_ib_i^o(p),
+ \label{eq:app-cache}
+\end{equation}
+and every score is a fixed function of these aggregates: normalization, smoothing and
+the two tails (Appendix~\ref{app:objective}).
+
+\begin{appremark}[Cache commutation]\label{rem:cache}
+Let $U_i$ move object $i$ and $\widehat U_i$ be the cache update that recomputes
+$i$'s pins, the extrema of the nets incident to $i$, and then subtracts the old and
+adds the new $a_n$, $r_n^o$ for those nets and $d_i$, $b_i^o$ for $i$. In exact
+arithmetic, $\widehat U_i\Psi(p)=\Psi(U_ip)$, and the same holds for any sequence of
+moves and for reverting them.
+\end{appremark}
+\begin{proof}
+A net term $a_n$ or $r_n^o$ depends only on the positions of the pins of $n$; it
+changes under $U_i$ only if $n$ is incident to $i$. The terms $d_j$ and $b_j^o$
+depend only on object $j$'s rectangle and change only for $j=i$. Hence, for
+instance, $T(U_ip)=T(p)-\sum_{n\ni i}a_n(p)+\sum_{n\ni i}a_n(U_ip)$, which is exactly
+the update; the other three aggregates follow in the same way, provided the update
+recomputes each incident net's extrema from all its pins when the moved pin was
+extreme. Equal aggregates give equal scores. Induction on the number of moves gives
+the sequence statement, and a revert applies the same substitution with the roles of
+old and new exchanged.
+\end{proof}
+The remark is conditional on complete dependency tracking and exact arithmetic. In
+floating point, subtracting and adding terms need not cancel, and the summation
+order differs from a fresh computation; the measured discrepancies are reported in
+the main text.
+
+\begin{proof}[Proof of Proposition~\ref{prop:acceptance}]
+Let $\widehat J$ be the incremental score and $J$ the canonical score, with
+$|\widehat J(S_p)-J(p)|\le\epsilon$ and $|\widehat J(S_q)-J(q)|\le\epsilon$ at the two
+endpoints, and suppose $\widehat J(S_q)\le\widehat J(S_p)-\tau$. Adding and
+subtracting the incremental values,
+\begin{align*}
+ J(q)-J(p)
+ &=\bigl[J(q)-\widehat J(S_q)\bigr]+\bigl[\widehat J(S_q)-\widehat J(S_p)\bigr]
+   +\bigl[\widehat J(S_p)-J(p)\bigr]\\
+ &\le\epsilon-\tau+\epsilon=-\tau+2\epsilon .
+\end{align*}
+If $\tau>2\epsilon$ the right side is negative, so the canonical score strictly
+decreases.
+\end{proof}
+If the three components carry absolute errors at most $\epsilon_W$,
+$\epsilon_D$ and $\epsilon_C$, the triangle inequality and
+the weights $1,\tfrac12,\tfrac12$ give
+$\epsilon=\epsilon_W+\tfrac12\epsilon_D+\tfrac12\epsilon_C$.
+The proposition needs the bound at the two states compared; the sampled errors in the
+main text satisfy it with a wide margin on the sampled states, which is the sense in
+which the CD threshold of $10^{-9}$ and the assignment threshold of $10^{-7}$ are safe.
+
+\subsection{Tail statistics and the cost of a scored move}
+
+For $z\in\mathbb R^N$ and an integer $1\le k\le N$, write $z_{(1)}\ge\dots\ge z_{(N)}$
+for the sorted entries and $A_k(z)=k^{-1}\sum_{j=1}^kz_{(j)}$ for the top-$k$ mean;
+$(a)_+=\max\{a,0\}$ and
+$\mathcal Q_k=\{\beta\in\mathbb R^N:0\le\beta_j\le1/k,\ \sum_j\beta_j=1\}$.
+
+\begin{proof}[Proof of Lemma~\ref{lem:tail}]
+\emph{Threshold form.} For any $\theta\in\mathbb R$,
+\begin{equation*}
+ \sum_{j=1}^kz_{(j)}=k\theta+\sum_{j=1}^k\bigl(z_{(j)}-\theta\bigr)
+ \le k\theta+\sum_{j=1}^k\bigl(z_{(j)}-\theta\bigr)_+
+ \le k\theta+\sum_{j=1}^N(z_j-\theta)_+ .
+\end{equation*}
+At $\theta=z_{(k)}$ both inequalities are equalities: the first $k$ differences are
+nonnegative, and every entry outside the top $k$ is at most $z_{(k)}$, so its
+positive part vanishes. Dividing by $k$ gives
+$A_k(z)=\min_\theta\{\theta+k^{-1}\sum_j(z_j-\theta)_+\}$, attained at
+$\theta=z_{(k)}$.
+
+\emph{Maximum form.} For $\beta\in\mathcal Q_k$ and $\theta=z_{(k)}$,
+\begin{equation*}
+ \beta^{\top}z=\theta+\sum_j\beta_j(z_j-\theta)\le\theta+\sum_j\beta_j(z_j-\theta)_+
+ \le\theta+\frac1k\sum_j(z_j-\theta)_+=A_k(z),
+\end{equation*}
+using $\sum_j\beta_j=1$ and $\beta_j\le1/k$. The vector with entries $1/k$ on the
+indices of the $k$ largest entries lies in $\mathcal Q_k$ and attains $A_k(z)$, so
+$A_k(z)=\max_{\beta\in\mathcal Q_k}\beta^{\top}z$.
+
+\emph{Convexity.} The maximum is attained at one of the finitely many vectors that put
+$1/k$ on a $k$-subset, so $A_k$ is a maximum of finitely many linear functions:
+convex and piecewise affine, and differentiable wherever the $k$-th and $(k+1)$-th
+largest entries differ.
+
+\emph{Stability.} For any $\beta\in\mathcal Q_k$,
+$\beta^{\top}(z+\delta)\le A_k(z)+\max_{\beta'\in\mathcal Q_k}\beta'^{\top}\delta$;
+maximizing over $\beta$ and exchanging $z$ and $z+\delta$ gives
+$|A_k(z+\delta)-A_k(z)|\le\max_{\beta\in\mathcal Q_k}|\beta^{\top}\delta|$. Every
+$\beta\in\mathcal Q_k$ has $\lVert\beta\rVert_1=1$, $\lVert\beta\rVert_\infty\le1/k$
+and $\lVert\beta\rVert_2^2\le\lVert\beta\rVert_\infty\lVert\beta\rVert_1\le1/k$.
+H\"older's
+inequality in the three dual pairs $(1,\infty)$, $(2,2)$ and $(\infty,1)$ yields the
+bounds $\lVert\delta\rVert_\infty$, $\lVert\delta\rVert_2/\sqrt k$ and
+$\lVert\delta\rVert_1/k$.
+\end{proof}
+Both canonical tails are of this form. For $G\ge10$ the density component is
+$\tfrac12A_k(\rho)$ with $N=G$ and $k=\lfloor0.1G\rfloor$: the loads are
+nonnegative, so summing the largest $k$ nonzero loads and dividing by $k$ equals
+$A_k$ of the full vector with its zeros. The congestion component is $A_{k'}$ of the
+$N=2G$ concatenated values with $k'=\lfloor0.05\cdot2G\rfloor$, and $A_1$ (the
+maximum) when $k'=0$. Convexity in the
+loads does not make the score convex in coordinates, because the loads are
+themselves piecewise functions of the coordinates. For the solver the
+$\lVert\delta\rVert_1/k$ bound is the useful one: a move changes the loads in few
+cells, so its effect on a tail is at most the total load it shifts divided by $k$.
+
+\begin{appremark}[Cost of a scored move]\label{rem:move-cost}
+Let $T_{\mathrm{mut}}(i)$ be the work to update object $i$'s pins, its incident nets
+and its own grid contributions, and $T_{\mathrm{sel}}(n,k)$ the cost of selecting
+the $k$ largest of $n$ values, with $T_{\mathrm{sel}}(0,0)=0$. For $G\ge10$, a call
+that moves object $i$ and returns its score costs
+\begin{equation*}
+ T_{\mathrm{move}}(i)=T_{\mathrm{mut}}(i)+\Theta(G)
+ +T_{\mathrm{sel}}\bigl(n_{\mathrm{occ}},\min\{k,n_{\mathrm{occ}}\}\bigr)
+ +T_{\mathrm{sel}}(2G,k'),
+\end{equation*}
+where $n_{\mathrm{occ}}\le G$ counts nonzero density cells. The work is therefore at
+least linear in $G$, however few cells the move touches.
+\end{appremark}
+\begin{proof}
+The mutation is local by Remark~\ref{rem:cache}. Producing the score then requires,
+from the aggregates of Equation~\eqref{eq:app-cache}: dividing every density load by
+the cell area and every routing value by its capacity; smoothing both net-demand maps,
+which touches each cell a bounded number of times for the fixed range $s=2$; adding
+the blockage maps; and the two selections. Each of the first three steps visits all
+$G$ cells, giving the $\Theta(G)$ term. The implementation keeps no incremental
+order-statistic structure, so the selections are recomputed in full.
+\end{proof}
+Full recomputation, by contrast, re-derives every pin position, re-routes every net
+and re-rasterizes every object. The microbenchmarks in the main text measure the
+saving at the IBM grid sizes ($810\le G\le2{,}255$); they do not establish a cost that
+depends on the moved object's degree alone.
+
+\subsection{Negative curvature}
+
+\begin{proof}[Proof of Proposition~\ref{prop:curvature}]
+Recall the setting: $f$ is twice continuously differentiable on an open set $U$
+containing $p$, $v$ is a unit vector with $v^{\top}\nabla^2f(p)v\le-\eta<0$, the sign
+$s\in\{-1,1\}$ satisfies $s\nabla f(p)^{\top}v\le0$, and the segment
+$\{p+usv:0\le u\le t\}$ lies in $U$, with the Hessian $L$-Lipschitz on it in the
+operator norm. Put
+$\phi(u)=f(p+usv)$ for $u\in[0,t]$. Then $\phi'(0)=s\nabla f(p)^{\top}v\le0$ and
+$\phi''(u)=v^{\top}\nabla^2f(p+usv)v$, because $s^2=1$. The Lipschitz condition and
+$\lVert sv\rVert_2=1$ give $|\phi''(u)-\phi''(0)|\le Lu$, so
+$\phi''(u)\le-\eta+Lu$. Taylor's formula with integral remainder gives
+\begin{equation*}
+ \phi(t)-\phi(0)=t\,\phi'(0)+\int_0^t(t-u)\,\phi''(u)\,du
+ \le\int_0^t(t-u)(-\eta+Lu)\,du=-\frac{\eta}{2}t^2+\frac{L}{6}t^3 .
+\end{equation*}
+For $L>0$ and $0<t\le3\eta/(2L)$, $\tfrac{L}{6}t^3\le\tfrac{\eta}{4}t^2$, so the
+decrease is at least $\eta t^2/4$. For $L=0$ the bound is $-\eta t^2/2$ on the whole
+segment.
+\end{proof}
+The bound concerns the unconstrained step. If the favorable sign points out of the
+feasible set, it says nothing: $f(x)=x-x^2$ on $[0,\tfrac14]$ has $f'(0)=1$ and
+$f''(0)=-2$, yet $x=0$ is its strict constrained minimum because the descent sign
+leaves the interval. Lane~B also clips, legalizes and polishes each step before
+scoring it with the canonical proxy, so the bound applies to the proposal, not to the
+accepted endpoint, and Appendix~\ref{app:curvature} shows that its smoothness
+hypothesis fails for the operator Lane~B differentiates.
+
+\begin{appremark}[Eigen-residual bound]\label{rem:residual}
+Let $\mathbf H$ be a real symmetric matrix, $v$ a unit vector,
+$\hat\lambda=v^{\top}\mathbf Hv$ and $r=\mathbf Hv-\hat\lambda v$. Then
+$\operatorname{dist}(\hat\lambda,\operatorname{spec}\mathbf H)\le\lVert r\rVert_2$, and
+$\hat\lambda<0$ implies $\lambda_{\min}(\mathbf H)<0$.
+\end{appremark}
+\begin{proof}
+Expand $v=\sum_ja_ju_j$ in an orthonormal eigenbasis, $\mathbf Hu_j=\lambda_ju_j$,
+with $\sum_ja_j^2=1$. Then $r=\sum_ja_j(\lambda_j-\hat\lambda)u_j$ and
+$\lVert r\rVert_2^2=\sum_ja_j^2(\lambda_j-\hat\lambda)^2\ge\min_j(\lambda_j-\hat\lambda)^2$.
+The second claim is the Rayleigh bound $\lambda_{\min}(\mathbf H)\le v^{\top}\mathbf Hv$.
+\end{proof}
+For the IBM01 probe of Appendix~\ref{app:curvature}, the automatic-differentiation
+operator is the Hessian of the branch of $J_B$ active at the endpoint, so it is
+symmetric in exact arithmetic, as the remark requires; in float32 it is symmetric
+only up to rounding. The residual $3.49\times10^{-7}$ then places an eigenvalue of
+that operator within $3.49\times10^{-7}$ of $-0.442458$, and its smallest eigenvalue
+is at most $-0.442458$. The remark says nothing about whether the operator is the Hessian
+of the scored function, and a small residual can locate an interior eigenvalue rather
+than the smallest one.
+
+\subsection{Assignment interactions}
+
+Let $p^0$ be the current placement, $p^{i\leftarrow j}$ the placement with only macro
+$i$ moved to slot $j$, and $p^z$ the placement after all moves of an assignment $z$.
+For an exact objective $F$, write $\Delta_{ij}=F(p^{i\leftarrow j})-F(p^0)$ and define
+the interaction residual
+$R_F(z)=F(p^z)-F(p^0)-\sum_{i,j}\Delta_{ij}z_{ij}$, so the joint move improves $F$
+exactly when $\sum_{ij}\Delta_{ij}z_{ij}+R_F(z)<0$. For the proxy, the weights give
+$R_J=R_W+\tfrac12R_D+\tfrac12R_C$. A net that
+contains pins of at most one moved macro contributes nothing to $R_W$,
+because its HPWL changes identically under the joint move and under that macro's
+single move; shared nets can contribute with either sign. Independent-set matching
+in detailed placement restricts each matching to cells that share no nets
+\citep{chen2008ntuplace3}, which removes this HPWL residual; Lane~C imposes no such
+restriction and draws its macros by individual connectivity, so cluster members can
+share nets. Density and congestion interact even across
+disjoint nets, through the shared tail selections.
+
+\begin{appremark}[An optimal assignment that worsens HPWL]\label{rem:assignment}
+Two movable macros sit at $x_1=2$ and $x_2=12$ on a common horizontal line. Each has
+one zero-offset pin on a shared net of weight 2 and a second, coincident pin on a
+unit-weight net to a fixed point terminal at its own starting position. Up to the
+positive normalization, the HPWL is
+\begin{equation*}
+ F(x_1,x_2)=2|x_1-x_2|+|x_1-2|+|x_2-12|.
+\end{equation*}
+With candidate slots 3 and 11, the optimal assignment predicts a change of $-18$ but
+realizes $+14$.
+\end{appremark}
+\begin{proof}
+All pins share one vertical coordinate, so only horizontal spans count. Initially
+$F(2,12)=2\cdot10+0+0=20$. The four single moves, each with the other macro in place,
+give
+\begin{equation*}
+\begin{aligned}
+ F(3,12)&=2\cdot9+1+0=19, &\qquad F(11,12)&=2\cdot1+9+0=11,\\
+ F(2,3)&=2\cdot1+0+9=11, &\qquad F(2,11)&=2\cdot9+0+1=19,
+\end{aligned}
+\end{equation*}
+so, with rows for macros 1 and 2 and columns for slots 3 and 11,
+\begin{equation*}
+ \Delta=\begin{pmatrix}-1&-9\\-9&-1\end{pmatrix}.
+\end{equation*}
+The two complete assignments have predicted totals $-1-1=-2$ (each macro to its
+nearer slot) and $-9-9=-18$ (the swap), so the optimum is the swap,
+$(x_1,x_2)=(11,3)$. Its true value is $F(11,3)=2\cdot8+9+9=34$, a realized change of
+$34-20=+14$ and a residual $R_F=14-(-18)=32$. The whole residual comes from the shared
+net: each single-move entry credits it with a shortening from 10 to~1, while the swap
+shortens it only from 10 to~8.
+
+Feasibility: take both macros of width and height $\tfrac12$, centered on the line
+$y=\tfrac12$ of a $14\times1$ canvas. Two macros on one horizontal line are legal when
+their centers are at least $\tfrac12$ apart. The center gaps are 10 initially, 9, 1,
+1 and 9 in the four single moves, and 8 after the swap, so every placement involved
+is legal; all centers lie in $[\tfrac14,\tfrac{55}{4}]$, inside the canvas, and the
+terminals are points, which impose no overlap constraint. Lane~C's sequential
+commit would realize the full swap here, because either order of the two moves is
+legal, and its batch check would then reject the batch, since the incremental score
+rises.
+\end{proof}
+Lane~C scores its matrix entries with the incremental evaluator against the current
+background, replaces infinite entries before solving, and commits the assigned moves
+one at a time, skipping illegal targets (Appendix~\ref{app:alg-lanec}). Its batch
+check measures the interactions within the incremental evaluator, and the phase
+endpoint is rescored canonically; the example shows why those checks are needed even
+when the assignment is solved exactly and every entry is exact.

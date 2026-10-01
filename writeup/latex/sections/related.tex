@@ -1,0 +1,34 @@
+\section{Related work}\label{sec:related}
+
+\inbrief{We join standard pieces (smooth models, a greedy legalizer, exact detailed
+placement) under a strict split between surrogate proposals and exact acceptance.}
+
+\paragraph{The proxy and macro placers.} The proxy comes from Circuit Training
+\citep{mirhoseini2021graph} and its open TILOS implementation \citep{macroplacement},
+and the challenge's SA and RePlAce baselines \citep{challenge2026} come from the
+updated assessment \citep{cheng2025updated}, which extends an earlier one
+\citep{cheng2023assessment}. Learned and black-box placers
+include MaskPlace, ChiPFormer and WireMask-BBO
+\citep{lai2022maskplace,lai2023chipformer,shi2023wiremask}; AutoDMP tunes an
+analytical placer for macros \citep{agnesina2023autodmp}; and RTL-MP and Hier-RTLMP
+use design hierarchy \citep{vidal2022rtlmp,kahng2023hierrtlmp}, which the flat IBM
+designs \citep{adya2004unification} lack. We use no learned policy.
+
+\paragraph{Analytical placement.} Analytical placers minimize smoothed wirelength,
+by log-sum-exp \citep{naylor2001lse} or weighted averages \citep{hsu2011tsv}, under a
+differentiable density penalty: electrostatic in ePlace and ePlace-MS
+\citep{lu2015eplace,lu2016eplacems}, routability-aware in RePlAce
+\citep{cheng2019replace}, and GPU-accelerated in DREAMPlace and Xplace
+\citep{lin2019dreamplace,liu2022xplace}. Unlike RUDY's bounding boxes
+\citep{spindler2007rudy}, our surrogate follows the evaluator's routing pattern, and
+it only proposes.
+
+\paragraph{Detailed placement and escape moves.} Abacus legalizes with minimal
+movement \citep{spindler2008abacus}. Detailed placers improve legal placements with
+global swaps \citep{pan2005ism} and independent-set matching, an assignment over
+cells that share no nets \citep{chen2008ntuplace3}; our assignment move drops that
+restriction, and \cref{fig:assignment} shows why it exists. Minimum-mode and
+negative-curvature methods
+\citep{henkelman1999dimer,e2011gad,carmon2018accelerated,liu2017negative} motivated
+the curvature kicks, which borrow the idea of a proposal direction but none of those
+methods' guarantees.

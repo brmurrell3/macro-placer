@@ -1,0 +1,84 @@
+\section{Glossary and development chronology}\label{app:glossary}
+
+% Evidence-label macros; the main preamble normally defines them.
+\providecommand{\official}{\textsc{Official}}
+\providecommand{\historical}{\textsc{Historical}}
+\providecommand{\measurement}{\textsc{Measurement}}
+\providecommand{\reproduction}{\textsc{Reproduction}}
+
+The main text describes methods in plain words; these appendices also use the names
+under which the work was recorded, as numbered experiments run mostly between late
+April and 22 May 2026. The repository holds 151 experiment directories, 141 of them
+with a manifest recording the hypothesis, method, stopping rule and outcome; by their
+status fields, 39 were falsified, 24 marginal and 11 graduated, 49 were never closed,
+and 18 carry other labels. Table~\ref{tab:glossary-terms} defines the abbreviations
+and maps the main text's plain names for programs and records to the recorded ones;
+Table~\ref{tab:chronology} then lists, in order, every experiment, pipeline and
+revision name that the report uses, with where its record lives.
+
+\begingroup
+\footnotesize
+\setlength{\LTcapwidth}{\linewidth}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{3.3cm}%
+                  >{\raggedright\arraybackslash}p{\dimexpr\linewidth-3.3cm-2\tabcolsep\relax}@{}}
+\caption{Abbreviations and terms used in the appendices, and the main text's plain
+names for programs and records. Table~\ref{tab:chronology} lists the experiment,
+pipeline and revision names.}\label{tab:glossary-terms}\\
+\toprule
+Term & Meaning \\
+\midrule
+\endfirsthead
+\caption*{\textbf{\tablename~\thetable}, continued}\\
+\toprule
+Term & Meaning \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\official, \historical, \measurement, \reproduction & The four evidence labels: the
+organizers' final leaderboard; May 2026 development records; post-competition
+diagnostics on frozen inputs; the post-competition run of the ranked configuration
+(not yet reported) \\
+Single pipeline & The main text's name for the inferred ranked configuration:
+soft-rectangle initialization, Gaussian smooth descent, legalization and CD under a
+720\,s budget (V4+Gaussian, commit \texttt{5485310}) \\
+v1 record; early single-pipeline record; 0.98199 record & The main text's names for
+the three \historical{} suite records: the 17 May run of the final v1 configuration
+(1.05750), the 20 May early-v2 run with V3 (1.00835) and the 20 May E117 run with
+Gaussian density (0.98199) \\
+CD, CD1, CD2 & Coordinate descent; the first and second CD phases of a lane \\
+LNS & Large-neighborhood search: remove a few macros and reinsert each at its best
+grid position \\
+SA & Simulated annealing \\
+LSE & Log-sum-exp, a smooth approximation of a maximum or minimum \\
+RUDY & Rectangular uniform wire density: a net's routing demand spread evenly over its
+bounding box \\
+HVP & Hessian-vector product, computed by automatic differentiation (AD) \\
+$J_B$ & The legacy smooth surrogate whose HVPs drive the curvature stages \\
+Plateau & The better of the two v1 branches for each design, before any curvature
+stage \\
+Cascade & Repeated curvature stages, each starting from the previous stage's result \\
+Push-apart & The pairwise overlap-removal pass applied after legalization and after
+every curvature step \\
+Valid, eligible, completed & Runner fields: a valid placement passes shape, finiteness,
+containment, fixed-object and overlap checks; an eligible one is also returned within
+the external limit with matching source; a completed run finished every configured
+phase \\
+C, P, R, E, T & Outcome codes: completed pipeline; valid result after partial phases;
+valid checkpoint recovery; error; external timeout \\
+Strict validity & Containment checked exactly, with no tolerance at the canvas edge \\
+Float32 step & The spacing between adjacent single-precision numbers at a given
+magnitude, $3.81\times10^{-6}$ at 32 to $64\,\mu$m \\
+\end{longtable}
+\endgroup
+
+Read the chronology as a lineage rather than a ranking. Exact incremental scoring and
+coordinate descent (E1, E9) came first; local-search refinements built the two v1
+branches and their plateau (E12--E48); curvature stages followed (E74, E84); the
+smooth single pipeline (V3, E117, V4+Gaussian) replaced v1 and is inferred to be the
+ranked entry; Lanes~B and~C were added after it. Scores in different rows come from different
+hardware, budgets and concurrency. Where a value recomputed from the frozen records
+differs from a figure quoted in May notes, as for the first curvature stage (1.06760
+frozen against 1.0666 in May), the report uses the frozen value.
+
+\input{generated/chronology.tex}

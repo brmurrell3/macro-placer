@@ -59,6 +59,68 @@ EXPECTED_VARIANTS = ("v1", "v2-a", "v2-abc")
 EXPECTED_SEEDS = (42,)
 PREFIX_PHASES = ("initializer", "descent_legalized")
 ABC_LANES = ((0, "A"), (1, "B"), (2, "C"))
+# Later phases rank higher when several saved checkpoints share the returned coordinates.
+V2_PHASE_ORDER = (
+    "initializer", "descent_legalized", "cd1", "post_saddle", "post_hungarian", "cd2", "final",
+)
+V1_PHASE_ORDER = ("e25", "e41", "cascade", "portfolio", "periphery")
+PHASE_LABELS = {
+    "initializer": "init.", "descent_legalized": "descent", "cd1": "CD1",
+    "post_saddle": "curvature", "post_hungarian": "assignment", "cd2": "CD2",
+    "final": "final", "e25": "E25", "e41": "E41", "cascade": "cascade",
+    "portfolio": "portfolio", "periphery": "periphery",
+}
+
+
+def returned_state(result: Mapping[str, Any]) -> Optional[Dict[str, Any]]:
+    """Identify the saved lane/phase whose coordinates equal the returned placement.
+
+    Uses only hashes already recorded in the finalized result: the returned
+    tensor hash and the checkpoint inventory. Returns None when no match exists.
+    """
+    final_hash = result.get("final_placement_tensor_sha256")
+    inventory = result.get("checkpoint_inventory")
+    if not isinstance(final_hash, str) or not isinstance(inventory, list):
+        return None
+    matches = [
+        (item.get("lane_index"), item.get("phase")) for item in inventory
+        if isinstance(item, Mapping) and item.get("coordinates_sha256") == final_hash
+    ]
+    if result.get("variant") == "v1":
+        phases = [phase for _, phase in matches if phase in V1_PHASE_ORDER]
+        if not phases:
+            return None
+        return {"lanes": [], "phase": max(phases, key=V1_PHASE_ORDER.index)}
+    latest: Dict[str, str] = {}
+    for lane_index, phase in matches:
+        if phase not in V2_PHASE_ORDER or not isinstance(lane_index, int):
+            continue
+        lane = dict(ABC_LANES).get(lane_index)
+        if lane is None:
+            continue
+        if lane not in latest or V2_PHASE_ORDER.index(phase) > V2_PHASE_ORDER.index(latest[lane]):
+            latest[lane] = phase
+    if not latest:
+        return None
+    best = max(V2_PHASE_ORDER.index(phase) for phase in latest.values())
+    lanes = sorted(lane for lane, phase in latest.items() if V2_PHASE_ORDER.index(phase) == best)
+    return {"lanes": lanes, "phase": V2_PHASE_ORDER[best]}
+
+
+def threads_per_lane(result: Mapping[str, Any]) -> Optional[int]:
+    """Recorded CPU threads per solver process: lane records for v2, constructor for v1."""
+    metadata = result.get("solver_metadata")
+    lanes = metadata.get("lane_results") if isinstance(metadata, Mapping) else None
+    if isinstance(lanes, list) and lanes:
+        values = {lane.get("num_threads") for lane in lanes if isinstance(lane, Mapping)}
+        if len(values) == 1 and isinstance(next(iter(values)), int):
+            return int(next(iter(values)))
+        return None
+    parameters = result.get("constructor_parameters")
+    if result.get("variant") == "v1" and isinstance(parameters, Mapping):
+        value = parameters.get("num_threads")
+        return int(value) if isinstance(value, int) else None
+    return None
 
 
 def utc_now() -> str:
@@ -242,6 +304,8 @@ def result_row(plan: Mapping[str, Any], result_path: Path) -> Dict[str, Any]:
         },
         "peak_rss_bytes": supervisor.get("peak_rss_bytes"),
         "checkpoint_inventory": result.get("checkpoint_inventory", []),
+        "returned_state": returned_state(result) if result.get("valid") else None,
+        "threads_per_lane": threads_per_lane(result),
         "seed_provenance": result.get("seeds"),
         "constructor_parameters": result.get("constructor_parameters"),
         "source_sha256": (
@@ -275,6 +339,7 @@ def missing_row(plan: Mapping[str, Any], result_path: Path) -> Dict[str, Any]:
         )},
         "legality": {"full_legal": False, "overlap_count": None, "full_violations": []},
         "peak_rss_bytes": None, "checkpoint_inventory": [],
+        "returned_state": None, "threads_per_lane": None,
         "seed_provenance": None, "constructor_parameters": None,
         "source_sha256": None,
     })
@@ -500,7 +565,12 @@ def latex_escape(value: Any) -> str:
 
 def format_number(value: Any, digits: int) -> str:
     number = finite_number(value)
-    return "--" if number is None else ("%.*f" % (digits, number))
+    return "---" if number is None else ("%.*f" % (digits, number))
+
+
+def display_design(value: Any) -> str:
+    name = str(value).replace("_ng45", "")
+    return name.upper() if name.startswith("ibm") else name
 
 
 def display_variant(value: Any) -> str:
@@ -510,7 +580,7 @@ def display_variant(value: Any) -> str:
 def outcome_code(row: Mapping[str, Any]) -> str:
     status = row["status"]
     if status == "missing":
-        return "--"
+        return "---"
     if status == "timeout":
         return "T"
     if status == "error":
@@ -526,108 +596,117 @@ def outcome_code(row: Mapping[str, Any]) -> str:
     return code if row["study_eligible"] else code + r"$^{\dagger}$"
 
 
-def short_checkpoint_hash(value: Any) -> str:
-    if not isinstance(value, str) or len(value) != 64:
-        return "--"
-    return r"\texttt{%s}" % value[:8]
+def returned_label(row: Mapping[str, Any]) -> str:
+    state = row.get("returned_state")
+    if not isinstance(state, Mapping):
+        return "---"
+    phase = PHASE_LABELS.get(str(state.get("phase")), latex_escape(state.get("phase")))
+    lanes = "".join(state.get("lanes") or [])
+    return phase if not lanes else "%s/%s" % (lanes, phase)
 
 
-def equality_label(item: Mapping[str, Any]) -> str:
-    equality = item["all_three_equal_to_standalone_a"]
-    if equality is True:
-        return "all="
-    if equality is False:
-        return "mixed"
-    comparisons = [
-        value for value in item["abc_lane_equal_to_standalone_a"].values()
-        if value is not None
+def threads_label(row: Mapping[str, Any]) -> str:
+    value = row.get("threads_per_lane")
+    return "---" if not isinstance(value, int) else str(value)
+
+
+def coverage_sentence(summary: Mapping[str, Any]) -> str:
+    parts = []
+    for variant in summary["variants"]:
+        item = summary["aggregate_by_variant"][variant]
+        parts.append(
+            "%s %d/%d eligible, %d/%d completed"
+            % (display_variant(variant), item["study_eligible_run_count"],
+               item["planned_run_count"], item["pipeline_completed_run_count"],
+               item["planned_run_count"])
+        )
+    available = [
+        variant for variant in summary["variants"]
+        if summary["aggregate_by_variant"][variant]["matched_pilot_mean_proxy_available"]
     ]
-    if comparisons:
-        return "avail=" if all(comparisons) else "mixed"
-    return "--"
+    tail = (
+        " No variant has an eligible result on every planned design, so no mean is reported."
+        if not available else
+        " Means are reported only for variants with an eligible result on every planned design."
+    )
+    return "Coverage by variant: " + "; ".join(parts) + "." + tail
+
+
+def prefix_sentence(summary: Mapping[str, Any]) -> str:
+    """One sentence replacing the former coordinate-hash table."""
+    equal, differing = [], []
+    for benchmark in summary["prefix_diversity"]["benchmarks"]:
+        design = benchmark["benchmark"].replace("_ng45", "").upper().replace("ARIANE", "ariane")
+        for phase, label in (("initializer", "initializer"), ("descent_legalized", "legalized descent")):
+            item = benchmark["phases"][phase]
+            if not item["abc_all_three_available"] or item["standalone_a_coordinate_sha256"] is None:
+                continue
+            target = equal if item["all_three_equal_to_standalone_a"] else differing
+            target.append("%s %s" % (design, label))
+    if not equal and not differing:
+        return ""
+    sentence = (
+        "Where initializer or legalized-descent checkpoints survive for all three A+B+C lanes "
+        "and for standalone A (%s), " % ", ".join(equal + differing)
+    )
+    if not differing:
+        sentence += (
+            "the four coordinate tensors are bit-identical; the nominal lane seeds therefore "
+            "did not diversify the shared prefix. Full SHA-256 values are in the JSON summary."
+        )
+    else:
+        sentence += "coordinates differ for %s; full SHA-256 values are in the JSON summary." % (
+            ", ".join(differing))
+    return sentence
 
 
 def render_latex(summary: Mapping[str, Any]) -> str:
     rows = summary["runs"]
-    aggregate_rows = summary["aggregate_by_variant"]
     title = summary["profile_title"]
     label_prefix = summary["latex_label_prefix"]
+    context = summary["resource_context"]
     observed_codes = {outcome_code(row)[0] for row in rows}
-    descriptions = {"C": "completed pipeline", "P": "valid partial-phase result",
-                    "R": "valid checkpoint recovery", "E": "error", "T": "timeout",
+    descriptions = {"C": "completed pipeline", "P": "valid result after partial phases",
+                    "R": "valid checkpoint recovery", "E": "error", "T": "external timeout",
                     "I": "invalid completed result"}
     legend = "; ".join(code + ": " + meaning for code, meaning in descriptions.items()
                        if code in observed_codes) + "."
     if any(row["valid"] and not row["study_eligible"] for row in rows):
         legend += " A dagger marks a valid result excluded by eligibility checks."
+    scope = (
+        "%.0f\\,s solver budget, %.0f\\,s external limit, %d concurrent job%s, %d CPU threads per run"
+        % (context["budget_seconds"], context["timeout_seconds"], context["jobs"],
+           "" if context["jobs"] == 1 else "s", context["threads"])
+    )
     lines = [
         "% Generated by scripts/render_publication_pilot.py; do not edit.",
         "% Limited-budget engineering evidence; no official-budget extrapolation.",
-    ]
-    lines.extend([
         r"\begin{table}[htbp]",
         r"\centering",
         r"\footnotesize",
-        r"\caption{%s results. %s Every planned run is shown.}" % (latex_escape(title), legend),
+        r"\caption{%s on four designs (%s). %s Returned: lane and phase whose saved "
+        r"coordinates equal the returned placement. Threads: CPU threads per solver process "
+        r"as recorded. Every planned run is shown.}" % (latex_escape(title), scope, legend),
         r"\label{tab:%s-results}" % label_prefix,
-        r"\begin{tabular}{llrrrc}",
+        r"\begin{tabular}{@{}llrrrclr@{}}",
         r"\toprule",
-        "Design & Variant & Proxy & Solver time (s) & Wall time (s) & Outcome \\\\",
+        r"Design & Variant & Proxy & Solver (s) & Wall (s) & Outcome & Returned & Threads \\",
         r"\midrule",
-    ])
+    ]
     for row in rows:
         lines.append(" & ".join([
-            latex_escape(row["benchmark"]), latex_escape(display_variant(row["variant"])),
+            latex_escape(display_design(row["benchmark"])),
+            latex_escape(display_variant(row["variant"])),
             format_number(row["canonical_cost"]["proxy_cost"], 5),
             format_number(row["timing"]["solver_place_seconds"], 1),
             format_number(row["timing"]["supervisor_wall_seconds"], 1),
             outcome_code(row),
+            returned_label(row),
+            threads_label(row),
         ]) + r" \\")
     lines.extend([r"\bottomrule", r"\end{tabular}", r"\end{table}", ""])
-    lines.extend([
-        r"\begin{table}[htbp]", r"\centering", r"\small",
-        r"\caption{%s coverage. A mean requires an eligible finite proxy for every planned design; outcome codes follow Table~\ref{tab:%s-results}.}" % (latex_escape(title), label_prefix),
-        r"\label{tab:%s-coverage}" % label_prefix,
-        r"\begin{tabular}{lrrrrr}", r"\toprule",
-        "Variant & Recorded & Eligible & Pipeline & Error/TO & Mean proxy \\\\", r"\midrule",
-    ])
-    for variant in summary["variants"]:
-        item = aggregate_rows[variant]
-        lines.append(" & ".join([
-            latex_escape(display_variant(variant)),
-            "%d/%d" % (item["recorded_run_count"], item["planned_run_count"]),
-            "%d/%d" % (item["study_eligible_run_count"], item["planned_run_count"]),
-            "%d/%d" % (item["pipeline_completed_run_count"], item["planned_run_count"]),
-            "%d" % (item["error_count"] + item["timeout_count"]),
-            format_number(item["matched_pilot_mean_proxy"], 5),
-        ]) + r" \\")
-    lines.extend([r"\bottomrule", r"\end{tabular}", r"\end{table}", ""])
-    lines.extend([
-        r"\begin{table}[htbp]", r"\centering", r"\small",
-        r"\caption{Recorded coordinate-hash prefixes for A+B+C. I and D denote initializer and legalized-descent checkpoints; full SHA-256 values remain in the JSON artifact. Distinct requires all three lanes, and a double dash denotes unavailable metadata.}",
-        r"\label{tab:%s-prefix-diversity}" % label_prefix,
-        r"\begin{tabular}{llcccrl}", r"\toprule",
-        r"Design & Phase & A hash & B hash & C hash & Distinct & vs standalone A \\", r"\midrule",
-    ])
-    for benchmark in summary["prefix_diversity"]["benchmarks"]:
-        design = benchmark["benchmark"].replace("_ng45", "")
-        for phase, phase_label in (("initializer", "I"), ("descent_legalized", "D")):
-            item = benchmark["phases"][phase]
-            lane_hashes = item["abc_lane_coordinate_sha256"]
-            distinct = item["abc_distinct_coordinate_hash_count"]
-            lines.append(" & ".join([
-                latex_escape(design), phase_label,
-                short_checkpoint_hash(lane_hashes["A"]),
-                short_checkpoint_hash(lane_hashes["B"]),
-                short_checkpoint_hash(lane_hashes["C"]),
-                "--" if distinct is None else str(distinct),
-                equality_label(item),
-            ]) + r" \\")
-    lines.extend([r"\bottomrule", r"\end{tabular}", r"\end{table}", ""])
-    lines.extend([
-        r"Equality in Table~\ref{tab:%s-prefix-diversity} refers only to finalized checkpoint inventories; missing metadata does not show that no checkpoint was saved. Nominal lane seeds do not establish independent basin starts; effective initializer seeds are retained in JSON. The equality motivates future shared-prefix evaluation, but this validation measures no speedup." % label_prefix,
-        "",
-    ])
+    lines.append(coverage_sentence(summary) + " " + prefix_sentence(summary))
+    lines.append("")
     if summary["artifact_status"] != "final_complete":
         lines.insert(2, r"\textbf{Interim artifact: the 12-run profile is incomplete.}")
     return "\n".join(lines)
