@@ -1,4 +1,4 @@
-\section{Development records and evidence ledger}\label{app:records}
+\section{Suite records and evidence ledger}\label{app:records}
 
 % Evidence-label macros; the main preamble normally defines them.
 \providecommand{\official}{\textsc{Official}}
@@ -50,6 +50,14 @@ provenance note in Appendix~\ref{app:records-ledger} gives the figure). The exac
 judged commit was not recorded, and the three-lane commits of 22 May (Eastern time)
 still preceded the Pacific-time deadline, so chronology alone cannot exclude them; the
 inference rests on the listed 12-minute runtime and the 20 May resubmission date.
+
+\subsection{Reproduction}\label{app:records-reproduction}
+
+Table~\ref{tab:reproduction} gives each design of the rerun in
+\cref{sec:reproduction} (\reproduction), rendered from its run records by
+\path{scripts/render_publication_reproduction.py}.
+
+\input{generated/reproduction_per_design.tex}
 
 \subsection{Evidence ledger}\label{app:records-ledger}
 
@@ -106,8 +114,9 @@ Engineering batches & \measurement & Frozen run records & 60--180\,s budgets; no
 mean \\
 Repeatability $-0.36\%$ (subset), $-1.48\%$ (IBM01) & \historical & Development note,
 not frozen & One repeat pair of v1 \\
-Run of the ranked configuration & \reproduction & Its own run records & Not yet
-reported; a first attempt was stopped (Appendix~\ref{app:repro-attempt}) \\
+Rerun of the ranked configuration on a laptop CPU: mean \ReproMean{} &
+\reproduction & Its own run records & Reported in Section~\ref{sec:reproduction} and
+Table~\ref{tab:reproduction} \\
 Full-suite score of the three-lane system & --- & None & Never scored (inferred) \\
 \bottomrule
 \end{tabular}

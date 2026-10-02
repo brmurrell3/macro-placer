@@ -19,6 +19,26 @@ one, on its own hardware. Before the 20 May resubmission, the leaderboard listed
 
 \input{generated/competition_context.tex}
 
+\subsection{Reproduction on a laptop CPU}\label{sec:reproduction}
+
+\inbrief{\ifReproComplete A post-competition rerun of the ranked configuration on a
+laptop CPU gave a mean proxy of \ReproMean{}, with every placement valid.\else A
+post-competition rerun of the ranked configuration on a laptop CPU is reported per
+design; its mean is withheld because coverage was incomplete.\fi}
+
+We reran the configuration inferred to be the ranked one at its 720\,s budget on all
+17 designs in turn, on an Apple M3 Max laptop CPU under the one-hour cap
+(\reproduction). \ifReproComplete The mean proxy is \ReproMean{}, all \ReproValid{}
+placements are valid with zero overlaps, \ReproCompleted{} of \ReproDesigns{}
+completed the full pipeline, and the median wall time is \ReproWallMedian\,s.\else
+Valid results cover \ReproValid{} of \ReproDesigns{} designs, so the mean is
+withheld; \ReproCompleted{} runs completed the full pipeline.\fi{} The organizers
+measured the official 0.9974 on different hardware (our 20 May submission notes state
+an AMD EPYC with an NVIDIA RTX 6000 Ada GPU, which would run the descent); the two
+numbers stand side by side, not as a matched comparison.
+Table~\ref{tab:reproduction} (Appendix~\ref{app:records}) gives each design, and
+Appendix~\ref{app:verification} two runtime defects fixed before this run.
+
 \subsection{Where the gain came from}\label{sec:gain}
 
 Three development records cover all 17 designs (\historical); the rest of this

@@ -5,8 +5,7 @@ our own runtime assumptions, repaired what we found in a separate post-competiti
 runtime, and exercised the repairs in short engineering runs on an Apple M3 Max.
 This appendix lists the defects with their bearing on the judged entry, gives the
 evaluator microbenchmarks behind the main text's speed and agreement figures, and
-condenses the engineering runs, including a first reproduction attempt that was
-stopped.
+condenses the engineering runs, including two stopped reproduction attempts.
 
 \subsection{Defects and their scope}\label{app:defects}
 
@@ -161,18 +160,43 @@ is longer than the 60\,s between the 180\,s solver budget and the 240\,s limit. 
 planned one-hour runs, the study configuration therefore stops the solver at 3,300\,s
 and reserves the last five minutes for validation and export.
 
-\paragraph{First reproduction attempt (engineering record).}\label{app:repro-attempt}
-A reproduction of the ranked configuration (single pipeline, 720\,s per design, all
-17 IBM designs, one design at a time on the CPU with three threads) was started on
-30 September 2026 on the same M3 Max, by then under macOS 27.0.1, and stopped by the
-operator during IBM06, which has no result. IBM03 had exposed a defect in the
-corrected runtime: its per-phase checkpoint validates canvas bounds strictly, without
-the one-step inward projection applied at export, so any bounds excess at that
-point, such as a float32 rounding overshoot at the upper canvas edge, discards the
-coordinate-descent result. On IBM03 coordinate descent completed, its final
-checkpoint failed strict validation, and the run returned its checkpoint from before
-coordinate descent (proxy 1.10002); the rejected candidate was not saved, so its
-excess is unknown. IBM01, IBM02 and IBM04 completed the pipeline (0.82996, 1.00200 and
-0.91909). These four designs are not a suite result, are not a \reproduction{}
-result and are not compared with any other record; a fix is pending. The records are
-under \path{writeup/runs/ranked-reproduction-20260930/}.
+\paragraph{Reproduction attempts (engineering record).}\label{app:repro-attempts}
+The reproduction of \cref{sec:reproduction} runs the single pipeline at 720\,s per
+design on all 17 IBM designs, one design at a time on the CPU with three threads, on
+the same M3 Max, by then under macOS 27.0.1. It took three attempts. The operator
+stopped the first two after each exposed a defect in the corrected runtime; their
+records are engineering records, not a suite result, and are not compared with any
+other record.
+
+\emph{Attempt 1} (30 September 2026; commit \texttt{cb554f1}, runtime
+\texttt{5aa4c719cf18}) was stopped during IBM06, which has no result. IBM01, IBM02 and
+IBM04 completed the pipeline (0.82996, 1.00200 and 0.91909). On IBM03 coordinate
+descent completed, but its final checkpoint failed strict validation (``Macros
+outside horizontal canvas bounds''): the per-phase checkpoint checked canvas bounds
+without the one-step inward projection applied at export, so a float32 rounding
+overshoot at the upper canvas edge discarded the coordinate-descent result, and the
+run returned its checkpoint from before coordinate descent (1.10002). The rejected
+candidate was not saved, so its excess is unknown. The fix (commit \texttt{64b50a7},
+runtime \texttt{cbfbff0c81c3}) projects the placement one step inward at the
+checkpoint when no coordinate moves by more than $10^{-4}\,\mu$m, records that shift
+with each checkpoint, and still rejects larger violations.
+
+\emph{Attempt 2} (1 October 2026; commit \texttt{64b50a7}, runtime
+\texttt{cbfbff0c81c3}) finished 15 designs before the operator stopped it during
+IBM17; IBM17 and IBM18 have no result. IBM03 completed the pipeline (0.91446), as did
+12 other designs. IBM10 and IBM16 exposed a second defect. On this CPU, smooth descent
+took about 118\,s on IBM10 and 154\,s on IBM16, and coordinate descent was then
+budgeted all the remaining time to the 720\,s deadline (576\,s and 526\,s), leaving
+none for its final checkpoint and score, two canonical evaluations of about 27\,s each
+on IBM10. The supervisor stopped the lane at the deadline, so both runs returned
+their last valid checkpoint, from before coordinate descent (1.14944 and 1.14491).
+The fix (commit \texttt{d9f2577}, runtime \texttt{cdd01ecc7c98}) times every
+checkpoint and caps each coordinate-descent phase so that 10\,s plus twice the slowest
+measured checkpoint still fits before the deadline.
+
+The reproduction reported in \cref{sec:reproduction} is attempt 3, run on
+\ReproDate{} from commit \texttt{\ReproCommit} with runtime \texttt{\ReproRuntimeId}.
+The records of all three attempts (manifests, requests, results, logs, placements and
+checkpoints) are kept under \path{writeup/runs/}, in
+\path{ranked-reproduction-20260930/}, \path{ranked-reproduction-20261001/} and
+\path{ranked-reproduction-20261001-r3/}.

@@ -1,14 +1,36 @@
 # Report revisions
 
-## 1.0 — 30 September 2026
+## 1.0 — 2 October 2026
 
-Audience-led rewrite for readers outside chip design; no new solver runs. A
-reproduction of the ranked configuration was started on 30 September and stopped
-after it exposed a checkpoint defect in the corrected runtime; it is reported only
-as an engineering record (Appendix F), and no Reproduction result is given.
+Audience-led rewrite for readers outside chip design, with the first reproduction
+of the ranked configuration. The authors are Brendan Murrell (lead and
+corresponding author), Xiaofei Zhang and Andrew Murrell; the author's note is
+removed. Dated 2 October 2026 in the title block, running header, `CITATION.cff`
+and the website package metadata.
 
+- New Section 4.2, "Reproduction on a laptop CPU" (Reproduction): the configuration
+  inferred to be ranked, rerun at its 720 s budget on all 17 IBM designs, one at a
+  time on the lead author's Apple M3 Max CPU under the one-hour cap. Its numbers are
+  macros rendered from the run records by
+  `scripts/render_publication_reproduction.py`, which writes
+  `writeup/data/publication/reproduction_ranked.json`, the summary macros and the
+  per-design table (Appendix G). The renderer withholds the suite mean, and the
+  text says so, unless every design has a valid, usable, study-eligible result.
+  The abstract, the "At a glance" Result row, the introduction's evidence labels,
+  Limitations (one run, one host, CPU rather than GPU, wall-time-capped search),
+  the glossary and the evidence ledger cite it; it is removed from future work.
+- Two runtime defects, each exposed by a stopped reproduction attempt, were fixed
+  before the reported run; both attempts are kept as engineering records
+  (Appendix F). Attempt 1: the per-phase checkpoint checked canvas bounds strictly,
+  so a float32 overshoot discarded IBM03's coordinate-descent result; the
+  checkpoint now projects one step inward when no coordinate moves more than
+  1e-4 µm and records the shift (commit 64b50a7, runtime cbfbff0c81c3). Attempt 2:
+  coordinate descent was budgeted all time to the 720 s deadline, leaving none for
+  the final checkpoint on IBM10 and IBM16; each phase now reserves 10 s plus twice
+  the slowest measured checkpoint (commit d9f2577, runtime cdd01ecc7c98). The
+  reported reproduction is attempt 3.
 - New title, result subtitle, code link and version line. The abstract (at most
-  180 words) leads with the official result: ninth on the final leaderboard,
+  190 words) leads with the official result: ninth on the final leaderboard,
   verified mean proxy 0.9974, with the organizers' count of 132 verified eligible
   submissions, the published RePlAce and SA baselines and the winner. An "At a
   glance" box (Problem, Why hard, Approach, Result, Lessons) and an "In brief"
@@ -47,11 +69,11 @@ as an engineering record (Appendix F), and no Reproduction result is given.
   clusters outside the canvas) are stated as not excludable. A new frozen record,
   `ibm_repair_equivalence.json`, shows the repaired parsing leaves all 17 IBM
   inputs unchanged.
-- Evidence labels: Official, Historical and Measurement in the main text;
-  Reproduction is defined, and the evidence ledger marks it "Not yet reported".
-  The official score is no longer compared with a historical record. Caveats are
-  collected in one Limitations section, which now includes the missing
-  reproduction. Experiment codenames, hashes and repository paths are confined to
+- Evidence labels: Official, Historical, Measurement and Reproduction. The
+  official score is no longer compared with a historical record, and the
+  Reproduction result is shown beside it, not as a matched comparison. Caveats are
+  collected in one Limitations section. Experiment codenames, hashes and repository
+  paths are confined to
   the appendices and their glossary, which maps the main text's record names to
   them.
 - New main-text figures: result in context, an IBM01 placement over the
@@ -72,9 +94,9 @@ as an engineering record (Appendix F), and no Reproduction result is given.
   submission; curvature stage times reach 4,007 s (first stage) and 3,454 s
   (cascade).
 - New sections: what worked and what did not (141 recorded experiments, 39
-  falsified), related work grouped by topic with an expanded bibliography, an
-  author's note on team credit and AI-assisted development, and acknowledgments.
-- Layout: 14-page main text; floats kept inside their appendix; the chronology
+  falsified), related work grouped by topic with an expanded bibliography, and
+  acknowledgments.
+- Layout: main text of about 14.3 pages (the limit was raised from 14 to 15 pages for the reproduction section); floats kept inside their appendix; the chronology
   and glossary are page-breaking tables; bibliography in small type with linked
   DOIs; identifiers break only at punctuation; the title page has no running
   header.

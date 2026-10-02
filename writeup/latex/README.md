@@ -15,7 +15,7 @@ to `build/main.pdf`; the build directory is disposable.
 
 | Path | Contents |
 |---|---|
-| `main.tex` | Preamble, title block, abstract, "At a glance" box, Figure 1, author's note, acknowledgments, bibliography, and the `\input` list |
+| `main.tex` | Preamble, title block, abstract, "At a glance" box, Figure 1, acknowledgments, bibliography, and the `\input` list |
 | `sections/{intro,problem,approach,results,lessons,limitations,related,conclusion}.tex` | Main text (14 pages). Each section after the introduction opens with an `\inbrief{...}` box |
 | `sections/app_*.tex` | Appendices: glossary, objective, algorithms, proofs, curvature, verification, records, reproducibility |
 | `generated/*.tex` | Tables rendered from frozen data; do not edit by hand |
@@ -36,6 +36,7 @@ frozen records under `writeup/data/publication/`.
 .venv/bin/python scripts/render_publication_v1.py          # v1.0 figures, competition, benchmark, baseline and curvature-stage tables
 .venv/bin/python scripts/render_publication_devrecords.py  # development records and chronology tables
 .venv/bin/python scripts/render_publication_curvature.py   # curvature diagnostic table and follow-up text
+.venv/bin/python scripts/render_publication_reproduction.py  # reproduction macros and per-design table
 ```
 
 The other table generators (`render_publication_measurements.py`,

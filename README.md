@@ -27,9 +27,15 @@ The baselines are the published means from *An Updated Assessment of
 Reinforcement Learning for Macro Placement*, as cited by the challenge. Runtimes
 are self-listed, and hardware differs between entries.
 
+A post-competition rerun of the ranked configuration on the lead author's Apple
+M3 Max CPU (720-second budget, one design at a time) gave a mean proxy of
+0.98121, with all 17 placements valid and every pipeline complete. The organizers'
+0.9974 was measured on different hardware, so the two are not a matched
+comparison; per-design results are in the report's Section 4.2 and Appendix G.
+
 ## Read more
 
-- [Read the technical report](writeup/thinkorplace-report.pdf) (technical report 1.0, 30 September 2026)
+- [Read the technical report](writeup/thinkorplace-report.pdf) (technical report 1.0, 2 October 2026)
 - [Website summary](writeup/website-summary.md): the article text for the
   author's website; its relative links resolve in the packaged site built by
   `scripts/package_publication.py`, not in this repository.
@@ -103,11 +109,11 @@ study runner:
 ```
 
 Scores depend on host speed, because coordinate descent stops at a wall-clock
-limit. A first run of this configuration (30 September 2026) was stopped after
-it exposed a checkpoint defect in the corrected runtime, which can discard the
-coordinate-descent result when a coordinate rounds past the canvas edge; a fix is
-pending, and the report's Appendix F describes the attempt. The other study
-configurations and the runner's options are documented in
+limit. The reported rerun is in `writeup/runs/ranked-reproduction-20261001-r3/`;
+two earlier attempts were stopped after exposing runtime defects, since fixed, and
+are kept beside it (the report's Appendix F describes them). Render the report's
+reproduction table with `.venv/bin/python scripts/render_publication_reproduction.py`.
+The other study configurations and the runner's options are documented in
 [`writeup/study/README.md`](writeup/study/README.md).
 
 Build the report and run its release check (requires a TeX distribution with

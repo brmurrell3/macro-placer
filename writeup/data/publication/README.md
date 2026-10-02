@@ -322,3 +322,12 @@ TeX Live installation that `kpsewhich` can locate `lmroman10-regular.otf` in.
 (commit `5485310`, read with `git show`) with the corrected runtime on all 17
 IBM designs: hard-macro pin ownership, smooth net tensors, SDF hard-macro edges,
 and the initial canvas clamp. It runs no optimization or scoring.
+
+`scripts/render_publication_reproduction.py` writes `reproduction_ranked.json`
+and the report's reproduction macros and per-design table from the run records
+in `writeup/runs/ranked-reproduction-20261001-r3/`. It checks that every planned
+design has a valid, on-time, study-eligible result, that the run's source matches
+exactly one frozen corrected runtime, and that the run used
+`writeup/study/ranked_reproduction.json`; it withholds every suite mean when
+coverage is incomplete. The two stopped attempts before it are kept beside it as
+engineering records, each with a `NOTE.md`.

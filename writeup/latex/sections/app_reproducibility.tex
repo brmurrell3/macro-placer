@@ -44,8 +44,13 @@ the evidence, and its \path{README.md} states the scope of each record:
         moves; no optimization or scoring is run;
   \item summaries of the three engineering batches, whose primary run records
         (manifests, requests, results, logs, placements and checkpoint hashes) are
-        under \path{writeup/runs/}, as are those of the stopped first reproduction
-        attempt (\path{writeup/runs/ranked-reproduction-20260930/});
+        under \path{writeup/runs/}, as are those of the three reproduction attempts
+        (\path{writeup/runs/ranked-reproduction-*/});
+  \item \path{reproduction_ranked.json}, written by
+        \path{scripts/render_publication_reproduction.py} from the reported
+        reproduction's run records: configuration, commit and runtime identity,
+        host, the SHA-256 of every result record, and per-design scores,
+        components, validity, outcomes and wall times;
   \item \path{corrected-runtime-*.tar.gz}: deterministic archives of each
         post-competition runtime, with per-file digests in the matching
         \path{corrected_runtime_snapshot_*.json}.
@@ -123,11 +128,23 @@ Run the focused tests:
   test/test_thinkorplace_package.py test/test_postpilot_repairs.py \
   test/test_sdf_topology.py test/test_publication_runner.py
 \end{verbatim}
-Run a study from a configuration under \path{writeup/study/}, for example the pilot,
-or \path{writeup/study/ranked_reproduction.json} for the ranked configuration:
+Run a study from a configuration under \path{writeup/study/}, for example the pilot:
 \begin{verbatim}
 .venv/bin/python scripts/run_publication_study.py \
   --config writeup/study/pilot.json
 \end{verbatim}
-Benchmark inputs and the evaluator come from the pinned submodule; every run records
-their hashes.
+The reported reproduction (\cref{sec:reproduction}) ran from commit \texttt{d9f2577}
+with the runtime archive \path{corrected-runtime-cdd01ecc7c98.tar.gz}, writing its
+records to \path{writeup/runs/ranked-reproduction-20261001-r3/}; a repeat should
+write to a new directory. It was run, and is rendered, with:
+\begin{verbatim}
+.venv/bin/python scripts/run_publication_study.py \
+  --config writeup/study/ranked_reproduction.json \
+  --output writeup/runs/ranked-reproduction-20261001-r3
+.venv/bin/python scripts/render_publication_reproduction.py \
+  --run writeup/runs/ranked-reproduction-20261001-r3
+\end{verbatim}
+The renderer writes \path{reproduction_ranked.json}, the summary macros and
+Table~\ref{tab:reproduction}; it withholds the suite mean, and exits nonzero, unless
+all 17 designs have a valid, usable, study-eligible result. Benchmark inputs and the
+evaluator come from the pinned submodule; every run records their hashes.

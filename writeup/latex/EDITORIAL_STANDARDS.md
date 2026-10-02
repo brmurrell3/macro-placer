@@ -36,7 +36,7 @@ the result was, and what was learned.
 - Use "we" as the authorial voice, never "I built". Do not use obviously, clearly,
   groundbreaking, revolutionary, dramatically, leverage, seamless, robust, or delve.
   Write in a confident, precise, neutral voice.
-- Keep the main text to at most 14 pages; appendices may be longer. Generated
+- Keep the main text to at most 15 pages; appendices may be longer. Generated
   figures are drawn at their final size with 8-point minimum text, so fit the page
   budget by cutting prose rather than by scaling figures.
 - State the competition result exactly as "ninth on the final leaderboard

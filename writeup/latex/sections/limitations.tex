@@ -7,10 +7,10 @@ development records. These caveats apply throughout.}
   \item \textbf{Which program was judged.} The ranked configuration is inferred from
         its listed runtime and resubmission date; the judged commit, its coordinates
         and the device that ran its single-precision descent were not recorded.
-  \item \textbf{Not yet reproduced.} The ranked configuration has not yet been
-        reproduced end to end on the author's machine; a first attempt was stopped
-        when it exposed a defect in the corrected runtime
-        (Appendix~\ref{app:repro-attempt}).
+  \item \textbf{One reproduction.} The \reproduction{} result is one run on one host,
+        on the CPU rather than the judges' GPU; slower descent there leaves less of
+        the 720\,s for coordinate descent, whose search is wall-time capped, so
+        scores vary from run to run.
   \item \textbf{Unmatched records.} \historical{} records differ in code, hardware,
         budget and concurrency, and most have no saved coordinates. Component shares
         are arithmetic, not causal, and no controlled ablation separates the changes

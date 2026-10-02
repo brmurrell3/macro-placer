@@ -2,7 +2,7 @@
 
 Source, evidence and companion material for *Thinkorplace: Smooth Proposals and
 Exact Local Search for Chip Macro Placement* (technical report 1.0,
-30 September 2026).
+2 October 2026).
 
 | Path | Contents |
 |---|---|

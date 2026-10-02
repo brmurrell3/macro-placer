@@ -4,7 +4,7 @@
 
 Post-competition. The Partcl/HRT Macro Placement Challenge 2026 is closed; the
 organizers' final leaderboard ranks team "thinkorplace" ninth (verified mean
-proxy 0.9974). Technical report v1.0 (30 September 2026, source in
+proxy 0.9974). Technical report v1.0 (2 October 2026, source in
 `writeup/latex/`) is the current account of the work. The May 2026 agent
 instructions are archived in `docs/competition/CLAUDE.competition-era.md` and
 no longer apply. Do not run solver experiments unless asked.
@@ -38,7 +38,7 @@ Full rules: `writeup/latex/EDITORIAL_STANDARDS.md`.
 - Every number traces to a frozen record in `writeup/data/publication/` or `writeup/runs/`. Regenerate `generated/` tables with their render scripts; do not hand-edit them.
 - Keep failed, timed-out, partial and checkpoint-recovered runs visible. Never substitute a later repair for a primary observation or average over incomplete coverage.
 - 0.9974 is attributed, by inference (judged commit not recorded), to the 20 May single pipeline; by the same inference the three-lane system was never scored, so never attribute 0.9974 to it.
-- The Reproduction label has no reported result yet: the first run of the ranked configuration (`writeup/runs/ranked-reproduction-20260930/`) was stopped by a checkpoint defect. Do not present its partial designs as a result.
+- Reproduction result: `writeup/runs/ranked-reproduction-20261001-r3/` (runtime `cdd01ecc7c98`), mean proxy 0.98121 on all 17 designs. The two earlier attempts (`-20260930/`, `-20261001/`) were stopped by runtime defects and are engineering records only; never present their partial designs as a result.
 - Proxy scores say nothing about routed timing, power or area.
 - Tables: caption above the tabular, `\footnotesize` minimum, no `\resizebox`, at most six decimals. No TODO or TBD in release sources.
 - Never write: 0.98387, 0.97745, 0.99115 or 0.991 as results; "ceiling"; "true local minimum"; "saddle" as established fact (say "negative-curvature direction of a smooth surrogate"); "peer-reviewed", "refereed" or "external referee"; percentile claims; interim ranks; "I built"; sponsor logos; the author's email address.
