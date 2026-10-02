@@ -27,6 +27,9 @@ import traceback
 
 import numpy as np
 
+# Fixed slack, beyond two measured checkpoints, kept free after a CD phase.
+CD_FINISH_MARGIN_S = 10.0
+
 
 def lane_entry(
     lane_idx: int,
@@ -97,14 +100,18 @@ def lane_entry(
                                    reason="budget_exhausted" if isinstance(exc, TimeoutError) else None,
                                    error=f"{type(exc).__name__}: {exc}")
 
+    checkpoint_cost = 0.0
+
     def _checkpoint(pos, phase):
-        nonlocal incumbent
+        nonlocal incumbent, checkpoint_cost
+        t_checkpoint = monotonic_seconds()
         record = checkpoint(None, pos, benchmark, plc, phase, t0, lane_idx=lane_idx,
                             device=device, num_threads=nthreads, rng_seed=rng_seed,
                             effective_rng_seed=effective_rng_seed,
                             initializer_attempt=initializer_attempt,
                             initializer_method=initializer_method,
                             phase_details=deepcopy(phase_details))
+        checkpoint_cost = max(checkpoint_cost, monotonic_seconds() - t_checkpoint)
         record["log_lines"] = list(log_lines)
         phase_path = Path(result_path).with_name(f"lane{lane_idx}_{phase}.pkl")
         atomic_pickle(phase_path, record)
@@ -112,6 +119,16 @@ def lane_entry(
             incumbent = record
             atomic_pickle(result_path, incumbent)
         return record
+
+    def cd_budget_s(cap):
+        """CD time that still leaves room for the final checkpoint and score.
+
+        Both are full canonical evaluations; reserve twice the slowest measured
+        checkpoint plus a fixed margin, or the lane can be stopped at the
+        deadline before its improved placement is saved.
+        """
+        reserve = CD_FINISH_MARGIN_S + 2.0 * checkpoint_cost
+        return remaining_seconds(None if deadline is None else deadline - reserve, cap)
 
     def initializer_ready(pos):
         complete("initializer", accepted=True)
@@ -265,7 +282,7 @@ def lane_entry(
         if lane_idx == 0:
             begin("cd")
             # Lane A: single CD polish (full budget).
-            cd_budget = remaining_seconds(deadline, cd_polish_s)
+            cd_budget = cd_budget_s(cd_polish_s)
             _log(f"  [A] CD polish budget={cd_budget:.0f}s")
             evaluator = IncrementalProxyEvaluator(benchmark, plc, pos)
             movable = [i for i in range(benchmark.num_macros) if not bool(benchmark.macro_fixed[i])]
@@ -283,7 +300,7 @@ def lane_entry(
         elif lane_idx == 1:
             begin("cd1")
             # Lane B: CD1 + saddle + CD2.
-            cd1_budget = remaining_seconds(deadline, cd_polish_s)
+            cd1_budget = cd_budget_s(cd_polish_s)
             _log(f"  [B] CD1 polish budget={cd1_budget:.0f}s")
             evaluator = IncrementalProxyEvaluator(benchmark, plc, pos)
             movable = [i for i in range(benchmark.num_macros) if not bool(benchmark.macro_fixed[i])]
@@ -342,7 +359,7 @@ def lane_entry(
             _checkpoint(pos, "post_saddle")
             require_time(deadline)
             begin("cd2")
-            cd2_budget = remaining_seconds(deadline, max(60.0, cd_polish_s * 0.4))
+            cd2_budget = cd_budget_s(max(60.0, cd_polish_s * 0.4))
             _log(f"  [B] CD2 polish budget={cd2_budget:.0f}s")
             evaluator = IncrementalProxyEvaluator(benchmark, plc, pos)
             movable = [i for i in range(benchmark.num_macros) if not bool(benchmark.macro_fixed[i])]
@@ -362,7 +379,7 @@ def lane_entry(
             # Lane C: CD1 + Hungarian K=50 permutation loop + CD2.
             from .kjoint_hungarian import kjoint_hungarian_step
 
-            cd1_budget = remaining_seconds(deadline, cd_polish_s)
+            cd1_budget = cd_budget_s(cd_polish_s)
             _log(f"  [C] CD1 polish budget={cd1_budget:.0f}s")
             evaluator = IncrementalProxyEvaluator(benchmark, plc, pos)
             movable = [i for i in range(benchmark.num_macros) if not bool(benchmark.macro_fixed[i])]
@@ -497,7 +514,7 @@ def lane_entry(
             else:
                 pos_for_cd2 = pos_post_hung
 
-            cd2_budget = remaining_seconds(deadline, max(60.0, cd_polish_s * 0.4))
+            cd2_budget = cd_budget_s(max(60.0, cd_polish_s * 0.4))
             _log(f"  [C] CD2 polish budget={cd2_budget:.0f}s")
             evaluator = IncrementalProxyEvaluator(benchmark, plc, pos_for_cd2)
             movable = [i for i in range(benchmark.num_macros) if not bool(benchmark.macro_fixed[i])]

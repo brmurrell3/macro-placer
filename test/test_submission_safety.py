@@ -223,6 +223,42 @@ def test_worker_failure_preserves_descent_checkpoint(v2, bench, tmp_path, monkey
     assert np.array_equal(record["pos_np"], bench.macro_positions.numpy())
 
 
+def test_worker_cd_budget_reserves_time_for_final_checkpoint(v2, bench, tmp_path, monkeypatch):
+    import thinkorplace.common.bench_paths
+    import thinkorplace.common.cd_core
+    import macro_place.loader
+    import macro_place.objective
+    import thinkorplace.common.incremental_evaluator
+    worker = v2.lane_worker
+    score_seconds = 0.2
+    monkeypatch.setattr(torch, "set_num_interop_threads", lambda n: None)
+    monkeypatch.setattr(thinkorplace.common.bench_paths, "find_benchmark_dir", lambda name: tmp_path)
+    monkeypatch.setattr(macro_place.loader, "load_benchmark_from_dir", lambda path: (bench, None))
+    def slow_score(*args):
+        time.sleep(score_seconds)
+        return {"proxy_cost": 1.}
+    monkeypatch.setattr(macro_place.objective, "compute_proxy_cost", slow_score)
+    class Descender:
+        def __init__(self, **kwargs): pass
+        def place(self, benchmark): return benchmark.macro_positions.clone()
+    import thinkorplace.v2.smooth_global_placer_v4_gaussian as gaussian
+    monkeypatch.setattr(gaussian, "SmoothGlobalPlacerV4Gaussian", Descender)
+    monkeypatch.setattr(thinkorplace.common.incremental_evaluator, "IncrementalProxyEvaluator", lambda *args: None)
+    seen = {}
+    def capture(*args, hard_cap_s, **kwargs):
+        seen["hard_cap_s"], seen["remaining"] = hard_cap_s, deadline - monotonic_seconds()
+        raise RuntimeError("stop after recording the CD budget")
+    monkeypatch.setattr(thinkorplace.common.cd_core, "run_cd_adaptive", capture)
+    deadline = monotonic_seconds() + 15
+    worker.lane_entry(0, "synthetic", str(tmp_path / "lane0.pkl"), str(tmp_path / "lane0.log"), 42,
+                      1, .005, .005, .00005, 10., .7, "sdf", 600., .001,
+                      0., 2, 50, .01, 0., 50, 100, 15, 42, [],
+                      deadline, "cpu", 1)
+    import thinkorplace.v2.worker
+    reserve = thinkorplace.v2.worker.CD_FINISH_MARGIN_S + 2 * score_seconds
+    assert 0 < seen["hard_cap_s"] <= seen["remaining"] - reserve + 0.05
+
+
 def test_v1_expired_budget_does_not_start_cascade(bench, monkeypatch):
     import macro_place.objective
     module = load("thinkorplace/v1/stacked.py", "safety_stacked")
