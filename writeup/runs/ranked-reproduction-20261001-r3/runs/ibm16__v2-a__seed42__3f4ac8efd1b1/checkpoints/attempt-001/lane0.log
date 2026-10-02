@@ -1,0 +1,7 @@
+start lane0 bench=ibm16 device=cpu seed=42 pid=33594 nthr=3
+loaded bench dir=/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm16
+  descent attempt 1: ovl_end=10.0 steps=500
+  descent attempt 1: ovl=0
+  basin: proxy=1.14491 wall=154s
+  [A] CD polish budget=438s
+  FINAL lane0: proxy=1.00323 ovl=0 wall=711s

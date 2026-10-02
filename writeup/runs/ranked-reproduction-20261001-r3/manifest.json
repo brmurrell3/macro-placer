@@ -1,0 +1,243 @@
+{
+  "generated_at": "2026-10-02T01:49:36.819462+00:00",
+  "host": {
+    "cpu_model": "Apple M3 Max",
+    "hostname": "Brendans-MacBook-Pro.local",
+    "installed_distributions": {
+      "Jinja2": "3.1.6",
+      "MarkupSafe": "3.0.3",
+      "PyMetis": "2023.1.1",
+      "Pygments": "2.20.0",
+      "absl-py": "2.3.1",
+      "contourpy": "1.3.0",
+      "cycler": "0.12.1",
+      "exceptiongroup": "1.3.1",
+      "filelock": "3.19.1",
+      "fonttools": "4.60.2",
+      "fsspec": "2025.10.0",
+      "geomloss": "0.2.6",
+      "highspy": "1.13.1",
+      "importlib_resources": "6.5.2",
+      "iniconfig": "2.1.0",
+      "joblib": "1.5.3",
+      "kahypar": "1.3.6",
+      "kiwisolver": "1.4.7",
+      "macro-place": "0.1.0",
+      "matplotlib": "3.9.4",
+      "mpmath": "1.3.0",
+      "networkx": "3.2.1",
+      "numpy": "2.0.2",
+      "packaging": "26.0",
+      "pillow": "11.3.0",
+      "pluggy": "1.6.0",
+      "py-spy": "0.4.2",
+      "pyparsing": "3.3.2",
+      "pytest": "8.4.2",
+      "python-dateutil": "2.9.0.post0",
+      "pytorch-ranger": "0.1.1",
+      "scikit-learn": "1.6.1",
+      "scipy": "1.13.1",
+      "six": "1.17.0",
+      "sympy": "1.14.0",
+      "threadpoolctl": "3.6.0",
+      "tomli": "2.4.1",
+      "torch": "2.8.0",
+      "torch-optimizer": "0.3.0",
+      "tqdm": "4.67.3",
+      "typing_extensions": "4.15.0",
+      "zipp": "3.23.0"
+    },
+    "installed_distributions_sha256": "fd0de2876413a39e65d6f1760ee6ec37b835c306635d60efe1270004ce0f457b",
+    "logical_cpu_count": 14,
+    "machine": "arm64",
+    "os": "macOS-27.0.1-arm64-arm-64bit",
+    "processor": "arm",
+    "python_executable": "/Users/brendan/Developer/macro-place-challenge-2026/.venv/bin/python",
+    "python_implementation": "CPython",
+    "python_version": "3.9.6",
+    "release": "27.0.0",
+    "system": "Darwin",
+    "total_memory_bytes": 38654705664
+  },
+  "invocation": {
+    "argv": [
+      "/Users/brendan/Developer/macro-place-challenge-2026/.venv/bin/python",
+      "/Users/brendan/Developer/macro-place-challenge-2026/scripts/run_publication_study.py",
+      "--config",
+      "writeup/study/ranked_reproduction.json",
+      "--output",
+      "writeup/runs/ranked-reproduction-20261001-r3"
+    ],
+    "benchmarks": [
+      "ibm01",
+      "ibm02",
+      "ibm03",
+      "ibm04",
+      "ibm06",
+      "ibm07",
+      "ibm08",
+      "ibm09",
+      "ibm10",
+      "ibm11",
+      "ibm12",
+      "ibm13",
+      "ibm14",
+      "ibm15",
+      "ibm16",
+      "ibm17",
+      "ibm18"
+    ],
+    "budget_seconds": 720.0,
+    "cd_seconds": 600.0,
+    "config_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/study/ranked_reproduction.json",
+    "device": "cpu",
+    "fail_on_degraded": false,
+    "jobs": 1,
+    "num_steps": 500,
+    "output": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/ranked-reproduction-20261001-r3",
+    "retry_failures": false,
+    "seeds": [
+      42
+    ],
+    "study_kind": "post-competition-reproduction-ranked-config",
+    "study_notes": "Post-competition reproduction of the configuration inferred to have earned the official score (ninth, verified mean proxy 0.9974). Inference, not a recorded fact: the upstream leaderboard row lists 12min/bench and 'Resubmitted 5/20 (thinkorplace-v2)', and the 20 May single pipeline at commit 5485310 (budget_seconds=720, cd_polish_s=600) matches that runtime and the self-reported 0.991; the commit the judges cloned was not recorded. Pipeline reproduced as corrected-runtime Lane A alone: SDF initializer (seed 42) -> 500 Adam steps on the smooth proxy (log-sum-exp wirelength, Gaussian density sigma_scale 1.0 top-10%, per-net trace congestion; lr 0.005 x canvas width; gamma 5e-3 -> 5e-5 linear; overlap weight 0 -> 10 over the first 70% of steps; boundary weight 50) -> greedy spiral legalization (80 steps of 2% canvas) with overlap projection; retry ladder overlap_end 10, 50, then 100 with 300 steps; SDF fallback -> exact incremental coordinate descent capped at 600 s (min half the cap, patience 5, plateau 0.001). The listed variant_parameters equal the 20 May defaults and are pinned only against default drift. Host: the author's Apple M3 Max under macOS 27.0.1, CPU device, 3 torch threads (the 20 May program set no thread limit), one benchmark at a time, Python 3.9.6 and torch 2.8.0; not the judges' hardware (stated in the 20 May submission notes as AMD EPYC 9655P plus RTX 6000 Ada in a PyTorch 2.5.1 CUDA container, where the 20 May program would select CUDA for descent). Known differences: (1) CPU descent is slower, and coordinate descent is wall-time capped, so final scores depend on host speed and are not bitwise repeatable; (2) the corrected runtime enforces the 720 s deadline inside descent and retries and gives coordinate descent min(600, remaining) s, where the 20 May program let descent overrun and gave max(30, min(600, remaining - 10)) s; if initialization and descent exhaust the budget, the run now returns its best validated checkpoint; (3) validated checkpoints add canonical evaluations inside the budget and Lane A runs in a spawned subprocess; (4) bounds repair clamps soft clusters into the canvas after SDF initialization (15 of 17 IBM designs start with 1-11 soft clusters outside the canvas by at most 1.11 um; IBM01 and IBM02 start with none) and after legalization (IBM01: two clusters moved at most 0.0102 um, legalized proxy 0.91258532 -> 0.91260284); (5) hierarchy-aware pin ownership and SDF edge extraction give bitwise-identical net data and edge lists on all 17 IBM designs; (6) fixed-macro handling changes are inactive because IBM designs have no fixed macros. On this host, SDF initialization and the 500 raw descent steps for IBM01 are bitwise identical between the 20 May sources and the corrected runtime.",
+    "threads": 3,
+    "timeout_seconds": 3600.0,
+    "variants": [
+      "v2-a"
+    ]
+  },
+  "repository": {
+    "branch": "codex/publication-study",
+    "dirty": false,
+    "dirty_entries": [],
+    "excluded_generated_run_artifact_entries": 0,
+    "head_commit": "d9f25771453653b6a3a2a5dfb4affe0d9efcc90d",
+    "tilos_submodule_commit": "45a721d01dfe56fc4800b95da52e9b4193b76d04",
+    "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "run_count": 17,
+  "runs": [
+    {
+      "benchmark": "ibm01",
+      "identity_sha256": "9995eb28c8190f9424dcaa7504dc25ed2a28fa98f896de90a22f4de657685b54",
+      "run_id": "ibm01__v2-a__seed42__9995eb28c819",
+      "seed": 42,
+      "variant": "v2-a"
+    },
+    {
+      "benchmark": "ibm02",
+      "identity_sha256": "744d4d432e358d97bfff6bad67fcfe7a6e8b0d566d2e7d2a39016df6f7c4361b",
+      "run_id": "ibm02__v2-a__seed42__744d4d432e35",
+      "seed": 42,
+      "variant": "v2-a"
+    },
+    {
+      "benchmark": "ibm03",
+      "identity_sha256": "66a3322f7a40c84f7c88546536ab8d0bf837c5314d2b398d4f7bb30e04dd922a",
+      "run_id": "ibm03__v2-a__seed42__66a3322f7a40",
+      "seed": 42,
+      "variant": "v2-a"
+    },
+    {
+      "benchmark": "ibm04",
+      "identity_sha256": "190540098fd6bc7319916c706e1f30815888b636d9dedc81d1fbbb51e524f0a8",
+      "run_id": "ibm04__v2-a__seed42__190540098fd6",
+      "seed": 42,
+      "variant": "v2-a"
+    },
+    {
+      "benchmark": "ibm06",
+      "identity_sha256": "fda208817352f8ffffe22d1603e363d09913c51bfd78dcfe5ed54affe513c8e4",
+      "run_id": "ibm06__v2-a__seed42__fda208817352",
+      "seed": 42,
+      "variant": "v2-a"
+    },
+    {
+      "benchmark": "ibm07",
+      "identity_sha256": "511c1489a3dbb62283326fd052e17e76dea209b7ffec69bd31a28f5a40c37fd0",
+      "run_id": "ibm07__v2-a__seed42__511c1489a3db",
+      "seed": 42,
+      "variant": "v2-a"
+    },
+    {
+      "benchmark": "ibm08",
+      "identity_sha256": "afc87363fa5fab49bbcbfa7dfd9fa4b3e295e46becbee3e2a0f852774a86cd00",
+      "run_id": "ibm08__v2-a__seed42__afc87363fa5f",
+      "seed": 42,
+      "variant": "v2-a"
+    },
+    {
+      "benchmark": "ibm09",
+      "identity_sha256": "0da5a09588e35909670eb8f5d4ccc1f340707f4ebf7e536962cb9c9568b45647",
+      "run_id": "ibm09__v2-a__seed42__0da5a09588e3",
+      "seed": 42,
+      "variant": "v2-a"
+    },
+    {
+      "benchmark": "ibm10",
+      "identity_sha256": "589b6d8be0b635eb2b13e99a5f7fcd648b26d2f82d543b106c5a500248301dc2",
+      "run_id": "ibm10__v2-a__seed42__589b6d8be0b6",
+      "seed": 42,
+      "variant": "v2-a"
+    },
+    {
+      "benchmark": "ibm11",
+      "identity_sha256": "9f03bab7f605309510d3d4a98a5b4657b4a2fa547d4acc87da035edbc2cdbe0e",
+      "run_id": "ibm11__v2-a__seed42__9f03bab7f605",
+      "seed": 42,
+      "variant": "v2-a"
+    },
+    {
+      "benchmark": "ibm12",
+      "identity_sha256": "5e3fc1db3e695cba1c2b8c99ab89ee001e6e5999aa5319e3c79d82264f70a68c",
+      "run_id": "ibm12__v2-a__seed42__5e3fc1db3e69",
+      "seed": 42,
+      "variant": "v2-a"
+    },
+    {
+      "benchmark": "ibm13",
+      "identity_sha256": "36f6d98660b68f118de3af9255d21845bc0abc3e91cda726426a501af086d268",
+      "run_id": "ibm13__v2-a__seed42__36f6d98660b6",
+      "seed": 42,
+      "variant": "v2-a"
+    },
+    {
+      "benchmark": "ibm14",
+      "identity_sha256": "b322e6d1202e07f589a0bf8ec7e2e0882b24253bb21eec769a04811524a1798d",
+      "run_id": "ibm14__v2-a__seed42__b322e6d1202e",
+      "seed": 42,
+      "variant": "v2-a"
+    },
+    {
+      "benchmark": "ibm15",
+      "identity_sha256": "09ee984f13828308c38e90689e12f4337ec38dea54afe513b411db0764dc8ade",
+      "run_id": "ibm15__v2-a__seed42__09ee984f1382",
+      "seed": 42,
+      "variant": "v2-a"
+    },
+    {
+      "benchmark": "ibm16",
+      "identity_sha256": "3f4ac8efd1b187502ec51115b3e5f4702caae18e71dc6c63ab4a6acdcbd6fe78",
+      "run_id": "ibm16__v2-a__seed42__3f4ac8efd1b1",
+      "seed": 42,
+      "variant": "v2-a"
+    },
+    {
+      "benchmark": "ibm17",
+      "identity_sha256": "58683a69bdbc17d386dfa1e91ba7ab5f5705345c3ddb74ce3163f12f76bf3308",
+      "run_id": "ibm17__v2-a__seed42__58683a69bdbc",
+      "seed": 42,
+      "variant": "v2-a"
+    },
+    {
+      "benchmark": "ibm18",
+      "identity_sha256": "1cef08608bcd339edc5b7c3f77a1f9c8ed1bd85bd55ea1d8f7015a2c06c2e07a",
+      "run_id": "ibm18__v2-a__seed42__1cef08608bcd",
+      "seed": 42,
+      "variant": "v2-a"
+    }
+  ],
+  "schema_version": 1,
+  "study_id": "ranked-reproduction-20261001-r3"
+}

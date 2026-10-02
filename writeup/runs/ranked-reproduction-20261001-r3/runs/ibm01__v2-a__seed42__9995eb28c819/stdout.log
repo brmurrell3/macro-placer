@@ -1,0 +1,39 @@
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+[lane0] start lane0 bench=ibm01 device=cpu seed=42 pid=49883 nthr=3
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+[lane0] loaded bench dir=/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01
+[lane0]   descent attempt 1: ovl_end=10.0 steps=500
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+#[INFO] Reading from /Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01/netlist.pb.txt
+[INFO] Retrieving Meta information from .plc comments
+#[PLACEMENT GRID] Col: 45, Row: 41
+#[ROUTES PER MICRON] Hor: 65.96, Ver: 106.96
+#[CONGESTION SMOOTH RANGE] Smooth Range: 2
+#[OVERLAP THRESHOLD] Threshold: 0.0040
+[lane0]   descent attempt 1: ovl=0
+[lane0]   basin: proxy=0.91260 wall=15s
+[lane0]   [A] CD polish budget=600s
+[lane0]   FINAL lane0: proxy=0.82996 ovl=0 wall=326s
+  [laneA] start lane0 bench=ibm01 device=cpu seed=42 pid=49883 nthr=3
+  [laneA] loaded bench dir=/Users/brendan/Developer/macro-place-challenge-2026/external/MacroPlacement/Testcases/ICCAD04/ibm01
+  [laneA]   descent attempt 1: ovl_end=10.0 steps=500
+  [laneA]   descent attempt 1: ovl=0
+  [laneA]   basin: proxy=0.91260 wall=15s
+  [laneA]   [A] CD polish budget=600s
+  laneA OK: proxy=0.82996 wall=325s
+v2 PICK=A proxy=0.82996
