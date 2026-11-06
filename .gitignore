@@ -108,3 +108,7 @@ Claude outputs/
 writeup/scratch/
 # Local review notes; some tracked documents link here, but the notes stay private
 docs/reviews/
+
+# Local agent configuration (kept out of the public tree)
+CLAUDE.md
+.claude/settings.json
