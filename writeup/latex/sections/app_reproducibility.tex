@@ -4,7 +4,7 @@ The code, frozen evidence and report sources are in the public repository
 \url{https://github.com/brmurrell3/macro-placer}. Commands below run from the
 repository root with the project's virtual environment.
 
-\paragraph{Source revisions.} Three revisions anchor the work. The competition
+\paragraph{Source revisions.} Four revisions anchor the work. The competition
 snapshot \texttt{2ab92a33d352} (22 May 2026) is the last competition-era commit; its
 Python source closure is frozen as \path{writeup/data/publication/competition-source.tar},
 described by \path{source_snapshot.json} with the archive digest and file list. The
@@ -128,11 +128,13 @@ Run the focused tests:
   test/test_thinkorplace_package.py test/test_postpilot_repairs.py \
   test/test_sdf_topology.py test/test_publication_runner.py
 \end{verbatim}
+\Needspace{4\baselineskip}
 Run a study from a configuration under \path{writeup/study/}, for example the pilot:
 \begin{verbatim}
 .venv/bin/python scripts/run_publication_study.py \
   --config writeup/study/pilot.json
 \end{verbatim}
+\Needspace{10\baselineskip}
 The reported reproduction (\cref{sec:reproduction}) ran from commit \texttt{d9f2577}
 with the runtime archive \path{corrected-runtime-cdd01ecc7c98.tar.gz}, writing its
 records to \path{writeup/runs/ranked-reproduction-20261001-r3/}; a repeat should

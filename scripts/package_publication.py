@@ -17,8 +17,8 @@ REPOSITORY = "https://github.com/brmurrell3/macro-placer"
 METADATA = {
     "title": "Thinkorplace: Smooth Proposals and Exact Local Search for Chip Macro Placement",
     "author": "Brendan Murrell, Xiaofei Zhang, Andrew Murrell",
-    "date": "2026-10-02",
-    "version": "Technical report 1.0",
+    "date": "2026-11-06",
+    "version": "Technical report 1.1",
     "description": ("Ninth on the final leaderboard of the Partcl/HRT Macro Placement Challenge 2026 "
                     "(verified mean proxy 0.9974)."),
     "hero_image": "interactive/result-context.svg",

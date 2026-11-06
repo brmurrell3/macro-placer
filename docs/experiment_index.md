@@ -1,4 +1,4 @@
-> **Historical record (May 2026).** Development-era scores and champion labels below are superseded; see [technical report v1.0](../writeup/thinkorplace-report.pdf) for current results.
+> **Historical record (May 2026).** Development-era scores and champion labels below are superseded; see [the technical report](../writeup/thinkorplace-report.pdf) for current results.
 
 # Experiment Index
 

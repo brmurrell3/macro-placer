@@ -38,7 +38,7 @@
 \hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue,
   pdfauthor={Brendan Murrell, Xiaofei Zhang, Andrew Murrell},
   pdftitle={Thinkorplace: Smooth Proposals and Exact Local Search for Chip Macro Placement},
-  pdfsubject={Technical report 1.0 on a macro placer for the Partcl/HRT Macro Placement Challenge 2026},
+  pdfsubject={Technical report 1.1 on a macro placer for the Partcl/HRT Macro Placement Challenge 2026},
   pdfkeywords={macro placement, physical design, analytical placement, coordinate descent, incremental evaluation, Hungarian assignment, negative curvature},
   pdflang={en-US}}
 \color{ink}
@@ -46,7 +46,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \lhead{\small\color{muted}Thinkorplace}
-\rhead{\small\color{muted}Technical report 1.0 \textperiodcentered{} 2 October 2026}
+\rhead{\small\color{muted}Technical report 1.1 \textperiodcentered{} 6 November 2026}
 \cfoot{\small\color{muted}\thepage\ / \pageref*{LastPage}}
 \renewcommand{\headrulewidth}{0.35pt}
 % The title page carries the footer but no running header.
@@ -128,7 +128,7 @@ Challenge 2026\\ (verified mean proxy 0.9974)\par}
 {\footnotesize\textsuperscript{*}Lead and corresponding author,
 \url{https://brendanmurrell.com}\par}
 \vspace{0.3em}
-{\small Technical report 1.0 \textperiodcentered{} 2 October 2026
+{\small Technical report 1.1 \textperiodcentered{} 6 November 2026
 \textperiodcentered{} Code: \url{https://github.com/brmurrell3/macro-placer}\par}
 \end{center}
 \thispagestyle{plain}
@@ -138,9 +138,9 @@ Challenge 2026\\ (verified mean proxy 0.9974)\par}
 \begin{abstract}
 \noindent
 Macro placement decides where a chip's large blocks sit before its wires are
-routed. Thinkorplace, our entry in the Partcl/HRT Macro Placement Challenge 2026,
-ranked ninth on the final leaderboard (verified mean proxy 0.9974 over 17 IBM
-designs; the organizers report 132 verified eligible submissions), 31.6\% below the
+routed. Thinkorplace, our entry in the Partcl/HRT Macro Placement Challenge 2026 on 17 IBM
+designs, ranked ninth on the final leaderboard (verified mean proxy 0.9974; the
+organizers report 132 verified eligible submissions), 31.6\% below the
 published RePlAce baseline and 4.9\% above the winner, at a listed 12 minutes per
 design against a one-hour limit. \ifReproComplete A post-competition rerun of the
 ranked configuration on a laptop CPU gives a mean proxy of \ReproMean{} with every
@@ -168,13 +168,13 @@ benchmark chips, minimizing a published wirelength, crowding and
 congestion score with zero block overlap, in one hour per design. \\
 Why hard & Thousands of coordinates; the no-overlap rule breaks the legal
 placements into astronomically many convex pieces; the score has kinks and jumps
-where gradients fail; and one exact evaluation takes 1.4--27\,s. \\
+where gradients fail; and one exact evaluation takes 1.4--26.9\,s. \\
 Approach & A smooth, differentiable approximation of the score moves every block
 at once by gradient descent; an exact search that moves one coordinate at a time,
 made $10^3$--$2\times10^4$ times cheaper by rescoring only what a move changes,
 keeps a move only if the true score drops. \\
-Result & Ninth on the final leaderboard (132 verified eligible submissions
-reported): verified mean proxy 0.9974, 31.6\% below the published RePlAce
+Result & Ninth on the final leaderboard (verified mean proxy 0.9974; the organizers
+report 132 verified eligible submissions), 31.6\% below the published RePlAce
 baseline and 4.9\% above the winner, in a listed 12 of the allowed 60 minutes per
 design (\official; \cref{fig:result-context}); rerun on a laptop CPU:
 \ifReproComplete\ReproMean{}\else mean withheld, coverage incomplete\fi{}
@@ -240,7 +240,7 @@ proxy score made exact local search possible.
 \input{sections/app_curvature.tex}
 \input{sections/app_verification.tex}
 \input{sections/app_records.tex}
-\begingroup
+\par\begingroup
 \raggedright
 \setlength{\parindent}{1.1em}
 \input{sections/app_reproducibility.tex}

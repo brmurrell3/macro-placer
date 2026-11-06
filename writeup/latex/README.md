@@ -1,6 +1,6 @@
 # Thinkorplace technical report
 
-Source of technical report 1.0, *Thinkorplace: Smooth Proposals and Exact Local
+Source of technical report 1.1, *Thinkorplace: Smooth Proposals and Exact Local
 Search for Chip Macro Placement*. Build from this directory with:
 
 ```sh

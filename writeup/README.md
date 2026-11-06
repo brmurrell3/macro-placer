@@ -1,8 +1,8 @@
 # `writeup/`
 
 Source, evidence and companion material for *Thinkorplace: Smooth Proposals and
-Exact Local Search for Chip Macro Placement* (technical report 1.0,
-2 October 2026).
+Exact Local Search for Chip Macro Placement* (technical report 1.1,
+6 November 2026).
 
 | Path | Contents |
 |---|---|

@@ -93,15 +93,15 @@ the horizontal and vertical values, $C=A_{\lfloor0.05\cdot2G\rfloor}(u)$ with
 $N=2G$, the mean of the worst 5\%.
 
 \begin{lemma}[Tail representation and stability]\label{lem:tail}
-For $z\in\mathbb R^N$, an integer $1\le k\le N$ and $(a)_+=\max\{a,0\}$,
+For $z\in\mathbb R^N$ and an integer $1\le k\le N$,
 \begin{equation}
  A_k(z)
  =\max_{\substack{0\le\beta_j\le1/k\\\sum_j\beta_j=1}}\beta^\top z
  =\min_{\theta\in\mathbb R}\Bigl\{\theta+
- \frac1k\sum_{j=1}^N(z_j-\theta)_+\Bigr\}.
+ \frac1k\sum_{j=1}^N(z_j-\theta)_+\Bigr\},
  \label{eq:tail-representation}
 \end{equation}
-$A_k$ is convex and piecewise affine, and for any $\delta\in\mathbb R^N$,
+where $(a)_+=\max\{a,0\}$. $A_k$ is convex and piecewise affine, and for any $\delta\in\mathbb R^N$,
 \begin{equation}
  |A_k(z+\delta)-A_k(z)|
  \le\min\Bigl\{\|\delta\|_\infty,\
@@ -130,7 +130,7 @@ component $D=\tfrac12A_k$ by 0.0025, within its bound $\tfrac12\|\delta\|_1/k=0.
         grid cells, the score jumps whenever a pin crosses a grid line; its routing
         part has zero gradient almost everywhere.
   \item \textbf{Expensive:} a full evaluation with the reference evaluator took
-        1.4\,s on IBM01 and 27\,s on IBM10 (\measurement), so an hour buys about
+        1.4\,s on IBM01 and 27\,s on IBM10 (\measurement; Table~\ref{tab:incremental-measurements}), so an hour buys about
         2,600 and 130 of them.
   \item \textbf{Large and conflicting:} thousands of coordinates interact through
         7,269--83,132 nets, and packing connected blocks shortens wires but narrows

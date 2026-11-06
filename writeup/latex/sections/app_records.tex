@@ -14,14 +14,14 @@ components, overlap counts, runtimes, a timestamp, four concurrent jobs and one 
 thread; none stores coordinates, a source revision or host details, so the scores can
 be recomputed from their components but not from placements. Contemporaneous notes
 place the 17 May v1 run on the M3 Max and the early v2 run on an AWS EPYC instance;
-the single-pipeline record names no host. The records differ in program, hardware and
+the 0.98199 record names no host. The records differ in program, hardware and
 time budget, so differences between columns describe the records, not the effect of
 any one change.
 
 \input{generated/historical_vs_baselines.tex}
 
 Against the published baselines, the margin below RePlAce ranges from 13.8\% (v1,
-IBM01) to 45.8\% (early v2, IBM02). The single-pipeline record is lower than the v1
+IBM01) to 45.8\% (early v2, IBM02). The 0.98199 record is lower than the v1
 record on 16 of 17 designs. The exception is IBM02: density falls from 0.61156 to
 0.57491, but wirelength rises from 0.08418 to 0.08897 and congestion from 1.23324 to
 1.27245, so the total rises from 1.00659 to 1.01265. The largest change is on IBM17,
@@ -88,10 +88,10 @@ v1 (17 May) mean 1.05750 & \historical & Frozen evaluator JSON & Components only
 coordinates \\
 Early v2 mean 1.00835 & \historical & Frozen evaluator JSON & Earlier smooth placer
 (V3); different host \\
-Single-pipeline record mean 0.98199; lower than v1 on 16 of 17 & \historical &
+0.98199 record, lower than v1 on 16 of 17 & \historical &
 Frozen evaluator JSON & Closest surviving full-suite record of the ranked lineage;
 unmatched conditions \\
-Congestion supplies 84.5\% of the v1-to-single-pipeline decrease & \historical &
+Congestion supplies 84.5\% of the decrease from the v1 record to the 0.98199 record & \historical &
 Component fields of the two records & Arithmetic attribution, not a mechanism \\
 Plateau 1.08128, first curvature stage 1.06760, cascade 1.06119 & \historical &
 Frozen stage records and 34 placements & Uncapped research runs \\

@@ -1,5 +1,32 @@
 # Report revisions
 
+## 1.1 — 6 November 2026
+
+Editorial corrections from a page-by-page review of the 1.0 PDF, before its first
+publication. No result, figure or generated table changed.
+
+- The abstract and the "At a glance" Result row state the competition result in the
+  required form, "ninth on the final leaderboard (verified mean proxy 0.9974; the
+  organizers report 132 verified eligible submissions)"; the abstract names the 17
+  IBM designs outside the parenthesis.
+- Tables 8, 12 and 15 (the IBM01 curvature probe, the incremental-evaluator
+  measurements and the final NG45 integration) are now cited in the text.
+- Appendix G calls the 0.98199 run the "0.98199 record", the main text's name,
+  instead of "single-pipeline record", which a reader could confuse with the early
+  single-pipeline record (1.00835). The v1 algorithm appendix names the v1 record
+  the same way.
+- Values written two ways now match: one exact evaluation takes 1.4–26.9 s in the
+  "At a glance" box, as in the abstract; the two checkpoint recoveries in
+  Appendix E use the five decimals of the pilot table.
+- Smaller fixes: "Four revisions anchor the work" (Appendix H names four); "gotten";
+  Lemma 2.2 defines $(a)_+$ after its equation, so the definition no longer breaks
+  across lines; Appendix H keeps each command block on the page of its introduction;
+  Appendix G's closing paragraph is justified again (Appendix H's ragged-right
+  setting no longer reaches back into it).
+  The report is now 47 pages.
+- Version 1.1, dated 6 November 2026, in the title block, running header,
+  `CITATION.cff`, the README files and the website package metadata.
+
 ## 1.0 — 2 October 2026
 
 Audience-led rewrite for readers outside chip design, with the first reproduction

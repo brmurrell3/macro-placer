@@ -123,9 +123,9 @@ original initializer does not repair. On IBM17 both v2 configurations exhausted 
 budget without a valid checkpoint. All three ariane133 runs failed to locate the
 design directory, before any optimization. No run reached the external limit. Two
 recoveries show how the checkpoints behave: on IBM01 the three-lane run returned
-Lane~B's checkpoint after its curvature step (0.827866) when the lanes were stopped at
+Lane~B's checkpoint after its curvature step (0.82787) when the lanes were stopped at
 the solver budget, and on IBM10 the standalone and three-lane runs returned the same
-legalized-descent state (1.166864). Final validation and export took 26.5--28.2\,s on
+legalized-descent state (1.16686). Final validation and export took 26.5--28.2\,s on
 IBM10 against about 1.5\,s on IBM01.
 
 \input{generated/pilot_results.tex}
@@ -143,7 +143,7 @@ repair came after this batch.
 
 \input{generated/repair_results.tex}
 
-\paragraph{NG45 integration.}
+\paragraph{NG45 integration.} Table~\ref{tab:final-ng45-integration} lists the three runs.
 \input{generated/final_ng45_integration.tex}
 
 \paragraph{IBM17 timeouts and finalization cost.} The three IBM17 runs of the repair
