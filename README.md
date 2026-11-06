@@ -6,6 +6,21 @@ Thinkorplace placed ninth on the final leaderboard of the Partcl/HRT Macro
 Placement Challenge 2026 (verified mean proxy 0.9974; the organizers report 132
 verified eligible submissions).
 
+![Dot plot of the top ten entries on the final leaderboard by mean proxy cost over the 17 IBM designs, where lower is better: Archgen first at 0.9507, Carrotato second at 0.9522, and Thinkorplace, highlighted, ninth at 0.9974. A broken axis marks the published RePlAce baseline at 1.4578 and the simulated-annealing baseline at 2.1251.](writeup/interactive/result-context.png)
+
+- **Problem.** Place 178–786 large blocks (macros) on each of 17 benchmark
+  chips, with no two blocks overlapping and one hour per design, minimizing a
+  published proxy score for wirelength, crowding and routing congestion.
+- **Approach.** Gradient descent on a smooth approximation of the score moves
+  every block at once; a legalizer removes overlaps; exact coordinate descent
+  then keeps a move only when the true score falls.
+- **Engineering.** An incremental evaluator rescores only what a move changes:
+  about 1,000–18,000× faster per move than full recomputation by the reference
+  evaluator, agreeing with it within a relative 3×10⁻¹⁵ on the sampled moves.
+- **Record.** A 47-page technical report with proofs and per-design records,
+  about 140 experiment manifests including falsified ones, and a
+  post-competition reproduction on a laptop CPU with all 17 placements valid.
+
 ## Result
 
 Official result: mean proxy cost over the 17 public IBM designs (lower is better).
@@ -35,12 +50,12 @@ comparison; per-design results are in the report's Section 4.2 and Appendix G.
 
 ## Read more
 
-- [Read the technical report](writeup/thinkorplace-report.pdf) (technical report 1.0, 2 October 2026)
-- [Website summary](writeup/website-summary.md): the article text for the
-  author's website; its relative links resolve in the packaged site built by
-  `scripts/package_publication.py`, not in this repository.
-- [Placement explorer](writeup/interactive/placement-comparison.html): a
-  standalone HTML page; download it and open it in a browser.
+- [Read the technical report](writeup/thinkorplace-report.pdf) (technical report 1.1, 6 November 2026)
+- [Project page](https://brendanmurrell.com/research/thinkorplace/): a short
+  summary on the lead author's website.
+- Placement explorer: [open it online](https://brendanmurrell.com/research/thinkorplace/placement-comparison.html),
+  or download the [standalone HTML page](writeup/interactive/placement-comparison.html)
+  and open it in a browser.
 
 ## How it works
 
@@ -70,10 +85,12 @@ pipeline came from lower routing congestion.
 | [`submissions/`](submissions/) | Competition entry points (v2: `submissions/thinkorplace-v2/placer.py`), example placers, and archived earlier placers. |
 | [`macro_place/`](macro_place/) | Challenge infrastructure: benchmark loader, proxy cost, the `evaluate` command, and the incremental evaluator. |
 | [`writeup/`](writeup/) | Report source, frozen evidence, study configurations and run records, the explorer, and the website summary. |
-| [`experiments/`](experiments/) | About 150 development experiments, each with a manifest of hypothesis, method, kill gate and outcome, including falsified ones. |
+| [`experiments/`](experiments/) | About 140 development experiments, each with a manifest of hypothesis, method, kill gate and outcome, including falsified ones. |
 | [`docs/`](docs/) | May 2026 development records: experiment index, decision records, and the competition-era agent instructions in [`docs/competition/`](docs/competition/). The original challenge README is [upstream at revision `996193c`](https://github.com/partcleda/macro-place-challenge-2026/blob/996193c83eaad151e5ae3fb166cedbd83372d060/README.md). |
 | [`scripts/`](scripts/) | Study runner, publication renderers and checks, and development utilities. |
 | [`test/`](test/) | Focused tests for the package, the study runner, and the post-competition repairs. |
+| [`analysis/`](analysis/) | Development diagnostics that explain a behavior rather than improve the score, each with its own README. |
+| [`benchmarks/`](benchmarks/), [`baselines/`](baselines/), [`eval_docker/`](eval_docker/), [`src/`](src/), [`scripts_parallel/`](scripts_parallel/), [`SCORING.md`](SCORING.md), [`SETUP.md`](SETUP.md) | From the upstream challenge repository: processed benchmark designs, NG45 baseline scores, the judges' evaluation image, OpenROAD flow integration, a parallel evaluator, the scoring rules and the setup guide. |
 
 The root [`placer.py`](placer.py) is the competition launcher; it dispatches to
 the v2 entry.
@@ -135,8 +152,10 @@ hard-macro overlaps, scored by a published proxy cost; see the
 ## Authors
 
 Brendan Murrell (lead and corresponding author,
-[brendanmurrell.com](https://brendanmurrell.com)), Xiaofei Zhang, and Andrew
-Murrell. The competition entry was submitted as team "thinkorplace".
+[brendanmurrell.com](https://brendanmurrell.com)) designed and implemented the
+solver, the exact incremental scorer and the experiment pipeline, and wrote the
+report. Xiaofei Zhang and Andrew Murrell advised on the work and reviewed and
+edited the report. The competition entry was submitted as team "thinkorplace".
 
 ## Citation
 
