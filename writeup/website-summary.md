@@ -1,6 +1,6 @@
 # Thinkorplace: Chip Macro Placement with Gradient Descent and Exact Local Search
 
-Brendan Murrell, Xiaofei Zhang, Andrew Murrell · 15 November 2026 · Technical report 1.2
+15 November 2026 · Technical report 1.2
 
 Macro placement decides where to place large components on a chip before its
 wires are routed. Each of these blocks, called a macro, is a pre-designed
@@ -16,8 +16,7 @@ Runtime was 12 minutes per test case (max 60 minutes per test case).
 
 [Technical report (PDF)](thinkorplace-technical-report.pdf) ·
 [Source code](https://github.com/brmurrell3/macro-placer) ·
-[Placement explorer](placement-comparison.html) ·
-[Cite](https://github.com/brmurrell3/macro-placer/blob/main/CITATION.cff)
+[Placement explorer](placement-comparison.html)
 
 ![Mean proxy cost of all 129 ranked entries on the final leaderboard, plotted by final rank, where lower is better. Thinkorplace is highlighted at rank 9 with 0.9974. Dashed lines mark the RePlAce baseline at 1.4578 and the simulated-annealing baseline at 2.1251. Filled dots are entries verified by the organizers and hollow dots are not verified. Ranks 128 and 129 are off scale at 3.60183 and 7.215.](interactive/leaderboard-all.svg)
 
