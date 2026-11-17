@@ -40,6 +40,8 @@ Thinkorplace is a two stage process. First, it finds a quick approximation of a
 good overall layout. Then it refines that layout through small moves evaluated
 with the exact score.
 
+![Animation of Thinkorplace placing ibm01. On the left, the large blocks move on the chip canvas, blue during gradient descent on the smooth score and orange during coordinate descent on the exact score, with blocks moved since the previous frame shown darker. On the right, the exact proxy cost falls from 1.1953 to 0.8824 during gradient descent, rises to 0.9126 when legalization removes the overlaps, and falls to 0.8300 by the end of the 315-second run.](interactive/thinkorplace-ibm01.gif)
+
 The first stage uses gradient descent on a smooth approximation of the score,
 allowing all the blocks to move together. A legalizer then resolves macro
 overlaps by moving overlapping macros into nearby free space, starting with the

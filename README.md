@@ -21,6 +21,13 @@ then moves one macro at a time and keeps a move only when the true score falls.
 An incremental evaluator rescores only what a move changes, so each exact check
 takes milliseconds instead of seconds.
 
+![Animation of Thinkorplace placing ibm01. On the left, the large blocks move on the chip canvas, blue during gradient descent on the smooth score and orange during coordinate descent on the exact score, with blocks moved since the previous frame shown darker. On the right, the exact proxy cost falls from 1.1953 to 0.8824 during gradient descent, rises to 0.9126 when legalization removes the overlaps, and falls to 0.8300 by the end of the 315-second run.](writeup/interactive/thinkorplace-ibm01.gif)
+
+The animation is a post-competition laptop run on ibm01 of the configuration
+inferred to have been ranked. [`scripts/render_placement_animation.py`](scripts/render_placement_animation.py)
+draws it from the run record in
+[`writeup/runs/animation-ibm01-20261117/`](writeup/runs/animation-ibm01-20261117/).
+
 ## Repository map
 
 | Path | Contents |

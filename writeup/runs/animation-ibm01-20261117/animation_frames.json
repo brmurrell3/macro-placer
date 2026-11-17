@@ -1,0 +1,876 @@
+{
+ "kind": "placement_animation_frames",
+ "evidence_label": "Measurement",
+ "benchmark": "ibm01",
+ "run_directory": "writeup/runs/animation-ibm01-20261117",
+ "positions": "animation_frames.npz (float32, frames x macros x 2, macro centers in um)",
+ "scoring": "every frame rescored with macro_place.objective.compute_proxy_cost (reference evaluator)",
+ "selection": "the accepted descent attempt from its initializer, every 10th Adam step and the last, the placement handed to coordinate descent, up to 60 coordinate-descent samples spaced evenly in accepted moves, and the final placement",
+ "instrumentation": "recorder hooks applied locally to the runtime for this run only and removed afterwards; they are not part of the frozen runtime or this repository. They copied positions and changed no solver decision. Coordinate-descent positions were sampled at most once per second.",
+ "frames": [
+  {
+   "frame": 0,
+   "stage": "init",
+   "elapsed_s": 0.0,
+   "adam_step": null,
+   "accepted_moves": null,
+   "proxy": 1.1952950954437256,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 1,
+   "stage": "descent",
+   "elapsed_s": 1.556,
+   "adam_step": 0,
+   "accepted_moves": null,
+   "proxy": 1.1605908870697021,
+   "hard_macro_overlaps": 78
+  },
+  {
+   "frame": 2,
+   "stage": "descent",
+   "elapsed_s": 1.689,
+   "adam_step": 10,
+   "accepted_moves": null,
+   "proxy": 1.0119670629501343,
+   "hard_macro_overlaps": 85
+  },
+  {
+   "frame": 3,
+   "stage": "descent",
+   "elapsed_s": 1.82,
+   "adam_step": 20,
+   "accepted_moves": null,
+   "proxy": 0.9742629528045654,
+   "hard_macro_overlaps": 64
+  },
+  {
+   "frame": 4,
+   "stage": "descent",
+   "elapsed_s": 1.95,
+   "adam_step": 30,
+   "accepted_moves": null,
+   "proxy": 0.9456554651260376,
+   "hard_macro_overlaps": 50
+  },
+  {
+   "frame": 5,
+   "stage": "descent",
+   "elapsed_s": 2.081,
+   "adam_step": 40,
+   "accepted_moves": null,
+   "proxy": 0.9319223165512085,
+   "hard_macro_overlaps": 39
+  },
+  {
+   "frame": 6,
+   "stage": "descent",
+   "elapsed_s": 2.211,
+   "adam_step": 50,
+   "accepted_moves": null,
+   "proxy": 0.9248389005661011,
+   "hard_macro_overlaps": 28
+  },
+  {
+   "frame": 7,
+   "stage": "descent",
+   "elapsed_s": 2.342,
+   "adam_step": 60,
+   "accepted_moves": null,
+   "proxy": 0.9176796674728394,
+   "hard_macro_overlaps": 23
+  },
+  {
+   "frame": 8,
+   "stage": "descent",
+   "elapsed_s": 2.472,
+   "adam_step": 70,
+   "accepted_moves": null,
+   "proxy": 0.910942792892456,
+   "hard_macro_overlaps": 24
+  },
+  {
+   "frame": 9,
+   "stage": "descent",
+   "elapsed_s": 2.602,
+   "adam_step": 80,
+   "accepted_moves": null,
+   "proxy": 0.9076216220855713,
+   "hard_macro_overlaps": 36
+  },
+  {
+   "frame": 10,
+   "stage": "descent",
+   "elapsed_s": 2.732,
+   "adam_step": 90,
+   "accepted_moves": null,
+   "proxy": 0.9012682437896729,
+   "hard_macro_overlaps": 29
+  },
+  {
+   "frame": 11,
+   "stage": "descent",
+   "elapsed_s": 2.863,
+   "adam_step": 100,
+   "accepted_moves": null,
+   "proxy": 0.903444766998291,
+   "hard_macro_overlaps": 19
+  },
+  {
+   "frame": 12,
+   "stage": "descent",
+   "elapsed_s": 2.992,
+   "adam_step": 110,
+   "accepted_moves": null,
+   "proxy": 0.8994618654251099,
+   "hard_macro_overlaps": 21
+  },
+  {
+   "frame": 13,
+   "stage": "descent",
+   "elapsed_s": 3.123,
+   "adam_step": 120,
+   "accepted_moves": null,
+   "proxy": 0.8981423377990723,
+   "hard_macro_overlaps": 22
+  },
+  {
+   "frame": 14,
+   "stage": "descent",
+   "elapsed_s": 3.254,
+   "adam_step": 130,
+   "accepted_moves": null,
+   "proxy": 0.8999177813529968,
+   "hard_macro_overlaps": 20
+  },
+  {
+   "frame": 15,
+   "stage": "descent",
+   "elapsed_s": 3.385,
+   "adam_step": 140,
+   "accepted_moves": null,
+   "proxy": 0.8984241485595703,
+   "hard_macro_overlaps": 22
+  },
+  {
+   "frame": 16,
+   "stage": "descent",
+   "elapsed_s": 3.515,
+   "adam_step": 150,
+   "accepted_moves": null,
+   "proxy": 0.8962322473526001,
+   "hard_macro_overlaps": 15
+  },
+  {
+   "frame": 17,
+   "stage": "descent",
+   "elapsed_s": 3.646,
+   "adam_step": 160,
+   "accepted_moves": null,
+   "proxy": 0.8969718217849731,
+   "hard_macro_overlaps": 20
+  },
+  {
+   "frame": 18,
+   "stage": "descent",
+   "elapsed_s": 3.776,
+   "adam_step": 170,
+   "accepted_moves": null,
+   "proxy": 0.8940436244010925,
+   "hard_macro_overlaps": 23
+  },
+  {
+   "frame": 19,
+   "stage": "descent",
+   "elapsed_s": 3.906,
+   "adam_step": 180,
+   "accepted_moves": null,
+   "proxy": 0.8979344367980957,
+   "hard_macro_overlaps": 22
+  },
+  {
+   "frame": 20,
+   "stage": "descent",
+   "elapsed_s": 4.04,
+   "adam_step": 190,
+   "accepted_moves": null,
+   "proxy": 0.9002689123153687,
+   "hard_macro_overlaps": 20
+  },
+  {
+   "frame": 21,
+   "stage": "descent",
+   "elapsed_s": 4.176,
+   "adam_step": 200,
+   "accepted_moves": null,
+   "proxy": 0.8944796323776245,
+   "hard_macro_overlaps": 17
+  },
+  {
+   "frame": 22,
+   "stage": "descent",
+   "elapsed_s": 4.308,
+   "adam_step": 210,
+   "accepted_moves": null,
+   "proxy": 0.8936178684234619,
+   "hard_macro_overlaps": 16
+  },
+  {
+   "frame": 23,
+   "stage": "descent",
+   "elapsed_s": 4.439,
+   "adam_step": 220,
+   "accepted_moves": null,
+   "proxy": 0.898244321346283,
+   "hard_macro_overlaps": 19
+  },
+  {
+   "frame": 24,
+   "stage": "descent",
+   "elapsed_s": 4.571,
+   "adam_step": 230,
+   "accepted_moves": null,
+   "proxy": 0.899070680141449,
+   "hard_macro_overlaps": 12
+  },
+  {
+   "frame": 25,
+   "stage": "descent",
+   "elapsed_s": 4.708,
+   "adam_step": 240,
+   "accepted_moves": null,
+   "proxy": 0.8990405797958374,
+   "hard_macro_overlaps": 18
+  },
+  {
+   "frame": 26,
+   "stage": "descent",
+   "elapsed_s": 4.839,
+   "adam_step": 250,
+   "accepted_moves": null,
+   "proxy": 0.8947378396987915,
+   "hard_macro_overlaps": 18
+  },
+  {
+   "frame": 27,
+   "stage": "descent",
+   "elapsed_s": 4.974,
+   "adam_step": 260,
+   "accepted_moves": null,
+   "proxy": 0.8936295509338379,
+   "hard_macro_overlaps": 17
+  },
+  {
+   "frame": 28,
+   "stage": "descent",
+   "elapsed_s": 5.107,
+   "adam_step": 270,
+   "accepted_moves": null,
+   "proxy": 0.893916666507721,
+   "hard_macro_overlaps": 21
+  },
+  {
+   "frame": 29,
+   "stage": "descent",
+   "elapsed_s": 5.24,
+   "adam_step": 280,
+   "accepted_moves": null,
+   "proxy": 0.8919975161552429,
+   "hard_macro_overlaps": 19
+  },
+  {
+   "frame": 30,
+   "stage": "descent",
+   "elapsed_s": 5.376,
+   "adam_step": 290,
+   "accepted_moves": null,
+   "proxy": 0.8901864290237427,
+   "hard_macro_overlaps": 16
+  },
+  {
+   "frame": 31,
+   "stage": "descent",
+   "elapsed_s": 5.508,
+   "adam_step": 300,
+   "accepted_moves": null,
+   "proxy": 0.8921825885772705,
+   "hard_macro_overlaps": 20
+  },
+  {
+   "frame": 32,
+   "stage": "descent",
+   "elapsed_s": 5.64,
+   "adam_step": 310,
+   "accepted_moves": null,
+   "proxy": 0.8920165300369263,
+   "hard_macro_overlaps": 15
+  },
+  {
+   "frame": 33,
+   "stage": "descent",
+   "elapsed_s": 5.771,
+   "adam_step": 320,
+   "accepted_moves": null,
+   "proxy": 0.8913271427154541,
+   "hard_macro_overlaps": 19
+  },
+  {
+   "frame": 34,
+   "stage": "descent",
+   "elapsed_s": 5.902,
+   "adam_step": 330,
+   "accepted_moves": null,
+   "proxy": 0.8915396928787231,
+   "hard_macro_overlaps": 13
+  },
+  {
+   "frame": 35,
+   "stage": "descent",
+   "elapsed_s": 6.034,
+   "adam_step": 340,
+   "accepted_moves": null,
+   "proxy": 0.8892049789428711,
+   "hard_macro_overlaps": 16
+  },
+  {
+   "frame": 36,
+   "stage": "descent",
+   "elapsed_s": 6.166,
+   "adam_step": 350,
+   "accepted_moves": null,
+   "proxy": 0.899472713470459,
+   "hard_macro_overlaps": 22
+  },
+  {
+   "frame": 37,
+   "stage": "descent",
+   "elapsed_s": 6.298,
+   "adam_step": 360,
+   "accepted_moves": null,
+   "proxy": 0.8946200013160706,
+   "hard_macro_overlaps": 14
+  },
+  {
+   "frame": 38,
+   "stage": "descent",
+   "elapsed_s": 6.43,
+   "adam_step": 370,
+   "accepted_moves": null,
+   "proxy": 0.8970578908920288,
+   "hard_macro_overlaps": 19
+  },
+  {
+   "frame": 39,
+   "stage": "descent",
+   "elapsed_s": 6.563,
+   "adam_step": 380,
+   "accepted_moves": null,
+   "proxy": 0.8902798295021057,
+   "hard_macro_overlaps": 20
+  },
+  {
+   "frame": 40,
+   "stage": "descent",
+   "elapsed_s": 6.694,
+   "adam_step": 390,
+   "accepted_moves": null,
+   "proxy": 0.890507698059082,
+   "hard_macro_overlaps": 16
+  },
+  {
+   "frame": 41,
+   "stage": "descent",
+   "elapsed_s": 6.825,
+   "adam_step": 400,
+   "accepted_moves": null,
+   "proxy": 0.8926359415054321,
+   "hard_macro_overlaps": 13
+  },
+  {
+   "frame": 42,
+   "stage": "descent",
+   "elapsed_s": 6.956,
+   "adam_step": 410,
+   "accepted_moves": null,
+   "proxy": 0.8889995813369751,
+   "hard_macro_overlaps": 7
+  },
+  {
+   "frame": 43,
+   "stage": "descent",
+   "elapsed_s": 7.087,
+   "adam_step": 420,
+   "accepted_moves": null,
+   "proxy": 0.8868894577026367,
+   "hard_macro_overlaps": 12
+  },
+  {
+   "frame": 44,
+   "stage": "descent",
+   "elapsed_s": 7.219,
+   "adam_step": 430,
+   "accepted_moves": null,
+   "proxy": 0.8888013362884521,
+   "hard_macro_overlaps": 10
+  },
+  {
+   "frame": 45,
+   "stage": "descent",
+   "elapsed_s": 7.353,
+   "adam_step": 440,
+   "accepted_moves": null,
+   "proxy": 0.8872826099395752,
+   "hard_macro_overlaps": 9
+  },
+  {
+   "frame": 46,
+   "stage": "descent",
+   "elapsed_s": 7.484,
+   "adam_step": 450,
+   "accepted_moves": null,
+   "proxy": 0.8864359259605408,
+   "hard_macro_overlaps": 10
+  },
+  {
+   "frame": 47,
+   "stage": "descent",
+   "elapsed_s": 7.616,
+   "adam_step": 460,
+   "accepted_moves": null,
+   "proxy": 0.888213574886322,
+   "hard_macro_overlaps": 9
+  },
+  {
+   "frame": 48,
+   "stage": "descent",
+   "elapsed_s": 7.748,
+   "adam_step": 470,
+   "accepted_moves": null,
+   "proxy": 0.8856189846992493,
+   "hard_macro_overlaps": 9
+  },
+  {
+   "frame": 49,
+   "stage": "descent",
+   "elapsed_s": 7.884,
+   "adam_step": 480,
+   "accepted_moves": null,
+   "proxy": 0.8860740065574646,
+   "hard_macro_overlaps": 10
+  },
+  {
+   "frame": 50,
+   "stage": "descent",
+   "elapsed_s": 8.015,
+   "adam_step": 490,
+   "accepted_moves": null,
+   "proxy": 0.8846998810768127,
+   "hard_macro_overlaps": 9
+  },
+  {
+   "frame": 51,
+   "stage": "descent",
+   "elapsed_s": 8.134,
+   "adam_step": 499,
+   "accepted_moves": null,
+   "proxy": 0.882347822189331,
+   "hard_macro_overlaps": 7
+  },
+  {
+   "frame": 52,
+   "stage": "legalized",
+   "elapsed_s": 12.285,
+   "adam_step": null,
+   "accepted_moves": null,
+   "proxy": 0.9126028418540955,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 53,
+   "stage": "cd",
+   "elapsed_s": 12.663,
+   "adam_step": null,
+   "accepted_moves": 1,
+   "proxy": 0.9126027822494507,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 54,
+   "stage": "cd",
+   "elapsed_s": 13.664,
+   "adam_step": null,
+   "accepted_moves": 119,
+   "proxy": 0.9073851108551025,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 55,
+   "stage": "cd",
+   "elapsed_s": 14.667,
+   "adam_step": null,
+   "accepted_moves": 237,
+   "proxy": 0.9016929268836975,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 56,
+   "stage": "cd",
+   "elapsed_s": 15.668,
+   "adam_step": null,
+   "accepted_moves": 353,
+   "proxy": 0.8967732787132263,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 57,
+   "stage": "cd",
+   "elapsed_s": 16.681,
+   "adam_step": null,
+   "accepted_moves": 476,
+   "proxy": 0.8905318975448608,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 58,
+   "stage": "cd",
+   "elapsed_s": 17.705,
+   "adam_step": null,
+   "accepted_moves": 580,
+   "proxy": 0.8862370252609253,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 59,
+   "stage": "cd",
+   "elapsed_s": 18.71,
+   "adam_step": null,
+   "accepted_moves": 694,
+   "proxy": 0.880495548248291,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 60,
+   "stage": "cd",
+   "elapsed_s": 19.712,
+   "adam_step": null,
+   "accepted_moves": 813,
+   "proxy": 0.873923659324646,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 61,
+   "stage": "cd",
+   "elapsed_s": 20.713,
+   "adam_step": null,
+   "accepted_moves": 930,
+   "proxy": 0.8685760498046875,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 62,
+   "stage": "cd",
+   "elapsed_s": 21.713,
+   "adam_step": null,
+   "accepted_moves": 1069,
+   "proxy": 0.8653384447097778,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 63,
+   "stage": "cd",
+   "elapsed_s": 22.726,
+   "adam_step": null,
+   "accepted_moves": 1170,
+   "proxy": 0.8606166839599609,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 64,
+   "stage": "cd",
+   "elapsed_s": 23.728,
+   "adam_step": null,
+   "accepted_moves": 1287,
+   "proxy": 0.8568755388259888,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 65,
+   "stage": "cd",
+   "elapsed_s": 24.747,
+   "adam_step": null,
+   "accepted_moves": 1370,
+   "proxy": 0.8552682399749756,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 66,
+   "stage": "cd",
+   "elapsed_s": 25.76,
+   "adam_step": null,
+   "accepted_moves": 1427,
+   "proxy": 0.8541527390480042,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 67,
+   "stage": "cd",
+   "elapsed_s": 26.77,
+   "adam_step": null,
+   "accepted_moves": 1480,
+   "proxy": 0.8526568412780762,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 68,
+   "stage": "cd",
+   "elapsed_s": 27.792,
+   "adam_step": null,
+   "accepted_moves": 1547,
+   "proxy": 0.8513895273208618,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 69,
+   "stage": "cd",
+   "elapsed_s": 28.803,
+   "adam_step": null,
+   "accepted_moves": 1615,
+   "proxy": 0.8496259450912476,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 70,
+   "stage": "cd",
+   "elapsed_s": 29.819,
+   "adam_step": null,
+   "accepted_moves": 1677,
+   "proxy": 0.8477180004119873,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 71,
+   "stage": "cd",
+   "elapsed_s": 30.834,
+   "adam_step": null,
+   "accepted_moves": 1749,
+   "proxy": 0.8467927575111389,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 72,
+   "stage": "cd",
+   "elapsed_s": 31.848,
+   "adam_step": null,
+   "accepted_moves": 1805,
+   "proxy": 0.8449257612228394,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 73,
+   "stage": "cd",
+   "elapsed_s": 32.853,
+   "adam_step": null,
+   "accepted_moves": 1877,
+   "proxy": 0.8434128761291504,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 74,
+   "stage": "cd",
+   "elapsed_s": 33.859,
+   "adam_step": null,
+   "accepted_moves": 1940,
+   "proxy": 0.8418992161750793,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 75,
+   "stage": "cd",
+   "elapsed_s": 34.862,
+   "adam_step": null,
+   "accepted_moves": 1983,
+   "proxy": 0.8410941362380981,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 76,
+   "stage": "cd",
+   "elapsed_s": 35.87,
+   "adam_step": null,
+   "accepted_moves": 2024,
+   "proxy": 0.8400464057922363,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 77,
+   "stage": "cd",
+   "elapsed_s": 37.877,
+   "adam_step": null,
+   "accepted_moves": 2116,
+   "proxy": 0.8379719257354736,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 78,
+   "stage": "cd",
+   "elapsed_s": 38.92,
+   "adam_step": null,
+   "accepted_moves": 2149,
+   "proxy": 0.8369919657707214,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 79,
+   "stage": "cd",
+   "elapsed_s": 39.932,
+   "adam_step": null,
+   "accepted_moves": 2183,
+   "proxy": 0.8367404937744141,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 80,
+   "stage": "cd",
+   "elapsed_s": 41.984,
+   "adam_step": null,
+   "accepted_moves": 2254,
+   "proxy": 0.8355793952941895,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 81,
+   "stage": "cd",
+   "elapsed_s": 43.04,
+   "adam_step": null,
+   "accepted_moves": 2299,
+   "proxy": 0.835136890411377,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 82,
+   "stage": "cd",
+   "elapsed_s": 45.094,
+   "adam_step": null,
+   "accepted_moves": 2337,
+   "proxy": 0.8347360491752625,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 83,
+   "stage": "cd",
+   "elapsed_s": 47.168,
+   "adam_step": null,
+   "accepted_moves": 2376,
+   "proxy": 0.834180474281311,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 84,
+   "stage": "cd",
+   "elapsed_s": 49.219,
+   "adam_step": null,
+   "accepted_moves": 2427,
+   "proxy": 0.833232045173645,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 85,
+   "stage": "cd",
+   "elapsed_s": 51.325,
+   "adam_step": null,
+   "accepted_moves": 2472,
+   "proxy": 0.832495927810669,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 86,
+   "stage": "cd",
+   "elapsed_s": 54.83,
+   "adam_step": null,
+   "accepted_moves": 2525,
+   "proxy": 0.8319001197814941,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 87,
+   "stage": "cd",
+   "elapsed_s": 59.389,
+   "adam_step": null,
+   "accepted_moves": 2580,
+   "proxy": 0.8313978314399719,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 88,
+   "stage": "cd",
+   "elapsed_s": 64.902,
+   "adam_step": null,
+   "accepted_moves": 2629,
+   "proxy": 0.8310800790786743,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 89,
+   "stage": "cd",
+   "elapsed_s": 73.108,
+   "adam_step": null,
+   "accepted_moves": 2682,
+   "proxy": 0.830640435218811,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 90,
+   "stage": "cd",
+   "elapsed_s": 78.439,
+   "adam_step": null,
+   "accepted_moves": 2726,
+   "proxy": 0.8303099870681763,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 91,
+   "stage": "cd",
+   "elapsed_s": 93.47,
+   "adam_step": null,
+   "accepted_moves": 2778,
+   "proxy": 0.8300458788871765,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 92,
+   "stage": "cd",
+   "elapsed_s": 114.984,
+   "adam_step": null,
+   "accepted_moves": 2823,
+   "proxy": 0.8299877643585205,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 93,
+   "stage": "cd",
+   "elapsed_s": 157.481,
+   "adam_step": null,
+   "accepted_moves": 2873,
+   "proxy": 0.8299561738967896,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 94,
+   "stage": "cd",
+   "elapsed_s": 278.884,
+   "adam_step": null,
+   "accepted_moves": 2921,
+   "proxy": 0.8299559354782104,
+   "hard_macro_overlaps": 0
+  },
+  {
+   "frame": 95,
+   "stage": "final",
+   "elapsed_s": 314.554,
+   "adam_step": null,
+   "accepted_moves": null,
+   "proxy": 0.8299559354782104,
+   "hard_macro_overlaps": 0
+  }
+ ]
+}

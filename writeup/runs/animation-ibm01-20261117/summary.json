@@ -1,0 +1,31 @@
+{
+  "completed_run_count": 1,
+  "degraded_run_count": 0,
+  "finished_run_count": 1,
+  "manifest_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/animation-ibm01-20261117/manifest.json",
+  "pipeline_completed_run_count": 1,
+  "planned_run_count": 1,
+  "runs": [
+    {
+      "action": "executed",
+      "degraded_lanes": [],
+      "incomplete_phases": [],
+      "phase_errors": {},
+      "pipeline_completed": true,
+      "result_path": "/Users/brendan/Developer/macro-place-challenge-2026/writeup/runs/animation-ibm01-20261117/runs/ibm01__v2-a__seed42__2daf055523ae/result.json",
+      "run_id": "ibm01__v2-a__seed42__2daf055523ae",
+      "solver_outcome": "pipeline_completed",
+      "status": "completed",
+      "study_eligible": true,
+      "usable_operating_result": true,
+      "used_fallback": false,
+      "valid": true,
+      "worker_error": null
+    }
+  ],
+  "schema_version": 1,
+  "study_eligible_run_count": 1,
+  "updated_at": "2026-11-17T21:32:08.356906+00:00",
+  "usable_operating_result_count": 1,
+  "valid_run_count": 1
+}
