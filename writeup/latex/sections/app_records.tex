@@ -15,8 +15,7 @@ thread; none stores coordinates, a source revision or host details, so the score
 be recomputed from their components but not from placements. Contemporaneous notes
 place the 17 May v1 run on the M3 Max and the early v2 run on an AWS EPYC instance;
 the 0.98199 record names no host. The records differ in program, hardware and
-time budget, so differences between columns describe the records, not the effect of
-any one change.
+time budget, so a difference between columns cannot be assigned to any one change.
 
 \input{generated/historical_vs_baselines.tex}
 
@@ -33,10 +32,10 @@ total decrease of 0.15100; IBM17 nevertheless remains among the costliest design
 \texttt{4a202de}) records an identical rerun of the 17 May v1 configuration on the same
 M3 Max over a four-design subset. The subset mean moved from 0.89844 to 0.89517
 ($-0.36\%$); IBM01 moved from 0.85963 to 0.84691 ($-1.48\%$), IBM04 was unchanged, and
-IBM09 and IBM13 moved by $-0.20\%$ and $+0.14\%$. This is one repeat pair of a
-different pipeline from the ranked one. It shows that run-to-run differences of a few
-tenths of a percent in a subset mean, and over 1\% on one design, occur without any
-code change; it is not a confidence interval.
+IBM09 and IBM13 moved by $-0.20\%$ and $+0.14\%$. This is one repeat pair, of a
+different pipeline from the ranked one and too few for a confidence interval, but it
+shows that run-to-run differences of a few tenths of a percent in a subset mean, and
+over 1\% on one design, occur without any code change.
 
 \paragraph{Lineage of the judged entry.} The final leaderboard row reads
 ``Resubmitted 5/20 (thinkorplace-v2). Was 1.0771'' and names no commit, archive or
@@ -46,10 +45,9 @@ date; the listed runtime of about 12 minutes per design, which matches that pipe
 720\,s budget rather than the three-lane system's 2,700\,s; and the upstream leaderboard
 of 21 May, which listed the pending resubmission with a self-reported score consistent
 with the single-pipeline lineage and not with the early-v2 record at 1.00835 (the
-provenance note in Appendix~\ref{app:records-ledger} gives the figure). The exact
-judged commit was not recorded, and the three-lane commits of 22 May (Eastern time)
-still preceded the Pacific-time deadline, so chronology alone cannot exclude them; the
-inference rests on the listed 12-minute runtime and the 20 May resubmission date.
+provenance note in Appendix~\ref{app:records-ledger} gives the figure). The three-lane
+commits of 22 May (Eastern time) still preceded the Pacific-time deadline, so
+chronology alone cannot exclude them; the runtime and the resubmission date do.
 
 \subsection{Reproduction}\label{app:records-reproduction}
 
@@ -68,8 +66,8 @@ evidence label and record.
 \centering\footnotesize
 \caption{Claim-to-evidence map. \official: the organizers' final leaderboard.
 \historical: May 2026 development records. \measurement: post-competition diagnostics
-on frozen inputs. \reproduction: the post-competition run of the ranked
-configuration.}
+on frozen inputs. \reproduction: the post-competition run of the configuration
+inferred to be ranked.}
 \label{tab:evidence-ledger}
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.30\linewidth}
                 >{\raggedright\arraybackslash}p{0.13\linewidth}
@@ -114,7 +112,7 @@ Engineering batches & \measurement & Frozen run records & 60--180\,s budgets; no
 mean \\
 Repeatability $-0.36\%$ (subset), $-1.48\%$ (IBM01) & \historical & Development note,
 not frozen & One repeat pair of v1 \\
-Rerun of the ranked configuration on a laptop CPU: mean \ReproMean{} &
+Rerun of the configuration inferred to be ranked, on a laptop CPU: mean \ReproMean{} &
 \reproduction & Its own run records & Reported in Section~\ref{sec:reproduction} and
 Table~\ref{tab:reproduction} \\
 Full-suite score of the three-lane system & --- & None & Never scored (inferred) \\

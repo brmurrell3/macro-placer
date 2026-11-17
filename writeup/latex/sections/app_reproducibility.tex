@@ -4,7 +4,7 @@ The code, frozen evidence and report sources are in the public repository
 \url{https://github.com/brmurrell3/macro-placer}. Commands below run from the
 repository root with the project's virtual environment.
 
-\paragraph{Source revisions.} Four revisions anchor the work. The competition
+\paragraph{Source revisions.} The report depends on four source revisions. The competition
 snapshot \texttt{2ab92a33d352} (22 May 2026) is the last competition-era commit; its
 Python source closure is frozen as \path{writeup/data/publication/competition-source.tar},
 described by \path{source_snapshot.json} with the archive digest and file list. The
@@ -60,6 +60,7 @@ the historical freezer refuses to replace a frozen raw record with different byt
 No generator runs a solver, and the scripts that produced the diagnostics are separate
 from the generators.
 
+\Needspace{9\baselineskip}
 \paragraph{Runner.} The study runner (\path{scripts/run_publication_study.py} with
 \path{scripts/publication_worker.py}) implements the following workflow:
 \begin{enumerate}

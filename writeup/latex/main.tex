@@ -38,7 +38,7 @@
 \hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue,
   pdfauthor={Brendan Murrell, Xiaofei Zhang, Andrew Murrell},
   pdftitle={Thinkorplace: Smooth Proposals and Exact Local Search for Chip Macro Placement},
-  pdfsubject={Technical report 1.1 on a macro placer for the Partcl/HRT Macro Placement Challenge 2026},
+  pdfsubject={Technical report 1.2 on a macro placer for the Partcl/HRT Macro Placement Challenge 2026},
   pdfkeywords={macro placement, physical design, analytical placement, coordinate descent, incremental evaluation, Hungarian assignment, negative curvature},
   pdflang={en-US}}
 \color{ink}
@@ -46,7 +46,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \lhead{\small\color{muted}Thinkorplace}
-\rhead{\small\color{muted}Technical report 1.1 \textperiodcentered{} 6 November 2026}
+\rhead{\small\color{muted}Technical report 1.2 \textperiodcentered{} 15 November 2026}
 \cfoot{\small\color{muted}\thepage\ / \pageref*{LastPage}}
 \renewcommand{\headrulewidth}{0.35pt}
 % The title page carries the footer but no running header.
@@ -96,15 +96,6 @@
 \newcommand{\code}[1]{\texttt{#1}}
 \newcommand{\evidencebox}[1]{%
   \begin{center}\fcolorbox{rulegray}{panel}{\parbox{0.93\linewidth}{\small #1}}\end{center}}
-% Section opener for skimmers: one to three sentences. The paragraph after the
-% box starts flush and cannot be separated from it by a page break.
-\makeatletter
-\newcommand{\inbrief}[1]{%
-  \par\smallskip\noindent
-  \fcolorbox{rulegray}{panel}{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
-    \small\textbf{\color{blue}In brief.}\enspace #1}}%
-  \par\smallskip\@afterindentfalse\@afterheading}
-\makeatother
 % Holds a figure drawn at natural size beside a side caption.
 \newsavebox{\sidefigbox}
 \newcommand{\reportfigure}[4]{%
@@ -119,16 +110,13 @@
 \begin{center}
 {\LARGE\bfseries Thinkorplace: Smooth Proposals and Exact Local Search\\[0.15em]
 for Chip Macro Placement\par}
-\vspace{0.55em}
-{\normalsize\itshape Ninth on the final leaderboard of the Partcl/HRT Macro Placement
-Challenge 2026\\ (verified mean proxy 0.9974)\par}
-\vspace{0.6em}
+\vspace{0.8em}
 {\large Brendan Murrell\textsuperscript{*}\qquad Xiaofei Zhang\qquad Andrew Murrell\par}
 \vspace{0.15em}
 {\footnotesize\textsuperscript{*}Lead and corresponding author,
 \url{https://brendanmurrell.com}\par}
 \vspace{0.3em}
-{\small Technical report 1.1 \textperiodcentered{} 6 November 2026
+{\small Technical report 1.2 \textperiodcentered{} 15 November 2026
 \textperiodcentered{} Code: \url{https://github.com/brmurrell3/macro-placer}\par}
 \end{center}
 \thispagestyle{plain}
@@ -138,60 +126,30 @@ Challenge 2026\\ (verified mean proxy 0.9974)\par}
 \begin{abstract}
 \noindent
 Macro placement decides where a chip's large blocks sit before its wires are
-routed. Thinkorplace, our entry in the Partcl/HRT Macro Placement Challenge 2026 on 17 IBM
-designs, ranked ninth on the final leaderboard (verified mean proxy 0.9974; the
-organizers report 132 verified eligible submissions), 31.6\% below the
-published RePlAce baseline and 4.9\% above the winner, at a listed 12 minutes per
-design against a one-hour limit. \ifReproComplete A post-competition rerun of the
-ranked configuration on a laptop CPU gives a mean proxy of \ReproMean{} with every
-placement valid.\else A post-competition rerun of the ranked configuration on a
-laptop CPU is reported per design; its mean is withheld because coverage was
-incomplete.\fi{} The method separates proposing moves from accepting them. A smooth
-surrogate of wirelength, density and routing congestion moves all blocks at once;
-coordinate descent keeps a move only if the exact score falls. Incremental
-evaluation makes that check cheap: 1.3--3.7\,ms per sampled move, against
-1.4--26.9\,s for full recomputation. Development records attribute 84.5\% of our
-improvement over a slower predecessor to lower congestion, and suggest
-curvature-guided perturbations helped about equally along every direction tried.
-We also show why the no-overlap rule confines one-block-at-a-time search, bound
-rounding error in exact acceptance, and give a case where optimal reassignment
-worsens wirelength.
+routed. Thinkorplace, our entry in the Partcl/HRT Macro Placement Challenge 2026,
+ranked ninth on the final leaderboard (verified mean proxy 0.9974; the organizers
+report 132 verified eligible submissions) over 17 IBM designs. That is 31.6\% below
+the published RePlAce baseline and 4.9\% above the winner, at a listed 12 minutes
+per design against a one-hour limit. The solver separates proposing moves from
+accepting them. Gradient descent on a smooth surrogate of wirelength, density and
+routing congestion moves all blocks at once, and coordinate descent then keeps a
+move only if the exact score falls. An incremental evaluator makes each exact check
+take milliseconds instead of seconds. We show why the no-overlap rule keeps
+one-block moves near their starting arrangement, bound the effect of rounding error
+on exact acceptance, and give a two-block case in which an optimal reassignment
+raises wirelength. \ifReproComplete A post-competition rerun of the configuration
+most likely ranked, on a laptop CPU, gives a mean proxy of \ReproMean{} with every
+placement valid.\else A post-competition rerun of the configuration most likely
+ranked is reported per design; its mean is withheld because coverage was
+incomplete.\fi
 \end{abstract}
-
-\begin{center}
-\fcolorbox{rulegray}{panel}{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
-\small
-\textbf{\color{blue}At a glance}\par\smallskip
-\begin{tabularx}{\linewidth}{@{}>{\bfseries}l Y@{}}
-Problem & Place 178--786 large blocks and 894--1,985 cell clusters on each of 17
-benchmark chips, minimizing a published wirelength, crowding and
-congestion score with zero block overlap, in one hour per design. \\
-Why hard & Thousands of coordinates; the no-overlap rule breaks the legal
-placements into astronomically many convex pieces; the score has kinks and jumps
-where gradients fail; and one exact evaluation takes 1.4--26.9\,s. \\
-Approach & A smooth, differentiable approximation of the score moves every block
-at once by gradient descent; an exact search that moves one coordinate at a time,
-made $10^3$--$2\times10^4$ times cheaper by rescoring only what a move changes,
-keeps a move only if the true score drops. \\
-Result & Ninth on the final leaderboard (verified mean proxy 0.9974; the organizers
-report 132 verified eligible submissions), 31.6\% below the published RePlAce
-baseline and 4.9\% above the winner, in a listed 12 of the allowed 60 minutes per
-design (\official; \cref{fig:result-context}); rerun on a laptop CPU:
-\ifReproComplete\ReproMean{}\else mean withheld, coverage incomplete\fi{}
-(\reproduction). \\
-Lessons & The score is mostly congestion; a fast pipeline from a good start beat
-close to an hour of elaborate search; kicks along computed negative-curvature
-directions helped about equally along both eigenvectors and every step size
-tried, so the record cannot credit the curvature (\historical).
-\end{tabularx}}}
-\end{center}
 
 \begin{figure}[tbp]
 \centering
 \includegraphics{figures/result_context.pdf}
-\caption{The ranked entry in context (\official): mean proxy over the 17 IBM designs
-for the top ten of the final leaderboard and the published RePlAce and
-simulated-annealing (SA) baselines (broken axis; lower is better).}
+\caption{Mean proxy over the 17 IBM designs for the top ten of the final leaderboard
+and the published RePlAce and simulated-annealing (SA) baselines (\official; broken
+axis; lower is better).}
 \label{fig:result-context}
 \end{figure}
 

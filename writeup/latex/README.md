@@ -1,6 +1,6 @@
 # Thinkorplace technical report
 
-Source of technical report 1.1, *Thinkorplace: Smooth Proposals and Exact Local
+Source of technical report 1.2, *Thinkorplace: Smooth Proposals and Exact Local
 Search for Chip Macro Placement*. Build from this directory with:
 
 ```sh
@@ -15,8 +15,8 @@ to `build/main.pdf`; the build directory is disposable.
 
 | Path | Contents |
 |---|---|
-| `main.tex` | Preamble, title block, abstract, "At a glance" box, Figure 1, acknowledgments, bibliography, and the `\input` list |
-| `sections/{intro,problem,approach,results,lessons,limitations,related,conclusion}.tex` | Main text (14 pages). Each section after the introduction opens with an `\inbrief{...}` box |
+| `main.tex` | Preamble, title block, abstract, Figure 1, acknowledgments, bibliography, and the `\input` list |
+| `sections/{intro,problem,approach,results,lessons,limitations,related,conclusion}.tex` | Main text (about 11 pages) |
 | `sections/app_*.tex` | Appendices: glossary, objective, algorithms, proofs, curvature, verification, records, reproducibility |
 | `generated/*.tex` | Tables rendered from frozen data; do not edit by hand |
 | `figures/*.pdf` | Figures rendered from frozen data; the architecture, feasible-set and assignment drawings are TikZ inside the section files |

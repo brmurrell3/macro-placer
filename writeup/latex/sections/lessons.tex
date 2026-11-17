@@ -1,84 +1,47 @@
 \section{What worked and what did not}\label{sec:lessons}
 
-\inbrief{Of 141 written hypotheses, 39 were explicitly falsified by pre-set kill
-gates. Making the smooth model smoother helped; making it more accurate did not.
-Curvature kicks helped about equally along every direction tried, so the record
-cannot credit the curvature. A post-competition audit found ten defects; none is
-known to have affected the judged entry.}
-
-We ran development as written hypotheses, each with a kill gate (a pre-set threshold
-for abandoning the idea) and a recorded outcome: 141 experiments, 39 explicitly
-falsified (\historical). \Cref{tab:development} summarizes ten; they are single,
-uncontrolled runs, so they show which ideas we kept and why rather than measure
-effect sizes. Kill gates and cross-design checks caught a bug (row~3) and a move
-that hurt industrial-style designs (row~5). Three lessons recur.
+We ran development as written hypotheses, each with a kill gate (a threshold, set in
+advance, for abandoning the idea) and a recorded outcome: 141 experiments, of which 39
+were explicitly falsified (\historical). \Cref{tab:development} summarizes ten. They
+are single, uncontrolled runs, so they show which ideas we kept and why rather than
+measure effect sizes. Kill gates and cross-design checks caught a bug (row~3) and a
+move that hurt industrial-style designs (row~5).
 
 \input{generated/development_records.tex}
 
-\paragraph{A smoother surrogate helped; a more faithful one did not.} Closer
-agreement with the evaluator did not improve final scores (\historical): a
-congestion model whose
-IBM17 error fell from 14.4\% to 8.0\% left the final score 0.98\% worse (row~8;
-within single-design run-to-run spread), and an earlier smooth score that ranked
-saved placements well (Spearman 0.929) led descent from a good IBM01 placement to a
-result 81\% worse after repair. Gradient polish did not improve converged placements
-(rows~4 and~7); the change that helped, Gaussian density (row~9), made the surface
-smoother, and its fidelity was not measured.
+\paragraph{Smoothness mattered more than fidelity.} A more accurate congestion model
+(row~8) and gradient polish of converged placements (rows~4 and~7) did not improve
+final scores, and an earlier smooth score that ranked saved placements well
+(Spearman 0.929) led descent from a good IBM01 placement to a result 81\% worse after
+repair (\historical). The change that helped, Gaussian density (row~9), made the
+surface smoother; its fidelity was not measured.
 
-\paragraph{Good placements can be separated by illegal states.} Straight-line blends
-between two good placements were never legal (0 of 9 on two designs; row~6),
-consistent with \cref{prop:geometry}, which allows but does not require such gaps.
+\paragraph{Good placements can be separated by illegal states.} No straight-line blend
+between two good placements was legal (0 of 9 on two designs; row~6). This is
+consistent with \cref{prop:geometry}, which allows such gaps but does not require
+them.
 
-\paragraph{Curvature kicks helped, but the record cannot credit the curvature.} The
-most elaborate idea has the clearest record (\cref{fig:curvature}; \historical). In
-v1 research runs without the one-hour cap, a first curvature stage (up to 4,007\,s
-per design) lowered the mean \emph{plateau} score, the better of v1's two branches
-before any kick, from 1.08128 to 1.06760, and a cascade of further stages (up to
-3,454\,s) reached 1.06119. Every design improved, but no design could have gotten
-worse: a stage keeps its input unless a candidate scores lower. The informative
-evidence is which kicks worked, and success barely depends on the eigenvector or the
-step length. Of 204 first-stage attempts (12 on each design), 201 could be legalized
-and 190 ended below the plateau with zero overlap: 94 of 102 along the first
-eigenvector, 96 of 102 along the second, and 64, 65 and 61 of 68 at total
-displacement norms of 0.3, 1 and 3\,$\mu$m summed over all blocks. Generic
-perturb-and-repolish, or the extra polish alone, would produce this pattern; the
-missing experiments are a random-direction control and a zero-step (polish-only)
-control of equal cost.
+\paragraph{Curvature kicks helped, for reasons we cannot pin down.} In v1 research
+runs without the one-hour cap (\historical), curvature stages lowered the mean
+\emph{plateau} score, the better of v1's two branches before any kick, from 1.08128
+to 1.06119 (Appendix~\ref{app:curvature-stages}). No design could have gotten worse, because a stage
+keeps its input unless a candidate scores lower, so the useful evidence is which
+kicks worked. Nearly all did. Of 204 first-stage attempts, 190 ended below the
+plateau with zero overlap, at almost the same rate along either eigenvector and at
+every step length. Generic perturb-and-repolish, or the extra polish alone, would
+produce this pattern, and the controls that would tell them apart, random-direction
+and zero-step kicks of equal cost, were not run. The computed curvature is also
+suspect. At one saved IBM01 placement the surrogate's density and congestion branch
+boundaries lie within $10^{-7}\,\mu$m, so the eigenvalue that automatic
+differentiation reports describes one smooth branch, not a bend in the score
+(\measurement; Appendix~\ref{app:curvature}).
 
-\begin{figure}[tbp]
-\centering
-\includegraphics{figures/curvature_attempts.pdf}
-\caption{Curvature kicks (perturb along a computed negative-curvature direction, then
-legalize and re-polish) in v1 research runs without the one-hour cap (\historical):
-(a)~score change relative to the plateau, the best v1 result before any kick, per
-design and on average; (b)~share of first-stage attempts ending below the plateau
-with zero overlap, by eigenvector and step length. Success is nearly the same in
-every group, as generic perturb-and-repolish or the extra polish alone would also
-produce.}
-\label{fig:curvature}
-\end{figure}
-
-The curvature itself is doubtful. At one saved IBM01 placement, automatic
-differentiation reports a negative curvature of $-0.442458$, but that number
-describes only the smooth branch of the surrogate the point happens to sit on.
-Density and congestion branch boundaries lie within $10^{-7}\,\mu$m, so a direct
-finite-difference check sees jumps in the gradient instead; on the smooth wirelength
-term the two agree to about $4\times10^{-9}$. The surrogate has no true second
-derivative there: its eigenvectors are reasonable candidate directions, not
-measurements of a bend in the score (\measurement; Appendix~\ref{app:curvature}).
-
-\paragraph{Assignment.} Hungarian reassignment lowered the score in all 5
-single-design trials (0.35--1.25\%; row~10), partly perhaps through its extra polish,
-and went into Lane~C (\cref{sec:scored}).
+Hungarian reassignment lowered the score in all five single-design trials (row~10),
+perhaps partly through its extra polish, and went into Lane~C (\cref{sec:scored}).
 
 \paragraph{Post-competition audit.} A September audit of the competition code found
-ten defects, all since repaired (Appendix~\ref{app:verification}). Most were in
-parts that were never scored, such as the three-lane supervisor, which waited
-without a deadline once its budget had passed and saved lane results only on normal
-completion, or in input parsing for hierarchical designs, which the flat IBM designs
-never exercise; on all 17 IBM designs the repaired parsing yields identical inputs
-(\measurement). Two could touch the single pipeline and cannot be excluded, because
-no judged coordinates survive: float32 export can round a coordinate one step past
-the upper canvas edge, and input soft clusters outside the canvas, present in 15 of
-the 17 IBM inputs, were not explicitly repaired. The organizers' verification passed
-the entry.
+ten defects, all since repaired (Appendix~\ref{app:verification}). Most were in code
+that was never scored. Two could affect the single pipeline and cannot be ruled out,
+because no judged coordinates survive: float32 export can round a coordinate one step
+past the upper canvas edge, and input soft clusters outside the canvas were not
+explicitly repaired. The organizers' verification passed the entry.

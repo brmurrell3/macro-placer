@@ -10,9 +10,9 @@ PDF.
 
 Write for technical readers outside chip design: software engineers, quants, ML
 practitioners, and managers who once took multivariable calculus and linear
-algebra. After skimming pages 1–3 and the section openers, such a reader should be
-able to say what problem was solved, why it is hard, what the key ideas were, what
-the result was, and what was learned.
+algebra. After reading the abstract and introduction, such a reader should be able
+to say what problem was solved, why it is hard, what the key ideas were, what the
+result was, and what was learned.
 
 - Lead with the problem-solving and the mathematical framing. Keep fine-grained
   engineering detail and methodology for specialists in the appendices.
@@ -22,9 +22,10 @@ the result was, and what was learned.
 - Present mathematics in three steps: an intuition sentence, the equation with
   every symbol defined, then what it means for the solver. State theorems in the
   main text and put proofs in the appendix.
-- Open each main section after the introduction with a one-to-three-sentence
-  "In brief" box (`\inbrief{...}`); the introduction sits directly under the
-  "At a glance" box and needs none.
+- Say each thing once. The abstract and the Results section state the competition
+  result in full; elsewhere refer to it. Do not add summary boxes or section
+  openers that restate the abstract, and do not repeat a caveat that the
+  Limitations section already carries.
 - Put caveats in the single Limitations section. Give each result one evidence
   label instead of hedging every sentence: **Official** (the organizers' final
   leaderboard), **Historical** (May 2026 development records; unmatched hardware,
@@ -36,7 +37,7 @@ the result was, and what was learned.
 - Use "we" as the authorial voice, never "I built". Do not use obviously, clearly,
   groundbreaking, revolutionary, dramatically, leverage, seamless, robust, or delve.
   Write in a confident, precise, neutral voice.
-- Keep the main text to at most 15 pages; appendices may be longer. Generated
+- Keep the main text to at most 12 pages; appendices may be longer. Generated
   figures are drawn at their final size with 8-point minimum text, so fit the page
   budget by cutting prose rather than by scaling figures.
 - State the competition result exactly as "ninth on the final leaderboard

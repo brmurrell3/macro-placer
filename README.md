@@ -17,7 +17,7 @@ verified eligible submissions).
 - **Engineering.** An incremental evaluator rescores only what a move changes:
   about 1,000–18,000× faster per move than full recomputation by the reference
   evaluator, agreeing with it within a relative 3×10⁻¹⁵ on the sampled moves.
-- **Record.** A 47-page technical report with proofs and per-design records,
+- **Record.** A 44-page technical report with proofs and per-design records,
   about 140 experiment manifests including falsified ones, and a
   post-competition reproduction on a laptop CPU with all 17 placements valid.
 
@@ -50,7 +50,7 @@ comparison; per-design results are in the report's Section 4.2 and Appendix G.
 
 ## Read more
 
-- [Read the technical report](writeup/thinkorplace-report.pdf) (technical report 1.1, 6 November 2026)
+- [Read the technical report](writeup/thinkorplace-report.pdf) (technical report 1.2, 15 November 2026)
 - [Project page](https://brendanmurrell.com/research/thinkorplace/): a short
   summary on the lead author's website.
 - Placement explorer: [open it online](https://brendanmurrell.com/research/thinkorplace/placement-comparison.html),

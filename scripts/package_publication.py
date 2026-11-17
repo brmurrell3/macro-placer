@@ -17,8 +17,8 @@ REPOSITORY = "https://github.com/brmurrell3/macro-placer"
 METADATA = {
     "title": "Thinkorplace: Smooth Proposals and Exact Local Search for Chip Macro Placement",
     "author": "Brendan Murrell, Xiaofei Zhang, Andrew Murrell",
-    "date": "2026-11-06",
-    "version": "Technical report 1.1",
+    "date": "2026-11-15",
+    "version": "Technical report 1.2",
     "description": ("Ninth on the final leaderboard of the Partcl/HRT Macro Placement Challenge 2026 "
                     "(verified mean proxy 0.9974)."),
     "hero_image": "interactive/result-context.svg",
@@ -32,6 +32,7 @@ README = (
     "  thinkorplace-technical-report.pdf   the technical report\n"
     "  placement-comparison.html           interactive explorer; self-contained, no network requests\n"
     "  interactive/result-context.svg      hero figure (PNG copy for social previews)\n"
+    "  interactive/leaderboard-all.svg     article chart of every ranked entry\n"
     "manifest.json gives the title, author, date and version for the site's post metadata, and a\n"
     "SHA-256 for every file. These files have been packaged locally; no website was changed.\n"
 )
@@ -45,6 +46,7 @@ def sources(pdf):
         "thinkorplace-technical-report.pdf": pdf,
         "placement-comparison.html": ROOT / "writeup/interactive/placement-comparison.html",
         "interactive/result-context.svg": ROOT / "writeup/interactive/result-context.svg",
+        "interactive/leaderboard-all.svg": ROOT / "writeup/interactive/leaderboard-all.svg",
         "interactive/result-context.png": ROOT / "writeup/interactive/result-context.png",
     }
 

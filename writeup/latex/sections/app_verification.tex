@@ -2,10 +2,10 @@
 
 In September 2026 we audited the competition code against the challenge rules and
 our own runtime assumptions, repaired what we found in a separate post-competition
-runtime, and exercised the repairs in short engineering runs on an Apple M3 Max.
-This appendix lists the defects with their bearing on the judged entry, gives the
-evaluator microbenchmarks behind the main text's speed and agreement figures, and
-condenses the engineering runs, including two stopped reproduction attempts.
+runtime, and ran the repairs in short engineering runs on an Apple M3 Max. Below are
+the defects and whether each could have affected the judged entry, the evaluator
+microbenchmarks behind the main text's speed and agreement figures, and the
+engineering runs, including two stopped reproduction attempts.
 
 \subsection{Defects and their scope}\label{app:defects}
 
@@ -85,7 +85,7 @@ Table~\ref{tab:defects} lists each defect, where it lived in the competition cod
 whether it could have affected the judged 20 May IBM entry, the repair and the
 evidence that the repair works. The judged entry is inferred to be the single
 pipeline of Appendix~\ref{app:alg-supervisor}; its listed runtime of about 12 minutes
-per design matches its 720\,s budget. Two facts settle most rows: that pipeline runs
+per design matches its 720\,s budget. Most rows are settled by two facts. That pipeline runs
 in one process without lane workers, and every hard-macro name in the 17 IBM netlists
 is flat, so the first ``/'' of a pin name always separates the owning macro. A
 frozen record checks this on all 17 pinned IBM inputs
@@ -104,9 +104,9 @@ focused tests of Appendix~\ref{app:repro} and to the frozen diagnostics.
 
 \subsection{Engineering runs}\label{app:engineering}
 
-Three batches exercised the repaired runtime with the corrected runner. They are short
-engineering checks: the solver budgets are 60 to 180\,s, far below the competition's
-hour, and their purpose is execution, recording and legality, not quality. All ran on
+Three batches exercised the repaired runtime with the corrected runner. They check
+execution, recording and legality, with solver budgets of 60 to 180\,s, far below the
+competition's hour, and say little about placement quality. All ran on
 an Apple M3 Max (14 logical CPUs, 36\,GiB) under macOS 26.6.2 with CPython 3.9.6 and
 PyTorch 2.8.0, nominal seed 42, and every planned run is reported. Each batch froze its
 source as a runtime archive before execution: \texttt{5730d13762ce} for the pilot,

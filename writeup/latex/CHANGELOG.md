@@ -1,5 +1,33 @@
 # Report revisions
 
+## 1.2 — 15 November 2026
+
+Prose rewrite to cut length and repetition. No result, generated table or figure
+changed; one figure moved.
+
+- The main text is about 11 pages (was 15) and the report 44 pages (was 47). The
+  "At a glance" box, the result subtitle under the title and every "In brief" box
+  are removed. The abstract and Section 4.1 state the competition result in the
+  required form; other sections refer to it.
+- The introduction's contribution list and reading guide become two short
+  paragraphs. Section 2's "Why it is hard" list and the Limitations list lose their
+  bold run-in labels, and repeated caveats are left to Limitations.
+- Figure 7 (curvature attempts) moves from Section 5 to Appendix E.2, beside the
+  stage records it plots. Section 5 keeps the headline counts; the per-group counts,
+  stage durations, the first-stage mean and the IBM01 eigenvalue are in Appendix E.
+- Shorter commentary after Propositions 3.1 and 3.2 and in Sections 3.2, 3.5 and 5;
+  the batched-path and rescoring caveats are in Limitations and Appendix E, and
+  legalization details in Appendix C.3.
+- Wording fixes in Appendices A, E, F, G and H, including "the configuration inferred
+  to be ranked" wherever the reproduction is described. Appendix H keeps the runner's
+  list on one page.
+- EDITORIAL_STANDARDS.md drops the "In brief" and "At a glance" requirements, sets a
+  12-page main-text budget and asks for each result to be stated once.
+- The website summary is rewritten in plain first-person paragraphs, about 520 words
+  (was about 750), with one statement of the result and one row of links.
+- Version 1.2, dated 15 November 2026, in the title block, running header,
+  `CITATION.cff`, the README files and the website package metadata.
+
 ## 1.1 — 6 November 2026
 
 Editorial corrections from a page-by-page review of the 1.0 PDF, before its first

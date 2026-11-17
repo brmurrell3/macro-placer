@@ -9,15 +9,15 @@
 The curvature proposals differentiate a legacy surrogate $J_B$
 (Appendix~\ref{app:alg-laneb}) twice with automatic differentiation (AD). This
 appendix reports a \measurement{} of that operator at one saved endpoint, IBM01 after
-the first curvature stage (E74), together with the \historical{} stage records it comes
-from. The finding is as follows. The AD Hessian-vector product is the Hessian of the
-branch of $J_B$ that is active at the endpoint, that is, of the smooth piece of the
-piecewise function that contains it. Symmetric finite differences straddle density
-and RUDY branch boundaries that lie within $10^{-7}\,\mu$m of the endpoint, so they
-measure jumps in the gradient rather than curvature. On the smooth wirelength term the
-two agree to about $4\times10^{-9}$. $J_B$ therefore has no classical Hessian at this
-endpoint, and its negative eigenvalue, $-0.442458$, describes the active branch:
-a legitimate source of candidate directions, not a curvature of the score.
+the first curvature stage (E74), and the \historical{} stage records it comes from.
+The AD Hessian-vector product is the Hessian of the branch of $J_B$ that is active at
+the endpoint, the smooth piece of the piecewise function that contains it. Symmetric
+finite differences straddle density and RUDY branch boundaries that lie within
+$10^{-7}\,\mu$m of the endpoint, so they measure jumps in the gradient rather than
+curvature; on the smooth wirelength term the two agree to about $4\times10^{-9}$.
+$J_B$ therefore has no classical Hessian at this endpoint. Its negative eigenvalue,
+$-0.442458$, belongs to the active branch, which still makes its eigenvector a usable
+candidate direction.
 
 Negative active-branch eigenvalues are expected from the form of $J_B$. Within one
 branch, the overlap of a rectangle with a grid cell is a product
@@ -36,14 +36,28 @@ Table~\ref{tab:ibm01-curvature-diagnostic} gives the probe's finite-difference c
 \subsection{Stage records and endpoint validity}\label{app:curvature-stages}
 
 Table~\ref{tab:curvature-stages} gives the per-design records of the two curvature
-stages of the v1 lineage. They come from staged research runs without the one-hour
-limit: the first stage took up to 4,007\,s (66.8 minutes) on one design and the
-cascade up to 3,454\,s (57.6 minutes), in both cases on top of the time needed to
-reach the plateau. In the first stage, 190 of 204 perturb-and-polish attempts ended
-below the plateau with zero overlap, with nearly equal success for the first and
-second eigenvectors (94 and 96 of 102) and for the step lengths 0.3, 1 and $3\,\mu$m
-(64, 65 and 61 of 68). The attempts are 12 on each of 17 designs, so they are not
-independent; the main text discusses what the pattern implies.
+stages of the v1 lineage, from staged research runs without the one-hour limit. On
+top of the time needed to reach the plateau, the first stage took up to 4,007\,s on
+one design and the cascade up to 3,454\,s. The first stage lowered the mean plateau
+score from 1.08128 to 1.06760 and the cascade reached 1.06119
+(\cref{fig:curvature}a). In the first stage, 201 of 204 perturb-and-polish attempts
+could be legalized and 190 ended below the plateau with zero overlap, with nearly
+equal success for the first and second eigenvectors (94 and 96 of 102) and for total
+displacement norms of 0.3, 1 and $3\,\mu$m summed over all blocks (64, 65 and 61 of
+68; \cref{fig:curvature}b). The attempts are 12 on each of 17 designs, so they are not
+independent.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{figures/curvature_attempts.pdf}
+\caption{Curvature kicks (perturb along a computed negative-curvature direction, then
+legalize and re-polish) in v1 research runs without the one-hour cap (\historical).
+(a)~Score change relative to the plateau, the best v1 result before any kick, per
+design and on average. (b)~Share of first-stage attempts ending below the plateau with
+zero overlap, by eigenvector and step length.}
+\label{fig:curvature}
+\end{figure}
+
 
 \input{generated/curvature_stages.tex}
 
@@ -84,4 +98,4 @@ whose two endpoints are both strictly valid. It moved 104 of the 246 hard macros
 most $1.01\,\mu$m on a canvas $23\,\mu$m wide; the median displacement among the moved
 macros is $0.085\,\mu$m. It also moved 407 of the 894 soft clusters, by up to
 $8.4\,\mu$m (not drawn). The score fell by 0.00999 through many small, scattered
-adjustments rather than a rearrangement of blocks.
+adjustments.
