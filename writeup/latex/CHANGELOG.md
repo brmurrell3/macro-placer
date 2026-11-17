@@ -23,10 +23,13 @@ changed; one figure moved.
   list on one page.
 - EDITORIAL_STANDARDS.md drops the "In brief" and "At a glance" requirements, sets a
   12-page main-text budget and asks for each result to be stated once.
-- The website summary is rewritten in plain first-person paragraphs, about 520 words
-  (was about 750), with one statement of the result and one row of links.
-- Version 1.2, dated 15 November 2026, in the title block, running header,
-  `CITATION.cff`, the README files and the website package metadata.
+- The website summary is rewritten as a plain first-person overview without an
+  author byline or citation link. Its chart shows all 129 ranked entries, drawn by
+  `scripts/render_website_leaderboard.py`; the report's Figure 1 is unchanged.
+- The README is cut to an overview that points to the report and the website
+  summary, without author or citation sections, and `CITATION.cff` is removed.
+- Version 1.2, dated 15 November 2026, in the title block, running header, the
+  README files and the website package metadata.
 
 ## 1.1 — 6 November 2026
 
