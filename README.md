@@ -9,7 +9,7 @@ baseline, with a listed runtime of 12 of the allowed 60 minutes per design.
 
 ![Mean proxy cost of all 129 ranked entries on the final leaderboard, plotted by final rank, where lower is better. Thinkorplace is highlighted at rank 9 with 0.9974. Dashed lines mark the RePlAce baseline at 1.4578 and the simulated-annealing baseline at 2.1251. Filled dots are entries verified by the organizers and hollow dots are not verified. Ranks 128 and 129 are off scale at 3.60183 and 7.215.](writeup/interactive/leaderboard-all.svg)
 
-The [project page](https://brendanmurrell.com/research/thinkorplace/) is a short
+The [project page](https://brendanmurrell.com/projects/macro-placer/) is a short
 overview. The [technical report](writeup/thinkorplace-report.pdf) covers the
 method, proofs, per-design records and a post-competition reproduction.
 
