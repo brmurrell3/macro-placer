@@ -112,3 +112,6 @@ docs/reviews/
 # Local agent configuration (kept out of the public tree)
 CLAUDE.md
 .claude/settings.json
+
+# Triton compile cache of kernels/cuda/triton
+kernels/cuda/triton/cache/

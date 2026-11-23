@@ -69,6 +69,12 @@ lists the caveats of the v3 comparison.
 - **Bit-identical rewrite.** v3 was rewritten from its research implementation
   and checked stage by stage: for fixed inputs every stage returns identical
   arrays.
+- **GPU kernels** ([`kernels/`](kernels/)). v3's gradient-descent stage as
+  custom kernels with hand-derived gradients, in Metal and in CUDA, with two
+  kernels also in Triton, each gated against a float64 reference. A 500-step
+  descent of a batch of placements runs 18 to 41 times faster than stock
+  PyTorch on an Apple M3 Max and 19 to 47 times faster on an NVIDIA L4. The
+  kernels are not part of the ranked entry.
 - **Tests** in [`test/`](test/) cover the evaluator against the reference, the
   safety layer, package isolation and v3's seeds, legalisation, search and
   deadline.
@@ -79,6 +85,7 @@ lists the caveats of the v3 comparison.
 |---|---|
 | [`thinkorplace/`](thinkorplace/) | Solver package: `common/`, `v1/`, `v2/`, `v3/` |
 | [`submissions/`](submissions/) | One entry point per version. The root [`placer.py`](placer.py) loads v2, the ranked entry |
+| [`kernels/`](kernels/) | Metal, CUDA and Triton kernels for v3's gradient-descent stage |
 | [`macro_place/`](macro_place/) | Benchmark loader, proxy cost, the `evaluate` command and the incremental evaluator |
 | [`writeup/`](writeup/) | Report source, frozen evidence, study configurations and run records |
 | [`experiments/`](experiments/) | About 140 development experiments with their outcomes, including falsified ones |
