@@ -14,7 +14,6 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from render_publication_v1 import (ACCENT, AXIS, BASELINE, CONTEXT, GRID, INK2, INTERACTIVE,  # noqa: E402
@@ -38,10 +37,8 @@ def figure(lb: dict):
     fig, ax = plt.subplots(figsize=(6.7, 3.1))
     fig.subplots_adjust(left=.085, right=.80, top=.9, bottom=.2)
     ax.grid(axis="y", color=GRID, linewidth=.6, zorder=0)
-    for verified, face in ((True, CONTEXT), (False, "white")):
-        rows = [row for row in inside if row["verified"] == verified]
-        ax.scatter([r["rank"] for r in rows], [r["mean_proxy"] for r in rows], s=15, facecolor=face,
-                   edgecolor=CONTEXT if not verified else "white", linewidth=.7, zorder=3)
+    ax.scatter([r["rank"] for r in inside], [r["mean_proxy"] for r in inside], s=15, facecolor=CONTEXT,
+               edgecolor="white", linewidth=.7, zorder=3)
     for row in above:
         ax.scatter([row["rank"]], [Y_MAX], s=22, marker="^", facecolor="white", edgecolor=CONTEXT,
                    linewidth=.7, zorder=3, clip_on=False)
@@ -63,12 +60,6 @@ def figure(lb: dict):
     ax.set_yticks([1.0, 1.25, 1.5, 1.75, 2.0, 2.25])
     ax.set_xlabel("Final rank")
     ax.set_ylabel("Mean proxy cost, lower is better")
-    ax.legend(handles=[
-        Line2D([], [], marker="o", linestyle="none", markersize=4.5, markerfacecolor=CONTEXT,
-               markeredgecolor=CONTEXT, label="Verified by the organizers"),
-        Line2D([], [], marker="o", linestyle="none", markersize=4.5, markerfacecolor="white",
-               markeredgecolor=CONTEXT, label="Not verified"),
-    ], loc="lower right", handletextpad=.3, borderaxespad=.2)
     fig.text(.085, .025, f"Official final leaderboard, {LEADERBOARD_DATE}. All {len(ranked)} ranked entries. "
              "Rank 30 lists an approximate score and is not plotted.", ha="left", fontsize=7.5, color=INK2)
     for spine in ("left", "bottom"):
