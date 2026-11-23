@@ -13,20 +13,19 @@ import tempfile
 import time
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
-# evaluate loads this file by path, not as a package member: put this folder (which holds the thinkorplace_v3
-# package) and the repository root (which holds macro_place and the thinkorplace runtime) on the import path
-for _path in (HERE, HERE.parents[1]):
-    if str(_path) not in sys.path:
-        sys.path.insert(0, str(_path))
+# evaluate loads this file by path, not as a package member: put the repository root, which holds
+# macro_place and the thinkorplace package, on the import path
+_ROOT = Path(__file__).resolve().parents[2]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
 
 import torch  # noqa: E402
 
 from thinkorplace.common.bench_paths import find_benchmark_dir  # noqa: E402
 from thinkorplace.common.cd_core import sdf_init  # noqa: E402
 from thinkorplace.common.runtime_safety import valid_placement  # noqa: E402
-from thinkorplace_v3.legalize import is_legal, legalize  # noqa: E402
-from thinkorplace_v3.scheduler import run_chains  # noqa: E402
+from thinkorplace.v3.legalize import is_legal, legalize  # noqa: E402
+from thinkorplace.v3.scheduler import run_chains  # noqa: E402
 
 
 class Placer:

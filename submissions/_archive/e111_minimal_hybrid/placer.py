@@ -14,7 +14,7 @@ Pipeline:
 
 References:
   - submissions/thinkorplace-v2/placer.py (V3 basin + CD)
-  - submissions/common/cd_lns_sa_cascade_stacked/placer.py (cascade+portfolio)
+  - submissions/_archive/common/cd_lns_sa_cascade_stacked/placer.py (cascade+portfolio)
   - experiments/E84_cascading_saddle/code/cascading_saddle.py
   - experiments/E100_weight_portfolio_saddle/code/portfolio_saddle.py
 

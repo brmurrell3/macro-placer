@@ -63,7 +63,7 @@ include = ["macro_place*", "thinkorplace*"]
 
 [tool.setuptools.package-data]
 macro_place = ["py.typed"]
-thinkorplace = ["README.md", "MIGRATION.json"]
+thinkorplace = ["README.md", "MIGRATION.json", "v3/kahypar_cut.ini"]
 
 [tool.black]
 line-length = 100

@@ -6,9 +6,11 @@ possible within a fixed wall-clock budget. Our ranked competition entry is
 v2 (`submissions/thinkorplace-v2/`), which we also call the ranked
 configuration. We measured the recipe against v2 with a research
 implementation. v3 is a rewrite of that implementation, and for fixed
-inputs every stage gives bit-identical arrays to it. The stage-by-stage
-comparison and its records sit outside the public tree, in the project's
-untracked working files.
+inputs every stage gives bit-identical arrays to it.
+
+The solver code is in [`thinkorplace/v3/`](../../thinkorplace/v3/). This
+folder holds the entry points: `placer.py` for the challenge's `evaluate`
+command and `run.py` for a timed run with the reference scorer.
 
 Terms used below:
 
@@ -84,7 +86,7 @@ From the repository root:
 ```bash
 uv run evaluate submissions/thinkorplace-v3/placer.py -b ibm01
 .venv/bin/python submissions/thinkorplace-v3/run.py --design ibm01 --out <new dir> [--budget 720]
-.venv/bin/python -m pytest -q test/test_thinkorplace_v3.py   # about 90 s
+.venv/bin/python -m pytest -q test/test_thinkorplace_v3.py   # about 4 min
 ```
 
 `Placer()` defaults to a 720 s budget and three single-thread processes.
@@ -98,10 +100,9 @@ installed.
 v3 reuses v2's smooth proxy (`thinkorplace/v2/`) and the coordinate
 descent, incremental evaluator and SDF initialiser in
 `thinkorplace/common/` on purpose. They are the ranked runtime's own
-modules, used unchanged, so v3 is valid against this repository's runtime
-and is not a standalone package.
+modules, used unchanged.
 
-Code, in `thinkorplace_v3/`:
+Code, in [`thinkorplace/v3/`](../../thinkorplace/v3/):
 
 - `starts.py`: quadratic and partition starts.
 - `spreading.py`: the spreading refinement.

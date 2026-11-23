@@ -1,24 +1,19 @@
 # Submissions archive
 
-Superseded prior champions. Lineage is in `docs/results.md` and
-`CLAUDE.md`. The active champion is `submissions/cd_lns_sa_hessian/`
-(E74, ADR-012, 2026-05-05).
+Development placers from April to May 2026, kept because the experiment
+records in [`../../experiments/`](../../experiments/) and the decision records
+in [`../../docs/decisions/`](../../docs/decisions/) cite them. None of the
+current entries imports from this folder.
 
-| Folder | Era | Avg `--all` | ADR | Superseded by |
-|--------|-----|------------:|-----|---------------|
-| `cd_only/` | CD-only era (2026-04-27) | 1.1193 | — | E9 |
-| `cd_adaptive/` | E9 plateau detection (2026-04-27) | 1.1055 | — | E12 |
-| `cd_lns_gridbin/` | E12 CD + grid-bin LNS (2026-04-28 → 2026-05-02) | 1.0990 | ADR-007 | E48 |
-| `will_seed/` | Pre-fork SA seed (Will, 2026-04-23) | 1.5338 | — | (baseline only) |
+| Path | Contents |
+|---|---|
+| `cd_only/`, `cd_adaptive/`, `cd_lns_gridbin/`, `cd_lns_sa*/` | The coordinate-descent and large-neighbourhood-search line that became v1. |
+| `e110_*/` to `e127_*/` | Variants from the descent experiments that became v2. |
+| `e155_parallel_ensemble/`, `e157_adaptive_lane_selector/` | Late-May follow-ups to v2, named `thinkorplace-v3-ensemble` and `thinkorplace-v3` at the time. Unrelated to the current v3. |
+| `thinkorplace-v2-singlepipeline/` | v2 as a single pipeline, before the lane supervisor. |
+| `falsified/` | Variants whose experiments failed. |
+| `will_seed/` | The simulated-annealing seed placer the project started from. |
+| `thinkorplace-v2-lib/` | The v2 sources before they were extracted into [`thinkorplace/v2/`](../../thinkorplace/v2/). [`thinkorplace/MIGRATION.json`](../../thinkorplace/MIGRATION.json) records each one under its pre-move path `submissions/thinkorplace-v2/lib/`. |
+| `common/` | Shared modules of the competition-era placers, imported as `submissions._archive.common`. `MIGRATION.json` records them under their pre-move path `submissions/common/`. |
 
-These are kept for:
-1. **Reproducibility of historical results** (numbers cited in
-   `docs/results.md`, `writeup/historical_results.md`, ADRs 007-011).
-2. **Lineage continuity** — manifests under `experiments/` reference these
-   paths via their `graduated_to` field; moving them out of the tree would
-   break those references retrospectively.
-
-Old experiment manifests reference these paths assuming `submissions/<name>/`.
-Code that needs to import from them should use `submissions/_archive/<name>/`.
-No active code path imports from this archive — only the active
-submissions in `submissions/cd_lns_sa*/` are live.
+Code that imports an archived placer uses `submissions._archive.<name>`.

@@ -133,7 +133,7 @@ print("isolated imports passed")
 
 def test_extracted_primitives_preserve_algorithm_ast():
     # The two original helper copies match; package extraction changes only imports.
-    source=ast.parse((ROOT / "submissions/thinkorplace-v2/lib/ablation_v2_steps.py").read_text())
+    source=ast.parse((ROOT / "submissions/_archive/thinkorplace-v2-lib/ablation_v2_steps.py").read_text())
     extracted=ast.parse((ROOT / "thinkorplace/common/smooth_primitives.py").read_text())
     originals={n.name:ast.dump(n,include_attributes=False) for n in source.body if isinstance(n,(ast.FunctionDef,ast.ClassDef))}
     for n in extracted.body:

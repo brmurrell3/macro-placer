@@ -1,4 +1,4 @@
-"""thinkorplace-v3 — adaptive lane selector (E157).
+"""E157 adaptive lane selector, May 2026 (named thinkorplace-v3 at the time; unrelated to the current v3).
 
 The 2026-05-21 follow-up to v2-extCD. Probes a STRUCTURAL property of
 the benchmark at runtime (hard-macro density) and dispatches to one of

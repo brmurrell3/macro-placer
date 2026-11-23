@@ -44,10 +44,10 @@ from macro_place.loader import load_benchmark_from_dir
 from macro_place.utils import validate_placement
 from thinkorplace.common.incremental_evaluator import IncrementalProxyEvaluator
 from thinkorplace.common.runtime_safety import clamp_to_canvas
-from thinkorplace_v3.descent import INTERLUDES, coarse_descent, fine_descent, interlude
-from thinkorplace_v3.legalize import legalize
-from thinkorplace_v3.search import CoordinateDescent
-from thinkorplace_v3.seeds import Seed, cold_seed, warm_seeds
+from thinkorplace.v3.descent import INTERLUDES, coarse_descent, fine_descent, interlude
+from thinkorplace.v3.legalize import legalize
+from thinkorplace.v3.search import CoordinateDescent
+from thinkorplace.v3.seeds import Seed, cold_seed, warm_seeds
 
 SEED_PHASE_END, DESCENT_PHASE_END = 0.10, 0.40  # fractions of the budget
 SEGMENT_SWEEPS = 6

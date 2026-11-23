@@ -39,7 +39,7 @@ class SmoothGlobalPlacerV4Gaussian(SmoothGlobalPlacerV4):
 
     def descend(self, benchmark: Benchmark, plc) -> Tuple[torch.Tensor, Dict]:
         t0 = time.time()
-        from submissions.common.runtime_safety import require_time
+        from submissions._archive.common.runtime_safety import require_time
         require_time(self.deadline)
         init_pos = self._init_positions(benchmark, plc=plc)
         if self.checkpoint_callback is not None:

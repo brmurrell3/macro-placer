@@ -42,7 +42,7 @@ _ROOT = Path(__file__).resolve().parents[3]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from submissions.common.runtime_safety import monotonic_seconds, checkpoint, require_time, valid_placement
+from submissions._archive.common.runtime_safety import monotonic_seconds, checkpoint, require_time, valid_placement
 from macro_place.benchmark import Benchmark
 from macro_place.bench_paths import find_benchmark_dir
 from macro_place.loader import load_benchmark_from_dir

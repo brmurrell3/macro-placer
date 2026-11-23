@@ -27,7 +27,7 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from macro_place.benchmark import Benchmark
-from submissions.common.runtime_safety import clamp_to_canvas
+from submissions._archive.common.runtime_safety import clamp_to_canvas
 
 
 def _aabb_overlap(ax_min, ax_max, ay_min, ay_max,

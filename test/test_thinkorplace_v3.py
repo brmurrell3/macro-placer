@@ -1,4 +1,4 @@
-"""Tests of submissions/thinkorplace-v3 (about 90 s in all, most of it the 60 s deadline test):
+"""Tests of thinkorplace v3 (about 4 min in all on an M3 Max):
 span score, seeds, legalisation, the widened congestion score, a search segment and the deadline."""
 from __future__ import annotations
 
@@ -12,19 +12,18 @@ import pytest
 import torch
 
 ROOT = Path(__file__).resolve().parents[1]
-for _path in (ROOT, ROOT / "submissions" / "thinkorplace-v3"):
-    if str(_path) not in sys.path:
-        sys.path.insert(0, str(_path))
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from macro_place.utils import validate_placement  # noqa: E402
 from thinkorplace.common.bench_paths import find_benchmark_dir  # noqa: E402
-from thinkorplace_v3 import seeds as seed_module  # noqa: E402
-from thinkorplace_v3.chain import load_design  # noqa: E402
-from thinkorplace_v3.legalize import is_legal, legalize  # noqa: E402
-from thinkorplace_v3.scheduler import run_chains  # noqa: E402
+from thinkorplace.v3 import seeds as seed_module  # noqa: E402
+from thinkorplace.v3.chain import load_design  # noqa: E402
+from thinkorplace.v3.legalize import is_legal, legalize  # noqa: E402
+from thinkorplace.v3.scheduler import run_chains  # noqa: E402
 from thinkorplace.common.incremental_evaluator import IncrementalProxyEvaluator  # noqa: E402
-from thinkorplace_v3.search import CoordinateDescent, WideTailEvaluator  # noqa: E402
-from thinkorplace_v3.seeds import HORIZONTAL_WEIGHT, cold_seed, span_score  # noqa: E402
+from thinkorplace.v3.search import CoordinateDescent, WideTailEvaluator  # noqa: E402
+from thinkorplace.v3.seeds import HORIZONTAL_WEIGHT, cold_seed, span_score  # noqa: E402
 
 
 @pytest.fixture(scope="module")
@@ -49,7 +48,7 @@ def test_span_score_weights_horizontal_span(monkeypatch):
 
 
 def test_cold_seed_descends_to_a_legal_placement(ibm01):
-    from thinkorplace_v3.descent import coarse_descent, fine_descent
+    from thinkorplace.v3.descent import coarse_descent, fine_descent
 
     bench, plc = ibm01
     seed = cold_seed(5001, bench, plc)

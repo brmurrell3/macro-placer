@@ -15,10 +15,9 @@ import json  # noqa: E402
 import sys  # noqa: E402
 from pathlib import Path  # noqa: E402
 
-HERE = Path(__file__).resolve().parent
-for _path in (HERE, HERE.parents[1]):
-    if str(_path) not in sys.path:
-        sys.path.insert(0, str(_path))
+_ROOT = Path(__file__).resolve().parents[2]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
 
 import numpy as np  # noqa: E402
 import torch  # noqa: E402
@@ -26,8 +25,8 @@ import torch  # noqa: E402
 from macro_place.objective import compute_proxy_cost  # noqa: E402
 from macro_place.utils import validate_placement  # noqa: E402
 from thinkorplace.common.bench_paths import find_benchmark_dir  # noqa: E402
-from thinkorplace_v3.chain import load_design, write_json  # noqa: E402
-from thinkorplace_v3.scheduler import run_chains  # noqa: E402
+from thinkorplace.v3.chain import load_design, write_json  # noqa: E402
+from thinkorplace.v3.scheduler import run_chains  # noqa: E402
 
 
 def main() -> None:

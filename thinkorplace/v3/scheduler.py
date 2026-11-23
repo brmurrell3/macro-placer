@@ -20,7 +20,7 @@ from typing import Optional, Tuple
 
 import torch
 
-from thinkorplace_v3.chain import BEST_FILE, ChainConfig, chain_process, read_best
+from thinkorplace.v3.chain import BEST_FILE, ChainConfig, chain_process, read_best
 
 CHAINS, WARM_CHAINS, SEED_BASE = 3, 1, 5000
 THREAD_VARIABLES = ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "VECLIB_MAXIMUM_THREADS")

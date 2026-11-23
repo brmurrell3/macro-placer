@@ -7,7 +7,7 @@ Placement Challenge 2026 (verified mean proxy 0.9974; the organizers report 132
 verified eligible submissions). Its mean is 31.6% below the published RePlAce
 baseline, with a listed runtime of 12 of the allowed 60 minutes per design.
 
-![Mean proxy cost of all 129 ranked entries on the final leaderboard, plotted by final rank, where lower is better. Thinkorplace is highlighted at rank 9 with 0.9974. Dashed lines mark the RePlAce baseline at 1.4578 and the simulated-annealing baseline at 2.1251. Filled dots are entries verified by the organizers and hollow dots are not verified. Ranks 128 and 129 are off scale at 3.60183 and 7.215.](writeup/interactive/leaderboard-all.svg)
+![Mean proxy cost of all 129 ranked entries on the final leaderboard, plotted by final rank, where lower is better. Thinkorplace is highlighted at rank 9 with 0.9974. Dashed lines mark the RePlAce baseline at 1.4578 and the simulated-annealing baseline at 2.1251. Ranks 128 and 129 are off scale at 3.60183 and 7.215.](writeup/interactive/leaderboard-all.svg)
 
 The [project page](https://brendanmurrell.com/projects/macro-placer/) is a short
 overview. The [technical report](writeup/thinkorplace-report.pdf) covers the
@@ -28,12 +28,57 @@ inferred to have been ranked. [`scripts/render_placement_animation.py`](scripts/
 draws it from the run record in
 [`writeup/runs/animation-ibm01-20261117/`](writeup/runs/animation-ibm01-20261117/).
 
+## Versions
+
+Each version has an entry point in [`submissions/`](submissions/) and its solver
+code in the [`thinkorplace/`](thinkorplace/) package.
+
+| Version | Entry | Code | Method |
+|---|---|---|---|
+| v1 | [`submissions/thinkorplace-v1/`](submissions/thinkorplace-v1/) | [`thinkorplace/v1/`](thinkorplace/v1/) | Two starting lanes, three local searches and a curvature cascade. About 53 minutes per design. |
+| v2 | [`submissions/thinkorplace-v2/`](submissions/thinkorplace-v2/) | [`thinkorplace/v2/`](thinkorplace/v2/) | The ranked entry. Smooth descent, legalisation, then exact coordinate descent, in 12 minutes per design. |
+| v3 | [`submissions/thinkorplace-v3/`](submissions/thinkorplace-v3/) | [`thinkorplace/v3/`](thinkorplace/v3/) | After the competition. Draws many seeds by recursive bisection, screens them with a cheap span score, and runs three chains for 12 minutes on three cores, one warm from the supplied placement. |
+
+Results, by evidence class. Rows of different classes come from different
+runs and machines, so compare within a class.
+
+| Class | Result |
+|---|---|
+| Development (May 2026) | v2 scored 7.1% lower than v1 on average over the 17 IBM designs, lower on 16 of them, in 524 s instead of 3,192 s per design. |
+| Official | v2 ranked ninth with a verified mean proxy of 0.9974, 31.6% below the RePlAce baseline. |
+| Reproduction | v2 rerun on a laptop CPU, each design alone: mean 0.98121, all 17 placements valid. |
+| Measurement | At 720 s and three cores per design on one M3 Max, v3's research implementation scored 0.9443 against 0.9879 for v2 run beside it, 4.4% lower and lower on 16 of 17 designs. The package in `thinkorplace/v3/` run alone scored 0.9376. |
+
+All scores are the challenge's proxy cost. They say nothing about routed
+timing, power or area. The [v3 README](submissions/thinkorplace-v3/README.md)
+lists the caveats of the v3 comparison.
+
+## Engineering
+
+- **Incremental evaluator** ([`thinkorplace/common/incremental_evaluator.py`](thinkorplace/common/incremental_evaluator.py)).
+  The reference scorer takes 1.4 to 27 s per call, too slow for exact search.
+  The evaluator updates only the nets and grid cells a move touches: 1.3 to
+  3.7 ms per move on sampled moves, with a worst difference from the reference
+  of 1.1e-15 over 130 random moves. That turns a few hundred exact checks per
+  design into about 100,000 ([decision record](docs/decisions/002_incremental_evaluator.md)).
+- **Deadline-safe process supervision** ([`thinkorplace/common/runtime_safety.py`](thinkorplace/common/runtime_safety.py),
+  [`thinkorplace/v2/worker.py`](thinkorplace/v2/worker.py), [`thinkorplace/v3/scheduler.py`](thinkorplace/v3/scheduler.py)).
+  Lanes and chains run in spawned processes against one monotonic deadline,
+  publish only validated placements through atomic writes, and are terminated
+  at the deadline, so a run returns its best legal placement in time.
+- **Bit-identical rewrite.** v3 was rewritten from its research implementation
+  and checked stage by stage: for fixed inputs every stage returns identical
+  arrays.
+- **Tests** in [`test/`](test/) cover the evaluator against the reference, the
+  safety layer, package isolation and v3's seeds, legalisation, search and
+  deadline.
+
 ## Repository map
 
 | Path | Contents |
 |---|---|
-| [`thinkorplace/`](thinkorplace/) | Solver package, the corrected post-competition runtime |
-| [`submissions/`](submissions/) | Competition entry points. The root [`placer.py`](placer.py) launches the v2 entry in `submissions/thinkorplace-v2/` |
+| [`thinkorplace/`](thinkorplace/) | Solver package: `common/`, `v1/`, `v2/`, `v3/` |
+| [`submissions/`](submissions/) | One entry point per version. The root [`placer.py`](placer.py) loads v2, the ranked entry |
 | [`macro_place/`](macro_place/) | Benchmark loader, proxy cost, the `evaluate` command and the incremental evaluator |
 | [`writeup/`](writeup/) | Report source, frozen evidence, study configurations and run records |
 | [`experiments/`](experiments/) | About 140 development experiments with their outcomes, including falsified ones |
@@ -54,9 +99,16 @@ git submodule update --init external/MacroPlacement
 uv sync
 ```
 
-Evaluate the v2 entry on one design. Its current defaults run three lanes with a
-2,700-second budget, not the 720-second single pipeline inferred to have been
-ranked.
+Evaluate v3 on one design. It needs the `kahypar` package, which `uv sync`
+does not install.
+
+```bash
+uv pip install kahypar==1.3.6
+uv run evaluate submissions/thinkorplace-v3/placer.py -b ibm01
+```
+
+Evaluate the v2 entry. Its current defaults run three lanes with a 2,700-second
+budget, not the 720-second single pipeline inferred to have been ranked.
 
 ```bash
 uv run evaluate submissions/thinkorplace-v2/placer.py -b ibm01

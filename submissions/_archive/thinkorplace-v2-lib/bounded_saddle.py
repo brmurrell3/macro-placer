@@ -30,7 +30,7 @@ for _p in (_ROOT, _HERE):
 
 from hessian_saddle import SmoothProxy, hessian_vector_product  # noqa: E402
 
-from submissions.common.runtime_safety import monotonic_seconds
+from submissions._archive.common.runtime_safety import monotonic_seconds
 from macro_place.cd_core import project_overlaps, run_cd_adaptive  # noqa: E402
 from macro_place.incremental_evaluator import IncrementalProxyEvaluator  # noqa: E402
 from macro_place.objective import compute_overlap_metrics, compute_proxy_cost  # noqa: E402
@@ -74,7 +74,7 @@ def find_softest_eigenvectors_bounded(
         v_full = np.zeros(n_dim, dtype=np.float64)
         v_full[mask_flat] = v_free
         v_tensor = torch.tensor(v_full.reshape(n_macros, 2), dtype=torch.float32)
-        from submissions.common.runtime_safety import monotonic_seconds, require_time
+        from submissions._archive.common.runtime_safety import monotonic_seconds, require_time
         require_time(deadline)
         hv = hessian_vector_product(smooth_proxy, state_full, v_tensor)
         hv_flat = hv.cpu().numpy().reshape(n_dim)

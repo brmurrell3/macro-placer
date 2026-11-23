@@ -20,7 +20,7 @@ def main():
     files.extend(ROOT / name for name in [
         'pyproject.toml', 'requirements.txt', 'LICENSE.md', 'README.md', 'placer.py',
         'thinkorplace/README.md', 'thinkorplace/MIGRATION.json',
-        'submissions/thinkorplace/placer.py', 'submissions/thinkorplace-v2/placer.py',
+        'submissions/thinkorplace-v1/placer.py', 'submissions/thinkorplace-v2/placer.py',
         'submissions/thinkorplace-v2/lane_worker.py',
         'scripts/run_publication_study.py', 'scripts/publication_worker.py',
         'writeup/study/pilot.json', 'writeup/study/repair_validation.json', 'writeup/study/final_ng45_integration.json',

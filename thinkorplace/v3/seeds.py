@@ -25,8 +25,8 @@ from macro_place.benchmark import Benchmark
 from thinkorplace.common.cd_core import sdf_init
 from thinkorplace.common.runtime_safety import clamp_to_canvas
 from thinkorplace.common.smooth_primitives import _extract_net_data
-from thinkorplace_v3.spreading import refine_spreading
-from thinkorplace_v3.starts import partition_start
+from thinkorplace.v3.spreading import refine_spreading
+from thinkorplace.v3.starts import partition_start
 
 HORIZONTAL_WEIGHT = 1.6216
 PARTITION_DEPTH = 6

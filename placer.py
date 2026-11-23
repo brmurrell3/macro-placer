@@ -1,7 +1,4 @@
-"""thinkorplace entry placer for partcl eval_docker.
-
-Auto-updated by update_launcher.py to point at Placer.
-"""
+"""Root entry for the challenge evaluator: loads the ranked v2 entry in submissions/thinkorplace-v2/."""
 from __future__ import annotations
 
 import sys

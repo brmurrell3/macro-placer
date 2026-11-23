@@ -1,4 +1,4 @@
-"""thinkorplace-v3-ensemble — 2-lane parallel ensemble (v2-extCD + E138 saddle).
+"""E155 two-lane parallel ensemble, May 2026 (named thinkorplace-v3-ensemble at the time; unrelated to the current v3).
 
 Builds on v2-extCD by running TWO independent lanes in parallel
 subprocesses and picking the canonical-better. Lane A is v2-extCD

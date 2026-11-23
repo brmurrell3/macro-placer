@@ -165,7 +165,7 @@ def test_atomic_failure_keeps_old_checkpoint(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize("path,name", [
-    ("submissions/thinkorplace-v2/lib/ablation_v2_steps.py", "safety_topology_v2"),
+    ("submissions/_archive/thinkorplace-v2-lib/ablation_v2_steps.py", "safety_topology_v2"),
     ("writeup/archive/submissions/dpo/ablation_v2_steps.py", "safety_topology_v1"),
     ("thinkorplace/common/smooth_primitives.py", "safety_topology_common"),
     ("thinkorplace/v1/dpo_init.py", "safety_topology_dpo"),
