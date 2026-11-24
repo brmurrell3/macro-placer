@@ -81,19 +81,47 @@ lists the caveats of the v3 comparison.
 
 ## Repository map
 
+**Code**
+
 | Path | Contents |
 |---|---|
 | [`thinkorplace/`](thinkorplace/) | Solver package: `common/`, `v1/`, `v2/`, `v3/` |
 | [`submissions/`](submissions/) | One entry point per version. The root [`placer.py`](placer.py) loads v2, the ranked entry |
 | [`kernels/`](kernels/) | Metal, CUDA and Triton kernels for v3's gradient-descent stage |
-| [`macro_place/`](macro_place/) | Benchmark loader, proxy cost, the `evaluate` command and the incremental evaluator |
-| [`writeup/`](writeup/) | Report source, frozen evidence, study configurations and run records |
-| [`experiments/`](experiments/) | About 140 development experiments with their outcomes, including falsified ones |
-| [`docs/`](docs/), [`analysis/`](analysis/) | May 2026 development records and diagnostics |
-| [`scripts/`](scripts/), [`test/`](test/) | Study runner, publication renderers and checks, and tests |
+| [`test/`](test/) | Tests for the package, the entries and the study runner |
 
-Most other top-level files and folders come from the upstream
-[challenge repository](https://github.com/partcleda/macro-place-challenge-2026).
+**Results and evidence**
+
+| Path | Contents |
+|---|---|
+| [`writeup/`](writeup/) | Report source, frozen evidence, study configurations and run records |
+| [`scripts/`](scripts/) | Study runner, renderers and checks for the report; [`scripts/README.md`](scripts/README.md) sorts them |
+
+**Development history (April to May 2026)**
+
+| Path | Contents |
+|---|---|
+| [`experiments/`](experiments/) | About 140 development experiments with their outcomes, including falsified ones |
+| [`docs/`](docs/), [`analysis/`](analysis/) | Development records, decisions and diagnostics |
+
+These stay at their original paths because the frozen records in `writeup/`
+cite them by path.
+
+**Challenge infrastructure**
+
+| Path | Contents |
+|---|---|
+| [`macro_place/`](macro_place/) | Benchmark loader, proxy cost and the `evaluate` command |
+| [`benchmarks/`](benchmarks/), [`external/`](external/) | Benchmark designs and the MacroPlacement submodule |
+
+`macro_place/` also keeps the May originals of four modules (the incremental
+evaluator, coordinate descent, the SDF initialiser and the benchmark paths).
+The solver uses the copies in [`thinkorplace/common/`](thinkorplace/common/);
+the originals stay for the development records and scripts that import them.
+
+The remaining top-level files and folders (`src/`, `baselines/`,
+`eval_docker/`, `scripts_parallel/`, `SCORING.md`, `SETUP.md`) come from the
+upstream [challenge repository](https://github.com/partcleda/macro-place-challenge-2026).
 
 ## Reproduce
 
